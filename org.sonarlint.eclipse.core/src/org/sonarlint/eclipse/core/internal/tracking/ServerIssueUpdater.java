@@ -84,16 +84,16 @@ public class ServerIssueUpdater {
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-      Map<ISonarLintIssuable, Collection<Trackable>> trackedIssues = new HashMap<>();
+      var trackedIssues = new HashMap<ISonarLintIssuable, Collection<Trackable>>();
       try {
-        for (ISonarLintIssuable issuable : issuables) {
+        for (var issuable : issuables) {
           if (monitor.isCanceled()) {
             return Status.CANCEL_STATUS;
           }
           if (issuable instanceof ISonarLintFile) {
-            ISonarLintFile file = ((ISonarLintFile) issuable);
-            IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project);
-            List<ServerIssue> serverIssues = fetchServerIssues(engineFacade, projectBinding, (ISonarLintFile) issuable, monitor);
+            var file = ((ISonarLintFile) issuable);
+            var issueTracker = issueTrackerRegistry.getOrCreate(project);
+            var serverIssues = fetchServerIssues(engineFacade, projectBinding, (ISonarLintFile) issuable, monitor);
             Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
             Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(file, serverIssuesTrackable);
             issueTracker.updateCache(file, tracked);
@@ -117,7 +117,7 @@ public class ServerIssueUpdater {
   public static List<ServerIssue> fetchServerIssues(ConnectedEngineFacade engineFacade,
     ProjectBinding projectBinding,
     ISonarLintFile file, IProgressMonitor monitor) {
-    String filePath = file.getProjectRelativePath();
+    var filePath = file.getProjectRelativePath();
 
     try {
       SonarLintLogger.get().debug("Download server issues for " + file.getName());

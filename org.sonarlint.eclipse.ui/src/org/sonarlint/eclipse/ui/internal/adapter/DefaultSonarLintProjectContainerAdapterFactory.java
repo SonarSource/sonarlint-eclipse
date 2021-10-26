@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.adapter;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.IWorkingSet;
@@ -40,16 +39,16 @@ public class DefaultSonarLintProjectContainerAdapterFactory implements IAdapterF
 
     @Override
     public Collection<ISonarLintProject> projects() {
-      Collection<ISonarLintProject> result = new ArrayList<>();
-      for (IAdaptable elem : workingSet.getElements()) {
-        ISonarLintProject p = Adapters.adapt(elem, ISonarLintProject.class);
-        if (p != null) {
-          result.add(p);
+      var result = new ArrayList<ISonarLintProject>();
+      for (var elem : workingSet.getElements()) {
+        var project = Adapters.adapt(elem, ISonarLintProject.class);
+        if (project != null) {
+          result.add(project);
           continue;
         }
-        ISonarLintProjectContainer c = Adapters.adapt(elem, ISonarLintProjectContainer.class);
-        if (c != null) {
-          result.addAll(c.projects());
+        var container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
+        if (container != null) {
+          result.addAll(container.projects());
         }
       }
       return result;

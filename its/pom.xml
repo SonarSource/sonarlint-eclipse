@@ -27,6 +27,7 @@
     <!-- http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime -->
     <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext -Dsonarlint.telemetry.disabled=true</tycho.testArgLine>
     <sonar.runtimeVersion>LATEST_RELEASE</sonar.runtimeVersion>
+    <jdk.min.version>11</jdk.min.version>
   </properties>
 
   <!-- These dependencies will be added to the target platform -->

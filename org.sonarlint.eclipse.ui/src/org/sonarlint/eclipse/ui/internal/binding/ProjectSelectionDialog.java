@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.binding;
 
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -35,11 +34,11 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 public class ProjectSelectionDialog {
 
   public static Optional<ISonarLintProject> pickProject(String filePath, String projectKey, String connectionId) {
-    List<ISonarLintProject> projects = ProjectsProviderUtils.allProjects()
+    var projects = ProjectsProviderUtils.allProjects()
       .stream()
       .sorted(Comparator.comparing(ISonarLintProject::getName))
       .collect(Collectors.toList());
-    ElementListSelectionDialog dialog = new ElementListSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), new SonarLintProjectLabelProvider());
+    var dialog = new ElementListSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), new SonarLintProjectLabelProvider());
     dialog.setElements(projects.toArray());
     dialog.setMessage(
       "Select the project containing the file " + filePath + ".\nThis Eclipse project will be bound to the project '" + projectKey + "' using connection '" + connectionId + "'");
@@ -54,7 +53,7 @@ public class ProjectSelectionDialog {
   private static final class SonarLintProjectLabelProvider extends LabelProvider {
     @Override
     public String getText(Object element) {
-      ISonarLintProject current = (ISonarLintProject) element;
+      var current = (ISonarLintProject) element;
       return current.getName();
     }
 

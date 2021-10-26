@@ -43,7 +43,7 @@ public class InMemoryIssueTrackerCache implements IssueTrackerCache {
 
   @Override
   public Collection<Trackable> getLiveOrFail(String file) {
-    Collection<Trackable> trackables = cache.get(file);
+    var trackables = cache.get(file);
     if (trackables != null) {
       return trackables;
     }

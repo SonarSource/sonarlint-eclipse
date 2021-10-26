@@ -59,8 +59,8 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
     createTokenField(container);
     createOpenSecurityPageButton(container);
 
-    DataBindingContext dbc = new DataBindingContext();
-    tokenTextBinding = dbc.bindValue(
+    var dataBindingContext = new DataBindingContext();
+    tokenTextBinding = dataBindingContext.bindValue(
       WidgetProperties.text(SWT.Modify).observe(serverTokenText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_USERNAME)
         .observe(model),
@@ -69,20 +69,20 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
       null);
     ControlDecorationSupport.create(tokenTextBinding, SWT.LEFT | SWT.TOP);
 
-    WizardPageSupport.create(this, dbc);
+    WizardPageSupport.create(this, dataBindingContext);
   }
 
   private void createTokenField(final Composite container) {
-    Label labelUsername = new Label(container, SWT.NULL);
+    var labelUsername = new Label(container, SWT.NULL);
     labelUsername.setText("Token:");
     serverTokenText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
     serverTokenText.setLayoutData(gd);
   }
 
   private void createOpenSecurityPageButton(Composite container) {
-    Button button = new Button(container, SWT.PUSH);
+    var button = new Button(container, SWT.PUSH);
     button.setImage(SonarLintImages.IMG_OPEN_EXTERNAL);
     button.setText(Messages.ServerLocationWizardPage_action_token);
     button.setToolTipText(Messages.ServerLocationWizardPage_action_token_tooltip);
@@ -92,7 +92,7 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
   }
 
   private void openSecurityPage() {
-    StringBuilder url = new StringBuilder(256);
+    var url = new StringBuilder(256);
     url.append(model.getServerUrl());
     url.append("/account/security");
     try {

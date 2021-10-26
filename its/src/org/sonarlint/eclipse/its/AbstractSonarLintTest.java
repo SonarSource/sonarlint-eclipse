@@ -27,7 +27,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -49,7 +48,6 @@ import org.eclipse.reddeer.eclipse.core.resources.Resource;
 import org.eclipse.reddeer.eclipse.ui.navigator.resources.ProjectExplorer;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
-import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage.ImportProject;
 import org.eclipse.reddeer.junit.runner.RedDeerSuite;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement.CleanWorkspace;
@@ -127,7 +125,7 @@ public abstract class AbstractSonarLintTest {
         public void done(IJobChangeEvent event) {
           if (isSonarLintAnalysisJob(event)) {
             System.out.println("Job done: " + event.getJob().getName());
-            analysisJobCountDownLatch.forEach(l -> l.countDown());
+            analysisJobCountDownLatch.forEach(CountDownLatch::countDown);
           }
         }
 
@@ -145,34 +143,34 @@ public abstract class AbstractSonarLintTest {
       consoleView.enableAnalysisLogs();
       consoleView.showConsole(ShowConsoleOption.NEVER);
       new WaitUntil(new ConsoleHasText(consoleView, "Started security hotspot handler on port"));
-      String consoleText = consoleView.getConsoleText();
-      Pattern p = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
-      Matcher m = p.matcher(consoleText);
-      assertThat(m.find()).isTrue();
-      hotspotServerPort = Integer.parseInt(m.group(1));
+      var consoleText = consoleView.getConsoleText();
+      var pattern = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
+      var matcher = pattern.matcher(consoleText);
+      assertThat(matcher.find()).isTrue();
+      hotspotServerPort = Integer.parseInt(matcher.group(1));
     }
   }
 
   protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
-    ExternalProjectImportWizardDialog dialog = new ExternalProjectImportWizardDialog();
+    var dialog = new ExternalProjectImportWizardDialog();
     dialog.open();
-    WizardProjectsImportPage importPage = new WizardProjectsImportPage(dialog);
+    var importPage = new WizardProjectsImportPage(dialog);
     importPage.copyProjectsIntoWorkspace(true);
     importPage.setRootDirectory(new File("projects", relativePathFromProjectsFolder).getAbsolutePath());
-    List<ImportProject> projects = importPage.getProjects();
+    var projects = importPage.getProjects();
     assertThat(projects).hasSize(1);
     dialog.finish();
   }
 
   protected static final Project importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder, String projectName) {
     importExistingProjectIntoWorkspace(relativePathFromProjectsFolder);
-    ProjectExplorer projectExplorer = new ProjectExplorer();
+    var projectExplorer = new ProjectExplorer();
     new WaitUntil(new ProjectExists(projectName, projectExplorer));
     return projectExplorer.getProject(projectName);
   }
 
   protected final void doAndWaitForSonarLintAnalysisJob(Runnable r) {
-    CountDownLatch latch = new CountDownLatch(1);
+    var latch = new CountDownLatch(1);
     analysisJobCountDownLatch.add(latch);
     r.run();
     try {
@@ -240,7 +238,7 @@ public abstract class AbstractSonarLintTest {
   }
 
   protected static WsClient newAdminWsClient(Orchestrator orchestrator) {
-    Server server = orchestrator.getServer();
+    var server = orchestrator.getServer();
     return WsClientFactories.getDefault().newClient(HttpConnector.newBuilder()
       .url(server.getUrl())
       .credentials(Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD)
@@ -248,12 +246,12 @@ public abstract class AbstractSonarLintTest {
   }
 
   void restoreDefaultRulesConfiguration() {
-    WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
+    var preferenceDialog = new WorkbenchPreferenceDialog();
     if (!preferenceDialog.isOpen()) {
       preferenceDialog.open();
     }
 
-    RuleConfigurationPreferences ruleConfigurationPreferences = new RuleConfigurationPreferences(preferenceDialog);
+    var ruleConfigurationPreferences = new RuleConfigurationPreferences(preferenceDialog);
     preferenceDialog.select(ruleConfigurationPreferences);
     ruleConfigurationPreferences.restoreDefaults();
     preferenceDialog.ok();

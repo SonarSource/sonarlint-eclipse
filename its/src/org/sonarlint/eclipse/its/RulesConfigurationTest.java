@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.its;
 
-import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
@@ -40,9 +39,9 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   @Test
   public void deactivate_rule() {
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("java/java-exclude-rules", "java-exclude-rules");
+    var rootProject = importExistingProjectIntoWorkspace("java/java-exclude-rules", "java-exclude-rules");
 
-    OnTheFlyView onTheFlyView = new OnTheFlyView();
+    var onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
@@ -51,7 +50,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
     doAndWaitForSonarLintAnalysisJob(() -> new ContextMenu(onTheFlyView.getItems().get(1)).getItem("Deactivate rule").select());
 
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
@@ -70,7 +69,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   @Test
   public void ruleParametersGlobalDefaults() {
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("java/java-exclude-rules", "java-exclude-rules");
+    var rootProject = importExistingProjectIntoWorkspace("java/java-exclude-rules", "java-exclude-rules");
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
 
@@ -85,8 +84,8 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
   @Test
   public void ruleParametersActivationRoundTrip() {
-    RuleConfigurationPreferences ruleConfigurationPreferences = openRuleConfigurationPreferences();
-    TreeItem cognitiveComplexityRuleItem = getCognitiveComplexityRuleTreeItem(ruleConfigurationPreferences);
+    var ruleConfigurationPreferences = openRuleConfigurationPreferences();
+    var cognitiveComplexityRuleItem = getCognitiveComplexityRuleTreeItem(ruleConfigurationPreferences);
     cognitiveComplexityRuleItem.select();
 
     assertThat(ruleConfigurationPreferences.getRuleParamSpinner().isEnabled()).isTrue();
@@ -100,7 +99,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
   @Test
   public void defaultLinkVisibilityRoundTrip() {
-    RuleConfigurationPreferences ruleConfigurationPreferences = selectCognitiveComplexityRule();
+    var ruleConfigurationPreferences = selectCognitiveComplexityRule();
 
     assertThat(paramRestoreDefaultLink()).isNull();
 
@@ -114,10 +113,10 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   public void open_rules_configuration() {
     assumeTrue(isMarsOrGreater());
 
-    RuleConfigurationPreferences ruleConfigurationPreferences = openRuleConfigurationPreferences();
+    var ruleConfigurationPreferences = openRuleConfigurationPreferences();
 
     assertThat(ruleConfigurationPreferences.getItems()).hasSize(6 /* HTML, Java, JavaScript, PHP, Python, Secrets - no TypeScript */);
-    TreeItem htmlNode = ruleConfigurationPreferences.getItems().get(0);
+    var htmlNode = ruleConfigurationPreferences.getItems().get(0);
 
     assertThat(htmlNode.getText()).isEqualTo("HTML");
 
@@ -126,10 +125,10 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   }
 
   private static RuleConfigurationPreferences openRuleConfigurationPreferences() {
-    WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
+    var preferenceDialog = new WorkbenchPreferenceDialog();
     preferenceDialog.open();
 
-    RuleConfigurationPreferences ruleConfigurationPreferences = new RuleConfigurationPreferences(preferenceDialog);
+    var ruleConfigurationPreferences = new RuleConfigurationPreferences(preferenceDialog);
     preferenceDialog.select(ruleConfigurationPreferences);
     return ruleConfigurationPreferences;
   }
@@ -143,13 +142,13 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   }
 
   private static void lowerCognitiveComplexityRuleParameter() {
-    RuleConfigurationPreferences ruleConfigurationPreferences = selectCognitiveComplexityRule();
+    var ruleConfigurationPreferences = selectCognitiveComplexityRule();
     ruleConfigurationPreferences.setRuleParameter(10);
     ruleConfigurationPreferences.ok();
   }
 
   private static RuleConfigurationPreferences selectCognitiveComplexityRule() {
-    RuleConfigurationPreferences ruleConfigurationPreferences = openRuleConfigurationPreferences();
+    var ruleConfigurationPreferences = openRuleConfigurationPreferences();
     getCognitiveComplexityRuleTreeItem(ruleConfigurationPreferences).select();
     return ruleConfigurationPreferences;
   }
@@ -160,7 +159,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   }
 
   static void checkIssueChanged() {
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .filteredOn(m -> "org.sonarlint.eclipse.onTheFlyIssueAnnotationType".equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
@@ -170,7 +169,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   }
 
   void checkIssueIsDefault() {
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .filteredOn(m -> "org.sonarlint.eclipse.onTheFlyIssueAnnotationType".equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)

@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal;
 
-import java.nio.file.Path;
 import okhttp3.OkHttpClient;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -117,8 +116,8 @@ public class SonarLintCorePlugin extends Plugin {
     super.start(context);
 
     IssueTrackerCacheFactory factory = project -> {
-      Path storeBasePath = StoragePathManager.getIssuesDir(project);
-      IssueStore issueStore = new IssueStore(storeBasePath, project);
+      var storeBasePath = StoragePathManager.getIssuesDir(project);
+      var issueStore = new IssueStore(storeBasePath, project);
       return new PersistentIssueTrackerCache(issueStore);
     };
     issueTrackerRegistry = new IssueTrackerRegistry(factory);

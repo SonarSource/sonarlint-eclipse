@@ -28,9 +28,7 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -45,7 +43,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -98,7 +95,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
     @Override
     public boolean isValid() {
-      IMarker marker = location.getMarker();
+      var marker = location.getMarker();
       return marker != null && marker.exists() && !location.isDeleted();
     }
 
@@ -137,7 +134,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       } else {
         children = new ArrayList<>();
         LocationFileGroupNode lastNode = null;
-        for (MarkerFlowLocation location : flow.getLocations()) {
+        for (var location : flow.getLocations()) {
           if (lastNode == null || !lastNode.getFilePath().equals(location.getFilePath())) {
             lastNode = new LocationFileGroupNode(children.size(), location.getFilePath());
             children.add(lastNode);
@@ -172,7 +169,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       if (!(obj instanceof FlowRootNode)) {
         return false;
       }
-      FlowRootNode other = (FlowRootNode) obj;
+      var other = (FlowRootNode) obj;
       return Objects.equals(flow.getNumber(), other.flow.getNumber());
     }
 
@@ -219,7 +216,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       if (!(obj instanceof FlowRootNode)) {
         return false;
       }
-      LocationFileGroupNode other = (LocationFileGroupNode) obj;
+      var other = (LocationFileGroupNode) obj;
       return Objects.equals(filePath, other.filePath) && Objects.equals(groupIndex, other.groupIndex);
     }
 
@@ -249,8 +246,8 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
     @Override
     public Object[] getElements(Object inputElement) {
-      IMarker sonarlintMarker = (IMarker) inputElement;
-      MarkerFlows flowsMarkers = MarkerUtils.getIssueFlows(sonarlintMarker);
+      var sonarlintMarker = (IMarker) inputElement;
+      var flowsMarkers = MarkerUtils.getIssueFlows(sonarlintMarker);
       if (!flowsMarkers.isEmpty()) {
         return new Object[] {new RootNode(sonarlintMarker, flowsMarkers)};
       } else {
@@ -261,7 +258,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     @Override
     public Object[] getChildren(Object parentElement) {
       if (parentElement instanceof RootNode) {
-        MarkerFlows flows = ((RootNode) parentElement).getFlows();
+        var flows = ((RootNode) parentElement).getFlows();
         if (flows.count() > 1) {
           // Flatten if all flows have a single location
           if (flows.isSecondaryLocations()) {
@@ -340,8 +337,8 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
     @Override
     public void update(ViewerCell cell) {
-      Object element = cell.getElement();
-      StyledString styledString = getStyledString(element);
+      var element = cell.getElement();
+      var styledString = getStyledString(element);
       cell.setText(styledString.toString());
       cell.setImage(getImage(element));
       cell.setStyleRanges(styledString.getStyleRanges());
@@ -372,11 +369,11 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
   @Override
   public void markerSelected(Optional<IMarker> marker) {
     locationsViewer.setInput(marker.orElse(null));
-    Optional<MarkerFlowLocation> lastSelectedFlowLocation = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlowLocation();
+    var lastSelectedFlowLocation = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlowLocation();
     if (lastSelectedFlowLocation.isPresent()) {
       selectLocation(lastSelectedFlowLocation.get());
     } else {
-      Optional<MarkerFlow> lastSelectedFlow = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlow();
+      var lastSelectedFlow = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlow();
       if (lastSelectedFlow.isPresent()) {
         selectFlow(lastSelectedFlow.get());
       }
@@ -386,7 +383,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
   @Override
   public void createPartControl(Composite parent) {
     createToolbar();
-    Tree tree = new Tree(parent, SWT.SINGLE);
+    var tree = new Tree(parent, SWT.SINGLE);
     locationsViewer = new TreeViewer(tree);
     locationsViewer.setAutoExpandLevel(ALL_LEVELS);
     locationsViewer.setUseHashlookup(true);
@@ -395,10 +392,9 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     locationsViewer.addPostSelectionChangedListener(
 
       event -> {
-
-        ISelection selection = event.getSelection();
+        var selection = event.getSelection();
         if (selection instanceof IStructuredSelection) {
-          Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+          var firstElement = ((IStructuredSelection) selection).getFirstElement();
           if (firstElement == null) {
             return;
           }
@@ -408,10 +404,9 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     locationsViewer.addDoubleClickListener(
 
       event -> {
-
-        ISelection selection = event.getSelection();
+        var selection = event.getSelection();
         if (selection instanceof IStructuredSelection) {
-          Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+          var firstElement = ((IStructuredSelection) selection).getFirstElement();
           if (firstElement == null) {
             return;
           }
@@ -437,7 +432,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
   }
 
   private static void onTreeNodeDoubleClick(Object node) {
-    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     MarkerFlowLocation location = null;
     if (node instanceof FlowLocationNode) {
       location = ((FlowLocationNode) node).getLocation();
@@ -445,7 +440,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       location = ((LocationFileGroupNode) node).getChildren().get(0).getLocation();
     }
     if (location != null) {
-      IMarker flowMarker = location.getMarker();
+      var flowMarker = location.getMarker();
       if (flowMarker != null && flowMarker.exists()) {
         try {
           IDE.openEditor(page, flowMarker);
@@ -457,7 +452,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
   }
 
   private void createToolbar() {
-    IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
+    var toolbarManager = getViewSite().getActionBars().getToolBarManager();
     showAnnotationsAction = new ToggleAnnotationsAction();
     showAnnotationsAction.setChecked(SonarLintUiPlugin.getSonarlintMarkerSelectionService().isShowAnnotationsInEditor());
     toolbarManager.add(showAnnotationsAction);

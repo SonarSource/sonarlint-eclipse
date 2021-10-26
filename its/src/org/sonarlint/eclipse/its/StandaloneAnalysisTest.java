@@ -25,12 +25,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -42,20 +37,15 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
 import org.eclipse.reddeer.eclipse.core.resources.Project;
-import org.eclipse.reddeer.eclipse.core.resources.Resource;
 import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyDialog;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
-import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage.ImportProject;
 import org.eclipse.reddeer.jface.condition.WindowIsAvailable;
 import org.eclipse.reddeer.swt.api.Button;
 import org.eclipse.reddeer.swt.api.MenuItem;
-import org.eclipse.reddeer.swt.api.Shell;
-import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.swt.condition.ShellIsAvailable;
 import org.eclipse.reddeer.swt.impl.button.FinishButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
@@ -96,15 +86,15 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     Assume.assumeFalse(platformVersion().toString().startsWith("4.4"));
 
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
+    var rootProject = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
 
-    OnTheFlyView onTheFlyView = new OnTheFlyView();
+    var onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
 
-    Resource helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
+    var helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
     openFileAndWaitForAnalysisCompletion(helloJavaFile);
 
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
@@ -116,19 +106,19 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new WaitUntil(new OnTheFlyViewIsEmpty(onTheFlyView));
 
     rootProject.select();
-    PropertyDialog dialog = new PropertyDialog(rootProject.getName());
+    var dialog = new PropertyDialog(rootProject.getName());
     dialog.open();
 
     int analysisJobCountBefore = scheduledAnalysisJobCount.get();
 
-    SonarLintProperties sonarLintProperties = new SonarLintProperties(dialog);
+    var sonarLintProperties = new SonarLintProperties(dialog);
     dialog.select(sonarLintProperties);
     sonarLintProperties.disableAutomaticAnalysis();
     dialog.ok();
 
     helloJavaFile.open();
 
-    TextEditor textEditor = new TextEditor();
+    var textEditor = new TextEditor();
     assertThat(textEditor.getMarkers()).isEmpty();
 
     textEditor.insertText(8, 29, "2");
@@ -153,8 +143,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       new PushButton(new DefaultShell("Confirmation"), "OK").click();
     });
 
-    ReportView reportView = new ReportView();
-    List<TreeItem> items = reportView.getItems();
+    var reportView = new ReportView();
+    var items = reportView.getItems();
 
     assertThat(items)
       .extracting(item -> item.getCell(0), item -> item.getCell(2))
@@ -167,18 +157,18 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void shouldAnalyseJavaJunit() {
     assumeTrue(supportJunit());
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("java/java-junit", "java-junit");
+    var rootProject = importExistingProjectIntoWorkspace("java/java-junit", "java-junit");
 
-    WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
+    var preferenceDialog = new WorkbenchPreferenceDialog();
     preferenceDialog.open();
-    SonarLintPreferences preferences = new SonarLintPreferences(preferenceDialog);
+    var preferences = new SonarLintPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
     preferences.setTestFileRegularExpressions("**/*TestUtil*");
     preferenceDialog.ok();
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
 
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
@@ -209,11 +199,11 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void shouldAnalyseJava8() {
     assumeTrue(supportJava8());
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("java/java8", "java8");
+    var rootProject = importExistingProjectIntoWorkspace("java/java8", "java8");
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
 
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
@@ -228,14 +218,14 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void shouldAnalyseJavaWithDependentProject() {
     new JavaPerspective().open();
     importExistingProjectIntoWorkspace("java/java-dependent-projects/java-dependent-project");
-    Project rootProject = importExistingProjectIntoWorkspace("java/java-dependent-projects/java-main-project", "java-main-project");
+    var rootProject = importExistingProjectIntoWorkspace("java/java-dependent-projects/java-main-project", "java-main-project");
 
-    File toBeDeleted = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-main-project").getLocation().toFile(), "libs/toBeDeleted.jar");
+    var toBeDeleted = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-main-project").getLocation().toFile(), "libs/toBeDeleted.jar");
     assertThat(toBeDeleted.delete()).as("Unable to delete JAR to test SONARIDE-350").isTrue();
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "use", "UseUtils.java"));
 
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
@@ -249,13 +239,13 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new PydevPerspective().open();
     importPythonProjectIntoWorkspace("python");
 
-    OnTheFlyView onTheFlyView = new OnTheFlyView();
+    var onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
     // workaround a view refresh problem
     onTheFlyView.close();
     onTheFlyView.open();
 
-    DefaultProject rootProject = new PydevPackageExplorer().getProject("python");
+    var rootProject = new PydevPackageExplorer().getProject("python");
     rootProject.getTreeItem().select();
     doAndWaitForSonarLintAnalysisJob(() -> {
       open(rootProject.getResource("src", "root", "nested", "example.py"));
@@ -273,12 +263,12 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   }
 
   private static void importPythonProjectIntoWorkspace(String relativePathFromProjectsFolder) {
-    ExternalProjectImportWizardDialog dialog = new ExternalProjectImportWizardDialog();
+    var dialog = new ExternalProjectImportWizardDialog();
     dialog.open();
-    WizardProjectsImportPage importPage = new WizardProjectsImportPage(dialog);
+    var importPage = new WizardProjectsImportPage(dialog);
     importPage.copyProjectsIntoWorkspace(true);
     importPage.setRootDirectory(new File("projects", relativePathFromProjectsFolder).getAbsolutePath());
-    List<ImportProject> projects = importPage.getProjects();
+    var projects = importPage.getProjects();
     assertThat(projects).hasSize(1);
     Button button = new FinishButton(dialog);
     button.click();
@@ -297,12 +287,12 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Category(RequiresExtraDependency.class)
   public void shouldAnalysePHP() {
     new PhpPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("php", "php");
+    var rootProject = importExistingProjectIntoWorkspace("php", "php");
     new WaitWhile(new JobIsRunning(StringContains.containsString("DLTK Indexing")), TimePeriod.LONG);
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("foo.php"));
 
-    OnTheFlyView onTheFlyView = new OnTheFlyView();
+    var onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
     assertThat(onTheFlyView.getIssues())
       .extracting(SonarLintIssue::getDescription, SonarLintIssue::getResource)
@@ -321,15 +311,15 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new JavaPerspective().open();
     Project rootProject = importExistingProjectIntoWorkspace("java/java-linked", "java-linked");
 
-    File dotProject = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-linked").getLocation().toFile(), ".project");
-    String content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
+    var dotProject = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-linked").getLocation().toFile(), ".project");
+    var content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
     FileUtils.write(dotProject, content.replace("${PLACEHOLDER}", new File("projects/java/java-linked-target/hello/HelloLinked.java").getAbsolutePath()), StandardCharsets.UTF_8);
 
     rootProject.refresh();
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "HelloLinked.java"));
 
-    DefaultEditor defaultEditor = new DefaultEditor("HelloLinked.java");
+    var defaultEditor = new DefaultEditor("HelloLinked.java");
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", 13));
@@ -339,19 +329,19 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   @Category(RequiresExtraDependency.class)
   public void shouldAnalyseVirtualProject() throws Exception {
-    File remoteProjectDir = temp.newFolder();
+    var remoteProjectDir = temp.newFolder();
     FileUtils.copyDirectory(new File("projects/java/java-simple"), remoteProjectDir);
 
     new JavaPerspective().open();
-    IWorkspace workspace = ResourcesPlugin.getWorkspace();
-    final IProject rseProject = workspace.getRoot().getProject("Local_java-simple");
+    var workspace = ResourcesPlugin.getWorkspace();
+    final var rseProject = workspace.getRoot().getProject("Local_java-simple");
 
     workspace.run(new IWorkspaceRunnable() {
 
       @Override
       public void run(final IProgressMonitor monitor) throws CoreException {
-        final IProjectDescription projectDescription = workspace.newProjectDescription(rseProject.getName());
-        URI uri = remoteProjectDir.toURI();
+        final var projectDescription = workspace.newProjectDescription(rseProject.getName());
+        var uri = remoteProjectDir.toURI();
         try {
           projectDescription.setLocationURI(new URI("rse", "LOCALHOST", uri.getPath(), null));
         } catch (URISyntaxException e) {
@@ -362,12 +352,12 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       }
     }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, new NullProgressMonitor());
 
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    var packageExplorer = new PackageExplorerPart();
     packageExplorer.open();
-    DefaultProject rootProject = packageExplorer.getProject("Local_java-simple");
+    var rootProject = packageExplorer.getProject("Local_java-simple");
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
 
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", 9));
@@ -376,53 +366,53 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   public void shouldFindSecretsInTextFiles() {
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("secrets/secret-in-text-file", "secret-in-text-file");
+    var rootProject = importExistingProjectIntoWorkspace("secrets/secret-in-text-file", "secret-in-text-file");
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("secret"));
 
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
         tuple("Make sure this AWS Secret Access Key is not disclosed.", 3));
 
-    Shell preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
+    var preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
     preferencesShell.close();
   }
 
   @Test
   public void shouldFindSecretsInSourceFiles() {
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", "secret-java");
+    var rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", "secret-java");
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
 
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
         tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
 
-    Shell preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
+    var preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
     preferencesShell.close();
   }
 
   @Test
   public void shouldNotTriggerAnalysisForGitIgnoredFiles() throws CoreException {
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("secrets/secret-gitignored", "secret-gitignored");
+    var rootProject = importExistingProjectIntoWorkspace("secrets/secret-gitignored", "secret-gitignored");
 
-    IWorkspace workspace = ResourcesPlugin.getWorkspace();
-    final IProject iProject = workspace.getRoot().getProject("secret-gitignored");
+    var workspace = ResourcesPlugin.getWorkspace();
+    final var iProject = workspace.getRoot().getProject("secret-gitignored");
 
-    IFolder gitFolder = iProject.getFolder("git");
+    var gitFolder = iProject.getFolder("git");
     gitFolder.move(gitFolder.getParent().getFullPath().append(".git"), true, null);
-    IFile file = iProject.getFile(new Path("secret.txt"));
+    var file = iProject.getFile(new Path("secret.txt"));
     file.create(new ByteArrayInputStream("AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw".getBytes()), true, null);
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("secret.txt"));
 
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .isEmpty();

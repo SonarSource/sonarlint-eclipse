@@ -20,9 +20,9 @@
 package org.sonarlint.eclipse.core.internal.notifications;
 
 import java.io.IOException;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.Before;
@@ -38,8 +38,6 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
 import org.sonarsource.sonarlint.core.notifications.ServerNotificationsRegistry;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -78,7 +76,7 @@ public class NotificationsManagerTest {
   }
 
   private SonarLintProjectConfiguration mockConfig(SonarLintProjectConfiguration.EclipseProjectBinding binding) {
-    SonarLintProjectConfiguration config = mock(SonarLintProjectConfiguration.class);
+    var config = mock(SonarLintProjectConfiguration.class);
     when(config.getProjectBinding()).thenReturn(Optional.of(binding));
     return config;
   }
@@ -109,7 +107,7 @@ public class NotificationsManagerTest {
 
   @Test
   public void test_subscribe_and_unsubscribe_one_module_one_project() {
-    underTest.subscribeToNotifications(singletonList(project1mod1), f -> listener);
+    underTest.subscribeToNotifications(List.of(project1mod1), f -> listener);
     verify(registry).register(any());
 
     underTest.unsubscribe(project1mod1);
@@ -120,7 +118,7 @@ public class NotificationsManagerTest {
 
   @Test
   public void test_subscribe_and_unsubscribe_two_modules_one_project() {
-    underTest.subscribeToNotifications(asList(project1mod1, project1mod2), f -> listener);
+    underTest.subscribeToNotifications(List.of(project1mod1, project1mod2), f -> listener);
     verify(registry, times(1)).register(any());
 
     underTest.unsubscribe(project1mod1);
@@ -132,7 +130,7 @@ public class NotificationsManagerTest {
 
   @Test
   public void test_subscribe_and_unsubscribe_one_module_each_of_two_projects() {
-    underTest.subscribeToNotifications(asList(project1mod1, project2mod1), f -> listener);
+    underTest.subscribeToNotifications(List.of(project1mod1, project2mod1), f -> listener);
     verify(registry, times(2)).register(any());
 
     underTest.unsubscribe(project1mod1);
@@ -144,7 +142,7 @@ public class NotificationsManagerTest {
 
   @Test
   public void unsubscribe_non_last_module_should_not_unsubscribe_from_project() {
-    underTest.subscribeToNotifications(asList(project1mod1, project1mod2), f -> listener);
+    underTest.subscribeToNotifications(List.of(project1mod1, project1mod2), f -> listener);
     verify(registry, times(1)).register(any());
 
     underTest.unsubscribe(project1mod1);
@@ -163,7 +161,7 @@ public class NotificationsManagerTest {
   public void should_not_subscribe_when_notifications_are_disabled() {
     when(engineFacade.areNotificationsDisabled()).thenReturn(true);
 
-    underTest.subscribeToNotifications(singletonList(project1mod1), f -> listener);
+    underTest.subscribeToNotifications(List.of(project1mod1), f -> listener);
     underTest.unsubscribe(project1mod1);
 
     verifyNoMoreInteractions(registry);
@@ -173,7 +171,7 @@ public class NotificationsManagerTest {
   public void should_not_subscribe_when_notifications_are_unsupported() {
     when(engineFacade.checkNotificationsSupported()).thenReturn(false);
 
-    underTest.subscribeToNotifications(singletonList(project1mod1), f -> listener);
+    underTest.subscribeToNotifications(List.of(project1mod1), f -> listener);
     underTest.unsubscribe(project1mod1);
 
     verifyNoMoreInteractions(registry);
@@ -183,17 +181,17 @@ public class NotificationsManagerTest {
   public void should_not_subscribe_when_project_not_correctly_bound() {
     when(facadeManager.resolveBinding(project1mod1)).thenReturn(Optional.empty());
 
-    underTest.subscribeToNotifications(singletonList(project1mod1), f -> listener);
+    underTest.subscribeToNotifications(List.of(project1mod1), f -> listener);
 
     verifyNoMoreInteractions(registry);
   }
 
   @Test
   public void should_not_subscribe_when_project_key_null() {
-    ISonarLintProject moduleWithoutProjectKey = mock(ISonarLintProject.class);
+    var moduleWithoutProjectKey = mock(ISonarLintProject.class);
     configs.put(moduleWithoutProjectKey, mock(SonarLintProjectConfiguration.class));
 
-    underTest.subscribeToNotifications(singletonList(moduleWithoutProjectKey), f -> listener);
+    underTest.subscribeToNotifications(List.of(moduleWithoutProjectKey), f -> listener);
 
     verifyNoMoreInteractions(registry);
   }
@@ -211,18 +209,18 @@ public class NotificationsManagerTest {
 
   @Test
   public void project_notification_time_should_use_previous_timestamp_when_nothing_changed() throws IOException {
-    ProjectNotificationTime time = newProjectNotificationTime();
-    ZonedDateTime previous = time.get();
+    var time = newProjectNotificationTime();
+    var previous = time.get();
     assertThat(previous).isNotNull();
     assertThat(time.get()).isEqualTo(previous);
   }
 
   @Test
   public void project_notification_time_should_use_latest_timestamp() throws IOException {
-    ProjectNotificationTime time = newProjectNotificationTime();
+    var time = newProjectNotificationTime();
 
-    ZonedDateTime previous = time.get();
-    ZonedDateTime next = previous.plus(1, ChronoUnit.MINUTES);
+    var previous = time.get();
+    var next = previous.plus(1, ChronoUnit.MINUTES);
     time.set(next);
 
     assertThat(time.get()).isEqualTo(next);
@@ -230,10 +228,10 @@ public class NotificationsManagerTest {
 
   @Test
   public void project_notification_time_should_not_update_to_older_timestamp() throws IOException {
-    ProjectNotificationTime time = newProjectNotificationTime();
+    var time = newProjectNotificationTime();
 
-    ZonedDateTime previous = time.get();
-    ZonedDateTime next = previous.minus(1, ChronoUnit.MINUTES);
+    var previous = time.get();
+    var next = previous.minus(1, ChronoUnit.MINUTES);
     time.set(next);
 
     assertThat(time.get()).isEqualTo(previous);

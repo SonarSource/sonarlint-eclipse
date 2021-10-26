@@ -21,7 +21,8 @@ package org.sonarlint.eclipse.core.internal.telemetry;
 
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
@@ -31,7 +32,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
@@ -80,7 +80,7 @@ public class SonarLintTelemetryTest extends SonarTestCase {
   private SonarLintTelemetry createTelemetry() {
     when(engine.isEnabled()).thenReturn(true);
 
-    SonarLintTelemetry telemetry = new SonarLintTelemetry() {
+    var telemetry = new SonarLintTelemetry() {
       public TelemetryManager newTelemetryManager(Path path, TelemetryHttpClient client) {
         return engine;
       }
@@ -167,7 +167,7 @@ public class SonarLintTelemetryTest extends SonarTestCase {
   @Test
   public void analysisDoneOnSingleFile_should_trigger_analysisDoneOnSingleFile_when_enabled() {
     when(engine.isEnabled()).thenReturn(true);
-    int time = 123;
+    var time = 123;
     telemetry.analysisDoneOnSingleFile(Language.JAVA, time);
     verify(engine).isEnabled();
     verify(engine).analysisDoneOnSingleLanguage(Language.JAVA, time);
@@ -176,7 +176,7 @@ public class SonarLintTelemetryTest extends SonarTestCase {
   @Test
   public void analysisDoneOnSingleFile_should_not_trigger_analysisDoneOnSingleFile_when_disabled() {
     when(engine.isEnabled()).thenReturn(false);
-    int time = 123;
+    var time = 123;
     telemetry.analysisDoneOnSingleFile(Language.JAVA, time);
     verify(engine).isEnabled();
     verifyNoMoreInteractions(engine);
@@ -240,37 +240,37 @@ public class SonarLintTelemetryTest extends SonarTestCase {
   @Test
   public void should_return_default_disabled_rule_keys() {
     SonarLintGlobalConfiguration.disableRule(new RuleKey("java", "S3776"));
-    EclipseTelemetryAttributesProvider provider = new EclipseTelemetryAttributesProvider();
+    var provider = new EclipseTelemetryAttributesProvider();
 
-    Set<String> defaultDisabledRules = provider.getDefaultDisabledRules();
+    var defaultDisabledRules = provider.getDefaultDisabledRules();
 
     assertThat(defaultDisabledRules).containsExactly("java:S3776");
   }
 
   @Test
   public void should_return_non_default_enabled_rule_keys() {
-    SonarLintGlobalConfiguration.saveRulesConfig(Collections.singletonList(new RuleConfig("java:S3423", true)));
-    EclipseTelemetryAttributesProvider provider = new EclipseTelemetryAttributesProvider();
+    SonarLintGlobalConfiguration.saveRulesConfig(List.of(new RuleConfig("java:S3423", true)));
+    var provider = new EclipseTelemetryAttributesProvider();
 
-    Set<String> nonDefaultEnabledRules = provider.getNonDefaultEnabledRules();
+    var nonDefaultEnabledRules = provider.getNonDefaultEnabledRules();
 
     assertThat(nonDefaultEnabledRules).containsExactly("java:S3423");
   }
 
   @Test
   public void should_not_consider_default_rule_with_changed_parameter_as_non_default() {
-    RuleConfig cognitiveComplexityRuleWithCustomParameter = new RuleConfig("java:S3776", true);
-    cognitiveComplexityRuleWithCustomParameter.setParams(Collections.singletonMap("Threshold", "40"));
-    SonarLintGlobalConfiguration.saveRulesConfig(Collections.singletonList(cognitiveComplexityRuleWithCustomParameter));
-    EclipseTelemetryAttributesProvider provider = new EclipseTelemetryAttributesProvider();
+    var cognitiveComplexityRuleWithCustomParameter = new RuleConfig("java:S3776", true);
+    cognitiveComplexityRuleWithCustomParameter.setParams(Map.of("Threshold", "40"));
+    SonarLintGlobalConfiguration.saveRulesConfig(List.of(cognitiveComplexityRuleWithCustomParameter));
+    var provider = new EclipseTelemetryAttributesProvider();
 
-    Set<String> defaultDisabledRules = provider.getNonDefaultEnabledRules();
+    var defaultDisabledRules = provider.getNonDefaultEnabledRules();
 
     assertThat(defaultDisabledRules).isEmpty();
   }
 
   private void addServer(String id, String url) {
-    IConnectedEngineFacade server = SonarLintCorePlugin.getServersManager().create(id, url, "", "", "", false);
+    var server = SonarLintCorePlugin.getServersManager().create(id, url, "", "", "", false);
     SonarLintCorePlugin.getServersManager().addServer(server, "login", "pwd");
   }
 

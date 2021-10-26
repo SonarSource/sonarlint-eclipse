@@ -20,11 +20,9 @@
 package org.sonarlint.eclipse.ui.internal.binding.actions;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.actions.SelectionProviderAction;
@@ -51,11 +49,11 @@ public class ConnectionEditAction extends SelectionProviderAction {
       return;
     }
     servers = new ArrayList<>();
-    Iterator iterator = sel.iterator();
+    var iterator = sel.iterator();
     while (iterator.hasNext()) {
-      Object obj = iterator.next();
+      var obj = iterator.next();
       if (obj instanceof IConnectedEngineFacade) {
-        IConnectedEngineFacade server = (IConnectedEngineFacade) obj;
+        var server = (IConnectedEngineFacade) obj;
         servers.add(server);
       } else {
         setEnabled(false);
@@ -76,8 +74,7 @@ public class ConnectionEditAction extends SelectionProviderAction {
     // To handle the case where servers is null, the selectionChanged method is called
     // to ensure servers will be populated.
     if (servers == null) {
-
-      IStructuredSelection sel = getStructuredSelection();
+      var sel = getStructuredSelection();
       if (sel != null) {
         selectionChanged(sel);
       }
@@ -89,7 +86,7 @@ public class ConnectionEditAction extends SelectionProviderAction {
   }
 
   public static void openEditWizard(Shell shell, IConnectedEngineFacade server) {
-    WizardDialog dialog = ServerConnectionWizard.createDialog(shell, server);
+    var dialog = ServerConnectionWizard.createDialog(shell, server);
     dialog.open();
   }
 

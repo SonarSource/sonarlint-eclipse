@@ -47,25 +47,25 @@ public class OrganizationWizardPage extends AbstractServerConnectionWizardPage {
   @SuppressWarnings("unchecked")
   @Override
   protected void doCreateControl(Composite container) {
-    Label labelOrganization = new Label(container, SWT.NULL);
+    var labelOrganization = new Label(container, SWT.NULL);
     labelOrganization.setText("Organization:");
-    Text organizationText = new Text(container, SWT.BORDER | SWT.SINGLE);
+    var organizationText = new Text(container, SWT.BORDER | SWT.SINGLE);
     organizationText.setMessage("Start typing to search for your organization");
-    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
     organizationText.setLayoutData(gd);
 
-    DataBindingContext dbc = new DataBindingContext();
-    orgaTextBinding = dbc.bindValue(
+    var dataBindingContext = new DataBindingContext();
+    orgaTextBinding = dataBindingContext.bindValue(
       WidgetProperties.text(SWT.Modify).observe(organizationText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_ORGANIZATION)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(new MandatoryStringValidator("You must enter a valid organization key")),
       null);
 
-    WizardPageSupport.create(this, dbc);
+    WizardPageSupport.create(this, dataBindingContext);
 
-    ContentProposalAdapter contentProposalAdapter = new ContentAssistCommandAdapter(
+    var contentProposalAdapter = new ContentAssistCommandAdapter(
       organizationText,
       new TextContentAdapter(),
       new OrganizationProvider(model, this),

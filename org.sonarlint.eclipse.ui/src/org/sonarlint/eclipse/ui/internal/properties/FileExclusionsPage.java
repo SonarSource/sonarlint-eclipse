@@ -40,7 +40,6 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -89,9 +88,9 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     this.shell = parent.getShell();
 
     // define container & its layout
-    Font font = parent.getFont();
-    Composite pageComponent = new Composite(parent, SWT.NULL);
-    GridLayout layout = new GridLayout();
+    var font = parent.getFont();
+    var pageComponent = new Composite(parent, SWT.NULL);
+    var layout = new GridLayout();
     layout.numColumns = 2;
     layout.marginWidth = 0;
     layout.marginHeight = 0;
@@ -101,14 +100,14 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
       createLinkToGlobal(parent, pageComponent);
     }
 
-    GridData data = new GridData(GridData.FILL_BOTH);
+    var data = new GridData(GridData.FILL_BOTH);
     pageComponent.setLayoutData(data);
     pageComponent.setFont(font);
 
     // layout the table & its buttons
-    int tableStyle = SWT.BORDER | SWT.FULL_SELECTION;
+    var tableStyle = SWT.BORDER | SWT.FULL_SELECTION;
 
-    Composite tableComposite = new Composite(pageComponent, SWT.NONE);
+    var tableComposite = new Composite(pageComponent, SWT.NONE);
     data = new GridData(SWT.FILL, SWT.FILL, true, true);
     data.grabExcessHorizontalSpace = true;
     data.grabExcessVerticalSpace = true;
@@ -118,15 +117,15 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     table.getTable().setFont(font);
     ColumnViewerToolTipSupport.enableFor(table, ToolTip.NO_RECREATE);
 
-    TableViewerColumn typeColumn = new TableViewerColumn(table, SWT.NONE);
+    var typeColumn = new TableViewerColumn(table, SWT.NONE);
     typeColumn.setLabelProvider(new TypeLabelProvider());
     typeColumn.getColumn().setText("Type");
 
-    TableViewerColumn valueColumn = new TableViewerColumn(table, SWT.NONE);
+    var valueColumn = new TableViewerColumn(table, SWT.NONE);
     valueColumn.setLabelProvider(new ValueLabelProvider());
     valueColumn.getColumn().setText("Value");
 
-    TableColumnLayout tableLayout = new TableColumnLayout();
+    var tableLayout = new TableColumnLayout();
     tableComposite.setLayout(tableLayout);
 
     tableLayout.setColumnData(typeColumn.getColumn(), new ColumnWeightData(150));
@@ -149,7 +148,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     table.getTable().addMouseListener(new MouseAdapter() {
       @Override
       public void mouseDoubleClick(MouseEvent e) {
-        int itemsSelectedCount = table.getTable().getSelectionCount();
+        var itemsSelectedCount = table.getTable().getSelectionCount();
         if (itemsSelectedCount == 1) {
           edit();
         }
@@ -179,7 +178,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
       return;
     }
 
-    ExclusionItem newExclusion = dialog.get();
+    var newExclusion = dialog.get();
     if (newExclusion != null) {
       exclusions.add(newExclusion);
     }
@@ -188,7 +187,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
 
   @Override
   protected void edit() {
-    ExclusionItem exclusion = (ExclusionItem) table.getStructuredSelection().getFirstElement();
+    var exclusion = (ExclusionItem) table.getStructuredSelection().getFirstElement();
     EditExclusionDialog dialog;
 
     if (isGlobal()) {
@@ -202,9 +201,9 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
       return;
     }
 
-    ExclusionItem newExclusion = dialog.get();
+    var newExclusion = dialog.get();
     if (newExclusion != null) {
-      int index = exclusions.indexOf(exclusion);
+      var index = exclusions.indexOf(exclusion);
       exclusions.set(index, newExclusion);
       table.setSelection(new StructuredSelection(newExclusion));
       table.refresh();
@@ -223,9 +222,9 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
   }
 
   protected void updateButtons() {
-    IStructuredSelection selection = (IStructuredSelection) table.getSelection();
-    int selectionCount = selection.size();
-    int index = exclusions.indexOf(selection.getFirstElement());
+    var selection = (IStructuredSelection) table.getSelection();
+    var selectionCount = selection.size();
+    var index = exclusions.indexOf(selection.getFirstElement());
 
     editButton.setEnabled(selectionCount == 1);
     removeButton.setEnabled(index >= 0);
@@ -233,10 +232,10 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
 
   private List<ExclusionItem> loadExclusions() {
     if (isGlobal()) {
-      String props = getPreferenceStore().getString(SonarLintGlobalConfiguration.PREF_FILE_EXCLUSIONS);
+      var props = getPreferenceStore().getString(SonarLintGlobalConfiguration.PREF_FILE_EXCLUSIONS);
       return SonarLintGlobalConfiguration.deserializeFileExclusions(props);
     } else {
-      SonarLintProjectConfiguration sonarProject = getProjectConfig();
+      var sonarProject = getProjectConfig();
       if (sonarProject != null) {
         return new ArrayList<>(sonarProject.getFileExclusions());
       }
@@ -246,12 +245,12 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
   }
 
   private static void createLinkToGlobal(final Composite ancestor, Composite parent) {
-    Link fLink = new Link(parent, SWT.NONE);
+    var fLink = new Link(parent, SWT.NONE);
     fLink.setText("<A>Configure Workspace Settings...</A>");
-    GridData gridData = new GridData();
+    var gridData = new GridData();
     gridData.horizontalSpan = 2;
     fLink.setLayoutData(gridData);
-    SelectionAdapter sl = new SelectionAdapter() {
+    var sl = new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         PreferencesUtil.createPreferenceDialogOn(ancestor.getShell(), PREFERENCE_ID, null, null).open();
@@ -263,11 +262,11 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
   @Override
   public boolean performOk() {
     if (isGlobal()) {
-      String serialized = SonarLintGlobalConfiguration.serializeFileExclusions(this.exclusions);
+      var serialized = SonarLintGlobalConfiguration.serializeFileExclusions(this.exclusions);
       getPreferenceStore().setValue(SonarLintGlobalConfiguration.PREF_FILE_EXCLUSIONS, serialized);
       JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
     } else {
-      SonarLintProjectConfiguration projectConfig = getProjectConfig();
+      var projectConfig = getProjectConfig();
       projectConfig.getFileExclusions().clear();
       projectConfig.getFileExclusions().addAll(exclusions);
       SonarLintCorePlugin.saveConfig(getProject(), projectConfig);
@@ -279,7 +278,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
 
   @Nullable
   private SonarLintProjectConfiguration getProjectConfig() {
-    ISonarLintProject project = getProject();
+    var project = getProject();
     if (project != null) {
       return SonarLintCorePlugin.loadConfig(project);
     }
@@ -321,7 +320,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
   private static class TypeLabelProvider extends CellLabelProvider {
     @Override
     public void update(ViewerCell cell) {
-      ExclusionItem exclusion = (ExclusionItem) cell.getElement();
+      var exclusion = (ExclusionItem) cell.getElement();
       cell.setText(exclusion.type().toString());
       if (exclusion.type().equals(ExclusionItem.Type.FILE)) {
         cell.setImage(FILE_IMG);
@@ -336,13 +335,13 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
   private static class ValueLabelProvider extends CellLabelProvider {
     @Override
     public String getToolTipText(Object element) {
-      ExclusionItem exclusion = (ExclusionItem) element;
+      var exclusion = (ExclusionItem) element;
       return exclusion.item();
     }
 
     @Override
     public void update(ViewerCell cell) {
-      ExclusionItem exclusion = (ExclusionItem) cell.getElement();
+      var exclusion = (ExclusionItem) cell.getElement();
       cell.setText(exclusion.item());
     }
   }

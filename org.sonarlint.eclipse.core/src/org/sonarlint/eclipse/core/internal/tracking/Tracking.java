@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Tracking<RAW extends Trackable, BASE extends Trackable> {
@@ -47,8 +46,8 @@ public class Tracking<RAW extends Trackable, BASE extends Trackable> {
    * is called.
    */
   public Iterable<RAW> getUnmatchedRaws() {
-    List<RAW> result = new ArrayList<>();
-    for (RAW r : raws) {
+    var result = new ArrayList<RAW>();
+    for (var r : raws) {
       if (!rawToBase.containsKey(r)) {
         result.add(r);
       }
@@ -68,8 +67,8 @@ public class Tracking<RAW extends Trackable, BASE extends Trackable> {
    * The base issues that are not matched by a raw issue and that need to be closed.
    */
   public Iterable<BASE> getUnmatchedBases() {
-    List<BASE> result = new ArrayList<>();
-    for (BASE b : bases) {
+    var result = new ArrayList<BASE>();
+    for (var b : bases) {
       if (!baseToRaw.containsKey(b)) {
         result.add(b);
       }

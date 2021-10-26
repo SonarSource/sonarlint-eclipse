@@ -47,7 +47,6 @@ import org.eclipse.ui.ide.IDE.SharedImages;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
@@ -56,7 +55,7 @@ public class ProjectsSelectionWizardPage extends AbstractProjectBindingWizardPag
   private static final class SonarLintProjectLabelProvider extends LabelProvider {
     @Override
     public String getText(Object element) {
-      ISonarLintProject current = (ISonarLintProject) element;
+      var current = (ISonarLintProject) element;
       return current.getName();
     }
 
@@ -85,18 +84,18 @@ public class ProjectsSelectionWizardPage extends AbstractProjectBindingWizardPag
     projectsViewer.setInput(new ArrayList<>(model.getEclipseProjects()));
     projectsViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
 
-    DataBindingContext dbc = new DataBindingContext();
+    var dataBindingContext = new DataBindingContext();
     observableInput = ViewersObservables.observeInput(projectsViewer);
-    projectsBinding = dbc.bindValue(
+    projectsBinding = dataBindingContext.bindValue(
       observableInput,
       BeanProperties.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_PROJECTS)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(new MandatoryProjectsValidator("You must select at least one project")), null);
     ControlDecorationSupport.create(projectsBinding, SWT.LEFT | SWT.TOP);
 
-    WizardPageSupport.create(this, dbc);
+    WizardPageSupport.create(this, dataBindingContext);
 
-    Button btnAddProject = new Button(container, SWT.NONE);
+    var btnAddProject = new Button(container, SWT.NONE);
     btnAddProject.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
@@ -111,7 +110,7 @@ public class ProjectsSelectionWizardPage extends AbstractProjectBindingWizardPag
     btnRemove.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        List<ISonarLintProject> newInput = new ArrayList<>((List) projectsViewer.getInput());
+        var newInput = new ArrayList<ISonarLintProject>((List) projectsViewer.getInput());
         newInput.removeAll(getSelectedElements());
         observableInput.setValue(newInput);
       }
@@ -131,20 +130,20 @@ public class ProjectsSelectionWizardPage extends AbstractProjectBindingWizardPag
   }
 
   protected void addSonarLintProjectsAction() {
-    List<ISonarLintProject> projects = ProjectsProviderUtils.allProjects()
+    var projects = ProjectsProviderUtils.allProjects()
       .stream()
       .filter(p -> !((List) projectsViewer.getInput()).contains(p))
       .sorted(comparing(ISonarLintProject::getName))
       .collect(toList());
-    ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(), new SonarLintProjectLabelProvider());
+    var dialog = new ElementListSelectionDialog(getShell(), new SonarLintProjectLabelProvider());
     dialog.setElements(projects.toArray());
     dialog.setMessage("Select projects to add:");
     dialog.setTitle("Project selection");
     dialog.setHelpAvailable(false);
     dialog.setMultipleSelection(true);
     if (dialog.open() == Window.OK) {
-      List<ISonarLintProject> newInput = new ArrayList<>((List) projectsViewer.getInput());
-      asList(dialog.getResult()).forEach(o -> newInput.add((ISonarLintProject) o));
+      var newInput = new ArrayList<ISonarLintProject>((List) projectsViewer.getInput());
+      List.of(dialog.getResult()).forEach(o -> newInput.add((ISonarLintProject) o));
       observableInput.setValue(newInput);
     }
   }

@@ -22,13 +22,10 @@ package org.sonarlint.eclipse.core.internal.resources;
 import java.nio.charset.Charset;
 import java.util.Objects;
 import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filebuffers.ITextFileBuffer;
-import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -63,11 +60,11 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
 
   @Override
   public IDocument getDocument() {
-    ITextFileBufferManager textFileBufferManager = FileBuffers.getTextFileBufferManager();
-    IPath path = file.getFullPath();
+    var textFileBufferManager = FileBuffers.getTextFileBufferManager();
+    var path = file.getFullPath();
     try {
       textFileBufferManager.connect(path, LocationKind.IFILE, new NullProgressMonitor());
-      ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
+      var textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
       return textFileBuffer.getDocument();
     } catch (CoreException e) {
       throw new IllegalStateException("Unable to open content of file " + file, e);
@@ -126,7 +123,7 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    DefaultSonarLintFileAdapter other = (DefaultSonarLintFileAdapter) obj;
+    var other = (DefaultSonarLintFileAdapter) obj;
     return Objects.equals(file, other.file);
   }
 

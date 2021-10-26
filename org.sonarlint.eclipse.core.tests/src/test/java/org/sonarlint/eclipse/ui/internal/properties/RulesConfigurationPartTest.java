@@ -19,8 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
@@ -40,13 +39,13 @@ public class RulesConfigurationPartTest {
   private static final RuleKey INACTIVE_INCLUDED = mockRuleKey("INACTIVE_INCLUDED");
 
   private RulesConfigurationPart newSampleConfigurationPart() {
-    Collection<StandaloneRuleDetails> allRuleDetails = Arrays.asList(
+    var allRuleDetails = List.of(
       mockRuleDetails(ACTIVE, true),
       mockRuleDetails(ACTIVE_EXCLUDED, true),
       mockRuleDetails(INACTIVE, false),
       mockRuleDetails(INACTIVE_INCLUDED, false));
 
-    Collection<RuleConfig> ruleConfig = Arrays.asList(new RuleConfig(ACTIVE_EXCLUDED.toString(), false), new RuleConfig(INACTIVE_INCLUDED.toString(), true));
+    var ruleConfig = List.of(new RuleConfig(ACTIVE_EXCLUDED.toString(), false), new RuleConfig(INACTIVE_INCLUDED.toString(), true));
     return new RulesConfigurationPart(allRuleDetails, ruleConfig);
   }
 
@@ -55,7 +54,7 @@ public class RulesConfigurationPartTest {
   }
 
   private StandaloneRuleDetails mockRuleDetails(RuleKey ruleKey, boolean activeByDefault) {
-    StandaloneRuleDetails ruleDetails = mock(StandaloneRuleDetails.class);
+    var ruleDetails = mock(StandaloneRuleDetails.class);
     when(ruleDetails.getKey()).thenReturn(ruleKey.toString());
     when(ruleDetails.isActiveByDefault()).thenReturn(activeByDefault);
     when(ruleDetails.getLanguage()).thenReturn(Language.JAVA);
@@ -64,19 +63,19 @@ public class RulesConfigurationPartTest {
 
   @Test
   public void merges_exclusions_correctly() {
-    RulesConfigurationPart underTest = newSampleConfigurationPart();
+    var underTest = newSampleConfigurationPart();
 
-    Collection<RuleConfig> rules = underTest.computeRulesConfig();
+    var rules = underTest.computeRulesConfig();
     assertThat(rules).extracting(RuleConfig::getKey, RuleConfig::isActive).containsOnly(tuple(ACTIVE_EXCLUDED.toString(), false), tuple(INACTIVE_INCLUDED.toString(), true));
   }
 
   @Test
   public void reset_to_defaults_clears_exclusions_and_inclusions() {
-    RulesConfigurationPart underTest = newSampleConfigurationPart();
+    var underTest = newSampleConfigurationPart();
 
     underTest.resetToDefaults();
 
-    Collection<RuleConfig> rules = underTest.computeRulesConfig();
+    var rules = underTest.computeRulesConfig();
     assertThat(rules).isEmpty();
   }
 }

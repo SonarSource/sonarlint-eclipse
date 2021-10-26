@@ -91,13 +91,13 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   public void configureServerWithTokenAndOrganization() {
     importExistingProjectIntoWorkspace("java/java-simple");
 
-    ServerConnectionWizard wizard = new ServerConnectionWizard();
+    var wizard = new ServerConnectionWizard();
     wizard.open();
     new ServerConnectionWizard.ServerTypePage(wizard).selectSonarCloud();
     wizard.next();
 
     assertThat(wizard.isNextEnabled()).isFalse();
-    ServerConnectionWizard.AuthenticationPage authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
+    var authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
     authenticationPage.setToken("Foo");
     assertThat(wizard.isNextEnabled()).isTrue();
 
@@ -107,7 +107,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     authenticationPage.setToken(token);
     wizard.next();
 
-    ServerConnectionWizard.OrganizationsPage organizationsPage = new ServerConnectionWizard.OrganizationsPage(wizard);
+    var organizationsPage = new ServerConnectionWizard.OrganizationsPage(wizard);
     organizationsPage.waitForOrganizationsToBeFetched();
 
     assertThat(organizationsPage.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
@@ -118,12 +118,12 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     assertThat(wizard.isNextEnabled()).isTrue();
     wizard.next();
 
-    ServerConnectionWizard.ConnectionNamePage connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
+    var connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
     assertThat(connectionNamePage.getConnectionName()).isEqualTo("SonarCloud/" + SONARCLOUD_ORGANIZATION_KEY);
     connectionNamePage.setConnectionName(CONNECTION_NAME);
     wizard.next();
 
-    ServerConnectionWizard.NotificationsPage notificationsPage = new ServerConnectionWizard.NotificationsPage(wizard);
+    var notificationsPage = new ServerConnectionWizard.NotificationsPage(wizard);
     assertThat(notificationsPage.areNotificationsEnabled()).isTrue();
     assertThat(wizard.isNextEnabled()).isTrue();
     wizard.next();
@@ -131,21 +131,21 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     assertThat(wizard.isNextEnabled()).isFalse();
     wizard.finish();
 
-    ProjectBindingWizard projectBindingWizard = new ProjectBindingWizard();
-    ProjectBindingWizard.BoundProjectsPage projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
+    var projectBindingWizard = new ProjectBindingWizard();
+    var projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
     projectsToBindPage.clickAdd();
 
-    ProjectSelectionDialog projectSelectionDialog = new ProjectSelectionDialog();
+    var projectSelectionDialog = new ProjectSelectionDialog();
     projectSelectionDialog.setProjectName(IMPORTED_PROJECT_NAME);
     projectSelectionDialog.ok();
 
     projectBindingWizard.next();
-    ProjectBindingWizard.ServerProjectSelectionPage serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
+    var serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
     serverProjectSelectionPage.waitForProjectsToBeFetched();
     serverProjectSelectionPage.setProjectKey(SONARCLOUD_PROJECT_KEY);
     projectBindingWizard.finish();
 
-    BindingsView bindingsView = new BindingsView();
+    var bindingsView = new BindingsView();
     bindingsView.open();
     bindingsView.waitForServerUpdate(CONNECTION_NAME, null);
   }

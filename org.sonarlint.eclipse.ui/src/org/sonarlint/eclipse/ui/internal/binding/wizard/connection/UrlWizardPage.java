@@ -45,16 +45,16 @@ public class UrlWizardPage extends AbstractServerConnectionWizardPage {
   @Override
   protected void doCreateControl(Composite container) {
 
-    Label labelUrl = new Label(container, SWT.NULL);
+    var labelUrl = new Label(container, SWT.NULL);
     labelUrl.setText(Messages.ServerLocationWizardPage_label_host);
-    Text serverUrlText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    var serverUrlText = new Text(container, SWT.BORDER | SWT.SINGLE);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
     serverUrlText.setLayoutData(gd);
     serverUrlText.setMessage("Example: https://sonarqube.mycompany.com");
 
-    DataBindingContext dbc = new DataBindingContext();
-    serverUrlTextBinding = dbc.bindValue(
+    var dataBindingContext = new DataBindingContext();
+    serverUrlTextBinding = dataBindingContext.bindValue(
       WidgetProperties.text(SWT.Modify).observe(serverUrlText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_SERVER_URL)
         .observe(model),
@@ -62,7 +62,7 @@ public class UrlWizardPage extends AbstractServerConnectionWizardPage {
       null);
     ControlDecorationSupport.create(serverUrlTextBinding, SWT.LEFT | SWT.TOP);
 
-    WizardPageSupport.create(this, dbc);
+    WizardPageSupport.create(this, dataBindingContext);
   }
 
   @Override

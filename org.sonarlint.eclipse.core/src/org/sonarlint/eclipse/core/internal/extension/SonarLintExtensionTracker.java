@@ -19,8 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.extension;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
@@ -42,7 +42,7 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
   private final SonarLintEP<IFileLanguageProvider> languageEp = new SonarLintEP<>("org.sonarlint.eclipse.core.languageProvider"); //$NON-NLS-1$
   private final SonarLintEP<IFileTypeProvider> typeEp = new SonarLintEP<>("org.sonarlint.eclipse.core.typeProvider"); //$NON-NLS-1$
 
-  private final Collection<SonarLintEP<?>> allEps = Arrays.asList(configuratorEp, analysisEp, projectsProviderEp, fileAdapterParticipantEp, projectAdapterParticipantEp,
+  private final Collection<SonarLintEP<?>> allEps = List.of(configuratorEp, analysisEp, projectsProviderEp, fileAdapterParticipantEp, projectAdapterParticipantEp,
     languageEp, typeEp);
 
   private SonarLintExtensionTracker() {

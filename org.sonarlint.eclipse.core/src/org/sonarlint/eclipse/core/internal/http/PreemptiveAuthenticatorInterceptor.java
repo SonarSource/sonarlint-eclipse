@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.http;
 
 import java.io.IOException;
 import okhttp3.Interceptor;
-import okhttp3.Request;
 import okhttp3.Response;
 
 public class PreemptiveAuthenticatorInterceptor implements Interceptor {
@@ -34,7 +33,7 @@ public class PreemptiveAuthenticatorInterceptor implements Interceptor {
 
   @Override
   public Response intercept(Chain chain) throws IOException {
-    Request request = chain.request()
+    var request = chain.request()
       .newBuilder()
       .header("Authorization", credentials)
       .build();

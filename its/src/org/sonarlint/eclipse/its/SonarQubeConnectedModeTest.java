@@ -21,19 +21,15 @@ package org.sonarlint.eclipse.its;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonValue;
 import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.container.Server;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.core.condition.WidgetIsFound;
 import org.eclipse.reddeer.core.matcher.WithTextMatcher;
-import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
-import org.eclipse.reddeer.swt.api.Shell;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
@@ -48,7 +44,6 @@ import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
-import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard.ServerUrlPage;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.project.CreateRequest;
 import org.sonarqube.ws.client.setting.SetRequest;
@@ -83,20 +78,20 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   @Override
   @Before
   public void cleanup() {
-    BindingsView bindingsView = new BindingsView();
+    var bindingsView = new BindingsView();
     bindingsView.open();
     bindingsView.removeAllBindings();
   }
 
   @Test
   public void configureServerFromNewWizard() {
-    ServerConnectionWizard wizard = new ServerConnectionWizard();
+    var wizard = new ServerConnectionWizard();
     wizard.open();
     new ServerConnectionWizard.ServerTypePage(wizard).selectSonarQube();
     wizard.next();
 
     assertThat(wizard.isNextEnabled()).isFalse();
-    ServerUrlPage serverUrlPage = new ServerConnectionWizard.ServerUrlPage(wizard);
+    var serverUrlPage = new ServerConnectionWizard.ServerUrlPage(wizard);
 
     serverUrlPage.setUrl("Foo");
     assertThat(wizard.isNextEnabled()).isFalse();
@@ -114,11 +109,11 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     assertThat(wizard.isNextEnabled()).isTrue();
     wizard.next();
 
-    ServerConnectionWizard.AuthenticationModePage authenticationModePage = new ServerConnectionWizard.AuthenticationModePage(wizard);
+    var authenticationModePage = new ServerConnectionWizard.AuthenticationModePage(wizard);
     authenticationModePage.selectUsernamePasswordMode();
     wizard.next();
 
-    ServerConnectionWizard.AuthenticationPage authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
+    var authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
     assertThat(wizard.isNextEnabled()).isFalse();
     authenticationPage.setUsername(Server.ADMIN_LOGIN);
     assertThat(wizard.isNextEnabled()).isFalse();
@@ -133,7 +128,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     // as login can take time, wait for the next page to appear
     new WaitUntil(new WidgetIsFound(Label.class, new WithTextMatcher("SonarQube Connection Identifier")));
-    ServerConnectionWizard.ConnectionNamePage connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
+    var connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
 
     assertThat(connectionNamePage.getConnectionName()).isEqualTo("127.0.0.1");
     assertThat(wizard.isNextEnabled()).isTrue();
@@ -147,7 +142,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     if (orchestrator.getServer().version().isGreaterThanOrEquals(8, 7)) {
       // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
-      ServerConnectionWizard.NotificationsPage notificationsPage = new ServerConnectionWizard.NotificationsPage(wizard);
+      var notificationsPage = new ServerConnectionWizard.NotificationsPage(wizard);
       assertThat(notificationsPage.areNotificationsEnabled()).isTrue();
       assertThat(wizard.isNextEnabled()).isTrue();
       wizard.next();
@@ -158,20 +153,20 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     new ProjectBindingWizard().cancel();
 
-    BindingsView bindingsView = new BindingsView();
+    var bindingsView = new BindingsView();
     bindingsView.waitForServerUpdate("test", orchestrator.getServer().version().toString());
   }
 
   @Test
   public void testLocalServerStatusRequest() throws Exception {
     assertThat(hotspotServerPort).isNotEqualTo(-1);
-    HttpURLConnection statusConnection = (HttpURLConnection) new URL(String.format("http://localhost:%d/sonarlint/api/status", hotspotServerPort)).openConnection();
+    var statusConnection = (HttpURLConnection) new URL(String.format("http://localhost:%d/sonarlint/api/status", hotspotServerPort)).openConnection();
     statusConnection.setConnectTimeout(1000);
     statusConnection.connect();
     int code = statusConnection.getResponseCode();
     assertThat(code).isEqualTo(200);
-    try (InputStream inputStream = statusConnection.getInputStream()) {
-      JsonValue response = Json.parse(new InputStreamReader(inputStream));
+    try (var inputStream = statusConnection.getInputStream()) {
+      var response = Json.parse(new InputStreamReader(inputStream));
 
       assertThat(response.asObject().iterator()).toIterable().extracting(JsonObject.Member::getName, m -> m.getValue().asString())
         .hasSize(2)
@@ -185,29 +180,29 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   @Test
   public void shouldFindSecretsInConnectedMode() throws Exception {
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", PROJECT_NAME);
+    var rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", PROJECT_NAME);
 
-    ServerConnectionWizard wizard = new ServerConnectionWizard();
+    var wizard = new ServerConnectionWizard();
     wizard.open();
     new ServerConnectionWizard.ServerTypePage(wizard).selectSonarQube();
     wizard.next();
 
-    ServerUrlPage serverUrlPage = new ServerConnectionWizard.ServerUrlPage(wizard);
+    var serverUrlPage = new ServerConnectionWizard.ServerUrlPage(wizard);
     serverUrlPage.setUrl(orchestrator.getServer().getUrl());
     wizard.next();
 
-    ServerConnectionWizard.AuthenticationModePage authenticationModePage = new ServerConnectionWizard.AuthenticationModePage(wizard);
+    var authenticationModePage = new ServerConnectionWizard.AuthenticationModePage(wizard);
     authenticationModePage.selectUsernamePasswordMode();
     wizard.next();
 
-    ServerConnectionWizard.AuthenticationPage authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
+    var authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
     authenticationPage.setUsername(Server.ADMIN_LOGIN);
     authenticationPage.setPassword(Server.ADMIN_PASSWORD);
     wizard.next();
 
     // as login can take time, wait for the next page to appear
     new WaitUntil(new WidgetIsFound(Label.class, new WithTextMatcher("SonarQube Connection Identifier")));
-    ServerConnectionWizard.ConnectionNamePage connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
+    var connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
 
     connectionNamePage.setConnectionName("test");
     wizard.next();
@@ -219,33 +214,33 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     wizard.finish();
 
-    ProjectBindingWizard projectBindingWizard = new ProjectBindingWizard();
-    ProjectBindingWizard.BoundProjectsPage projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
+    var projectBindingWizard = new ProjectBindingWizard();
+    var projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
     projectsToBindPage.clickAdd();
 
-    ProjectSelectionDialog projectSelectionDialog = new ProjectSelectionDialog();
+    var projectSelectionDialog = new ProjectSelectionDialog();
     projectSelectionDialog.setProjectName(PROJECT_NAME);
     projectSelectionDialog.ok();
 
     projectBindingWizard.next();
-    ProjectBindingWizard.ServerProjectSelectionPage serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
+    var serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
     serverProjectSelectionPage.waitForProjectsToBeFetched();
     serverProjectSelectionPage.setProjectKey(PROJECT_NAME);
     projectBindingWizard.finish();
 
-    BindingsView bindingsView = new BindingsView();
+    var bindingsView = new BindingsView();
     bindingsView.open();
     bindingsView.waitForServerUpdate("test", orchestrator.getServer().version().toString());
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
 
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
         tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
 
-    Shell preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
+    var preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
     preferencesShell.close();
   }
 

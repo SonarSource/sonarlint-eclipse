@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.core.internal.resources;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.junit.Before;
@@ -30,7 +29,6 @@ import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
@@ -65,9 +63,9 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
 
   @Test
   public void load_deprecated_project_config() throws IOException, CoreException, InterruptedException {
-    IProject project = importEclipseProject(PROJECT_WITH_DEPRECATED_SETTINGS);
+    var project = importEclipseProject(PROJECT_WITH_DEPRECATED_SETTINGS);
     // Configure the project
-    SonarLintProjectConfiguration configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), PROJECT_WITH_DEPRECATED_SETTINGS);
+    var configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), PROJECT_WITH_DEPRECATED_SETTINGS);
     assertThat(configuration.getProjectBinding()).isEmpty();
     assertThat(errors).isEmpty();
     assertThat(infos).contains("Binding configuration of project '" + PROJECT_WITH_DEPRECATED_SETTINGS + "' is outdated. Please rebind this project.");
@@ -75,10 +73,10 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
 
   @Test
   public void settings_are_written_to_disk() throws IOException, CoreException, InterruptedException {
-    IProject project = importEclipseProject("SimpleProject");
-    ProjectScope projectScope = new ProjectScope(project);
+    var project = importEclipseProject("SimpleProject");
+    var projectScope = new ProjectScope(project);
     assertThat(projectScope.getLocation().append("org.sonarlint.eclipse.core.prefs").toFile()).doesNotExist();
-    SonarLintProjectConfiguration configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(projectScope, "SimpleProject");
+    var configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(projectScope, "SimpleProject");
     configuration.setAutoEnabled(false);
     configuration.setProjectBinding(new EclipseProjectBinding("myServer", "myProjectKey", "aPrefix", "aSuffix"));
     assertThat(projectScope.getLocation().append("org.sonarlint.eclipse.core.prefs").toFile()).doesNotExist();

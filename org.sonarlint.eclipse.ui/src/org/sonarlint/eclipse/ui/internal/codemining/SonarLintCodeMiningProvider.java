@@ -31,14 +31,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.codemining.AbstractCodeMiningProvider;
 import org.eclipse.jface.text.codemining.ICodeMining;
 import org.eclipse.jface.text.source.ISourceViewerExtension5;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -109,10 +107,10 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
       @Override
       public void partClosed(IWorkbenchPartReference partRef) {
         // Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=568243
-        IWorkbenchPart part = partRef.getPart(true);
+        var part = partRef.getPart(true);
         if (part instanceof IEditorPart) {
-          IEditorPart editorPart = (IEditorPart) part;
-          ITextEditor myTextEditor = SonarLintCodeMiningProvider.this.getAdapter(ITextEditor.class);
+          var editorPart = (IEditorPart) part;
+          var myTextEditor = SonarLintCodeMiningProvider.this.getAdapter(ITextEditor.class);
           if (myTextEditor != null && Objects.equals(editorPart.getEditorSite(), myTextEditor.getEditorSite())) {
             dispose();
           }
@@ -148,16 +146,16 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
 
   private <G> void forceRefreshCodeMiningsIfNecessary(Optional<G> selected, Function<G, Stream<MarkerFlowLocation>> flowLocationExtractor) {
     // Don't force refresh if uncecessary
-    boolean shouldRefresh = false;
+    var shouldRefresh = false;
     if (hasMinings) {
       // Always refresh if it previously returned some minings, to clear/update them
       shouldRefresh = true;
     }
     if (selected.isPresent()) {
       // Only refresh if at least one marker flow location is on the same file than this editor
-      Stream<MarkerFlowLocation> allFlowLocations = flowLocationExtractor.apply(selected.get());
-      ITextEditor textEditor = super.getAdapter(ITextEditor.class);
-      IFileEditorInput editorInput = textEditor.getEditorInput().getAdapter(IFileEditorInput.class);
+      var allFlowLocations = flowLocationExtractor.apply(selected.get());
+      var textEditor = super.getAdapter(ITextEditor.class);
+      var editorInput = textEditor.getEditorInput().getAdapter(IFileEditorInput.class);
       if (editorInput != null && LocationsUtils.hasAtLeastOneLocationOnTheSameResourceThanEditor(allFlowLocations, editorInput)) {
         shouldRefresh = true;
       }
@@ -174,26 +172,26 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
     if (!SonarLintUiPlugin.getSonarlintMarkerSelectionService().isShowAnnotationsInEditor()) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    IMarker markerToUse = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker().orElse(null);
+    var markerToUse = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker().orElse(null);
     if (markerToUse == null) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    ITextEditor textEditor = super.getAdapter(ITextEditor.class);
-    IFileEditorInput editorInput = textEditor.getEditorInput().getAdapter(IFileEditorInput.class);
+    var textEditor = super.getAdapter(ITextEditor.class);
+    var editorInput = textEditor.getEditorInput().getAdapter(IFileEditorInput.class);
     MarkerFlows flowsMarkers = MarkerUtils.getIssueFlows(markerToUse);
     if (flowsMarkers.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    boolean isSecondaryLocation = flowsMarkers.isSecondaryLocations();
-    Optional<MarkerFlow> lastSelectedFlow = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlow();
-    if (!isSecondaryLocation && !lastSelectedFlow.isPresent()) {
+    var isSecondaryLocation = flowsMarkers.isSecondaryLocations();
+    var lastSelectedFlow = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlow();
+    if (!isSecondaryLocation && lastSelectedFlow.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
 
     return CompletableFuture.supplyAsync(() -> {
       monitor.isCanceled();
 
-      IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
+      var doc = textEditor.getDocumentProvider().getDocument(editorInput);
       List<MarkerFlowLocation> locations;
       if (isSecondaryLocation) {
         // Flatten all locations
@@ -203,7 +201,7 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
       } else {
         locations = emptyList();
       }
-      List<ICodeMining> minings = createMiningsForLocations(textEditor, locations, doc);
+      var minings = createMiningsForLocations(textEditor, locations, doc);
       hasMinings = !minings.isEmpty();
       monitor.isCanceled();
       return minings;
@@ -211,18 +209,18 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
   }
 
   private List<ICodeMining> createMiningsForLocations(ITextEditor textEditor, List<MarkerFlowLocation> locations, IDocument doc) {
-    int number = 1;
-    List<ICodeMining> result = new ArrayList<>();
-    for (MarkerFlowLocation l : locations) {
+    var number = 1;
+    var result = new ArrayList<ICodeMining>();
+    for (var location : locations) {
       try {
-        IMarker marker = l.getMarker();
-        if (marker != null && !l.isDeleted()) {
-          Position position = LocationsUtils.getMarkerPosition(marker, textEditor);
+        var marker = location.getMarker();
+        if (marker != null && !location.isDeleted()) {
+          var position = LocationsUtils.getMarkerPosition(marker, textEditor);
           if (position != null && !position.isDeleted()) {
-            result.add(new SonarLintFlowMessageCodeMining(l, doc, position, this));
+            result.add(new SonarLintFlowMessageCodeMining(location, doc, position, this));
             result.add(
-              new SonarLintFlowLocationNumberCodeMining(l, position, this, number,
-                l.equals(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlowLocation().orElse(null))));
+              new SonarLintFlowLocationNumberCodeMining(location, position, this, number,
+                location.equals(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlowLocation().orElse(null))));
           }
         }
         number++;
@@ -234,7 +232,7 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
   }
 
   private void forceRefreshCodeMinings() {
-    ITextEditor textEditor = super.getAdapter(ITextEditor.class);
+    var textEditor = super.getAdapter(ITextEditor.class);
     if (viewer == null) {
       // SLE-398 ITextEditor adapt to ITextViewer, but only on recent Eclipse versions
       viewer = textEditor.getAdapter(ITextViewer.class);

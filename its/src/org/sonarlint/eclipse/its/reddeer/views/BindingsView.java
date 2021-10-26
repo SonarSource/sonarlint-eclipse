@@ -19,13 +19,13 @@
  */
 package org.sonarlint.eclipse.its.reddeer.views;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.core.exception.CoreLayerException;
 import org.eclipse.reddeer.core.matcher.WithTextMatcher;
-import org.eclipse.reddeer.swt.api.Shell;
 import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
@@ -61,20 +61,17 @@ public class BindingsView extends WorkbenchView {
       new DefaultTree(cTabItem).getItems().forEach(item -> {
         item.select();
         new ContextMenuItem("Delete Connection").select();
-        Shell s = new DefaultShell("Delete Connection(s)");
+        var s = new DefaultShell("Delete Connection(s)");
         new PushButton(s, "OK").click();
       });
     }
   }
 
   public List<Binding> getBindings() {
-    List<Binding> results = new ArrayList<>();
     activate();
-    if (!isBindingEmpty()) {
-      new DefaultTree(cTabItem).getItems().forEach(i -> results.add(new Binding(i)));
-    }
-    return results;
-
+    return isBindingEmpty() ? 
+      Collections.emptyList() :
+      new DefaultTree(cTabItem).getItems().stream().map(Binding::new).collect(Collectors.toList());
   }
 
   public static class Binding {

@@ -40,7 +40,7 @@ public class CProjectConfiguratorExtensionTest {
 
   @Test
   public void should_configurate_projects_c_nature() throws CoreException {
-    IProject project = mock(IProject.class);
+    var project = mock(IProject.class);
     when(project.hasNature(CProjectNature.C_NATURE_ID)).thenReturn(true);
     assertThat(extension.canConfigure(new DefaultSonarLintProjectAdapter(project))).isTrue();
   }

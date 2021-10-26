@@ -64,18 +64,18 @@ public class SonarLintFlowLocationNumberCodeMining extends AbstractCodeMining {
 
   @Override
   public Point draw(GC gc, StyledText textWidget, Color color, int x, int y) {
-    boolean isDark = ColorUtil.isDark(textWidget.getShell().getBackground().getRGB());
+    var isDark = ColorUtil.isDark(textWidget.getShell().getBackground().getRGB());
     gc.setAntialias(SWT.ON);
-    String numberStr = Integer.toString(number);
-    Point numberExtent = gc.stringExtent(numberStr);
+    var numberStr = Integer.toString(number);
+    var numberExtent = gc.stringExtent(numberStr);
     // Compute all sizes based on text size to adapt to zoom in/out
-    int arcRadius = (int) (numberExtent.y * ARC_RADIUS_RATIO);
-    int horizontalPadding = (int) (numberExtent.y * HORIZONTAL_PADDING_RATIO);
-    int horizontalMargin = (int) (numberExtent.y * HORIZONTAL_MARGIN_RATIO);
-    Point labelRect = new Point(numberExtent.x + 2 * (horizontalMargin + horizontalPadding), numberExtent.y);
+    var arcRadius = (int) (numberExtent.y * ARC_RADIUS_RATIO);
+    var horizontalPadding = (int) (numberExtent.y * HORIZONTAL_PADDING_RATIO);
+    var horizontalMargin = (int) (numberExtent.y * HORIZONTAL_MARGIN_RATIO);
+    var labelRect = new Point(numberExtent.x + 2 * (horizontalMargin + horizontalPadding), numberExtent.y);
     gc.setLineWidth(1);
-    Color bgColor = new Color(gc.getDevice(), getBackgroundRGB(isSelected, isDark));
-    Color fgColor = new Color(gc.getDevice(), getForegroundRGB(isSelected, isDark));
+    var bgColor = new Color(gc.getDevice(), getBackgroundRGB(isSelected, isDark));
+    var fgColor = new Color(gc.getDevice(), getForegroundRGB(isSelected, isDark));
     gc.setBackground(bgColor);
     gc.setForeground(fgColor);
     gc.fillRoundRectangle(x + horizontalMargin, y, labelRect.x - 2 * horizontalMargin, labelRect.y, arcRadius, arcRadius);

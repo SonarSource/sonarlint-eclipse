@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.engine;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -83,7 +82,7 @@ public class AnalysisRequirementNotificationsTest {
   @Test
   public void notifyIfSkippedLanguage_JRE() {
     detectedLang.put(mock(ClientInputFile.class), Language.JAVA);
-    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("java", "Java", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.JRE, "1.8", "11")));
+    List<PluginDetails> plugins = List.of(new FakePluginDetails("java", "Java", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.JRE, "1.8", "11")));
     AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, plugins);
     assertThat(notifications).usingFieldByFieldElementComparator()
       .containsOnly(
@@ -97,8 +96,9 @@ public class AnalysisRequirementNotificationsTest {
   @Test
   public void notifyIfSkippedLanguage_Node() {
     detectedLang.put(mock(ClientInputFile.class), Language.JS);
-    List<PluginDetails> plugins = Arrays
-      .asList(new FakePluginDetails("javascript", "JS/TS", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.NODEJS, "7.2", "8.0")));
+    List<PluginDetails> plugins = List.of(
+      new FakePluginDetails("javascript", "JS/TS", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.NODEJS, "7.2", "8.0"))
+    );
     AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, plugins);
     assertThat(notifications).usingFieldByFieldElementComparator().containsOnly(
       new Notification(

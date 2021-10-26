@@ -73,7 +73,7 @@ public class RemoteSonarProject {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    RemoteSonarProject other = (RemoteSonarProject) obj;
+    var other = (RemoteSonarProject) obj;
     return Objects.equals(projectKey, other.projectKey) && Objects.equals(serverId, other.serverId);
   }
 

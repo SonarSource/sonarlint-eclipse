@@ -20,18 +20,15 @@
 package org.sonarlint.eclipse.ui.internal.console;
 
 import org.eclipse.jface.preference.JFacePreferences;
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.sonarlint.eclipse.ui.internal.Messages;
@@ -65,16 +62,16 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
 
     JFaceResources.getFontRegistry().addListener(SonarLintConsole.this);
 
-    Display display = Display.getDefault();
+    var display = Display.getDefault();
 
-    ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+    var colorRegistry = JFaceResources.getColorRegistry();
 
-    Color linkColor = colorRegistry.get(JFacePreferences.HYPERLINK_COLOR);
+    var linkColor = colorRegistry.get(JFacePreferences.HYPERLINK_COLOR);
     if (linkColor == null) {
       linkColor = JFaceColors.getActiveHyperlinkText(display);
     }
 
-    Color errorColorColor = colorRegistry.get(JFacePreferences.ERROR_COLOR);
+    var errorColorColor = colorRegistry.get(JFacePreferences.ERROR_COLOR);
     if (errorColorColor == null) {
       errorColorColor = JFaceColors.getErrorText(display);
     }
@@ -85,7 +82,7 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
 
   public void bringConsoleToFront() {
     if (PlatformUI.isWorkbenchRunning()) {
-      IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+      var manager = ConsolePlugin.getDefault().getConsoleManager();
       if (!isVisible()) {
         manager.addConsoles(new IConsole[] {this});
       }
@@ -94,9 +91,9 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
   }
 
   private static boolean isVisible() {
-    IConsoleManager conMan = ConsolePlugin.getDefault().getConsoleManager();
-    IConsole[] existing = conMan.getConsoles();
-    for (int i = 0; i < existing.length; i++) {
+    var conMan = ConsolePlugin.getDefault().getConsoleManager();
+    var existing = conMan.getConsoles();
+    for (var i = 0; i < existing.length; i++) {
       if (SonarLintConsole.TITLE.equals(existing[i].getName())) {
         return true;
       }

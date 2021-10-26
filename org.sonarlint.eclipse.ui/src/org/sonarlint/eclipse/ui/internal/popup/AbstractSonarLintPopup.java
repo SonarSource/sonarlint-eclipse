@@ -42,19 +42,19 @@ public abstract class AbstractSonarLintPopup extends AbstractNotificationPopup {
 
   @Override
   protected void createContentArea(Composite composite) {
-    Label messageLabel = new Label(composite, SWT.WRAP);
-    GridData messageLayoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
+    var messageLabel = new Label(composite, SWT.WRAP);
+    var messageLayoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
     messageLabel.setLayoutData(messageLayoutData);
 
     messageLabel.setText(getMessage());
 
     linksContainer = new Composite(composite, SWT.NONE);
-    GridData linksLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+    var linksLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     linksLayoutData.horizontalAlignment = SWT.END;
     linksLayoutData.verticalAlignment = SWT.BOTTOM;
     linksContainer.setLayoutData(linksLayoutData);
 
-    RowLayout rowLayout = new RowLayout();
+    var rowLayout = new RowLayout();
     rowLayout.spacing = 20;
     linksContainer.setLayout(rowLayout);
   }
@@ -62,7 +62,7 @@ public abstract class AbstractSonarLintPopup extends AbstractNotificationPopup {
   protected abstract String getMessage();
 
   protected void addLink(String text, Consumer<SelectionEvent> selectionHandler) {
-    Link detailsLink = new Link(linksContainer, SWT.NONE);
+    var detailsLink = new Link(linksContainer, SWT.NONE);
     detailsLink.setText("<a>" + text + "</a>");
     detailsLink.addSelectionListener(new SelectionAdapter() {
       @Override

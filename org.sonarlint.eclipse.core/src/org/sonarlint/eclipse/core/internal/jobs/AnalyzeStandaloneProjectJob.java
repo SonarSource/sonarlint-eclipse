@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.StandaloneEngineFacade;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
@@ -46,7 +45,7 @@ public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob<Stand
   @Override
   protected StandaloneAnalysisConfiguration prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps) {
     SonarLintLogger.get().debug("Standalone mode (project not bound)");
-    Collection<RuleConfig> rulesConfig = SonarLintGlobalConfiguration.readRulesConfig();
+    var rulesConfig = SonarLintGlobalConfiguration.readRulesConfig();
     return StandaloneAnalysisConfiguration.builder()
       .setBaseDir(projectBaseDir)
       .addInputFiles(inputFiles)
@@ -59,7 +58,7 @@ public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob<Stand
 
   @Override
   protected AnalysisResults runAnalysis(StandaloneAnalysisConfiguration analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor) {
-    StandaloneEngineFacade standaloneEngine = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade();
+    var standaloneEngine = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade();
     return standaloneEngine.runAnalysis(analysisConfig, issueListener, monitor);
   }
 

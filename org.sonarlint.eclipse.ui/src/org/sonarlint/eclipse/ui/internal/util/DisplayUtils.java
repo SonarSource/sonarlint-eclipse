@@ -27,7 +27,7 @@ public class DisplayUtils {
 
   @Nullable
   public static <T> T syncExec(Supplier<T> supplier) {
-    RunnableWithResult<T> runnable = new RunnableWithResult<>(supplier);
+    var runnable = new RunnableWithResult<>(supplier);
     Display.getDefault().syncExec(runnable);
     return runnable.getResult();
   }

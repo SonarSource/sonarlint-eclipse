@@ -19,16 +19,13 @@
  */
 package org.sonarlint.eclipse.tests.common;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
+import java.util.List;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -70,16 +67,16 @@ public final class WorkspaceHelpers {
     // must be a timeout
     throw new CoreException(new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID,
       "Could not delete workspace resources (after " + i + " retries): "
-        + Arrays.asList(ResourcesPlugin.getWorkspace().getRoot().getProjects()),
+        + List.of(ResourcesPlugin.getWorkspace().getRoot().getProjects()),
       cause));
   }
 
   private static void doCleanWorkspace() throws InterruptedException, CoreException, IOException {
-    final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+    final var workspace = ResourcesPlugin.getWorkspace();
     workspace.run(new IWorkspaceRunnable() {
       public void run(IProgressMonitor monitor) throws CoreException {
-        IProject[] projects = workspace.getRoot().getProjects();
-        for (IProject project : projects) {
+        var projects = workspace.getRoot().getProjects();
+        for (var project : projects) {
           project.delete(true, true, monitor);
         }
       }
@@ -87,9 +84,9 @@ public final class WorkspaceHelpers {
 
     JobHelpers.waitForJobsToComplete(new NullProgressMonitor());
 
-    File[] files = workspace.getRoot().getLocation().toFile().listFiles();
+    var files = workspace.getRoot().getLocation().toFile().listFiles();
     if (files != null) {
-      for (File file : files) {
+      for (var file : files) {
         if (!".metadata".equals(file.getName())) {
           if (file.isDirectory()) {
             Files.walkFileTree(file.toPath(), new SimpleFileVisitor<Path>() {

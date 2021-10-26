@@ -73,7 +73,7 @@ class EclipseInputFile implements ClientInputFile {
     IFileStore fileStore;
     try {
       fileStore = EFS.getStore(file.getResource().getLocationURI());
-      File localFile = fileStore.toLocalFile(EFS.NONE, null);
+      var localFile = fileStore.toLocalFile(EFS.NONE, null);
       if (localFile == null) {
         // For analyzers to properly work we should ensure the temporary file has a "correct" name, and not a generated one
         localFile = new File(temporaryDirectory.toFile(), file.getProjectRelativePath());

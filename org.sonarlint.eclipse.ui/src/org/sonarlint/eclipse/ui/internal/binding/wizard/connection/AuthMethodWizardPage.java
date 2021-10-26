@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.PojoProperties;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.SelectObservableValue;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
@@ -47,24 +46,24 @@ public class AuthMethodWizardPage extends WizardPage {
   @Override
   public void createControl(Composite parent) {
 
-    Composite radioButtonGroupContainer = new Composite(parent, SWT.NONE);
+    var radioButtonGroupContainer = new Composite(parent, SWT.NONE);
     radioButtonGroupContainer.setLayout(new GridLayout());
 
-    Button tokenButton = new Button(radioButtonGroupContainer, SWT.RADIO);
+    var tokenButton = new Button(radioButtonGroupContainer, SWT.RADIO);
     tokenButton.setText("Token");
 
-    Button loginPasswordButton = new Button(radioButtonGroupContainer, SWT.RADIO);
+    var loginPasswordButton = new Button(radioButtonGroupContainer, SWT.RADIO);
     loginPasswordButton.setText("Username + Password");
 
-    IObservableValue<Boolean> sonarCloudSelection = WidgetProperties.selection().observe(loginPasswordButton);
-    IObservableValue<Boolean> onPremSelection = WidgetProperties.selection().observe(tokenButton);
-    SelectObservableValue<ServerConnectionModel.AuthMethod> selectObservable = new SelectObservableValue<>(ServerConnectionModel.AuthMethod.class);
+    var sonarCloudSelection = WidgetProperties.selection().observe(loginPasswordButton);
+    var onPremSelection = WidgetProperties.selection().observe(tokenButton);
+    var selectObservable = new SelectObservableValue<>(ServerConnectionModel.AuthMethod.class);
     selectObservable.addOption(ServerConnectionModel.AuthMethod.PASSWORD, sonarCloudSelection);
     selectObservable.addOption(ServerConnectionModel.AuthMethod.TOKEN, onPremSelection);
-    DataBindingContext dbc = new DataBindingContext();
-    dbc.bindValue(selectObservable, PojoProperties.value(ServerConnectionModel.PROPERTY_AUTH_METHOD).observe(model));
+    var dataBindingContext = new DataBindingContext();
+    dataBindingContext.bindValue(selectObservable, PojoProperties.value(ServerConnectionModel.PROPERTY_AUTH_METHOD).observe(model));
 
-    WizardPageSupport.create(this, dbc);
+    WizardPageSupport.create(this, dataBindingContext);
 
     setControl(radioButtonGroupContainer);
   }

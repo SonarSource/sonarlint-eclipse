@@ -24,7 +24,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -80,8 +80,8 @@ public class NotificationsTracker {
       return null;
     }
     try {
-      long millis = Long.parseLong(new String(Files.readAllBytes(lastEventPollingPath), Charset.defaultCharset()));
-      return ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.systemDefault());
+      var millis = Long.parseLong(new String(Files.readAllBytes(lastEventPollingPath), Charset.defaultCharset()));
+      return ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
     } catch (IOException | NumberFormatException e) {
       // ignore
     }

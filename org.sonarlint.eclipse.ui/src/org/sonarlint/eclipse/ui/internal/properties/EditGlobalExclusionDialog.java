@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
-import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.Dialog;
@@ -65,12 +64,12 @@ public class EditGlobalExclusionDialog extends EditExclusionDialog {
   @Override
   protected Control createDialogArea(Composite parent) {
     // top level composite
-    Composite parentComposite = (Composite) super.createDialogArea(parent);
+    var parentComposite = (Composite) super.createDialogArea(parent);
 
     initializeDialogUnits(parentComposite);
 
     // creates dialog area composite
-    Composite contents = createComposite(parentComposite, 1);
+    var contents = createComposite(parentComposite, 1);
 
     // creates and lay outs dialog area widgets
     createWidgets(contents);
@@ -106,8 +105,8 @@ public class EditGlobalExclusionDialog extends EditExclusionDialog {
     if (!initialized) {
       return;
     }
-    String validationMessage = STANDARD_MESSAGE;
-    int validationStatus = IMessageProvider.NONE;
+    var validationMessage = STANDARD_MESSAGE;
+    var validationStatus = IMessageProvider.NONE;
 
     if (StringUtils.isEmpty(editItem)) {
       validationMessage = "The field is empty";
@@ -115,7 +114,7 @@ public class EditGlobalExclusionDialog extends EditExclusionDialog {
     }
 
     try {
-      FileSystem fs = FileSystems.getDefault();
+      var fs = FileSystems.getDefault();
       fs.getPathMatcher("glob:" + editItem);
     } catch (Exception e) {
       validationMessage = "The pattern has an invalid syntax";
@@ -123,11 +122,7 @@ public class EditGlobalExclusionDialog extends EditExclusionDialog {
     }
 
     setMessage(validationMessage, validationStatus);
-    if (validationStatus != IMessageProvider.ERROR) {
-      okButton.setEnabled(true);
-    } else {
-      okButton.setEnabled(false);
-    }
+    okButton.setEnabled(validationStatus != IMessageProvider.ERROR);
   }
 
   @Override

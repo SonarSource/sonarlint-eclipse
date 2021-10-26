@@ -20,11 +20,9 @@
 package org.sonarlint.eclipse.ui.internal.binding.actions;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.actions.SelectionProviderAction;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -49,12 +47,12 @@ public class ProjectChangeBindingAction extends SelectionProviderAction {
       return;
     }
     selectedProjects = new ArrayList<>();
-    boolean enabled = false;
-    Iterator iterator = sel.iterator();
+    var enabled = false;
+    var iterator = sel.iterator();
     while (iterator.hasNext()) {
-      Object obj = iterator.next();
+      var obj = iterator.next();
       if (obj instanceof ISonarLintProject) {
-        ISonarLintProject project = (ISonarLintProject) obj;
+        var project = (ISonarLintProject) obj;
         selectedProjects.add(project);
         enabled = true;
       } else {
@@ -76,15 +74,14 @@ public class ProjectChangeBindingAction extends SelectionProviderAction {
     // To handle the case where servers is null, the selectionChanged method is called
     // to ensure servers will be populated.
     if (selectedProjects == null) {
-
-      IStructuredSelection sel = getStructuredSelection();
+      var sel = getStructuredSelection();
       if (sel != null) {
         selectionChanged(sel);
       }
     }
 
     if (selectedProjects != null) {
-      final WizardDialog dialog = ProjectBindingWizard.createDialog(shell, selectedProjects);
+      final var dialog = ProjectBindingWizard.createDialog(shell, selectedProjects);
       dialog.open();
     }
   }

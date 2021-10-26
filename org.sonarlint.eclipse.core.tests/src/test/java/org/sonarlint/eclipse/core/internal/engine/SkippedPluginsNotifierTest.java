@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.engine;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -63,14 +62,14 @@ public class SkippedPluginsNotifierTest {
 
   @Test
   public void dontNotifyIfNoSkippedPlugins() {
-    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("plugin1", "Plugin 1", "1.0", null));
+    List<PluginDetails> plugins = List.of(new FakePluginDetails("plugin1", "Plugin 1", "1.0", null));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
     assertThat(notifications).isEmpty();
   }
 
   @Test
   public void notifyIfSkippedPlugin_IncompatiblePluginApi() {
-    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("plugin1", "Plugin 1", "1.0", SkipReason.IncompatiblePluginApi.INSTANCE));
+    List<PluginDetails> plugins = List.of(new FakePluginDetails("plugin1", "Plugin 1", "1.0", SkipReason.IncompatiblePluginApi.INSTANCE));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
     assertThat(notifications).usingFieldByFieldElementComparator()
       .containsOnly(
@@ -82,7 +81,7 @@ public class SkippedPluginsNotifierTest {
 
   @Test
   public void notifyIfSkippedPlugin_UnsatisfiedDependency() {
-    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.UnsatisfiedDependency("java")));
+    List<PluginDetails> plugins = List.of(new FakePluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.UnsatisfiedDependency("java")));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, "mySq");
     assertThat(notifications).usingFieldByFieldElementComparator()
       .containsOnly(
@@ -94,7 +93,7 @@ public class SkippedPluginsNotifierTest {
 
   @Test
   public void notifyIfSkippedPlugin_IncompatiblePluginVersion() {
-    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.IncompatiblePluginVersion("2.0")));
+    List<PluginDetails> plugins = List.of(new FakePluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.IncompatiblePluginVersion("2.0")));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, "mySq");
     assertThat(notifications).usingFieldByFieldElementComparator()
       .containsOnly(

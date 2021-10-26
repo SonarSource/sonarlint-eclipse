@@ -79,8 +79,8 @@ public class SonarLintProjectConfiguration {
 
     @Override
     public int hashCode() {
-      final int prime = 31;
-      int result = super.hashCode();
+      final var prime = 31;
+      var result = super.hashCode();
       result = prime * result + ((connectionId == null) ? 0 : connectionId.hashCode());
       return result;
     }
@@ -96,7 +96,7 @@ public class SonarLintProjectConfiguration {
       if (getClass() != obj.getClass()) {
         return false;
       }
-      EclipseProjectBinding other = (EclipseProjectBinding) obj;
+      var other = (EclipseProjectBinding) obj;
       return Objects.equals(connectionId, other.connectionId);
     }
 

@@ -23,13 +23,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.HashingPathMapper;
-import org.sonarsource.sonarlint.core.client.api.connected.objectstore.PathMapper;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.Reader;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.Writer;
 import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
@@ -41,9 +39,9 @@ public class IssueStore {
   public IssueStore(Path storeBasePath, ISonarLintProject project) {
     this.basePath = storeBasePath;
     FileUtils.mkdirs(storeBasePath);
-    StoreIndex<String> index = new StringStoreIndex(storeBasePath);
-    PathMapper<String> mapper = new HashingPathMapper(storeBasePath, 2);
-    StoreKeyValidator<String> validator = new PathStoreKeyValidator(project);
+    var index = new StringStoreIndex(storeBasePath);
+    var mapper = new HashingPathMapper(storeBasePath, 2);
+    var validator = new PathStoreKeyValidator(project);
     Reader<Sonarlint.Issues> reader = is -> {
       try {
         return Sonarlint.Issues.parseFrom(is);
@@ -72,11 +70,9 @@ public class IssueStore {
 
   @Nullable
   public Collection<Trackable> read(String key) throws IOException {
-    Optional<Sonarlint.Issues> issues = store.read(key);
-    if (issues.isPresent()) {
-      return transform(issues.get());
-    }
-    return null;
+    return store.read(key)
+      .map(IssueStore::transform)
+      .orElse(null);
   }
 
   public void clean() {
@@ -96,7 +92,7 @@ public class IssueStore {
   }
 
   private static Sonarlint.Issues transform(Collection<Trackable> localIssues) {
-    Sonarlint.Issues.Builder builder = Sonarlint.Issues.newBuilder();
+    var builder = Sonarlint.Issues.newBuilder();
     localIssues.stream()
       .map(IssueStore::transform)
       .filter(Objects::nonNull)
@@ -110,7 +106,7 @@ public class IssueStore {
   }
 
   private static Sonarlint.Issues.Issue transform(Trackable localIssue) {
-    Sonarlint.Issues.Issue.Builder builder = Sonarlint.Issues.Issue.newBuilder()
+    var builder = Sonarlint.Issues.Issue.newBuilder()
       .setRuleKey(localIssue.getRuleKey())
       .setMessage(localIssue.getMessage())
       .setResolved(localIssue.isResolved())

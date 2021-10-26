@@ -19,10 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.scm;
 
-import java.io.File;
-import java.nio.file.Path;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
@@ -31,16 +27,16 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class GitUtils {
   public static boolean isIgnored(ISonarLintFile file) {
-    FileRepositoryBuilder builder = new FileRepositoryBuilder();
-    IPath fileToCheckLocation = file.getResource().getLocation();
+    var builder = new FileRepositoryBuilder();
+    var fileToCheckLocation = file.getResource().getLocation();
     if (fileToCheckLocation == null) {
       return false;
     }
-    File fileToCheck = fileToCheckLocation.toFile();
-    try (Repository repository = builder.findGitDir(fileToCheck.getParentFile()).build()) {
+    var fileToCheck = fileToCheckLocation.toFile();
+    try (var repository = builder.findGitDir(fileToCheck.getParentFile()).build()) {
       if (repository.getObjectDatabase().exists()) {
-        Path repositoryRootPath = repository.getWorkTree().toPath();
-        try (TreeWalk treeWalk = new TreeWalk(repository)) {
+        var repositoryRootPath = repository.getWorkTree().toPath();
+        try (var treeWalk = new TreeWalk(repository)) {
           treeWalk.addTree(new FileTreeIterator(repository));
           treeWalk.setRecursive(true);
           treeWalk.setFilter(PathFilter.create(repositoryRootPath.relativize(fileToCheck.toPath()).toString()));

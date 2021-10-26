@@ -19,13 +19,10 @@
  */
 package org.sonarlint.eclipse.ui.internal.util;
 
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -42,13 +39,11 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
@@ -78,10 +73,10 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
   private Font defaultFont;
   private final boolean useEditorFontSize;
 
-  public SonarLintWebView(Composite parent, boolean useEditorFontSize) {
+  protected SonarLintWebView(Composite parent, boolean useEditorFontSize) {
     super(parent, SWT.NONE);
     this.useEditorFontSize = useEditorFontSize;
-    GridLayout layout = new GridLayout(1, false);
+    var layout = new GridLayout(1, false);
     layout.marginWidth = 0;
     layout.marginHeight = 0;
     this.setLayout(layout);
@@ -102,7 +97,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
 
     } catch (SWTError e) {
       // Browser is probably not available but it will be partially initialized in parent
-      for (Control c : this.getChildren()) {
+      for (var c : this.getChildren()) {
         if (c instanceof Browser) {
           c.dispose();
         }
@@ -114,7 +109,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
   }
 
   private void openSonarLintPreferences() {
-    PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(
+    var dialog = PreferencesUtil.createPreferenceDialogOn(
             getShell(), RulesConfigurationPage.RULES_CONFIGURATION_ID,
             new String[]{RulesConfigurationPage.RULES_CONFIGURATION_ID}, null);
     dialog.open();
@@ -139,27 +134,27 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
   }
 
   private void updateColorAndFontCache() {
-    boolean shouldRefresh = false;
+    var shouldRefresh = false;
     if (!getDefaultFont().equals(defaultFont)) {
       this.defaultFont = getDefaultFont();
       shouldRefresh = true;
     }
-    Color newFg = getFgColor();
+    var newFg = getFgColor();
     if (!Objects.equals(newFg, foreground)) {
       SonarLintWebView.this.foreground = newFg;
       shouldRefresh = true;
     }
-    Color newBg = getBgColor();
+    var newBg = getBgColor();
     if (!Objects.equals(newBg, background)) {
       SonarLintWebView.this.background = newBg;
       shouldRefresh = true;
     }
-    Color newLink = getLinkColor();
+    var newLink = getLinkColor();
     if (!Objects.equals(newLink, linkColor)) {
       SonarLintWebView.this.linkColor = newLink;
       shouldRefresh = true;
     }
-    Color newActiveLink = getActiveLinkColor();
+    var newActiveLink = getActiveLinkColor();
     if (!Objects.equals(newActiveLink, activeLinkColor)) {
       SonarLintWebView.this.activeLinkColor = newActiveLink;
       shouldRefresh = true;
@@ -201,7 +196,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
   }
 
   private String css() {
-    int fontSizePt = defaultFont.getFontData()[0].getHeight();
+    var fontSizePt = defaultFont.getFontData()[0].getHeight();
     return "<style type=\"text/css\">"
       + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: " + fontSizePt + UNIT + "; "
       + "color: " + hexColor(this.foreground) + ";background-color: " + hexColor(this.background)
@@ -231,8 +226,8 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
   }
 
   private Color getBgColor() {
-    ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
-    Color bg = colorRegistry.get(INFORMATION_BACKGROUND_COLOR);
+    var colorRegistry = JFaceResources.getColorRegistry();
+    var bg = colorRegistry.get(INFORMATION_BACKGROUND_COLOR);
     if (bg == null) {
       bg = getInformationViewerBackgroundColor(this.getDisplay());
     }
@@ -257,8 +252,8 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
   }
 
   private Color getFgColor() {
-    ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
-    Color fg = colorRegistry.get(INFORMATION_FOREGROUND_COLOR);
+    var colorRegistry = JFaceResources.getColorRegistry();
+    var fg = colorRegistry.get(INFORMATION_FOREGROUND_COLOR);
     if (fg == null) {
       fg = getInformationViewerForegroundColor(this.getDisplay());
     }
@@ -302,9 +297,9 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
   protected abstract String body();
 
   public static String escapeHTML(String s) {
-    StringBuilder out = new StringBuilder(Math.max(16, s.length()));
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
+    var out = new StringBuilder(Math.max(16, s.length()));
+    for (var i = 0; i < s.length(); i++) {
+      var c = s.charAt(i);
       if (c > 127 || c == '"' || c == '<' || c == '>' || c == '&') {
         out.append("&#");
         out.append((int) c);
@@ -333,7 +328,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
 
   private static int getAlpha(Color c) {
     try {
-      Method m = Color.class.getMethod("getAlpha");
+      var m = Color.class.getMethod("getAlpha");
       return (int) m.invoke(c);
     } catch (Exception e) {
       return 255;

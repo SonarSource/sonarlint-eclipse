@@ -19,8 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -31,12 +31,10 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeChangedFilesJob;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
@@ -46,12 +44,12 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
   @Nullable
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    Collection<ISonarLintProject> selectedProjects = SelectionUtils.allSelectedProjects(event, true);
+    var selectedProjects = SelectionUtils.allSelectedProjects(event, true);
 
     if (selectedProjects.isEmpty()) {
-      FileWithDocument editedFile = AnalyzeCommand.findEditedFile(event);
+      var editedFile = AnalyzeCommand.findEditedFile(event);
       if (editedFile != null) {
-        selectedProjects = Arrays.asList(editedFile.getFile().getProject());
+        selectedProjects = Collections.singleton(editedFile.getFile().getProject());
       }
     }
 
@@ -63,7 +61,7 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
   }
 
   private static void triggerAnalysis(Collection<ISonarLintProject> selectedProjects) {
-    AnalyzeChangedFilesJob job = new AnalyzeChangedFilesJob(selectedProjects);
+    var job = new AnalyzeChangedFilesJob(selectedProjects);
     String reportTitle;
     if (selectedProjects.size() == 1) {
       reportTitle = "Changed files reported by the SCM on project " + selectedProjects.iterator().next().getName();
@@ -81,7 +79,7 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
         if (Status.OK_STATUS == event.getResult()) {
           Display.getDefault().asyncExec(() -> {
             // Display SonarLint report view after analysis is completed
-            IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            var iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             try {
               iw.getActivePage().showView(SonarLintReportView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
               SonarLintReportView.setReportTitle(reportTitle);
@@ -94,7 +92,7 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
         } else {
           Display.getDefault().asyncExec(() -> {
             // Display SonarLint report view to show status message
-            IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            var iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             try {
               iw.getActivePage().showView(SonarLintReportView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
               SonarLintReportView.setReportTitle(event.getResult().getMessage());

@@ -45,15 +45,15 @@ public class ConnectionIdWizardPage extends AbstractServerConnectionWizardPage {
   @SuppressWarnings("unchecked")
   @Override
   protected void doCreateControl(Composite container) {
-    Label labelId = new Label(container, SWT.NULL);
+    var labelId = new Label(container, SWT.NULL);
     labelId.setText(Messages.ServerLocationWizardPage_label_id);
-    Text serverIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    var serverIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
     serverIdText.setLayoutData(gd);
 
-    DataBindingContext dbc = new DataBindingContext();
-    serverIdTextBinding = dbc.bindValue(
+    var dataBindingContext = new DataBindingContext();
+    serverIdTextBinding = dataBindingContext.bindValue(
       WidgetProperties.text(SWT.Modify).observe(serverIdText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_CONNECTION_ID)
         .observe(model),
@@ -62,7 +62,7 @@ public class ConnectionIdWizardPage extends AbstractServerConnectionWizardPage {
       null);
     ControlDecorationSupport.create(serverIdTextBinding, SWT.LEFT | SWT.TOP);
 
-    WizardPageSupport.create(this, dbc);
+    WizardPageSupport.create(this, dataBindingContext);
   }
 
   @Override

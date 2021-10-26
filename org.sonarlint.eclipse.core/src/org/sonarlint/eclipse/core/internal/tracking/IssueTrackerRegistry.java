@@ -38,7 +38,7 @@ public class IssueTrackerRegistry {
   }
 
   public synchronized IssueTracker getOrCreate(ISonarLintProject project) {
-    IssueTracker tracker = registry.get(project.getName());
+    var tracker = registry.get(project.getName());
     if (tracker == null) {
       tracker = newTracker(project);
       registry.put(project.getName(), tracker);

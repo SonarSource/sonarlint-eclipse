@@ -55,11 +55,11 @@ public class DefaultSonarLintAdapterFactoryTest extends SonarTestCase {
 
   @Test
   public void mimic_cobol_ide() throws IOException {
-    CobolTempProject tempProject = new CobolTempProject(tempProjectBasedir);
-    IPath filePath = tempProjectBasedir.append("MyProg.cbl");
-    CobolFile cobolFile = new CobolFile(filePath, tempProject);
+    var tempProject = new CobolTempProject(tempProjectBasedir);
+    var filePath = tempProjectBasedir.append("MyProg.cbl");
+    var cobolFile = new CobolFile(filePath, tempProject);
 
-    ISonarLintFile sonarLintFile = Adapters.adapt(cobolFile, ISonarLintFile.class);
+    var sonarLintFile = Adapters.adapt(cobolFile, ISonarLintFile.class);
 
     assertThat(sonarLintFile).isNotNull();
     assertThat(sonarLintFile.getProject().getName()).isEqualTo("module");
@@ -81,7 +81,7 @@ public class DefaultSonarLintAdapterFactoryTest extends SonarTestCase {
     public ISonarLintFile adapt(IFile file) {
       if (file instanceof CobolFile) {
         // lookup the logical module this file belongs to
-        CobolModule module = new CobolModule(new Path("module"));
+        var module = new CobolModule(new Path("module"));
         return new CobolFileAdapter((CobolFile) file, module);
       }
       return null;

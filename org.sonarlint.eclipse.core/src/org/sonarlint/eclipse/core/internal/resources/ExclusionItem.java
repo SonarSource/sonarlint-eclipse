@@ -39,11 +39,11 @@ public class ExclusionItem {
 
   @Nullable
   public static ExclusionItem parse(String text) {
-    int i = text.indexOf(':');
+    var i = text.indexOf(':');
     if (i < 0) {
       return null;
     }
-    String item = text.substring(i + 1);
+    var item = text.substring(i + 1);
     if (StringUtils.trimToNull(item) == null) {
       return null;
     }
@@ -77,7 +77,7 @@ public class ExclusionItem {
     if (!(other instanceof ExclusionItem)) {
       return false;
     }
-    ExclusionItem o = (ExclusionItem) other;
+    var o = (ExclusionItem) other;
 
     return Objects.equals(type, o.type) && Objects.equals(item, o.item);
   }

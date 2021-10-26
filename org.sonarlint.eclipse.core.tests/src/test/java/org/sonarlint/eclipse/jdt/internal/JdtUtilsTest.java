@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.regex.Pattern;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
@@ -72,8 +71,8 @@ public class JdtUtilsTest extends SonarTestCase {
 
   @Test
   public void shouldConfigureJavaSourceAndTarget() throws JavaModelException, IOException {
-    IJavaProject project = mock(IJavaProject.class);
-    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
+    var project = mock(IJavaProject.class);
+    var context = mock(IPreAnalysisContext.class);
 
     when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
     when(project.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
@@ -88,25 +87,25 @@ public class JdtUtilsTest extends SonarTestCase {
 
   @Test
   public void shouldConfigureSimpleProject() throws JavaModelException, IOException {
-    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-    File workspaceRoot = root.getLocation().toFile();
-    File projectRoot = new File(workspaceRoot, "myProject");
+    var root = ResourcesPlugin.getWorkspace().getRoot();
+    var workspaceRoot = root.getLocation().toFile();
+    var projectRoot = new File(workspaceRoot, "myProject");
     projectRoot.mkdir();
-    File sourceFolder = new File(projectRoot, "src");
+    var sourceFolder = new File(projectRoot, "src");
     sourceFolder.mkdir();
-    File testFolder = new File(projectRoot, "test");
+    var testFolder = new File(projectRoot, "test");
     testFolder.mkdir();
-    File outputFolder = new File(projectRoot, "bin");
+    var outputFolder = new File(projectRoot, "bin");
     outputFolder.mkdir();
 
-    IJavaProject project = mock(IJavaProject.class);
-    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
+    var project = mock(IJavaProject.class);
+    var context = mock(IPreAnalysisContext.class);
 
     when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
     when(project.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
     when(project.getPath()).thenReturn(new Path(projectRoot.getAbsolutePath()));
 
-    IClasspathEntry[] cpes = new IClasspathEntry[] {
+    var cpes = new IClasspathEntry[] {
       createCPE(IClasspathEntry.CPE_SOURCE, sourceFolder, outputFolder),
       createCPE(IClasspathEntry.CPE_SOURCE, testFolder, outputFolder)
     };
@@ -116,9 +115,9 @@ public class JdtUtilsTest extends SonarTestCase {
 
     jdtUtils.configureJavaProject(project, context);
 
-    ArgumentCaptor<Collection<String>> captorBinaries = ArgumentCaptor.forClass(Collection.class);
+    var captorBinaries = ArgumentCaptor.forClass(Collection.class);
     verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.binaries"), captorBinaries.capture());
-    ArgumentCaptor<Collection<String>> captorTestBinaries = ArgumentCaptor.forClass(Collection.class);
+    var captorTestBinaries = ArgumentCaptor.forClass(Collection.class);
     verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.test.binaries"), captorTestBinaries.capture());
 
     assertThat(captorBinaries.getValue()).containsExactlyInAnyOrder(outputFolder.getAbsolutePath().replaceAll(Pattern.quote("\\"), "/"));
@@ -127,27 +126,27 @@ public class JdtUtilsTest extends SonarTestCase {
 
   @Test
   public void shouldConfigureSimpleProjectWithTests() throws JavaModelException, IOException {
-    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-    File workspaceRoot = root.getLocation().toFile();
-    File projectRoot = new File(workspaceRoot, "myProject");
+    var root = ResourcesPlugin.getWorkspace().getRoot();
+    var workspaceRoot = root.getLocation().toFile();
+    var projectRoot = new File(workspaceRoot, "myProject");
     projectRoot.mkdir();
-    File sourceFolder = new File(projectRoot, "src");
+    var sourceFolder = new File(projectRoot, "src");
     sourceFolder.mkdir();
-    File testFolder = new File(projectRoot, "test");
+    var testFolder = new File(projectRoot, "test");
     testFolder.mkdir();
-    File mainOutputFolder = new File(projectRoot, "bin/main");
+    var mainOutputFolder = new File(projectRoot, "bin/main");
     mainOutputFolder.mkdirs();
-    File testOutputFolder = new File(projectRoot, "bin/test");
+    var testOutputFolder = new File(projectRoot, "bin/test");
     testOutputFolder.mkdirs();
 
-    IJavaProject project = mock(IJavaProject.class);
-    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
+    var project = mock(IJavaProject.class);
+    var context = mock(IPreAnalysisContext.class);
 
     when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
     when(project.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
     when(project.getPath()).thenReturn(new Path(projectRoot.getAbsolutePath()));
 
-    IClasspathEntry[] cpes = new IClasspathEntry[] {
+    var cpes = new IClasspathEntry[] {
       createCPE(IClasspathEntry.CPE_SOURCE, sourceFolder, mainOutputFolder),
       createTestCPE(IClasspathEntry.CPE_SOURCE, testFolder, testOutputFolder)
     };
@@ -157,9 +156,9 @@ public class JdtUtilsTest extends SonarTestCase {
 
     jdtUtils.configureJavaProject(project, context);
 
-    ArgumentCaptor<Collection<String>> captorBinaries = ArgumentCaptor.forClass(Collection.class);
+    var captorBinaries = ArgumentCaptor.forClass(Collection.class);
     verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.binaries"), captorBinaries.capture());
-    ArgumentCaptor<Collection<String>> captorTestBinaries = ArgumentCaptor.forClass(Collection.class);
+    var captorTestBinaries = ArgumentCaptor.forClass(Collection.class);
     verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.test.binaries"), captorTestBinaries.capture());
 
     assertThat(captorBinaries.getValue()).containsExactlyInAnyOrder(mainOutputFolder.getAbsolutePath().replaceAll(Pattern.quote("\\"), "/"));
@@ -169,22 +168,22 @@ public class JdtUtilsTest extends SonarTestCase {
   // SLE-159
   @Test
   public void doNotAddNonExistingPaths() throws JavaModelException, IOException {
-    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-    File workspaceRoot = root.getLocation().toFile();
-    File projectRoot = new File(workspaceRoot, "myProjectMissingOut");
+    var root = ResourcesPlugin.getWorkspace().getRoot();
+    var workspaceRoot = root.getLocation().toFile();
+    var projectRoot = new File(workspaceRoot, "myProjectMissingOut");
     projectRoot.mkdir();
-    File sourceFolder = new File(projectRoot, "src");
+    var sourceFolder = new File(projectRoot, "src");
     sourceFolder.mkdir();
-    File outputFolder = new File(projectRoot, "bin");
+    var outputFolder = new File(projectRoot, "bin");
 
-    IJavaProject project = mock(IJavaProject.class);
-    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
+    var project = mock(IJavaProject.class);
+    var context = mock(IPreAnalysisContext.class);
 
     when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
     when(project.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
     when(project.getPath()).thenReturn(new Path(projectRoot.getAbsolutePath()));
 
-    IClasspathEntry[] cpes = new IClasspathEntry[] {
+    var cpes = new IClasspathEntry[] {
       createCPE(IClasspathEntry.CPE_SOURCE, sourceFolder, outputFolder)
     };
 
@@ -193,7 +192,7 @@ public class JdtUtilsTest extends SonarTestCase {
 
     jdtUtils.configureJavaProject(project, context);
 
-    ArgumentCaptor<Collection<String>> captor = ArgumentCaptor.forClass(Collection.class);
+    var captor = ArgumentCaptor.forClass(Collection.class);
     verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.binaries"), captor.capture());
 
     assertThat(captor.getValue()).isEmpty();
@@ -203,14 +202,14 @@ public class JdtUtilsTest extends SonarTestCase {
   public void shouldConfigureProjectsWithCircularDependencies() throws CoreException, IOException {
     // the bug appeared when at least 3 projects were involved: the first project depends on the second one which has a circular dependency
     // towards the second one
-    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
+    var context = mock(IPreAnalysisContext.class);
     // mock three projects that depend on each other
-    final String project1Name = "project1";
-    final String project2Name = "project2";
-    final String project3Name = "project3";
-    IJavaProject project1 = mock(IJavaProject.class, Mockito.RETURNS_DEEP_STUBS);
-    IJavaProject project2 = mock(IJavaProject.class, Mockito.RETURNS_DEEP_STUBS);
-    IJavaProject project3 = mock(IJavaProject.class, Mockito.RETURNS_DEEP_STUBS);
+    final var project1Name = "project1";
+    final var project2Name = "project2";
+    final var project3Name = "project3";
+    var project1 = mock(IJavaProject.class, Mockito.RETURNS_DEEP_STUBS);
+    var project2 = mock(IJavaProject.class, Mockito.RETURNS_DEEP_STUBS);
+    var project3 = mock(IJavaProject.class, Mockito.RETURNS_DEEP_STUBS);
     // these are required during the call to configureJavaProject
     when(project1.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
     when(project1.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
@@ -219,9 +218,9 @@ public class JdtUtilsTest extends SonarTestCase {
     when(project3.getProject().getName()).thenReturn(project3Name);
 
     // create three classpathEntries, one for each Project
-    IClasspathEntry entryProject1 = mock(IClasspathEntry.class, Mockito.RETURNS_DEEP_STUBS);
-    IClasspathEntry entryProject2 = mock(IClasspathEntry.class, Mockito.RETURNS_DEEP_STUBS);
-    IClasspathEntry entryProject3 = mock(IClasspathEntry.class, Mockito.RETURNS_DEEP_STUBS);
+    var entryProject1 = mock(IClasspathEntry.class, Mockito.RETURNS_DEEP_STUBS);
+    var entryProject2 = mock(IClasspathEntry.class, Mockito.RETURNS_DEEP_STUBS);
+    var entryProject3 = mock(IClasspathEntry.class, Mockito.RETURNS_DEEP_STUBS);
     when(entryProject1.getEntryKind()).thenReturn(IClasspathEntry.CPE_PROJECT);
     when(entryProject1.getPath().segment(0)).thenReturn(project1Name);
     when(entryProject1.getExtraAttributes()).thenReturn(new IClasspathAttribute[0]);
@@ -232,15 +231,15 @@ public class JdtUtilsTest extends SonarTestCase {
     when(entryProject3.getPath().segment(0)).thenReturn(project3Name);
     when(entryProject3.getExtraAttributes()).thenReturn(new IClasspathAttribute[0]);
     // project1 depends on project2, which depends on project3, which depends on project2
-    IClasspathEntry[] classpath1 = new IClasspathEntry[] {entryProject2};
-    IClasspathEntry[] classpath2 = new IClasspathEntry[] {entryProject3};
-    IClasspathEntry[] classpath3 = new IClasspathEntry[] {entryProject2};
+    var classpath1 = new IClasspathEntry[] {entryProject2};
+    var classpath2 = new IClasspathEntry[] {entryProject3};
+    var classpath3 = new IClasspathEntry[] {entryProject2};
     when(project1.getResolvedClasspath(true)).thenReturn(classpath1);
     when(project2.getResolvedClasspath(true)).thenReturn(classpath2);
     when(project3.getResolvedClasspath(true)).thenReturn(classpath3);
 
     // mock the JavaModel
-    IJavaModel javaModel = mock(IJavaModel.class);
+    var javaModel = mock(IJavaModel.class);
     when(javaModel.getJavaProject(project1Name)).thenReturn(project1);
     when(javaModel.getJavaProject(project2Name)).thenReturn(project2);
     when(javaModel.getJavaProject(project3Name)).thenReturn(project3);
@@ -255,7 +254,7 @@ public class JdtUtilsTest extends SonarTestCase {
   }
 
   private IClasspathEntry createCPE(int kind, File path, @Nullable File outputLocation) {
-    IClasspathEntry cpe = mock(IClasspathEntry.class);
+    var cpe = mock(IClasspathEntry.class);
     when(cpe.getEntryKind()).thenReturn(kind);
     when(cpe.getPath()).thenReturn(new Path(path.getAbsolutePath()));
     when(cpe.getOutputLocation()).thenReturn(new Path(outputLocation.getAbsolutePath()));
@@ -264,8 +263,8 @@ public class JdtUtilsTest extends SonarTestCase {
   }
 
   private IClasspathEntry createTestCPE(int kind, File path, @Nullable File outputLocation) {
-    IClasspathEntry cpe = createCPE(kind, path, outputLocation);
-    IClasspathAttribute[] iClasspathAttributes = new IClasspathAttribute[1];
+    var cpe = createCPE(kind, path, outputLocation);
+    var iClasspathAttributes = new IClasspathAttribute[1];
     iClasspathAttributes[0] = new IClasspathAttribute() {
 
       @Override
@@ -284,10 +283,10 @@ public class JdtUtilsTest extends SonarTestCase {
 
   @Test
   public void keepOnlyJavaFilesOnClasspathForJdtProject() throws Exception {
-    IFile onClassPath = (IFile) jdtProject.findMember("src/main/java/ClassOnDefaultPackage.java");
-    IFile compileError = (IFile) jdtProject.findMember("src/main/java/ClassWithCompileError.java");
-    IFile outsideClassPath = (IFile) jdtProject.findMember("ClassOutsideSourceFolder.java");
-    IFile nonJava = (IFile) jdtProject.findMember("src/main/sample.js");
+    var onClassPath = (IFile) jdtProject.findMember("src/main/java/ClassOnDefaultPackage.java");
+    var compileError = (IFile) jdtProject.findMember("src/main/java/ClassWithCompileError.java");
+    var outsideClassPath = (IFile) jdtProject.findMember("ClassOutsideSourceFolder.java");
+    var nonJava = (IFile) jdtProject.findMember("src/main/sample.js");
 
     assertThat(JdtUtils.shouldExclude(onClassPath)).isFalse();
     assertThat(JdtUtils.shouldExclude(compileError)).isTrue();
@@ -297,13 +296,13 @@ public class JdtUtilsTest extends SonarTestCase {
 
   @Test
   public void qualifyTestFiles() throws Exception {
-    IFile onClassPath = (IFile) jdtProject.findMember("src/main/java/ClassOnDefaultPackage.java");
-    IFile compileError = (IFile) jdtProject.findMember("src/main/java/ClassWithCompileError.java");
-    IFile outsideClassPath = (IFile) jdtProject.findMember("ClassOutsideSourceFolder.java");
-    IFile nonJava = (IFile) jdtProject.findMember("src/main/sample.js");
-    IFile testFile = (IFile) jdtProject.findMember("src/test/java/MyTest.java");
+    var onClassPath = (IFile) jdtProject.findMember("src/main/java/ClassOnDefaultPackage.java");
+    var compileError = (IFile) jdtProject.findMember("src/main/java/ClassWithCompileError.java");
+    var outsideClassPath = (IFile) jdtProject.findMember("ClassOutsideSourceFolder.java");
+    var nonJava = (IFile) jdtProject.findMember("src/main/sample.js");
+    var testFile = (IFile) jdtProject.findMember("src/test/java/MyTest.java");
 
-    DefaultSonarLintProjectAdapter slPrj = new DefaultSonarLintProjectAdapter(jdtProject);
+    var slPrj = new DefaultSonarLintProjectAdapter(jdtProject);
 
     assertThat(JdtUtils.qualify(new DefaultSonarLintFileAdapter(slPrj, onClassPath))).isEqualTo(ISonarLintFileType.MAIN);
     assertThat(JdtUtils.qualify(new DefaultSonarLintFileAdapter(slPrj, compileError))).isEqualTo(ISonarLintFileType.MAIN);
@@ -314,9 +313,9 @@ public class JdtUtilsTest extends SonarTestCase {
 
   @Test
   public void ignoreJavaFilesOnNonJdtProject() throws Exception {
-    IFile java = (IFile) nonJdtProject.findMember("src/main/ClassOnDefaultPackage.java");
-    IFile nonJava = (IFile) nonJdtProject.findMember("src/main/sample.js");
-    IFile contentTypeExtendingJava = (IFile) nonJdtProject.findMember("src/main/Program.cbl");
+    var java = (IFile) nonJdtProject.findMember("src/main/ClassOnDefaultPackage.java");
+    var nonJava = (IFile) nonJdtProject.findMember("src/main/sample.js");
+    var contentTypeExtendingJava = (IFile) nonJdtProject.findMember("src/main/Program.cbl");
 
     assertThat(JdtUtils.shouldExclude(java)).isTrue();
     assertThat(JdtUtils.shouldExclude(nonJava)).isFalse();

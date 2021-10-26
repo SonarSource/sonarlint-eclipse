@@ -53,7 +53,7 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
         return false;
       }
 
-      String key = eldest.getKey();
+      var key = eldest.getKey();
       try {
         SonarLintLogger.get().debug("Persisting issues for " + key);
         store.save(key, eldest.getValue());
@@ -71,7 +71,7 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
 
   @Override
   public synchronized Collection<Trackable> getLiveOrFail(String file) {
-    Collection<Trackable> liveTrackables = cache.get(file);
+    var liveTrackables = cache.get(file);
     if (liveTrackables != null) {
       return liveTrackables;
     }
@@ -84,13 +84,13 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
    */
   @Override
   public synchronized Collection<Trackable> getCurrentTrackables(String file) {
-    Collection<Trackable> liveTrackables = cache.get(file);
+    var liveTrackables = cache.get(file);
     if (liveTrackables != null) {
       return liveTrackables;
     }
 
     try {
-      Collection<Trackable> storedTrackables = store.read(file);
+      var storedTrackables = store.read(file);
       if (storedTrackables != null) {
         return Collections.unmodifiableCollection(storedTrackables);
       }

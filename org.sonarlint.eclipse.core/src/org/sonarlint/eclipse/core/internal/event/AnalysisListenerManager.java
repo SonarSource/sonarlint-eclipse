@@ -35,7 +35,7 @@ public class AnalysisListenerManager {
   }
 
   public void notifyListeners() {
-    AnalysisEvent analysisEvent = new AnalysisEvent() {
+    var analysisEvent = new AnalysisEvent() {
     };
     listeners.forEach(l -> l.usedAnalysis(analysisEvent));
   }

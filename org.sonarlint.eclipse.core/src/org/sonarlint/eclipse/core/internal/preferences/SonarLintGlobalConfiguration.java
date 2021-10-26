@@ -20,19 +20,16 @@
 package org.sonarlint.eclipse.core.internal.preferences;
 
 import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonValue;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
@@ -48,7 +45,6 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
-import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
@@ -94,13 +90,13 @@ public class SonarLintGlobalConfiguration {
   }
 
   public static List<SonarLintProperty> getExtraPropertiesForLocalAnalysis(ISonarLintProject project) {
-    List<SonarLintProperty> props = new ArrayList<>();
+    var props = new ArrayList<SonarLintProperty>();
     // First add all global properties
-    String globalExtraArgs = getPreferenceString(PREF_EXTRA_ARGS);
+    var globalExtraArgs = getPreferenceString(PREF_EXTRA_ARGS);
     props.addAll(deserializeExtraProperties(globalExtraArgs));
 
     // Then add project properties
-    SonarLintProjectConfiguration sonarProject = SonarLintCorePlugin.loadConfig(project);
+    var sonarProject = SonarLintCorePlugin.loadConfig(project);
     if (sonarProject.getExtraProperties() != null) {
       props.addAll(sonarProject.getExtraProperties());
     }
@@ -109,15 +105,10 @@ public class SonarLintGlobalConfiguration {
   }
 
   public static List<SonarLintProperty> deserializeExtraProperties(@Nullable String property) {
-    List<SonarLintProperty> props = new ArrayList<>();
-    // First add all global properties
-    String[] keyValuePairs = StringUtils.split(property, "\r\n");
-    for (String keyValuePair : keyValuePairs) {
-      String[] keyValue = StringUtils.split(keyValuePair, "=");
-      props.add(new SonarLintProperty(keyValue[0], keyValue.length > 1 ? keyValue[1] : ""));
-    }
-
-    return props;
+    return Stream.of(StringUtils.split(property, "\r\n"))
+      .map(keyValuePair -> StringUtils.split(keyValuePair, "="))
+      .map(keyValue -> new SonarLintProperty(keyValue[0], keyValue.length > 1 ? keyValue[1] : ""))
+      .collect(Collectors.toList());
   }
 
   public static String serializeFileExclusions(List<ExclusionItem> exclusions) {
@@ -127,16 +118,14 @@ public class SonarLintGlobalConfiguration {
   }
 
   public static String serializeExtraProperties(List<SonarLintProperty> properties) {
-    List<String> keyValuePairs = new ArrayList<>(properties.size());
-    for (SonarLintProperty prop : properties) {
-      keyValuePairs.add(prop.getName() + "=" + prop.getValue());
-    }
+    var keyValuePairs = properties.stream()
+      .map(p -> p.getName() + "=" + p.getValue())
+      .collect(Collectors.toList());
     return StringUtils.joinSkipNull(keyValuePairs, "\r\n");
   }
 
   public static List<ExclusionItem> deserializeFileExclusions(@Nullable String property) {
-    String[] values = StringUtils.split(property, "\r\n");
-    return Arrays.stream(values)
+    return Stream.of(StringUtils.split(property, "\r\n"))
       .map(ExclusionItem::parse)
       .filter(Objects::nonNull)
       .collect(toList());
@@ -144,12 +133,12 @@ public class SonarLintGlobalConfiguration {
 
   public static List<ExclusionItem> getGlobalExclusions() {
     // add globally-configured exclusions
-    String props = getPreferenceString(SonarLintGlobalConfiguration.PREF_FILE_EXCLUSIONS);
+    var props = getPreferenceString(SonarLintGlobalConfiguration.PREF_FILE_EXCLUSIONS);
     return deserializeFileExclusions(props);
   }
 
   private static void savePreferences(Consumer<Preferences> updater, String key, Object value) {
-    Preferences preferences = getInstancePreferenceNode();
+    var preferences = getInstancePreferenceNode();
     updater.accept(preferences);
     try {
       preferences.flush();
@@ -186,8 +175,8 @@ public class SonarLintGlobalConfiguration {
   }
 
   public static void disableRule(RuleKey ruleKey) {
-    Collection<RuleConfig> rules = new ArrayList<>(readRulesConfig());
-    Optional<RuleConfig> ruleToDisable = rules.stream().filter(r -> r.getKey().equals(ruleKey.toString())).findFirst();
+    var rules = new ArrayList<>(readRulesConfig());
+    var ruleToDisable = rules.stream().filter(r -> r.getKey().equals(ruleKey.toString())).findFirst();
     if (ruleToDisable.isPresent()) {
       ruleToDisable.get().setActive(false);
     } else {
@@ -219,23 +208,22 @@ public class SonarLintGlobalConfiguration {
   }
 
   private static Set<RuleKey> deserializeRuleKeyList(@Nullable String property) {
-    String[] values = StringUtils.split(property, ";");
-    return Arrays.stream(values)
+    return Stream.of(StringUtils.split(property, ";"))
       .map(RuleKey::parse)
       .collect(Collectors.toSet());
   }
 
   public static Collection<RuleConfig> readRulesConfig() {
-    IEclipsePreferences instancePreferenceNode = getInstancePreferenceNode();
+    var instancePreferenceNode = getInstancePreferenceNode();
     try {
       if (!instancePreferenceNode.nodeExists(PREF_RULES_CONFIG)) {
-        Collection<RuleConfig> result = new ArrayList<>();
+        var result = new ArrayList<RuleConfig>();
         // Migration
-        if (asList(instancePreferenceNode.keys()).contains(PREF_RULE_EXCLUSIONS)) {
+        if (List.of(instancePreferenceNode.keys()).contains(PREF_RULE_EXCLUSIONS)) {
           deserializeRuleKeyList(getPreferenceString(PREF_RULE_EXCLUSIONS)).stream().map(r -> new RuleConfig(r.toString(), false)).forEach(result::add);
           instancePreferenceNode.remove(PREF_RULE_EXCLUSIONS);
         }
-        if (asList(instancePreferenceNode.keys()).contains(PREF_RULE_INCLUSIONS)) {
+        if (List.of(instancePreferenceNode.keys()).contains(PREF_RULE_INCLUSIONS)) {
           deserializeRuleKeyList(getPreferenceString(PREF_RULE_INCLUSIONS)).stream().map(r -> new RuleConfig(r.toString(), true)).forEach(result::add);
           instancePreferenceNode.remove(PREF_RULE_INCLUSIONS);
         }
@@ -246,7 +234,7 @@ public class SonarLintGlobalConfiguration {
     } catch (BackingStoreException e) {
       throw new IllegalStateException("Unable to migrate rules configuration", e);
     }
-    String json = getPreferenceString(PREF_RULES_CONFIG);
+    var json = getPreferenceString(PREF_RULES_CONFIG);
     return deserializeRulesJson(json);
   }
 
@@ -254,16 +242,16 @@ public class SonarLintGlobalConfiguration {
     if (StringUtils.isBlank(json)) {
       return Collections.emptyList();
     }
-    JsonValue value = Json.parse(json);
-    Collection<RuleConfig> result = new ArrayList<>();
+    var value = Json.parse(json);
+    var result = new ArrayList<RuleConfig>();
     try {
-      JsonObject rulesJson = value.asObject();
+      var rulesJson = value.asObject();
       rulesJson.forEach(ruleJson -> {
-        JsonObject ruleObject = ruleJson.getValue().asObject();
-        RuleConfig rule = new RuleConfig(ruleJson.getName(), !RULE_JSON_LEVEL_OFF.equals(ruleObject.getString(RULE_JSON_LEVEL, RULE_JSON_LEVEL_ON)));
-        JsonValue ruleParamsValue = ruleObject.get(RULE_JSON_PARAMS);
+        var ruleObject = ruleJson.getValue().asObject();
+        var rule = new RuleConfig(ruleJson.getName(), !RULE_JSON_LEVEL_OFF.equals(ruleObject.getString(RULE_JSON_LEVEL, RULE_JSON_LEVEL_ON)));
+        var ruleParamsValue = ruleObject.get(RULE_JSON_PARAMS);
         if (ruleParamsValue != null) {
-          JsonObject paramsJson = ruleParamsValue.asObject();
+          var paramsJson = ruleParamsValue.asObject();
           paramsJson.forEach(p -> rule.getParams().put(p.getName(), p.getValue().asString()));
         }
         result.add(rule);
@@ -275,20 +263,20 @@ public class SonarLintGlobalConfiguration {
   }
 
   public static void saveRulesConfig(Collection<RuleConfig> rules) {
-    String json = serializeRulesJson(rules);
+    var json = serializeRulesJson(rules);
     setPreferenceString(PREF_RULES_CONFIG, json);
   }
 
   private static String serializeRulesJson(Collection<RuleConfig> rules) {
-    JsonObject rulesJson = Json.object();
+    var rulesJson = Json.object();
     rules.stream()
       // Sort by key to ensure consistent results
       .sorted(comparing(RuleConfig::getKey))
       .forEach(rule -> {
-        JsonObject ruleJson = Json.object()
+        var ruleJson = Json.object()
           .add(RULE_JSON_LEVEL, rule.isActive() ? RULE_JSON_LEVEL_ON : RULE_JSON_LEVEL_OFF);
         if (!rule.getParams().isEmpty()) {
-          JsonObject paramsJson = Json.object();
+          var paramsJson = Json.object();
           rule.getParams().entrySet().stream()
             // Sort by key to ensure consistent results
             .sorted(comparing(Entry<String, String>::getKey))

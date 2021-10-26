@@ -32,7 +32,7 @@ public abstract class AbstractProjectBindingWizardPage extends WizardPage {
   protected final ProjectBindingModel model;
   private final int numCols;
 
-  public AbstractProjectBindingWizardPage(String pageName, String title, ProjectBindingModel model, int numCols) {
+  protected AbstractProjectBindingWizardPage(String pageName, String title, ProjectBindingModel model, int numCols) {
     super(pageName, title, SonarLintImages.IMG_WIZBAN_NEW_SERVER);
     this.model = model;
     this.numCols = numCols;
@@ -40,13 +40,13 @@ public abstract class AbstractProjectBindingWizardPage extends WizardPage {
 
   @Override
   public final void createControl(Composite parent) {
-    Composite container = new Composite(parent, SWT.NONE);
+    var container = new Composite(parent, SWT.NONE);
 
-    GridLayout layout = new GridLayout();
+    var layout = new GridLayout();
     layout.numColumns = numCols;
     container.setLayout(layout);
 
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
+    var layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
     container.setLayoutData(layoutData);
 
     doCreateControl(container);

@@ -25,7 +25,6 @@ import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -59,7 +58,6 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWi
 import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 import org.sonarsource.sonarlint.core.client.api.exceptions.UnsupportedServerException;
-import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
 
 public class ServerConnectionWizard extends Wizard implements INewWizard, IPageChangingListener {
 
@@ -117,13 +115,13 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   }
 
   public static WizardDialog createDialog(Shell parent, List<ISonarLintProject> selectedProjects) {
-    ServerConnectionModel model = new ServerConnectionModel();
+    var model = new ServerConnectionModel();
     model.setSelectedProjects(selectedProjects);
     return new SonarLintWizardDialog(parent, new ServerConnectionWizard(model));
   }
 
   public static WizardDialog createDialog(Shell parent, String connectionId) {
-    ServerConnectionModel model = new ServerConnectionModel();
+    var model = new ServerConnectionModel();
     model.setConnectionId(connectionId);
     return new SonarLintWizardDialog(parent, new ServerConnectionWizard(model));
   }
@@ -220,7 +218,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
 
   @Override
   public boolean canFinish() {
-    IWizardPage currentPage = getContainer().getCurrentPage();
+    var currentPage = getContainer().getCurrentPage();
     return currentPage == confirmPage;
   }
 
@@ -241,7 +239,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       updateConnectionStorage();
       return true;
     } catch (Exception e) {
-      DialogPage currentPage = (DialogPage) getContainer().getCurrentPage();
+      var currentPage = (DialogPage) getContainer().getCurrentPage();
       currentPage.setErrorMessage("Cannot create connection: " + e.getMessage());
       SonarLintLogger.get().error("Error when finishing server connection wizard", e);
       return false;
@@ -261,11 +259,11 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   }
 
   private void updateConnectionStorage() {
-    Job job = new ServerUpdateJob(resultServer);
+    var job = new ServerUpdateJob(resultServer);
 
-    List<ISonarLintProject> boundProjects = resultServer.getBoundProjects();
+    var boundProjects = resultServer.getBoundProjects();
     if (model.getNotificationsSupported() && !model.getNotificationsDisabled() && !boundProjects.isEmpty()) {
-      Job subscribeToNotificationsJob = new SubscribeToNotificationsJob(boundProjects);
+      var subscribeToNotificationsJob = new SubscribeToNotificationsJob(boundProjects);
       JobUtils.scheduleAfterSuccess(job, subscribeToNotificationsJob::schedule);
       subscribeToNotificationsJob.schedule();
     } else {
@@ -274,7 +272,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
 
     JobUtils.scheduleAfterSuccess(job, () -> JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(resultServer, TriggerType.BINDING_CHANGE));
     job.schedule();
-    List<ISonarLintProject> selectedProjects = model.getSelectedProjects();
+    var selectedProjects = model.getSelectedProjects();
     if (!skipBindingWizard) {
       if (selectedProjects != null && !selectedProjects.isEmpty()) {
         ProjectBindingWizard
@@ -294,7 +292,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
 
   @Override
   public void handlePageChanging(PageChangingEvent event) {
-    WizardPage currentPage = (WizardPage) event.getCurrentPage();
+    var currentPage = (WizardPage) event.getCurrentPage();
     boolean advance = getNextPage(currentPage) == event.getTargetPage();
     if (advance && !redirectedAfterNotificationCheck && (currentPage == credentialsPage || currentPage == tokenPage)) {
       if (!testConnection(null)) {
@@ -304,7 +302,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       // We need to wait for credentials before testing if notifications are supported
       populateNotificationsSupported();
       // Next page depends if notifications are supported
-      IWizardPage newNextPage = getNextPage(currentPage);
+      var newNextPage = getNextPage(currentPage);
       if (newNextPage != event.getTargetPage()) {
         // Avoid infinite recursion
         redirectedAfterNotificationCheck = true;
@@ -358,7 +356,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
           try {
-            List<ServerOrganization> userOrgs = ConnectedEngineFacade.listUserOrganizations(model.getServerUrl(), model.getUsername(), model.getPassword(), monitor);
+            var userOrgs = ConnectedEngineFacade.listUserOrganizations(model.getServerUrl(), model.getUsername(), model.getPassword(), monitor);
             model.setUserOrgs(userOrgs);
           } catch (UnsupportedServerException e) {
             model.setUserOrgs(null);
@@ -380,10 +378,10 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   }
 
   private boolean testConnection(@Nullable String organization) {
-    IWizardPage currentPage = getContainer().getCurrentPage();
+    var currentPage = getContainer().getCurrentPage();
     IStatus status;
     try {
-      ServerConnectionTestJob testJob = new ServerConnectionTestJob(model.getServerUrl(), organization, model.getUsername(), model.getPassword());
+      var testJob = new ServerConnectionTestJob(model.getServerUrl(), organization, model.getUsername(), model.getPassword());
       getContainer().run(true, true, testJob);
       status = testJob.getStatus();
     } catch (InterruptedException canceled) {
@@ -393,7 +391,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       status = new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error + " " + message(e), e);
     }
 
-    String message = status.getMessage();
+    var message = status.getMessage();
     if (status.getSeverity() == IStatus.CANCEL) {
       ((WizardPage) currentPage).setMessage(null, IMessageProvider.NONE);
       return false;
@@ -407,7 +405,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   }
 
   private static String message(Exception e) {
-    String message = e.getMessage();
+    var message = e.getMessage();
     // Message is null for InvocationTargetException, look at the cause
     if (message != null) {
       return message;

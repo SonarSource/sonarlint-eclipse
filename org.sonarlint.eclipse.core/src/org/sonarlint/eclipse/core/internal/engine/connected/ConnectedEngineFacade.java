@@ -25,18 +25,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -58,7 +55,6 @@ import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
-import org.sonarlint.eclipse.core.internal.utils.NodeJsManager;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -70,7 +66,6 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration.Builder;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectionValidator;
@@ -79,7 +74,6 @@ import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 import org.sonarsource.sonarlint.core.client.api.connected.SonarAnalyzer;
 import org.sonarsource.sonarlint.core.client.api.connected.StateListener;
-import org.sonarsource.sonarlint.core.client.api.connected.UpdateResult;
 import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 import org.sonarsource.sonarlint.core.notifications.ServerNotificationsRegistry;
@@ -126,22 +120,22 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   private synchronized ConnectedSonarLintEngine getOrCreateEngine() {
     if (wrappedEngine == null) {
       SonarLintLogger.get().info("Starting SonarLint engine for connection '" + id + "'...");
-      NodeJsManager nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
-      Builder builder = ConnectedGlobalConfiguration.builder()
+      var nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
+      var builder = ConnectedGlobalConfiguration.builder()
         .setConnectionId(getId())
         .setWorkDir(StoragePathManager.getServerWorkDir(getId()))
         .setStorageRoot(StoragePathManager.getServerStorageRoot())
         .setLogOutput(new SonarLintAnalyzerLogOutput())
         .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
-        .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion());
+        .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
+        .setClientPid(SonarLintUtils.getPlatformPid());
 
-      URL secretsPluginUrl = findEmbeddedSecretsPlugin();
+      var secretsPluginUrl = findEmbeddedSecretsPlugin();
       if (secretsPluginUrl != null) {
         builder.addExtraPlugin(Language.SECRETS.getPluginKey(), secretsPluginUrl);
       }
 
-      SonarLintUtils.getPlatformPid().ifPresent(builder::setClientPid);
-      ConnectedGlobalConfiguration globalConfig = builder.build();
+      var globalConfig = builder.build();
       try {
         this.wrappedEngine = new ConnectedSonarLintEngineImpl(globalConfig);
         this.wrappedEngine.addStateListener(this);
@@ -160,12 +154,12 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Nullable
   private static URL findEmbeddedPlugin(String pluginNamePattern, String logPrefix) {
-    Enumeration<URL> pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle()
+    var pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle()
             .findEntries("/plugins", pluginNamePattern, false);
     if (pluginEntriesEnum == null) {
       return null;
     }
-    List<URL> pluginUrls = Collections.list(pluginEntriesEnum);
+    var pluginUrls = Collections.list(pluginEntriesEnum);
     pluginUrls.forEach(pluginUrl -> SonarLintLogger.get().debug(logPrefix + pluginUrl));
     if (pluginUrls.size() > 1) {
       throw new IllegalStateException("Multiple plugins found");
@@ -212,7 +206,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public void notifyAllListenersStateChanged() {
-    for (IConnectedEngineFacadeListener listener : facadeListeners) {
+    for (var listener : facadeListeners) {
       listener.stateChanged(this);
     }
   }
@@ -261,8 +255,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   public void checkForUpdates(IProgressMonitor progress) {
     this.hasUpdates = false;
     try {
-      SubMonitor subMonitor = SubMonitor.convert(progress, getBoundProjects().size() + 1);
-      SubMonitor globalMonitor = subMonitor.newChild(1);
+      var subMonitor = SubMonitor.convert(progress, getBoundProjects().size() + 1);
+      var globalMonitor = subMonitor.newChild(1);
       SonarLintLogger.get().info("Check for updates from server '" + getId() + "'");
       withEngine(engine -> engine.checkIfGlobalStorageNeedUpdate(createEndpointParams(), buildClientWithProxyAndCredentials(),
         new WrappedProgressMonitor(globalMonitor, "Check for configuration updates on server '" + getId() + "'"))).ifPresent(checkForUpdateResult -> {
@@ -272,7 +266,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
           }
         });
 
-      Set<String> projectKeys = getBoundProjects()
+      var projectKeys = getBoundProjects()
         .stream()
         .map(SonarLintCorePlugin::loadConfig)
         .map(SonarLintProjectConfiguration::getProjectBinding)
@@ -282,8 +276,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
         .map(ProjectBinding::projectKey)
         .collect(Collectors.toSet());
 
-      for (String projectKey : projectKeys) {
-        SubMonitor projectMonitor = subMonitor.newChild(1);
+      for (var projectKey : projectKeys) {
+        var projectMonitor = subMonitor.newChild(1);
         if (progress.isCanceled()) {
           return;
         }
@@ -328,7 +322,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public String getSonarLintStorageStateLabel() {
-    State state = withEngine(ConnectedSonarLintEngine::getState).orElse(State.UNKNOWN);
+    var state = withEngine(ConnectedSonarLintEngine::getState).orElse(State.UNKNOWN);
     switch (state) {
       case UNKNOWN:
         return "Unknown";
@@ -336,7 +330,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       case NEED_UPDATE:
         return NEED_UPDATE;
       case UPDATED:
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         if (!isSonarCloud()) {
           sb.append("Version: ");
           sb.append(getServerVersion());
@@ -358,7 +352,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   @Override
   public synchronized void delete() {
     doStop();
-    for (ISonarLintProject sonarLintProject : getBoundProjects()) {
+    for (var sonarLintProject : getBoundProjects()) {
       unbind(sonarLintProject);
     }
     SonarLintCorePlugin.getServersManager().removeServer(this);
@@ -366,7 +360,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   public static void unbind(ISonarLintProject project) {
     SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(project);
-    SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(project);
+    var config = SonarLintCorePlugin.loadConfig(project);
     config.setProjectBinding(null);
     SonarLintCorePlugin.saveConfig(project, config);
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
@@ -389,7 +383,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   @Override
   public AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor) {
     return withEngine(engine -> {
-      AnalysisResults analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
+      var analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
       AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, engine.getPluginDetails());
       return analysisResults;
     }).orElse(null);
@@ -415,9 +409,9 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   @Override
   public void updateStorage(IProgressMonitor monitor) {
     doWithEngine(engine -> {
-      UpdateResult updateResult = engine.update(createEndpointParams(), buildClientWithProxyAndCredentials(),
+      var updateResult = engine.update(createEndpointParams(), buildClientWithProxyAndCredentials(),
         new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "'"));
-      Collection<SonarAnalyzer> tooOld = updateResult.analyzers().stream()
+      var tooOld = updateResult.analyzers().stream()
         .filter(SonarAnalyzer::sonarlintCompatible)
         .filter(ConnectedEngineFacade::tooOld)
         .collect(Collectors.toList());
@@ -432,8 +426,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   private static boolean tooOld(SonarAnalyzer analyzer) {
     if (analyzer.minimumVersion() != null && analyzer.version() != null) {
-      Version minimum = Version.parseVersion(analyzer.minimumVersion());
-      Version version = Version.parseVersion(analyzer.version());
+      var minimum = Version.parseVersion(analyzer.minimumVersion());
+      var version = Version.parseVersion(analyzer.version());
       return version.compareTo(minimum) < 0;
     }
     return false;
@@ -460,7 +454,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     return ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
       .filter(p -> {
-        SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(p);
+        var config = SonarLintCorePlugin.loadConfig(p);
         return config.getProjectBinding().filter(b -> id.equals(b.connectionId())).isPresent();
       }).collect(toList());
   }
@@ -470,13 +464,13 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       .filter(ISonarLintProject::isOpen)
       .map(SonarLintCorePlugin::loadConfig)
       .map(SonarLintProjectConfiguration::getProjectBinding)
-      .flatMap(o -> o.isPresent() ? Stream.of(o.get()) : Stream.empty())
+      .flatMap(Optional::stream)
       .filter(c -> c.connectionId().equals(id))
       .map(ProjectBinding::projectKey)
       .distinct()
       .sorted()
       .map(projectKey -> {
-        Optional<ServerProject> remoteProject = getRemoteProject(projectKey, monitor);
+        var remoteProject = getRemoteProject(projectKey, monitor);
         if (remoteProject.isPresent()) {
           return new RemoteSonarProject(id, remoteProject.get().getKey(), remoteProject.get().getName());
         } else {
@@ -491,7 +485,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     return ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
       .filter(p -> {
-        SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(p);
+        var config = SonarLintCorePlugin.loadConfig(p);
         return config.getProjectBinding().filter(b -> id.equals(b.connectionId()) && projectKey.equals(b.projectKey())).isPresent();
       }).collect(toList());
   }
@@ -502,9 +496,9 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       engine.updateProject(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKey,
         true, new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for project '" + projectKey + "'"));
       getBoundProjects(projectKey).forEach(p -> {
-        ProjectBinding projectBinding = engine.calculatePathPrefixes(projectKey, p.files().stream().map(ISonarLintFile::getProjectRelativePath).collect(toList()));
-        String idePathPrefix = projectBinding.idePathPrefix();
-        String sqPathPrefix = projectBinding.sqPathPrefix();
+        var projectBinding = engine.calculatePathPrefixes(projectKey, p.files().stream().map(ISonarLintFile::getProjectRelativePath).collect(toList()));
+        var idePathPrefix = projectBinding.idePathPrefix();
+        var sqPathPrefix = projectBinding.sqPathPrefix();
         SonarLintLogger.get().debug("Detected prefixes for " + p.getName() + ":\n  IDE prefix: " + idePathPrefix + "\n  Server side prefix: " + sqPathPrefix);
         SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(p);
         config.setProjectBinding(new EclipseProjectBinding(getId(), projectKey, sqPathPrefix, idePathPrefix));
@@ -516,8 +510,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   }
 
   public static CompletableFuture<Status> testConnection(String url, @Nullable String organization, @Nullable String username, @Nullable String password) {
-    OkHttpClient.Builder withProxy = buildOkHttpClientWithProxyAndCredentials(url, username, password);
-    ServerApiHelper helper = new ServerApiHelper(createEndpointParams(url, organization), new SonarLintHttpClientOkHttpImpl(withProxy.build()));
+    var withProxy = buildOkHttpClientWithProxyAndCredentials(url, username, password);
+    var helper = new ServerApiHelper(createEndpointParams(url, organization), new SonarLintHttpClientOkHttpImpl(withProxy.build()));
     return new ConnectionValidator(helper).validateConnection()
       .thenApply(testConnection -> {
         if (testConnection.success()) {
@@ -536,14 +530,14 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   }
 
   public static List<ServerOrganization> listUserOrganizations(String url, String username, String password, IProgressMonitor monitor) {
-    OkHttpClient.Builder withProxy = buildOkHttpClientWithProxyAndCredentials(url, username, password);
-    EndpointParams endpointPAramsWithoutOrg = createEndpointParams(url, null);
-    ServerApi serverApi = new ServerApi(endpointPAramsWithoutOrg, new SonarLintHttpClientOkHttpImpl(withProxy.build()));
+    var withProxy = buildOkHttpClientWithProxyAndCredentials(url, username, password);
+    var endpointPAramsWithoutOrg = createEndpointParams(url, null);
+    var serverApi = new ServerApi(endpointPAramsWithoutOrg, new SonarLintHttpClientOkHttpImpl(withProxy.build()));
     return serverApi.organization().listUserOrganizations(new WrappedProgressMonitor(monitor, "Fetch organizations"));
   }
 
   public HttpClient buildClientWithProxyAndCredentials() {
-    OkHttpClient.Builder withProxy = SonarLintUtils.withProxy(getHost(), SonarLintCorePlugin.getOkHttpClient());
+    var withProxy = SonarLintUtils.withProxy(getHost(), SonarLintCorePlugin.getOkHttpClient());
     if (hasAuth()) {
       @Nullable
       String username;
@@ -561,7 +555,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   }
 
   public static boolean checkNotificationsSupported(String url, @Nullable String organization, String username, String password) {
-    OkHttpClient.Builder withProxy = buildOkHttpClientWithProxyAndCredentials(url, username, password);
+    var withProxy = buildOkHttpClientWithProxyAndCredentials(url, username, password);
 
     return ServerNotificationsRegistry.isSupported(createEndpointParams(url, organization), new SonarLintHttpClientOkHttpImpl(withProxy.build()));
   }
@@ -571,7 +565,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   }
 
   private static OkHttpClient.Builder buildOkHttpClientWithProxyAndCredentials(String url, @Nullable String username, @Nullable String password) {
-    OkHttpClient.Builder withProxy = SonarLintUtils.withProxy(url, SonarLintCorePlugin.getOkHttpClient());
+    var withProxy = SonarLintUtils.withProxy(url, SonarLintCorePlugin.getOkHttpClient());
     if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
       withProxy.addNetworkInterceptor(new PreemptiveAuthenticatorInterceptor(credentials(username, password)));
     }
@@ -601,7 +595,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public TextSearchIndex<ServerProject> computeProjectIndex() {
-    TextSearchIndex<ServerProject> index = new TextSearchIndex<>();
+    var index = new TextSearchIndex<ServerProject>();
     for (ServerProject project : allProjectsByKey.values()) {
       index.index(project, project.getKey() + " " + project.getName());
     }
@@ -615,12 +609,12 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public Optional<ServerProject> getRemoteProject(String projectKey, IProgressMonitor monitor) {
-    ServerProject remoteProjectFromStorage = allProjectsByKey.get(projectKey);
+    var remoteProjectFromStorage = allProjectsByKey.get(projectKey);
     if (remoteProjectFromStorage != null) {
       return Optional.of(remoteProjectFromStorage);
     } else {
-      ServerApi serverApi = new ServerApi(createEndpointParams(), buildClientWithProxyAndCredentials());
-      Optional<ServerProject> project = serverApi.project().getProject(projectKey, new WrappedProgressMonitor(monitor, "Fetch project name"));
+      var serverApi = new ServerApi(createEndpointParams(), buildClientWithProxyAndCredentials());
+      var project = serverApi.project().getProject(projectKey, new WrappedProgressMonitor(monitor, "Fetch project name"));
       if (project.isPresent()) {
         allProjectsByKey.put(projectKey, project.get());
       }
@@ -693,7 +687,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public Optional<ServerHotspot> getServerHotspot(String hotspotKey, String projectKey) {
-    ServerApi serverApi = new ServerApi(createEndpointParams(), buildClientWithProxyAndCredentials());
+    var serverApi = new ServerApi(createEndpointParams(), buildClientWithProxyAndCredentials());
     return serverApi.hotspot().fetch(new GetSecurityHotspotRequestParams(hotspotKey, projectKey));
   }
 }

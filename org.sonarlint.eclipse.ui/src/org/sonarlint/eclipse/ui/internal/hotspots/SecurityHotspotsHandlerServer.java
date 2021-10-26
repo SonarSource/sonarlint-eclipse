@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,7 +51,6 @@ import org.apache.hc.core5.io.CloseMode;
 import org.apache.hc.core5.net.URLEncodedUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
@@ -60,12 +58,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.Position;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -100,7 +93,7 @@ public class SecurityHotspotsHandlerServer {
   private int port;
 
   public void init() {
-    final SocketConfig socketConfig = SocketConfig.custom()
+    final var socketConfig = SocketConfig.custom()
       .setSoTimeout(15, TimeUnit.SECONDS)
       .setTcpNoDelay(true)
       .build();
@@ -152,18 +145,18 @@ public class SecurityHotspotsHandlerServer {
 
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context) throws HttpException, IOException {
-      boolean trustedServer = Optional.ofNullable(request.getHeader("Origin"))
+      var trustedServer = Optional.ofNullable(request.getHeader("Origin"))
         .map(Header::getValue)
         .map(SecurityHotspotsHandlerServer::isTrustedServer)
         .orElse(false);
       if (PlatformUI.isWorkbenchRunning()) {
         Display.getDefault().syncExec(() -> {
-          String ideName = "Eclipse";
-          IProduct product = Platform.getProduct();
+          var ideName = "Eclipse";
+          var product = Platform.getProduct();
           if (product != null) {
             ideName = defaultString(product.getName(), "Eclipse");
           }
-          String maybeWorkspaceInfo = trustedServer ? ResourcesPlugin.getWorkspace().getRoot().getLocation().lastSegment() : "";
+          var maybeWorkspaceInfo = trustedServer ? ResourcesPlugin.getWorkspace().getRoot().getLocation().lastSegment() : "";
           response.setEntity(new StringEntity(new StatusResponse(ideName, maybeWorkspaceInfo).toJson(), ContentType.APPLICATION_JSON));
           response.setCode(HttpStatus.SC_OK);
         });
@@ -190,7 +183,7 @@ public class SecurityHotspotsHandlerServer {
       if (!Method.GET.isSame(request.getMethod())) {
         throw new MethodNotSupportedException("Only POST is supported");
       }
-      ShowHotspotParameters parameters = getParameters(request, response);
+      var parameters = getParameters(request, response);
       if (parameters == null) {
         response.setCode(HttpStatus.SC_BAD_REQUEST);
         return;
@@ -210,16 +203,16 @@ public class SecurityHotspotsHandlerServer {
     @Nullable
     private static ShowHotspotParameters getParameters(ClassicHttpRequest request, ClassicHttpResponse response)
       throws HttpException {
-      Map<String, String> parameters = extractParameters(request);
-      String projectKey = checkParameter(parameters, "project", response);
+      var parameters = extractParameters(request);
+      var projectKey = checkParameter(parameters, "project", response);
       if (projectKey == null) {
         return null;
       }
-      String hotspotKey = checkParameter(parameters, "hotspot", response);
+      var hotspotKey = checkParameter(parameters, "hotspot", response);
       if (hotspotKey == null) {
         return null;
       }
-      String serverUrl = checkParameter(parameters, "server", response);
+      var serverUrl = checkParameter(parameters, "server", response);
       if (serverUrl == null) {
         return null;
       }
@@ -228,7 +221,7 @@ public class SecurityHotspotsHandlerServer {
 
     private static Map<String, String> extractParameters(ClassicHttpRequest request) throws HttpException {
       try {
-        List<NameValuePair> parameters = URLEncodedUtils.parse(request.getUri().getQuery(), Charset.defaultCharset());
+        var parameters = URLEncodedUtils.parse(request.getUri().getQuery(), Charset.defaultCharset());
         return parameters.stream().collect(Collectors.toMap(NameValuePair::getName, NameValuePair::getValue));
       } catch (URISyntaxException e) {
         throw new HttpException("Unable to parse the request URI", e);
@@ -238,7 +231,7 @@ public class SecurityHotspotsHandlerServer {
     @Nullable
     private static String checkParameter(Map<String, String> parameters, String parameterName,
       ClassicHttpResponse response) {
-      String parameterValue = parameters.get(parameterName);
+      var parameterValue = parameters.get(parameterName);
       if (StringUtils.isEmpty(parameterValue)) {
         missingParameter(response, parameterName);
         return null;
@@ -255,30 +248,30 @@ public class SecurityHotspotsHandlerServer {
     private static void openSecurityHotspot(ShowHotspotParameters parameters) {
       SonarLintCorePlugin.getTelemetry().showHotspotRequestReceived();
       bringToFront();
-      List<IConnectedEngineFacade> serverConnections = SonarLintCorePlugin.getServersManager().findByUrl(parameters.serverUrl);
+      var serverConnections = SonarLintCorePlugin.getServersManager().findByUrl(parameters.serverUrl);
       if (serverConnections.isEmpty()) {
-        IConnectedEngineFacade connection = createConnection(parameters.serverUrl);
+        var connection = createConnection(parameters.serverUrl);
         if (connection == null) {
           showErrorPopup("No connections found for URL: " + parameters.serverUrl);
           return;
         }
-        serverConnections = Arrays.asList(connection);
+        serverConnections = List.of(connection);
       }
-      Optional<FetchedHotspot> fetchedHotspotOpt = fetchHotspotFromAny(serverConnections, parameters);
-      if (!fetchedHotspotOpt.isPresent()) {
+      var fetchedHotspotOpt = fetchHotspotFromAny(serverConnections, parameters);
+      if (fetchedHotspotOpt.isEmpty()) {
         showErrorPopup("Unable to fetch hotspot details using configured connections");
         return;
       }
-      FetchedHotspot fetchedHotspot = fetchedHotspotOpt.get();
-      Optional<ISonarLintFile> hotspotFile = findHotspotFile(fetchedHotspot, parameters.projectKey);
-      if (!hotspotFile.isPresent()) {
-        Optional<ISonarLintProject> boundProject = bindProjectTo(fetchedHotspot, parameters.projectKey);
-        if (!boundProject.isPresent()) {
+      var fetchedHotspot = fetchedHotspotOpt.get();
+      var hotspotFile = findHotspotFile(fetchedHotspot, parameters.projectKey);
+      if (hotspotFile.isEmpty()) {
+        var boundProject = bindProjectTo(fetchedHotspot, parameters.projectKey);
+        if (boundProject.isEmpty()) {
           showErrorPopup("No Eclipse projects bound to project '" + parameters.projectKey + "'");
           return;
         }
         hotspotFile = findHotspotFile(fetchedHotspot, boundProject.get());
-        if (!hotspotFile.isPresent()) {
+        if (hotspotFile.isEmpty()) {
           showErrorPopup("Unable to find file '" + fetchedHotspot.hotspot.filePath + "' in bound project(s)");
           return;
         }
@@ -288,15 +281,15 @@ public class SecurityHotspotsHandlerServer {
 
     private static void showErrorPopup(String msg) {
       Display.getDefault().asyncExec(() -> {
-        FailedToOpenHotspotPopup popup = new FailedToOpenHotspotPopup(msg);
+        var popup = new FailedToOpenHotspotPopup(msg);
         popup.open();
       });
     }
 
     private static void bringToFront() {
       Display.getDefault().syncExec(() -> {
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        Shell shell = window.getShell();
+        var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        var shell = window.getShell();
         if (shell != null) {
           if (shell.getMinimized()) {
             shell.setMinimized(false);
@@ -308,13 +301,13 @@ public class SecurityHotspotsHandlerServer {
 
     @Nullable
     private static IConnectedEngineFacade createConnection(String serverUrl) {
-      ServerConnectionModel model = new ServerConnectionModel();
+      var model = new ServerConnectionModel();
       model.setConnectionType(ConnectionType.ONPREMISE);
       model.setServerUrl(serverUrl);
-      ServerConnectionWizard wizard = new ServerConnectionWizard(model);
+      var wizard = new ServerConnectionWizard(model);
       wizard.setSkipBindingWizard(true);
       return DisplayUtils.syncExec(() -> {
-        WizardDialog dialog = ServerConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
+        var dialog = ServerConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
         dialog.setBlockOnOpen(true);
         dialog.open();
         return wizard.getResultServer();
@@ -322,13 +315,13 @@ public class SecurityHotspotsHandlerServer {
     }
 
     private static Optional<ISonarLintProject> bindProjectTo(FetchedHotspot fetchedHotspot, String projectKey) {
-      IConnectedEngineFacade connection = fetchedHotspot.origin;
-      Optional<ISonarLintProject> pickedProject = DisplayUtils.syncExec(() -> ProjectSelectionDialog.pickProject(fetchedHotspot.hotspot.filePath, projectKey, connection.getId()));
-      if (!pickedProject.isPresent()) {
+      var connection = fetchedHotspot.origin;
+      var pickedProject = DisplayUtils.syncExec(() -> ProjectSelectionDialog.pickProject(fetchedHotspot.hotspot.filePath, projectKey, connection.getId()));
+      if (pickedProject.isEmpty()) {
         return Optional.empty();
       }
-      ISonarLintProject project = pickedProject.get();
-      Job bindingJob = ProjectBindingProcess.scheduleProjectBinding(connection.getId(), Arrays.asList(project), projectKey);
+      var project = pickedProject.get();
+      var bindingJob = ProjectBindingProcess.scheduleProjectBinding(connection.getId(), List.of(project), projectKey);
       try {
         bindingJob.join();
       } catch (InterruptedException e) {
@@ -339,9 +332,9 @@ public class SecurityHotspotsHandlerServer {
     }
 
     private static Optional<ISonarLintFile> findHotspotFile(FetchedHotspot fetchedHotspot, String projectKey) {
-      List<ISonarLintProject> projects = fetchedHotspot.origin.getBoundProjects(projectKey);
-      for (ISonarLintProject project : projects) {
-        Optional<ISonarLintFile> hotspotFile = findHotspotFile(fetchedHotspot, project);
+      var projects = fetchedHotspot.origin.getBoundProjects(projectKey);
+      for (var project : projects) {
+        var hotspotFile = findHotspotFile(fetchedHotspot, project);
         if (hotspotFile.isPresent()) {
           return hotspotFile;
         }
@@ -350,13 +343,9 @@ public class SecurityHotspotsHandlerServer {
     }
 
     private static Optional<ISonarLintFile> findHotspotFile(FetchedHotspot fetchedHotspot, ISonarLintProject project) {
-      Optional<ISonarLintFile> hotspotFile = SonarLintCorePlugin.getServersManager().resolveBinding(project)
+      return SonarLintCorePlugin.getServersManager().resolveBinding(project)
         .flatMap(binding -> binding.getProjectBinding().serverPathToIdePath(fetchedHotspot.hotspot.filePath))
         .flatMap(project::find);
-      if (hotspotFile.isPresent()) {
-        return hotspotFile;
-      }
-      return Optional.empty();
     }
 
     private static class FetchedHotspot {
@@ -370,9 +359,9 @@ public class SecurityHotspotsHandlerServer {
     }
 
     private static Optional<FetchedHotspot> fetchHotspotFromAny(List<IConnectedEngineFacade> serverConnections, ShowHotspotParameters parameters) {
-      for (IConnectedEngineFacade serverConnection : serverConnections) {
+      for (var serverConnection : serverConnections) {
         if (serverConnection != null) {
-          Optional<ServerHotspot> serverHotspot = serverConnection.getServerHotspot(parameters.hotspotKey, parameters.projectKey);
+          var serverHotspot = serverConnection.getServerHotspot(parameters.hotspotKey, parameters.projectKey);
           if (serverHotspot.isPresent()) {
             return Optional.of(new FetchedHotspot(serverConnection, serverHotspot.get()));
           } else {
@@ -385,10 +374,10 @@ public class SecurityHotspotsHandlerServer {
 
     private static void show(ISonarLintFile file, ServerHotspot hotspot) {
       Display.getDefault().syncExec(() -> {
-        IDocument doc = getDocumentFromEditorOrFile(file);
-        IMarker marker = createMarker(file, hotspot, doc);
+        var doc = getDocumentFromEditorOrFile(file);
+        var marker = createMarker(file, hotspot, doc);
         try {
-          HotspotsView view = (HotspotsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HotspotsView.ID);
+          var view = (HotspotsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HotspotsView.ID);
           view.openHotspot(hotspot, marker);
         } catch (Exception e) {
           SonarLintLogger.get().error("Unable to open Hotspots View", e);
@@ -403,8 +392,7 @@ public class SecurityHotspotsHandlerServer {
         marker = file.getResource().createMarker(SonarLintCorePlugin.MARKER_HOTSPOT_ID);
         marker.setAttribute(IMarker.MESSAGE, hotspot.message);
         marker.setAttribute(IMarker.LINE_NUMBER, hotspot.textRange.getStartLine() != null ? hotspot.textRange.getStartLine() : 1);
-        @Nullable
-        Position position = MarkerUtils.getPosition(doc,
+        var position = MarkerUtils.getPosition(doc,
           TextRange.get(hotspot.textRange.getStartLine(), hotspot.textRange.getStartLineOffset(), hotspot.textRange.getEndLine(), hotspot.textRange.getEndLineOffset()));
         if (position != null && Objects.equals(hotspot.codeSnippet, doc.get(position.getOffset(), position.getLength()))) {
           marker.setAttribute(IMarker.CHAR_START, position.getOffset());
@@ -418,7 +406,7 @@ public class SecurityHotspotsHandlerServer {
 
     private static IDocument getDocumentFromEditorOrFile(ISonarLintFile file) {
       IDocument doc;
-      IEditorPart editorPart = PlatformUtils.findEditor(file);
+      var editorPart = PlatformUtils.findEditor(file);
       if (editorPart instanceof ITextEditor) {
         doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
       } else {
@@ -459,7 +447,7 @@ public class SecurityHotspotsHandlerServer {
     @Override
     public void handle(ClassicHttpRequest request, HttpFilterChain.ResponseTrigger responseTrigger, HttpContext context, HttpFilterChain chain)
       throws HttpException, IOException {
-      Header origin = request.getHeader("Origin");
+      var origin = request.getHeader("Origin");
       chain.proceed(request, new HttpFilterChain.ResponseTrigger() {
         @Override
         public void sendInformation(ClassicHttpResponse classicHttpResponse) throws HttpException, IOException {

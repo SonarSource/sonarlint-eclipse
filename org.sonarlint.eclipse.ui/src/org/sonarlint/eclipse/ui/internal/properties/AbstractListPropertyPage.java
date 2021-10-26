@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
-import java.util.Iterator;
 import java.util.function.Consumer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -35,15 +34,14 @@ public abstract class AbstractListPropertyPage extends PropertyPage {
   protected Button editButton;
 
   protected Composite createButtons(Composite innerParent) {
-    GridLayout layout;
-    Composite buttons = new Composite(innerParent, SWT.NONE);
+    var buttons = new Composite(innerParent, SWT.NONE);
     buttons.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-    layout = new GridLayout();
+    var layout = new GridLayout();
     layout.marginHeight = 0;
     layout.marginWidth = 0;
     buttons.setLayout(layout);
 
-    Button addButton = new Button(buttons, SWT.PUSH);
+    var addButton = new Button(buttons, SWT.PUSH);
     addButton.setText("New...");
     addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     addButton.addListener(SWT.Selection, e -> add());
@@ -75,14 +73,14 @@ public abstract class AbstractListPropertyPage extends PropertyPage {
   protected static void removeSelection(TableViewer table, Consumer<Object> remover) {
     IStructuredSelection selection = (IStructuredSelection) table.getSelection();
 
-    int idx = table.getTable().getSelectionIndex();
-    Iterator<?> elements = selection.iterator();
+    var idx = table.getTable().getSelectionIndex();
+    var elements = selection.iterator();
     while (elements.hasNext()) {
       remover.accept(elements.next());
     }
     table.refresh();
 
-    int count = table.getTable().getItemCount();
+    var count = table.getTable().getItemCount();
     if (count > 0) {
       if (idx < 0) {
         table.getTable().select(0);

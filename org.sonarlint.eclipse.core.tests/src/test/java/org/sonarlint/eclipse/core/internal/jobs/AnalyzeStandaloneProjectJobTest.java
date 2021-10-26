@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,7 +33,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -48,14 +46,10 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDo
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
-import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
-import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
@@ -99,36 +93,36 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   @Test
   public void analyzeWithRuleParameters() throws Exception {
-    IFile file = (IFile) project.findMember("src/main/sample.js");
-    DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
-    FileWithDocument fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);
-    RuleConfig ruleConfig = new RuleConfig("javascript:S100", true);
+    var file = (IFile) project.findMember("src/main/sample.js");
+    var slProject = new DefaultSonarLintProjectAdapter(project);
+    var fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);
+    var ruleConfig = new RuleConfig("javascript:S100", true);
     ruleConfig.getParams().put("format", "^[0-9]+$");
-    SonarLintGlobalConfiguration.saveRulesConfig(asList(ruleConfig));
+    SonarLintGlobalConfiguration.saveRulesConfig(List.of(ruleConfig));
 
-    AnalyzeStandaloneProjectJob underTest = new AnalyzeStandaloneProjectJob(new AnalyzeProjectRequest(slProject, asList(fileToAnalyze), TriggerType.EDITOR_CHANGE));
+    var underTest = new AnalyzeStandaloneProjectJob(new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze), TriggerType.EDITOR_CHANGE));
     underTest.schedule();
     assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
-    IStatus status = underTest.getResult();
+    var status = underTest.getResult();
     assertThat(status.isOK()).isTrue();
 
-    List<IMarker> markers = Arrays.asList(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    var markers = List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE))
       .contains(tuple("/SimpleJdtProject/src/main/sample.js", 1, "Rename this 'hello' function to match the regular expression '^[0-9]+$'."));
   }
 
   @Test
   public void analyze_should_only_triggers_a_single_event_for_all_marker_operations() throws Exception {
-    DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
-    FileWithDocument file1ToAnalyze = prepareFile1(project, slProject);
-    FileWithDocument file2ToAnalyze = prepareFile2(project, slProject);
+    var slProject = new DefaultSonarLintProjectAdapter(project);
+    var file1ToAnalyze = prepareFile1(project, slProject);
+    var file2ToAnalyze = prepareFile2(project, slProject);
 
-    MarkerChangeListener mcl = new MarkerChangeListener();
+    var mcl = new MarkerChangeListener();
     workspace.addResourceChangeListener(mcl);
 
     try {
-      AnalyzeStandaloneProjectJob underTest = new AnalyzeStandaloneProjectJob(
-        new AnalyzeProjectRequest(slProject, asList(file1ToAnalyze, file2ToAnalyze), TriggerType.EDITOR_CHANGE));
+      var underTest = new AnalyzeStandaloneProjectJob(
+        new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.EDITOR_CHANGE));
       underTest.schedule();
       assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
@@ -157,15 +151,15 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
   @Test
   public void analyze_report_should_only_triggers_two_events_for_all_marker_operations_when_clear_report() throws Exception {
     DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
-    FileWithDocument file1ToAnalyze = prepareFile1(project, slProject);
-    FileWithDocument file2ToAnalyze = prepareFile2(project, slProject);
+    var file1ToAnalyze = prepareFile1(project, slProject);
+    var file2ToAnalyze = prepareFile2(project, slProject);
 
-    MarkerChangeListener mcl = new MarkerChangeListener();
+    var mcl = new MarkerChangeListener();
     workspace.addResourceChangeListener(mcl);
 
     try {
-      AnalyzeStandaloneProjectJob underTest = new AnalyzeStandaloneProjectJob(
-        new AnalyzeProjectRequest(slProject, asList(file1ToAnalyze, file2ToAnalyze), TriggerType.MANUAL, true));
+      var underTest = new AnalyzeStandaloneProjectJob(
+        new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.MANUAL, true));
       underTest.schedule();
       assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
@@ -195,27 +189,27 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   @Test
   public void analyzeWithQuickFixesWhenFileIsClosed() throws Exception {
-    IFile file = (IFile) project.findMember("src/main/java/com/quickfix/FileWithQuickFixes.java");
-    DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
-    FileWithDocument fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);
+    var file = (IFile) project.findMember("src/main/java/com/quickfix/FileWithQuickFixes.java");
+    var slProject = new DefaultSonarLintProjectAdapter(project);
+    var fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);
 
-    AnalyzeStandaloneProjectJob underTest = new AnalyzeStandaloneProjectJob(new AnalyzeProjectRequest(slProject, asList(fileToAnalyze), TriggerType.EDITOR_CHANGE));
+    var underTest = new AnalyzeStandaloneProjectJob(new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze), TriggerType.EDITOR_CHANGE));
     underTest.schedule();
     assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
-    IStatus status = underTest.getResult();
+    var status = underTest.getResult();
     assertThat(status.isOK()).isTrue();
 
-    List<IMarker> markers = Arrays.asList(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    var markers = List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR))
       .contains(tuple("/SimpleJdtProject/src/main/java/com/quickfix/FileWithQuickFixes.java", 8,
         "Replace the type specification in this constructor call with the diamond operator (\"<>\").", "java:S2293"));
-    IMarker markerWithQuickFix = markers.stream().filter(m -> m.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "").equals("java:S2293")).findFirst().get();
-    MarkerQuickFixes issueQuickFixes = MarkerUtils.getIssueQuickFixes(markerWithQuickFix);
+    var markerWithQuickFix = markers.stream().filter(m -> m.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "").equals("java:S2293")).findFirst().get();
+    var issueQuickFixes = MarkerUtils.getIssueQuickFixes(markerWithQuickFix);
     assertThat(issueQuickFixes.getQuickFixes()).hasSize(1);
-    MarkerQuickFix markerQuickFix = issueQuickFixes.getQuickFixes().get(0);
+    var markerQuickFix = issueQuickFixes.getQuickFixes().get(0);
     assertThat(markerQuickFix.getMessage()).isEqualTo("Replace with <>");
     assertThat(markerQuickFix.getTextEdits()).hasSize(1);
-    MarkerTextEdit markerTextEdit = markerQuickFix.getTextEdits().get(0);
+    var markerTextEdit = markerQuickFix.getTextEdits().get(0);
     assertThat(markerTextEdit.getNewText()).isEqualTo("<>");
     assertThat(markerTextEdit.getMarker()).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, IMarker.CHAR_START, IMarker.CHAR_END))
       .isEqualTo(tuple("/SimpleJdtProject/src/main/java/com/quickfix/FileWithQuickFixes.java", 8, null, 158, 166));
@@ -223,19 +217,19 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
   }
 
   private void verifyMarkers(FileWithDocument file1ToAnalyze, FileWithDocument file2ToAnalyze, String markerType) throws CoreException {
-    List<IMarker> markers1 = Arrays.asList(file1ToAnalyze.getFile().getResource().findMarkers(markerType, true, IResource.DEPTH_ONE));
+    var markers1 = List.of(file1ToAnalyze.getFile().getResource().findMarkers(markerType, true, IResource.DEPTH_ONE));
     assertThat(markers1).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).hasSize(6);
-    List<IMarker> markers2 = Arrays.asList(file2ToAnalyze.getFile().getResource().findMarkers(markerType, true, IResource.DEPTH_ONE));
+    var markers2 = List.of(file2ToAnalyze.getFile().getResource().findMarkers(markerType, true, IResource.DEPTH_ONE));
     assertThat(markers2).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).hasSize(6);
   }
 
   private FileWithDocument prepareFile2(IProject project, DefaultSonarLintProjectAdapter slProject) {
-    IFile file2 = (IFile) project.findMember("src/main/java/com/sonarsource/NpeWithFlow2.java");
+    var file2 = (IFile) project.findMember("src/main/java/com/sonarsource/NpeWithFlow2.java");
     return new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file2), null);
   }
 
   private FileWithDocument prepareFile1(IProject project, DefaultSonarLintProjectAdapter slProject) {
-    IFile file1 = (IFile) project.findMember("src/main/java/com/sonarsource/NpeWithFlow.java");
+    var file1 = (IFile) project.findMember("src/main/java/com/sonarsource/NpeWithFlow.java");
     return new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file1), null);
   }
 
@@ -255,12 +249,12 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     }
 
     private boolean isMarkerChangeEvent(IResourceDelta delta) {
-      int flags = delta.getFlags();
+      var flags = delta.getFlags();
       if ((flags & IResourceDelta.MARKERS) > 0) {
         System.out.println("Changed markers: " + delta.getMarkerDeltas().length);
         return true;
       }
-      for (IResourceDelta child : delta.getAffectedChildren()) {
+      for (var child : delta.getAffectedChildren()) {
         if (isMarkerChangeEvent(child)) {
           return true;
         }
@@ -287,9 +281,9 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
     @Override
     public Tuple apply(IMarker marker) {
-      Object[] tupleAttributes = new Object[attributes.length + 1];
+      var tupleAttributes = new Object[attributes.length + 1];
       tupleAttributes[0] = marker.getResource().getFullPath().toPortableString();
-      for (int i = 0; i < attributes.length; i++) {
+      for (var i = 0; i < attributes.length; i++) {
         try {
           tupleAttributes[i + 1] = marker.getAttribute(attributes[i]);
         } catch (CoreException e) {

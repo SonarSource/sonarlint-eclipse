@@ -22,11 +22,9 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 
@@ -44,16 +42,13 @@ public class SonarLintIssueListener implements IssueListener {
   public void handle(Issue issue) {
     issueCount++;
     ISonarLintIssuable r;
-    ClientInputFile inputFile = issue.getInputFile();
+    var inputFile = issue.getInputFile();
     if (inputFile == null) {
       r = project;
     } else {
       r = inputFile.getClientObject();
     }
-    if (!issuesPerResource.containsKey(r)) {
-      issuesPerResource.put(r, new ArrayList<Issue>());
-    }
-    issuesPerResource.get(r).add(issue);
+    issuesPerResource.computeIfAbsent(r, k -> new ArrayList<>()).add(issue);
     SonarLintNotifications.get().showNotificationIfFirstSecretDetected(issue);
   }
 

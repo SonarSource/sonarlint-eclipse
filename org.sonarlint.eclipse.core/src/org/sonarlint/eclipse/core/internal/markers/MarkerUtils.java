@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.markers;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -40,8 +39,6 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
-import static java.util.Arrays.asList;
-
 public final class MarkerUtils {
 
   public static final String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
@@ -54,8 +51,8 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocations";
   public static final String SONAR_MARKER_QUICK_FIXES_ATTR = "quickfixes";
 
-  public static final Set<String> SONARLINT_PRIMARY_MARKER_IDS = new HashSet<>(
-    asList(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, SonarLintCorePlugin.MARKER_REPORT_ID, SonarLintCorePlugin.MARKER_TAINT_ID));
+  public static final Set<String> SONARLINT_PRIMARY_MARKER_IDS = Set.of(
+    SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, SonarLintCorePlugin.MARKER_REPORT_ID, SonarLintCorePlugin.MARKER_TAINT_ID);
 
   private MarkerUtils() {
   }
@@ -112,16 +109,16 @@ public final class MarkerUtils {
 
   private static <G> G convertToGlobalOffset(final IDocument document, FullTextRange textRange, BiFunction<Integer, Integer, G> function)
     throws BadLocationException {
-    int startLineStartOffset = document.getLineOffset(textRange.getStartLine() - 1);
-    int endLineStartOffset = textRange.getEndLine() != textRange.getStartLine() ? document.getLineOffset(textRange.getEndLine() - 1) : startLineStartOffset;
-    int start = startLineStartOffset + textRange.getStartLineOffset();
-    int end = endLineStartOffset + textRange.getEndLineOffset();
+    var startLineStartOffset = document.getLineOffset(textRange.getStartLine() - 1);
+    var endLineStartOffset = textRange.getEndLine() != textRange.getStartLine() ? document.getLineOffset(textRange.getEndLine() - 1) : startLineStartOffset;
+    var start = startLineStartOffset + textRange.getStartLineOffset();
+    var end = endLineStartOffset + textRange.getEndLineOffset();
     return function.apply(start, end - start);
   }
 
   @Nullable
   public static RuleKey getRuleKey(IMarker marker) {
-    String repositoryAndKey = marker.getAttribute(SONAR_MARKER_RULE_KEY_ATTR, null);
+    var repositoryAndKey = marker.getAttribute(SONAR_MARKER_RULE_KEY_ATTR, null);
     if (repositoryAndKey == null) {
       return null;
     }

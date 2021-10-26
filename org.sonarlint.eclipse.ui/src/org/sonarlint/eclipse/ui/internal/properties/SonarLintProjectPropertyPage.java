@@ -19,9 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
-import java.util.Optional;
+import java.util.List;
 import org.eclipse.jface.window.Window;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -42,8 +41,6 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
-
-import static java.util.Arrays.asList;
 
 /**
  * Property page for projects. It store in
@@ -77,7 +74,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     }
 
     container = new Composite(parent, SWT.NULL);
-    GridLayout layout = new GridLayout();
+    var layout = new GridLayout();
     container.setLayout(layout);
     container.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
     layout.numColumns = 2;
@@ -89,7 +86,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     enabledBtn = new Button(container, SWT.CHECK);
     enabledBtn.setText("Run SonarLint automatically");
     enabledBtn.setSelection(getProjectConfig().isAutoEnabled());
-    GridData layoutData = new GridData();
+    var layoutData = new GridData();
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
 
@@ -97,15 +94,15 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     boundDetails.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     addServerLink = new Link(container, SWT.NONE);
-    GridData gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
+    var gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
     gd.horizontalSpan = 2;
     addServerLink.setLayoutData(gd);
     addServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        String serverId = getProjectConfig().getProjectBinding().map(EclipseProjectBinding::connectionId)
+        var serverId = getProjectConfig().getProjectBinding().map(EclipseProjectBinding::connectionId)
           .orElseThrow(() -> new IllegalStateException("This link should only be visible when there is a serverId"));
-        WizardDialog wd = ServerConnectionWizard.createDialog(container.getShell(), serverId);
+        var wd = ServerConnectionWizard.createDialog(container.getShell(), serverId);
         if (wd.open() == Window.OK) {
           updateState();
         }
@@ -119,7 +116,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     bindLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        final WizardDialog dialog = ProjectBindingWizard.createDialog(container.getShell(), asList(getProject()));
+        final var dialog = ProjectBindingWizard.createDialog(container.getShell(), List.of(getProject()));
         if (dialog.open() == Window.OK) {
           updateState();
         }
@@ -132,7 +129,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
   }
 
   private void updateState() {
-    Optional<EclipseProjectBinding> projectBinding = getProjectConfig().getProjectBinding();
+    var projectBinding = getProjectConfig().getProjectBinding();
     if (projectBinding.isPresent()) {
       boundDetails
         .setText("Bound to the project '" + projectBinding.get().projectKey() + "' on connection '" + serverName(projectBinding.get().connectionId()) + "'");
@@ -141,7 +138,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
       bindLink.setText("<a>Bind this Eclipse project to SonarQube/SonarCloud...</a>");
       boundDetails.setText("");
     }
-    if (projectBinding.isPresent() && !SonarLintCorePlugin.getServersManager().resolveBinding(getProject()).isPresent()) {
+    if (projectBinding.isPresent() && SonarLintCorePlugin.getServersManager().resolveBinding(getProject()).isEmpty()) {
       addServerLink.setText("<a>Re-create SonarQube/SonarCloud connection '" + projectBinding.get().connectionId() + "'</a>");
       addServerLink.setVisible(true);
     } else {
@@ -154,7 +151,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     if (serverId == null) {
       return "";
     }
-    Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().findById(serverId);
+    var server = SonarLintCorePlugin.getServersManager().findById(serverId);
     return server.map(IConnectedEngineFacade::getId).orElseGet(() -> "Unknown server: '" + serverId + "'");
   }
 
@@ -166,7 +163,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
 
   @Override
   public boolean performOk() {
-    SonarLintProjectConfiguration projectConfig = getProjectConfig();
+    var projectConfig = getProjectConfig();
     projectConfig.setAutoEnabled(enabledBtn.getSelection());
     SonarLintCorePlugin.saveConfig(getProject(), projectConfig);
     return super.performOk();

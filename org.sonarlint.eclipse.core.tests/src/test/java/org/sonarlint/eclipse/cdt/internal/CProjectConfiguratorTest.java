@@ -70,13 +70,13 @@ public class CProjectConfiguratorTest {
 
   @Test
   public void should_configure() throws Exception {
-    java.nio.file.Path projectBaseDir = temp.newFolder().toPath();
-    IProject project = mock(IProject.class);
-    IFile file = mock(IFile.class);
+    var projectBaseDir = temp.newFolder().toPath();
+    var project = mock(IProject.class);
+    var file = mock(IFile.class);
     when(file.getProject()).thenReturn(project);
-    IProgressMonitor monitor = mock(IProgressMonitor.class);
-    IScannerInfoProvider infoProvider = mock(IScannerInfoProvider.class);
-    IScannerInfo info = mock(IScannerInfo.class);
+    var monitor = mock(IProgressMonitor.class);
+    var infoProvider = mock(IScannerInfoProvider.class);
+    var info = mock(IScannerInfo.class);
 
     when(cCorePlugin.getScannerInfoProvider(project)).thenReturn(infoProvider);
     when(project.getLocation()).thenReturn(Path.fromOSString(projectBaseDir.toString()));
@@ -84,10 +84,10 @@ public class CProjectConfiguratorTest {
     when(fileValidator.test(file)).thenReturn(true);
     when(jsonFactory.create(anyCollection(), anyString())).thenReturn("json");
 
-    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
-    DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
+    var context = mock(IPreAnalysisContext.class);
+    var slProject = new DefaultSonarLintProjectAdapter(project);
     when(context.getProject()).thenReturn(slProject);
-    ISonarLintFile slFile = mock(ISonarLintFile.class);
+    var slFile = mock(ISonarLintFile.class);
     when(slFile.getProjectRelativePath()).thenReturn(Paths.get("file1").toString());
     when(context.getFilesToAnalyze()).thenReturn(Collections.singleton(slFile));
     when(context.getAnalysisTemporaryFolder()).thenReturn(temp.getRoot().toPath());

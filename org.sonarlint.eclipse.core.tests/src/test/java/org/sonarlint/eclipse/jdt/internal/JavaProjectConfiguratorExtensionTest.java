@@ -40,7 +40,7 @@ public class JavaProjectConfiguratorExtensionTest {
 
   @Test
   public void should_configurate_projects_java_nature() throws CoreException {
-    IProject project = mock(IProject.class);
+    var project = mock(IProject.class);
     when(project.hasNature(JavaCore.NATURE_ID)).thenReturn(true);
     assertThat(extension.canConfigure(new DefaultSonarLintProjectAdapter(project))).isTrue();
   }

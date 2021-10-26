@@ -33,7 +33,6 @@ import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
 import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
-import org.sonarlint.eclipse.ui.quickfixes.IMarkerResolutionEnhancer;
 import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 
 import static java.util.stream.Collectors.toList;
@@ -53,7 +52,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
 
   @Override
   public IMarkerResolution[] getResolutions(final IMarker marker) {
-    List<SortableMarkerResolver> resolutions = new ArrayList<>();
+    var resolutions = new ArrayList<SortableMarkerResolver>();
 
     // note: the display order is independent from the order in this list (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=232383)
 
@@ -85,8 +84,8 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   }
 
   private static ISonarLintMarkerResolver enhance(ISonarLintMarkerResolver target, IMarker marker) {
-    ISonarLintMarkerResolver enhanced = target;
-    for (IMarkerResolutionEnhancer markerResolutionEnhancer : SonarLintUiExtensionTracker.getInstance().getMarkerResolutionEnhancers()) {
+    var enhanced = target;
+    for (var markerResolutionEnhancer : SonarLintUiExtensionTracker.getInstance().getMarkerResolutionEnhancers()) {
       enhanced = markerResolutionEnhancer.enhance(enhanced, marker);
     }
     return enhanced;
@@ -112,7 +111,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   }
 
   private static boolean isStandaloneIssue(IMarker marker) {
-    ISonarLintFile sonarLintFile = Adapters.adapt(marker.getResource(), ISonarLintFile.class);
+    var sonarLintFile = Adapters.adapt(marker.getResource(), ISonarLintFile.class);
     if (sonarLintFile == null) {
       return false;
     }

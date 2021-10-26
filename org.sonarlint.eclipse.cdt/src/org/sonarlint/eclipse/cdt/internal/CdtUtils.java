@@ -27,17 +27,13 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.eclipse.cdt.core.CCorePlugin;
 import org.eclipse.cdt.core.model.CoreModel;
-import org.eclipse.cdt.core.parser.IScannerInfo;
-import org.eclipse.cdt.core.parser.IScannerInfoProvider;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jdt.annotation.Nullable;
@@ -73,14 +69,14 @@ public class CdtUtils {
   }
 
   public void configure(IPreAnalysisContext context, IProgressMonitor monitor) {
-    Collection<ISonarLintFile> filesToAnalyze = context.getFilesToAnalyze()
+    var filesToAnalyze = context.getFilesToAnalyze()
       .stream()
       .filter(f -> f.getResource() instanceof IFile && fileValidator.test((IFile) f.getResource()))
       .collect(Collectors.toList());
 
     try {
-      Collection<ConfiguredFile> configuredFiles = configureCProject(context, context.getProject(), filesToAnalyze);
-      Path jsonPath = writeJson(context, context.getProject(), configuredFiles);
+      var configuredFiles = configureCProject(context, context.getProject(), filesToAnalyze);
+      var jsonPath = writeJson(context, context.getProject(), configuredFiles);
       logger.debug("Wrote build info to: " + jsonPath.toString());
       context.setAnalysisProperty(CFAMILY_USE_CACHE, Boolean.FALSE.toString());
       context.setAnalysisProperty(BUILD_WRAPPER_OUTPUT_PROP, jsonPath.getParent().toString());
@@ -90,14 +86,14 @@ public class CdtUtils {
   }
 
   private Collection<ConfiguredFile> configureCProject(IPreAnalysisContext context, ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze) {
-    List<ConfiguredFile> files = new LinkedList<>();
-    IScannerInfoProvider infoProvider = cCorePlugin.getScannerInfoProvider((IProject) project.getResource());
+    var files = new LinkedList<ConfiguredFile>();
+    var infoProvider = cCorePlugin.getScannerInfoProvider((IProject) project.getResource());
 
     for (ISonarLintFile file : filesToAnalyze) {
-      ConfiguredFile.Builder builder = new ConfiguredFile.Builder((IFile) file.getResource());
+      var builder = new ConfiguredFile.Builder((IFile) file.getResource());
 
-      String path = ((DefaultPreAnalysisContext) context).getLocalPath(file);
-      IScannerInfo fileInfo = infoProvider.getScannerInformation(file.getResource());
+      var path = ((DefaultPreAnalysisContext) context).getLocalPath(file);
+      var fileInfo = infoProvider.getScannerInformation(file.getResource());
 
       builder.includes(fileInfo.getIncludePaths() != null ? fileInfo.getIncludePaths() : new String[0])
         .symbols(fileInfo.getDefinedSymbols() != null ? fileInfo.getDefinedSymbols() : Collections.emptyMap())
@@ -110,12 +106,12 @@ public class CdtUtils {
   }
 
   private Path writeJson(IPreAnalysisContext context, ISonarLintProject project, Collection<ConfiguredFile> files) throws IOException {
-    String json = jsonFactory.create(files, getBaseDir(context, project));
+    var json = jsonFactory.create(files, getBaseDir(context, project));
     return createJsonFile(context.getAnalysisTemporaryFolder(), json);
   }
 
   private static String getBaseDir(IPreAnalysisContext context, ISonarLintProject project) {
-    IPath projectLocation = project.getResource().getLocation();
+    var projectLocation = project.getResource().getLocation();
     if (projectLocation != null) {
       return projectLocation.toFile().toString();
     }
@@ -126,7 +122,7 @@ public class CdtUtils {
 
   @Nullable
   private String getFileLanguage(IProject project, IFile file) {
-    IPath location = file.getLocation();
+    var location = file.getLocation();
     if (location == null) {
       return null;
     }
@@ -149,7 +145,7 @@ public class CdtUtils {
   }
 
   private static Path createJsonFile(Path workDir, String content) throws IOException {
-    Path jsonFilePath = workDir.resolve(BUILD_WRAPPER_OUTPUT_FILENAME);
+    var jsonFilePath = workDir.resolve(BUILD_WRAPPER_OUTPUT_FILENAME);
     Files.createDirectories(workDir);
     Files.write(jsonFilePath, content.getBytes(BUILD_WRAPPER_OUTPUT_CHARSET));
     return jsonFilePath;

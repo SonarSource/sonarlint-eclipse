@@ -23,7 +23,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.PojoProperties;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.SelectObservableValue;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
@@ -56,21 +55,21 @@ public class ConnectionTypeWizardPage extends WizardPage {
   @Override
   public void createControl(Composite parent) {
 
-    Composite radioButtonGroupContainer = new Composite(parent, SWT.NONE);
-    GridLayout layout = new GridLayout();
+    var radioButtonGroupContainer = new Composite(parent, SWT.NONE);
+    var layout = new GridLayout();
     layout.numColumns = 2;
     layout.makeColumnsEqualWidth = true;
     radioButtonGroupContainer.setLayout(layout);
 
-    Button sonarCloudButton = new Button(radioButtonGroupContainer, SWT.RADIO);
+    var sonarCloudButton = new Button(radioButtonGroupContainer, SWT.RADIO);
     sonarCloudButton.setImage(SonarLintImages.IMG_SONARCLOUD_LOGO);
 
-    Button onPremiseButton = new Button(radioButtonGroupContainer, SWT.RADIO);
+    var onPremiseButton = new Button(radioButtonGroupContainer, SWT.RADIO);
     onPremiseButton.setImage(SonarLintImages.IMG_SONARQUBE_LOGO);
 
-    GridData gd = new GridData(GridData.FILL_BOTH);
+    var gd = new GridData(GridData.FILL_BOTH);
     gd.widthHint = 300;
-    Link sonarCloudLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
+    var sonarCloudLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
     sonarCloudLabel.setText("Connect to <a>the online service</a>");
     sonarCloudLabel.setLayoutData(gd);
     sonarCloudLabel.addListener(SWT.Selection, e -> {
@@ -80,19 +79,19 @@ public class ConnectionTypeWizardPage extends WizardPage {
         SonarLintLogger.get().error("Unable to open the browser", ex);
       }
     });
-    Label onPremiseLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
+    var onPremiseLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
     onPremiseLabel.setText("Connect to a server");
     onPremiseLabel.setLayoutData(gd);
 
-    IObservableValue<Boolean> sonarCloudSelection = WidgetProperties.selection().observe(sonarCloudButton);
-    IObservableValue<Boolean> onPremSelection = WidgetProperties.selection().observe(onPremiseButton);
-    SelectObservableValue<ServerConnectionModel.ConnectionType> selectObservable = new SelectObservableValue<>(ServerConnectionModel.ConnectionType.class);
+    var sonarCloudSelection = WidgetProperties.selection().observe(sonarCloudButton);
+    var onPremSelection = WidgetProperties.selection().observe(onPremiseButton);
+    var selectObservable = new SelectObservableValue<>(ServerConnectionModel.ConnectionType.class);
     selectObservable.addOption(ServerConnectionModel.ConnectionType.SONARCLOUD, sonarCloudSelection);
     selectObservable.addOption(ServerConnectionModel.ConnectionType.ONPREMISE, onPremSelection);
-    DataBindingContext dbc = new DataBindingContext();
-    dbc.bindValue(selectObservable, PojoProperties.value(ServerConnectionModel.PROPERTY_CONNECTION_TYPE).observe(model));
+    var dataBindingContext = new DataBindingContext();
+    dataBindingContext.bindValue(selectObservable, PojoProperties.value(ServerConnectionModel.PROPERTY_CONNECTION_TYPE).observe(model));
 
-    WizardPageSupport.create(this, dbc);
+    WizardPageSupport.create(this, dataBindingContext);
 
     setControl(radioButtonGroupContainer);
   }

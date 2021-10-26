@@ -20,26 +20,17 @@
 package org.sonarlint.eclipse.ui.internal.binding.actions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.viewers.IBaseLabelProvider;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -49,7 +40,6 @@ import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFaca
 import org.sonarlint.eclipse.core.internal.jobs.AbstractAnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -66,23 +56,23 @@ public class JobUtils {
    * Use null for project parameter to analyze open files in all projects.
    */
   public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType, Predicate<ISonarLintFile> filter) {
-    Map<ISonarLintProject, List<FileWithDocument>> filesByProject = new HashMap<>();
+    var filesByProject = new HashMap<ISonarLintProject, List<FileWithDocument>>();
 
     collectOpenedFiles(project, filesByProject, filter);
 
-    for (Map.Entry<ISonarLintProject, List<FileWithDocument>> entry : filesByProject.entrySet()) {
-      ISonarLintProject aProject = entry.getKey();
-      AnalyzeProjectRequest request = new AnalyzeProjectRequest(aProject, entry.getValue(), triggerType);
+    for (var entry : filesByProject.entrySet()) {
+      var aProject = entry.getKey();
+      var request = new AnalyzeProjectRequest(aProject, entry.getValue(), triggerType);
       scheduleAutoAnalysisIfEnabled(request);
     }
   }
 
   public static void scheduleAutoAnalysisIfEnabled(AnalyzeProjectRequest request) {
-    ISonarLintProject project = request.getProject();
+    var project = request.getProject();
     if (!project.isOpen()) {
       return;
     }
-    SonarLintProjectConfiguration projectConfiguration = SonarLintCorePlugin.loadConfig(project);
+    var projectConfiguration = SonarLintCorePlugin.loadConfig(project);
     if (projectConfiguration.isAutoEnabled()) {
       AbstractAnalyzeProjectJob.create(request).schedule();
     }
@@ -98,9 +88,9 @@ public class JobUtils {
       // headless tests
       return;
     }
-    for (IWorkbenchWindow win : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-      for (IWorkbenchPage page : win.getPages()) {
-        for (IEditorReference ref : page.getEditorReferences()) {
+    for (var win : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+      for (var page : win.getPages()) {
+        for (var ref : page.getEditorReferences()) {
           collectOpenedFile(project, filesByProject, ref, filter);
         }
       }
@@ -110,18 +100,18 @@ public class JobUtils {
   private static void collectOpenedFile(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
     IEditorReference ref, Predicate<ISonarLintFile> filter) {
     // Be careful to not trigger editor activation
-    IEditorPart editor = ref.getEditor(false);
+    var editor = ref.getEditor(false);
     if (editor == null) {
       return;
     }
-    IEditorInput input = editor.getEditorInput();
+    var input = editor.getEditorInput();
     if (input instanceof IFileEditorInput) {
-      IFile file = ((IFileEditorInput) input).getFile();
-      ISonarLintFile sonarFile = Adapters.adapt(file, ISonarLintFile.class);
+      var file = ((IFileEditorInput) input).getFile();
+      var sonarFile = Adapters.adapt(file, ISonarLintFile.class);
       if (sonarFile != null && (project == null || sonarFile.getProject().equals(project)) && filter.test(sonarFile)) {
         filesByProject.putIfAbsent(sonarFile.getProject(), new ArrayList<>());
         if (editor instanceof ITextEditor) {
-          IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(input);
+          var doc = ((ITextEditor) editor).getDocumentProvider().getDocument(input);
           filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, doc));
         } else {
           filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, null));
@@ -202,19 +192,19 @@ public class JobUtils {
   }
 
   public static void notifyServerViewAfterBindingChange(ISonarLintProject project, @Nullable String oldServerId) {
-    SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(project);
-    String serverId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
+    var projectConfig = SonarLintCorePlugin.loadConfig(project);
+    var serverId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
     if (oldServerId != null && !Objects.equals(serverId, oldServerId)) {
-      Optional<IConnectedEngineFacade> oldServer = SonarLintCorePlugin.getServersManager().findById(oldServerId);
+      var oldServer = SonarLintCorePlugin.getServersManager().findById(oldServerId);
       oldServer.ifPresent(IConnectedEngineFacade::notifyAllListenersStateChanged);
     }
     if (serverId != null) {
-      Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().findById(serverId);
+      var server = SonarLintCorePlugin.getServersManager().findById(serverId);
       server.ifPresent(IConnectedEngineFacade::notifyAllListenersStateChanged);
     }
-    IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
+    var labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
     if (labelProvider != null) {
-      ((SonarLintProjectDecorator) labelProvider).fireChange(Arrays.asList(project));
+      ((SonarLintProjectDecorator) labelProvider).fireChange(List.of(project));
     }
   }
 

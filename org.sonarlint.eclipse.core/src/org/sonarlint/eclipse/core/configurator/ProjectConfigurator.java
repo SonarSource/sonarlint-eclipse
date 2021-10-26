@@ -65,7 +65,7 @@ public abstract class ProjectConfigurator {
     if (value == null) {
       return;
     }
-    String newValue = properties.get(key);
+    var newValue = properties.get(key);
     if (newValue != null) {
       newValue += SEPARATOR + value;
     } else {

@@ -56,8 +56,8 @@ public class CreationDateField extends MarkerField {
   }
 
   public static final int getFontWidth(Control control) {
-    GC gc = new GC(control.getDisplay());
-    int width = gc.getFontMetrics().getAverageCharWidth();
+    var gc = new GC(control.getDisplay());
+    var width = gc.getFontMetrics().getAverageCharWidth();
     gc.dispose();
     return width;
   }

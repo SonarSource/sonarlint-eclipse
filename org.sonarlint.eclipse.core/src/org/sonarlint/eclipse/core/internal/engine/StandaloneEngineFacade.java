@@ -22,8 +22,6 @@ package org.sonarlint.eclipse.core.internal.engine;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -33,7 +31,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
 import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
-import org.sonarlint.eclipse.core.internal.utils.NodeJsManager;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
@@ -42,7 +39,6 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration.Builder;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneSonarLintEngine;
 
@@ -57,20 +53,19 @@ public class StandaloneEngineFacade {
   private synchronized StandaloneSonarLintEngine getOrCreateEngine() {
     if (wrappedEngine == null) {
       SonarLintLogger.get().info("Starting standalone SonarLint engine " + SonarLintUtils.getPluginVersion() + "...");
-      Enumeration<URL> pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle().findEntries("/plugins", "*.jar", false);
+      var pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle().findEntries("/plugins", "*.jar", false);
       if (pluginEntriesEnum != null) {
-        List<URL> pluginEntries = Collections.list(pluginEntriesEnum);
+        var pluginEntries = Collections.list(pluginEntriesEnum);
         SonarLintLogger.get().debug("Loading embedded analyzers...");
         pluginEntries.stream().forEach(e -> SonarLintLogger.get().debug("  - " + e.getFile()));
-        NodeJsManager nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
-        Builder builder = StandaloneGlobalConfiguration.builder()
+        var nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
+        var globalConfig = StandaloneGlobalConfiguration.builder()
           .addPlugins(pluginEntries.toArray(new URL[0]))
           .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
           .setLogOutput(new SonarLintAnalyzerLogOutput())
           .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
-          .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion());
-        SonarLintUtils.getPlatformPid().ifPresent(builder::setClientPid);
-        StandaloneGlobalConfiguration globalConfig = builder.build();
+          .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
+          .setClientPid(SonarLintUtils.getPlatformPid()).build();
         try {
           wrappedEngine = new StandaloneSonarLintEngineImpl(globalConfig);
           SkippedPluginsNotifier.notifyForSkippedPlugins(wrappedEngine.getPluginDetails(), null);
@@ -98,7 +93,7 @@ public class StandaloneEngineFacade {
   @Nullable
   public AnalysisResults runAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor) {
     return withEngine(engine -> {
-      AnalysisResults analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
+      var analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
       AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, engine.getPluginDetails());
       return analysisResults;
     }).orElse(null);

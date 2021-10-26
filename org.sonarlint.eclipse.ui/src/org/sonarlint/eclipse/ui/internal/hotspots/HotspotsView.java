@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jface.text.Position;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -45,18 +44,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.PageBook;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -79,24 +73,24 @@ public class HotspotsView extends ViewPart {
 
   @Override
   public void createPartControl(Composite parent) {
-    FormToolkit toolkit = new FormToolkit(parent.getDisplay());
+    var toolkit = new FormToolkit(parent.getDisplay());
     book = new PageBook(parent, SWT.NONE);
 
-    Control noHotspotsMessage = createNoHotspotsMessage(toolkit);
+    var noHotspotsMessage = createNoHotspotsMessage(toolkit);
     hotspotsPage = createHotspotsPage(toolkit);
     book.showPage(noHotspotsMessage);
 
   }
 
   private Control createNoHotspotsMessage(FormToolkit kit) {
-    Form form = kit.createForm(book);
-    Composite body = form.getBody();
-    GridLayout layout = new GridLayout();
+    var form = kit.createForm(book);
+    var body = form.getBody();
+    var layout = new GridLayout();
     body.setLayout(layout);
 
-    Link emptyMsg = new Link(body, SWT.CENTER | SWT.WRAP);
+    var emptyMsg = new Link(body, SWT.CENTER | SWT.WRAP);
     emptyMsg.setText("You can open a Security Hotspot from SonarQube. <a>Learn more</a>");
-    GridData gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
+    var gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
     emptyMsg.setLayoutData(gd);
     emptyMsg.setBackground(emptyMsg.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
     emptyMsg.addSelectionListener(new SelectionAdapter() {
@@ -113,31 +107,31 @@ public class HotspotsView extends ViewPart {
   }
 
   private Control createHotspotsPage(FormToolkit kit) {
-    Form form = kit.createForm(book);
-    Composite body = form.getBody();
-    GridLayout layout = new GridLayout();
+    var form = kit.createForm(book);
+    var body = form.getBody();
+    var layout = new GridLayout();
     body.setLayout(layout);
 
     splitter = new SashForm(body, SWT.NONE);
-    GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+    var gd = new GridData(SWT.FILL, SWT.FILL, true, true);
     splitter.setLayoutData(gd);
     splitter.setOrientation(SWT.HORIZONTAL);
 
     createHotspotTable();
 
-    final TabFolder tabFolder = new TabFolder(splitter, SWT.NONE);
+    final var tabFolder = new TabFolder(splitter, SWT.NONE);
 
-    TabItem riskDescriptionTab = new TabItem(tabFolder, SWT.NONE);
+    var riskDescriptionTab = new TabItem(tabFolder, SWT.NONE);
     riskDescriptionTab.setText("What's the risk?");
     riskDescriptionTab.setToolTipText("Risk decription");
     riskDescriptionTab.setControl(createRiskDescriptionControl(tabFolder));
 
-    TabItem vulnerabilityDescriptionTab = new TabItem(tabFolder, SWT.NONE);
+    var vulnerabilityDescriptionTab = new TabItem(tabFolder, SWT.NONE);
     vulnerabilityDescriptionTab.setText("Are you at risk?");
     vulnerabilityDescriptionTab.setToolTipText("Vulnerability decription");
     vulnerabilityDescriptionTab.setControl(createVulnerabilityDescriptionControl(tabFolder));
 
-    TabItem fixRecommendationsTab = new TabItem(tabFolder, SWT.NONE);
+    var fixRecommendationsTab = new TabItem(tabFolder, SWT.NONE);
     fixRecommendationsTab.setText("How can you fix it?");
     fixRecommendationsTab.setToolTipText("Recommendations");
     fixRecommendationsTab.setControl(createFixRecommendationsControl(tabFolder));
@@ -150,7 +144,7 @@ public class HotspotsView extends ViewPart {
 
       @Override
       protected String body() {
-        ServerHotspot hotspot = getSelectedHotspot();
+        var hotspot = getSelectedHotspot();
         if (hotspot == null) {
           return NO_SECURITY_HOTSPOTS_SELECTED;
         }
@@ -166,7 +160,7 @@ public class HotspotsView extends ViewPart {
 
       @Override
       protected String body() {
-        ServerHotspot hotspot = getSelectedHotspot();
+        var hotspot = getSelectedHotspot();
         if (hotspot == null) {
           return NO_SECURITY_HOTSPOTS_SELECTED;
         }
@@ -181,7 +175,7 @@ public class HotspotsView extends ViewPart {
 
       @Override
       protected String body() {
-        ServerHotspot hotspot = getSelectedHotspot();
+        var hotspot = getSelectedHotspot();
         if (hotspot == null) {
           return NO_SECURITY_HOTSPOTS_SELECTED;
         }
@@ -197,7 +191,7 @@ public class HotspotsView extends ViewPart {
 
   @Nullable
   private ServerHotspot getSelectedHotspot() {
-    Object firstElement = hotspotViewer.getStructuredSelection().getFirstElement();
+    var firstElement = hotspotViewer.getStructuredSelection().getFirstElement();
     return firstElement != null ? ((HotspotAndMarker) firstElement).hotspot : null;
   }
 
@@ -210,7 +204,7 @@ public class HotspotsView extends ViewPart {
       }
     };
 
-    final Table table = hotspotViewer.getTable();
+    final var table = hotspotViewer.getTable();
     table.setHeaderVisible(true);
     table.setLinesVisible(true);
 
@@ -233,7 +227,7 @@ public class HotspotsView extends ViewPart {
 
     hotspotViewer.addDoubleClickListener(event -> openMarkerOfSelectedHotspot());
 
-    TableViewerColumn colPriority = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    var colPriority = new TableViewerColumn(hotspotViewer, SWT.NONE);
     colPriority.getColumn().setText("Priority");
     colPriority.getColumn().setResizable(true);
     colPriority.setLabelProvider(new ColumnLabelProvider() {
@@ -259,26 +253,25 @@ public class HotspotsView extends ViewPart {
       }
     });
 
-    TableViewerColumn colDescription = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    var colDescription = new TableViewerColumn(hotspotViewer, SWT.NONE);
     colDescription.getColumn().setText("Description");
     colDescription.getColumn().setResizable(true);
     colDescription.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        boolean locationValid = isLocationValid(element);
+        var locationValid = isLocationValid(element);
 
         return ((HotspotAndMarker) element).hotspot.message + (locationValid ? "" : " (Local code not matching)");
       }
 
       private boolean isLocationValid(Object element) {
         boolean locationValid;
-        @Nullable
-        IMarker marker = ((HotspotAndMarker) element).marker;
+        var marker = ((HotspotAndMarker) element).marker;
         if (marker != null) {
           locationValid = marker.exists() && marker.getAttribute(IMarker.CHAR_START, -1) >= 0;
-          ITextEditor editor = LocationsUtils.findOpenEditorFor(marker);
+          var editor = LocationsUtils.findOpenEditorFor(marker);
           if (editor != null) {
-            Position p = LocationsUtils.getMarkerPosition(marker, editor);
+            var p = LocationsUtils.getMarkerPosition(marker, editor);
             locationValid = locationValid && p != null && !p.isDeleted();
           }
         } else {
@@ -288,48 +281,48 @@ public class HotspotsView extends ViewPart {
       }
     });
 
-    TableViewerColumn colCategory = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    var colCategory = new TableViewerColumn(hotspotViewer, SWT.NONE);
     colCategory.getColumn().setText("Category");
     colCategory.getColumn().setResizable(true);
     colCategory.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        HotspotAndMarker hotspotAndMarker = (HotspotAndMarker) element;
+        var hotspotAndMarker = (HotspotAndMarker) element;
         return SecurityHotspotCategory.findByShortName(hotspotAndMarker.hotspot.rule.securityCategory)
           .map(SecurityHotspotCategory::getLongName)
           .orElse(hotspotAndMarker.hotspot.rule.securityCategory);
       }
     });
 
-    TableViewerColumn colResource = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    var colResource = new TableViewerColumn(hotspotViewer, SWT.NONE);
     colResource.getColumn().setText("Resource");
     colResource.getColumn().setResizable(true);
     colResource.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        HotspotAndMarker hotspotAndMarker = (HotspotAndMarker) element;
+        var hotspotAndMarker = (HotspotAndMarker) element;
         return hotspotAndMarker.marker != null ? hotspotAndMarker.marker.getResource().getName() : "";
       }
     });
 
-    TableViewerColumn colLine = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    var colLine = new TableViewerColumn(hotspotViewer, SWT.NONE);
     colLine.getColumn().setText("Location");
     colLine.getColumn().setResizable(true);
     colLine.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        HotspotAndMarker hotspotAndMarker = (HotspotAndMarker) element;
+        var hotspotAndMarker = (HotspotAndMarker) element;
         return "line " + hotspotAndMarker.hotspot.textRange.getStartLine();
       }
     });
 
-    TableViewerColumn colRuleKey = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    var colRuleKey = new TableViewerColumn(hotspotViewer, SWT.NONE);
     colRuleKey.getColumn().setText("Rule");
     colRuleKey.getColumn().setResizable(true);
     colRuleKey.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        HotspotAndMarker hotspotAndMarker = (HotspotAndMarker) element;
+        var hotspotAndMarker = (HotspotAndMarker) element;
         return hotspotAndMarker.hotspot.rule.key;
       }
     });
@@ -340,14 +333,14 @@ public class HotspotsView extends ViewPart {
   public void openHotspot(ServerHotspot hotspot, @Nullable IMarker marker) {
     clearMarkers();
 
-    HotspotAndMarker hotspotAndMarker = new HotspotAndMarker(hotspot, marker);
+    var hotspotAndMarker = new HotspotAndMarker(hotspot, marker);
 
     book.showPage(hotspotsPage);
     hotspotViewer.setInput(new HotspotAndMarker[] {hotspotAndMarker});
     hotspotViewer.setSelection(new StructuredSelection(hotspotAndMarker));
     hotspotViewer.refresh();
-    for (TableColumn c : hotspotViewer.getTable().getColumns()) {
-      c.pack();
+    for (var column : hotspotViewer.getTable().getColumns()) {
+      column.pack();
     }
     splitter.layout();
 
@@ -355,7 +348,7 @@ public class HotspotsView extends ViewPart {
   }
 
   private void clearMarkers() {
-    HotspotAndMarker[] previous = (HotspotAndMarker[]) hotspotViewer.getInput();
+    var previous = (HotspotAndMarker[]) hotspotViewer.getInput();
     if (previous != null) {
       Stream.of(previous).forEach(h -> {
         if (h.marker != null) {
@@ -370,11 +363,11 @@ public class HotspotsView extends ViewPart {
   }
 
   private void openMarkerOfSelectedHotspot() {
-    Object firstElement = hotspotViewer.getStructuredSelection().getFirstElement();
-    IMarker marker = firstElement != null ? ((HotspotAndMarker) firstElement).marker : null;
+    var firstElement = hotspotViewer.getStructuredSelection().getFirstElement();
+    var marker = firstElement != null ? ((HotspotAndMarker) firstElement).marker : null;
     if (marker != null && marker.exists()) {
       try {
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IDE.openEditor(page, marker);
       } catch (PartInitException e) {
         SonarLintLogger.get().error("Unable to open editor with hotspot", e);

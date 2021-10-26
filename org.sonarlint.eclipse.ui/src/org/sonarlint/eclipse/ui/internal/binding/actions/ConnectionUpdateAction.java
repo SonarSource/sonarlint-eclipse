@@ -20,9 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.binding.actions;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.actions.SelectionProviderAction;
@@ -49,12 +47,12 @@ public class ConnectionUpdateAction extends SelectionProviderAction {
       return;
     }
     servers = new ArrayList<>();
-    boolean enabled = false;
-    Iterator iterator = sel.iterator();
+    var enabled = false;
+    var iterator = sel.iterator();
     while (iterator.hasNext()) {
-      Object obj = iterator.next();
+      var obj = iterator.next();
       if (obj instanceof IConnectedEngineFacade) {
-        IConnectedEngineFacade server = (IConnectedEngineFacade) obj;
+        var server = (IConnectedEngineFacade) obj;
         servers.add(server);
         enabled = true;
       } else {
@@ -76,15 +74,15 @@ public class ConnectionUpdateAction extends SelectionProviderAction {
     // To handle the case where servers is null, the selectionChanged method is called
     // to ensure servers will be populated.
     if (servers == null) {
-      IStructuredSelection sel = getStructuredSelection();
+      var sel = getStructuredSelection();
       if (sel != null) {
         selectionChanged(sel);
       }
     }
 
     if (servers != null) {
-      for (final IConnectedEngineFacade server : servers) {
-        Job job = new ServerUpdateJob(server);
+      for (final var server : servers) {
+        var job = new ServerUpdateJob(server);
         // note: this is only necessary for projects bound before SQ 6.6
         JobUtils.scheduleAfterSuccess(job,
           () -> SonarLintCorePlugin.getInstance().notificationsManager().subscribeToNotifications(server.getBoundProjects(), SonarLintUiPlugin.getDefault().listenerFactory()));

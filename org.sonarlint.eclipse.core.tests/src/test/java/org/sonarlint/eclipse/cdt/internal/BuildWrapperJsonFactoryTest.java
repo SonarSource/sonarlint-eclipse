@@ -19,9 +19,6 @@
  */
 package org.sonarlint.eclipse.cdt.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -29,12 +26,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.core.resources.IFile;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class BuildWrapperJsonFactoryTest {
   private BuildWrapperJsonFactory writer;
@@ -46,8 +43,8 @@ public class BuildWrapperJsonFactoryTest {
 
   @Test
   public void test() throws IOException, URISyntaxException {
-    List<ConfiguredFile> info = new ArrayList<>();
-    Map<String, String> defines1 = new LinkedHashMap<>();
+    var info = new ArrayList<ConfiguredFile>();
+    var defines1 = new LinkedHashMap<String, String>();
     defines1.put("MACRO1", "V1");
     defines1.put("MACRO2", "V2");
 
@@ -57,7 +54,7 @@ public class BuildWrapperJsonFactoryTest {
       .path("path/to/file1")
       .build());
 
-    Map<String, String> defines2 = new LinkedHashMap<>();
+    var defines2 = new LinkedHashMap<String, String>();
     defines2.put("MACRO1", "V1");
     defines2.put("MACRO2", "V2");
     defines2.put("MACRO3", "V3");
@@ -68,13 +65,13 @@ public class BuildWrapperJsonFactoryTest {
       .path("\\path\\to\\file2")
       .build());
 
-    String json = writer.create(info, "/path/to/projectBaseDir");
+    var json = writer.create(info, "/path/to/projectBaseDir");
     assertThat(json).isEqualTo(loadExpected());
 
   }
 
   private String loadExpected() throws IOException, URISyntaxException {
-    String str = new String(Files.readAllBytes(Paths.get("src", "test", "resources", "expected.json")), StandardCharsets.UTF_8);
+    var str = new String(Files.readAllBytes(Paths.get("src", "test", "resources", "expected.json")), StandardCharsets.UTF_8);
     return str.replace("\n", "").replace("\r", "");
   }
 }

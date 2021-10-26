@@ -36,7 +36,7 @@ public class BindingsViewLabelProvider extends BaseCellLabelProvider {
   @Override
   public String getText(Object element) {
     if (element instanceof IConnectedEngineFacade) {
-      IConnectedEngineFacade server = (IConnectedEngineFacade) element;
+      var server = (IConnectedEngineFacade) element;
       return StringUtils.defaultString(server.getId());
     }
     if (element instanceof RemoteSonarProject) {

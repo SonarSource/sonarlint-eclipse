@@ -28,7 +28,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.EditNotificationsWizard;
 import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotification;
@@ -57,7 +56,7 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
     super.createContentArea(composite);
 
     addLink("Open in " + sqOrSc, e -> {
-      SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
+      var telemetry = SonarLintCorePlugin.getTelemetry();
       telemetry.devNotificationsClicked(notification.category());
       try {
         PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(notification.link()));

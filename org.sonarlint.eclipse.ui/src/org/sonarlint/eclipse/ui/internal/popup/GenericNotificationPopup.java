@@ -24,7 +24,6 @@ import java.net.URL;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -64,7 +63,7 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
     addLink("Dismiss", e -> close());
 
     addLink("More details...", e -> {
-      DialogWithLink dialog = new DialogWithLink(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "SonarLint - " + title, longMsg);
+      var dialog = new DialogWithLink(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "SonarLint - " + title, longMsg);
       dialog.open();
       close();
     });
@@ -95,14 +94,14 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
 
     @Override
     protected Control createDialogArea(Composite parent) {
-      Composite composite = (Composite) super.createDialogArea(parent);
-      Link messageLink = new Link(composite, SWT.WRAP);
+      var composite = (Composite) super.createDialogArea(parent);
+      var messageLink = new Link(composite, SWT.WRAP);
       messageLink.setText(message);
       messageLink.addSelectionListener(new SelectionAdapter() {
         @Override
         public void widgetSelected(SelectionEvent e) {
           if ("#edit-settings".equals(e.text)) {
-            PreferenceDialog pref = PreferencesUtil.createPreferenceDialogOn(DialogWithLink.this.getShell(), SonarLintPreferencePage.ID, null, null);
+            var pref = PreferencesUtil.createPreferenceDialogOn(DialogWithLink.this.getShell(), SonarLintPreferencePage.ID, null, null);
             if (pref != null) {
               pref.open();
             }

@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.notifications;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,7 +46,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.notifications.internal.AnimationUtil;
@@ -116,7 +114,7 @@ public abstract class AbstractNotificationPopup extends Window {
   private static Listener resizeListener = new Listener() {
     @Override
     public void handleEvent(Event e) {
-      Shell resized = (Shell) e.widget;
+      var resized = (Shell) e.widget;
       inSameParentShell(resized).forEach(AbstractNotificationPopup::initializeBounds);
     }
   };
@@ -134,7 +132,7 @@ public abstract class AbstractNotificationPopup extends Window {
 
     this.closeJob.setSystem(true);
 
-    if (!Arrays.asList(getParentShell().getListeners(SWT.Resize)).contains(resizeListener)) {
+    if (!List.of(getParentShell().getListeners(SWT.Resize)).contains(resizeListener)) {
       getParentShell().addListener(SWT.Resize, resizeListener);
       getParentShell().addListener(SWT.Move, resizeListener);
     }
@@ -245,17 +243,17 @@ public abstract class AbstractNotificationPopup extends Window {
   protected void createTitleArea(Composite parent) {
     ((GridData) parent.getLayoutData()).heightHint = TITLE_HEIGHT;
 
-    Label titleImageLabel = new Label(parent, SWT.NONE);
+    var titleImageLabel = new Label(parent, SWT.NONE);
     titleImageLabel.setImage(getPopupShellImage(TITLE_HEIGHT));
 
-    Label titleTextLabel = new Label(parent, SWT.NONE);
+    var titleTextLabel = new Label(parent, SWT.NONE);
     titleTextLabel.setText(getPopupShellTitle());
     titleTextLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
     titleTextLabel.setForeground(getTitleForeground());
     titleTextLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, true));
     titleTextLabel.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
 
-    final Label button = new Label(parent, SWT.NONE);
+    final var button = new Label(parent, SWT.NONE);
     button.setImage(SonarLintImages.NOTIFICATION_CLOSE);
     button.addMouseTrackListener(new MouseTrackAdapter() {
       @Override
@@ -303,10 +301,10 @@ public abstract class AbstractNotificationPopup extends Window {
     ((GridLayout) parent.getLayout()).marginHeight = 1;
 
     /* Outer Composite holding the controls */
-    final Composite outerCircle = new Composite(parent, SWT.NO_FOCUS);
+    final var outerCircle = new Composite(parent, SWT.NO_FOCUS);
     outerCircle.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-    GridLayout layout = new GridLayout(1, false);
+    var layout = new GridLayout(1, false);
     layout.marginWidth = 0;
     layout.marginHeight = 0;
     layout.verticalSpacing = 0;
@@ -314,7 +312,7 @@ public abstract class AbstractNotificationPopup extends Window {
     outerCircle.setLayout(layout);
 
     /* Title area containing label and close button */
-    final Composite titleCircle = new Composite(outerCircle, SWT.NO_FOCUS);
+    final var titleCircle = new Composite(outerCircle, SWT.NO_FOCUS);
     titleCircle.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
     layout = new GridLayout(4, false);
@@ -328,8 +326,8 @@ public abstract class AbstractNotificationPopup extends Window {
     /* Create Title Area */
     createTitleArea(titleCircle);
 
-    /* Outer composite to hold content controlls */
-    Composite outerContentCircle = new Composite(outerCircle, SWT.NONE);
+    /* Outer composite to hold content controls */
+    var outerContentCircle = new Composite(outerCircle, SWT.NONE);
 
     layout = new GridLayout(1, false);
     layout.marginWidth = 0;
@@ -339,7 +337,7 @@ public abstract class AbstractNotificationPopup extends Window {
     outerContentCircle.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
     /* Middle composite to show a 1px black line around the content controls */
-    Composite middleContentCircle = new Composite(outerContentCircle, SWT.NO_FOCUS);
+    var middleContentCircle = new Composite(outerContentCircle, SWT.NO_FOCUS);
 
     layout = new GridLayout(1, false);
     layout.marginWidth = 0;
@@ -350,7 +348,7 @@ public abstract class AbstractNotificationPopup extends Window {
     middleContentCircle.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
     /* Inner composite containing the content controls */
-    Composite innerContent = new Composite(middleContentCircle, SWT.NO_FOCUS);
+    var innerContent = new Composite(middleContentCircle, SWT.NO_FOCUS);
     innerContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
     layout = new GridLayout(1, false);
@@ -370,21 +368,21 @@ public abstract class AbstractNotificationPopup extends Window {
 
   @Override
   protected void initializeBounds() {
-    Rectangle clArea = getPrimaryClientArea();
-    Point initialSize = this.shell.computeSize(MAX_WIDTH, SWT.DEFAULT);
-    int width = Math.min(initialSize.x, MAX_WIDTH);
-    int height = Math.max(initialSize.y, MIN_HEIGHT);
+    var clArea = getPrimaryClientArea();
+    var initialSize = this.shell.computeSize(MAX_WIDTH, SWT.DEFAULT);
+    var width = Math.min(initialSize.x, MAX_WIDTH);
+    var height = Math.max(initialSize.y, MIN_HEIGHT);
 
-    int startY = clArea.height + clArea.y - PADDING_EDGE;
+    var startY = clArea.height + clArea.y - PADDING_EDGE;
 
-    List<AbstractNotificationPopup> inSameParentShell = inSameParentShell(this.getParentShell());
-    int myIndex = inSameParentShell.indexOf(this);
+    var inSameParentShell = inSameParentShell(this.getParentShell());
+    var myIndex = inSameParentShell.indexOf(this);
     if (myIndex > 0) {
-      Shell popupBelow = inSameParentShell.get(myIndex - 1).getShell();
+      var popupBelow = inSameParentShell.get(myIndex - 1).getShell();
       startY = popupBelow.getLocation().y;
     }
 
-    Point size = new Point(width, height);
+    var size = new Point(width, height);
     this.shell.setLocation(clArea.width + clArea.x - size.x - PADDING_EDGE, Math.max(clArea.y + PADDING_TOP, startY - size.y));
     this.shell.setSize(size);
   }
@@ -401,7 +399,7 @@ public abstract class AbstractNotificationPopup extends Window {
       return getParentShell().getBounds();
     }
     // else display on primary monitor
-    Monitor primaryMonitor = this.shell.getDisplay().getPrimaryMonitor();
+    var primaryMonitor = this.shell.getDisplay().getPrimaryMonitor();
     return (primaryMonitor != null) ? primaryMonitor.getClientArea() : this.shell.getDisplay().getClientArea();
   }
 

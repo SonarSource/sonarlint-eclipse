@@ -21,8 +21,8 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
@@ -96,26 +96,26 @@ public class PersistentIssueTrackerCacheTest extends SonarTestCase {
 
   @Test
   public void should_persist_issues_when_inmemory_limit_reached() {
-    int i = 0;
+    var i = 0;
     for (; i < PersistentIssueTrackerCache.MAX_ENTRIES; i++) {
-      cache.put("file" + i, Collections.emptyList());
+      cache.put("file" + i, List.of());
     }
-    assertThat(stubIssueStore.size()).isEqualTo(0);
+    assertThat(stubIssueStore.size()).isZero();
 
-    cache.put("file" + i++, Collections.emptyList());
+    cache.put("file" + i++, List.of());
     assertThat(stubIssueStore.size()).isEqualTo(1);
 
-    cache.put("file" + i++, Collections.emptyList());
+    cache.put("file" + i++, List.of());
     assertThat(stubIssueStore.size()).isEqualTo(2);
   }
 
   @Test
   public void should_persist_issues_on_shutdown() {
-    int count = PersistentIssueTrackerCache.MAX_ENTRIES / 2;
+    var count = PersistentIssueTrackerCache.MAX_ENTRIES / 2;
     for (int i = 0; i < count; i++) {
-      cache.put("file" + i, Collections.emptyList());
+      cache.put("file" + i, List.of());
     }
-    assertThat(stubIssueStore.size()).isEqualTo(0);
+    assertThat(stubIssueStore.size()).isZero();
 
     cache.shutdown();
     assertThat(stubIssueStore.size()).isEqualTo(count);
@@ -123,31 +123,31 @@ public class PersistentIssueTrackerCacheTest extends SonarTestCase {
 
   @Test
   public void should_return_empty_for_file_never_analyzed() {
-    String file = "nonexistent";
+    var file = "nonexistent";
     assertThat(cache.isFirstAnalysis(file)).isTrue();
     assertThat(cache.getCurrentTrackables(file)).isEmpty();
   }
 
   @Test
   public void should_return_empty_for_file_with_no_issues_as_cached() {
-    String file = "dummy file";
-    cache.put(file, Collections.emptyList());
+    var file = "dummy file";
+    cache.put(file, List.of());
     assertThat(cache.isFirstAnalysis(file)).isFalse();
     assertThat(cache.getCurrentTrackables(file)).isEmpty();
   }
 
   @Test
   public void should_return_empty_for_file_with_no_issues_as_persisted() throws IOException {
-    String file = "dummy file";
-    stubIssueStore.save(file, Collections.emptyList());
+    var file = "dummy file";
+    stubIssueStore.save(file, List.of());
     assertThat(cache.isFirstAnalysis(file)).isFalse();
     assertThat(cache.getCurrentTrackables(file)).isEmpty();
   }
 
   @Test
   public void should_clear_cache_and_storage_too() throws IOException {
-    String file = "dummy file";
-    cache.put(file, Collections.singletonList(mock(Trackable.class)));
+    var file = "dummy file";
+    cache.put(file, List.of(mock(Trackable.class)));
     cache.flushAll();
 
     assertThat(cache.getCurrentTrackables(file)).isNotEmpty();

@@ -43,7 +43,7 @@ public class StringUtils {
     if (str == null || (strLen = str.length()) == 0) {
       return true;
     }
-    for (int i = 0; i < strLen; i++) {
+    for (var i = 0; i < strLen; i++) {
       if (!Character.isWhitespace(str.charAt(i))) {
         return false;
       }
@@ -67,7 +67,7 @@ public class StringUtils {
     if (isEmpty(separator)) {
       return EMPTY;
     }
-    int pos = str.lastIndexOf(separator);
+    var pos = str.lastIndexOf(separator);
     if (pos == INDEX_NOT_FOUND || pos == (str.length() - separator.length())) {
       return EMPTY;
     }
@@ -112,7 +112,7 @@ public class StringUtils {
     if (cs == null || (strLen = cs.length()) == 0) {
       return true;
     }
-    for (int i = 0; i < strLen; i++) {
+    for (var i = 0; i < strLen; i++) {
       if (!Character.isWhitespace(cs.charAt(i))) {
         return false;
       }
@@ -126,8 +126,8 @@ public class StringUtils {
 
   @Nullable
   public static String trimToNull(@Nullable final String str) {
-    final String ts = trim(str);
-    return isEmpty(ts) ? null : ts;
+    final var trimmed = trim(str);
+    return isEmpty(trimmed) ? null : trimmed;
   }
 
   @Nullable
@@ -143,7 +143,7 @@ public class StringUtils {
     if (separator.isEmpty()) {
       return EMPTY;
     }
-    final int pos = str.indexOf(separator);
+    final var pos = str.indexOf(separator);
     if (pos == INDEX_NOT_FOUND) {
       return str;
     }

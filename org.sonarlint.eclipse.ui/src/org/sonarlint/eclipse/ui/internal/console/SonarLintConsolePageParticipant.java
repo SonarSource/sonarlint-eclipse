@@ -27,7 +27,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsolePageParticipant;
@@ -48,7 +47,7 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
     this.configureLoggingAction = new ConfigureLoggingAction();
     this.showOnOutputAction = new ShowConsoleAction();
 
-    IActionBars actionBars = page.getSite().getActionBars();
+    var actionBars = page.getSite().getActionBars();
     configureToolBar(actionBars.getToolBarManager());
   }
 
@@ -111,7 +110,7 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
     }
 
     private static void addActionToMenu(Menu parent, Action action) {
-      ActionContributionItem item = new ActionContributionItem(action);
+      var item = new ActionContributionItem(action);
       item.fill(parent, -1);
     }
 
@@ -172,7 +171,7 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
     }
 
     private static void addActionToMenu(Menu parent, Action action) {
-      ActionContributionItem item = new ActionContributionItem(action);
+      var item = new ActionContributionItem(action);
       item.fill(parent, -1);
     }
 
