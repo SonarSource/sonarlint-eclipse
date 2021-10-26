@@ -104,7 +104,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   public void setConnectionType(ConnectionType type) {
-    ConnectionType old = this.connectionType;
+    var old = this.connectionType;
     this.connectionType = type;
     firePropertyChange(PROPERTY_CONNECTION_TYPE, old, this.connectionType);
     if (type == ConnectionType.ONPREMISE) {
@@ -120,7 +120,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   public void setAuthMethod(AuthMethod authMethod) {
-    AuthMethod old = this.authMethod;
+    var old = this.authMethod;
     this.authMethod = authMethod;
     firePropertyChange(PROPERTY_AUTH_METHOD, old, this.authMethod);
     setUsername(null);
@@ -132,7 +132,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   public void setConnectionId(String connectionId) {
-    String old = this.connectionId;
+    var old = this.connectionId;
     this.connectionId = connectionId;
     firePropertyChange(PROPERTY_CONNECTION_ID, old, this.connectionId);
   }
@@ -142,7 +142,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   public void setServerUrl(String serverUrl) {
-    String old = this.serverUrl;
+    var old = this.serverUrl;
     this.serverUrl = serverUrl;
     firePropertyChange(PROPERTY_SERVER_URL, old, this.serverUrl);
     suggestServerId();
@@ -154,7 +154,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   public void setOrganization(String organization) {
-    String old = this.organization;
+    var old = this.organization;
     this.organization = organization;
     firePropertyChange(PROPERTY_ORGANIZATION, old, this.organization);
     suggestServerId();
@@ -165,7 +165,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   public void setUsername(String username) {
-    String old = this.username;
+    var old = this.username;
     this.username = username;
     firePropertyChange(PROPERTY_USERNAME, old, this.username);
   }
@@ -175,7 +175,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   public void setPassword(String password) {
-    String old = this.password;
+    var old = this.password;
     this.password = password;
     firePropertyChange(PROPERTY_PASSWORD, old, this.password);
   }
@@ -191,8 +191,8 @@ public class ServerConnectionModel extends ModelObject {
 
   public void setUserOrgs(@Nullable List<ServerOrganization> userOrgs) {
     this.userOrgs = userOrgs;
-    TextSearchIndex<ServerOrganization> index = new TextSearchIndex<>();
-    for (ServerOrganization org : userOrgs) {
+    var index = new TextSearchIndex<ServerOrganization>();
+    for (var org : userOrgs) {
       index.index(org, org.getKey() + " " + org.getName());
     }
     suggestOrganization(userOrgs);
@@ -217,7 +217,7 @@ public class ServerConnectionModel extends ModelObject {
         if (connectionType == ConnectionType.SONARCLOUD) {
           suggestedId = "SonarCloud";
         } else {
-          URL url = new URL(getServerUrl());
+          var url = new URL(getServerUrl());
           suggestedId = url.getHost();
         }
         if (StringUtils.isNotBlank(organization)) {

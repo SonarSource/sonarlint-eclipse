@@ -20,8 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.binding;
 
 import java.util.List;
-import java.util.Optional;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -33,7 +31,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -52,7 +49,7 @@ public class UnbindProjectDialog extends MessageDialog {
   }
 
   private static String getMessage(List<ISonarLintProject> projects) {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     if (projects.size() == 1) {
       sb.append(NLS.bind(Messages.unbindProjectDialogMessage, projects.get(0).getName()));
     } else {
@@ -64,7 +61,7 @@ public class UnbindProjectDialog extends MessageDialog {
   @Override
   protected void buttonPressed(int buttonId) {
     if (buttonId == OK && !projects.isEmpty()) {
-      Job job = new UnbindProjectJob();
+      var job = new UnbindProjectJob();
       job.setPriority(Job.BUILD);
       job.schedule();
     }
@@ -79,13 +76,13 @@ public class UnbindProjectDialog extends MessageDialog {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
       try {
-        for (ISonarLintProject project : projects) {
+        for (var project : projects) {
           if (monitor.isCanceled()) {
             return Status.CANCEL_STATUS;
           }
-          Optional<EclipseProjectBinding> binding = SonarLintCorePlugin.loadConfig(project).getProjectBinding();
+          var binding = SonarLintCorePlugin.loadConfig(project).getProjectBinding();
           binding.ifPresent(b -> {
-            String oldConnectionId = b.connectionId();
+            var oldConnectionId = b.connectionId();
             ConnectedEngineFacade.unbind(project);
             JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
             JobUtils.notifyServerViewAfterBindingChange(project, oldConnectionId);

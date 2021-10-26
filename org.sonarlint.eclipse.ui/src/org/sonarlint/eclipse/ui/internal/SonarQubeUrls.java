@@ -21,9 +21,9 @@ package org.sonarlint.eclipse.ui.internal;
 
 public class SonarQubeUrls {
 
-  public String ruleDescriptionUrl(String ruleKey, String serverUrl) {
-    String urlTemplate = "%s/rules/show/%s?layout=false";
+  private static final String URL_TEMPLATE = "%s/rules/show/%s?layout=false";
 
-    return String.format(urlTemplate, serverUrl, ruleKey);
+  public String ruleDescriptionUrl(String ruleKey, String serverUrl) {
+    return String.format(URL_TEMPLATE, serverUrl, ruleKey);
   }
 }

@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.util;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -54,23 +53,23 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
     if (ruleDetails == null) {
       return "<small><em>(No rules selected)</em></small>";
     } else {
-      String ruleName = ruleDetails.getName();
-      String ruleKey = ruleDetails.getKey();
-      String htmlDescription = ruleDetails.getHtmlDescription();
+      var ruleName = ruleDetails.getName();
+      var ruleKey = ruleDetails.getKey();
+      var htmlDescription = ruleDetails.getHtmlDescription();
       if (ruleDetails instanceof ConnectedRuleDetails) {
-        String extendedDescription = ((ConnectedRuleDetails) ruleDetails).getExtendedDescription();
+        var extendedDescription = ((ConnectedRuleDetails) ruleDetails).getExtendedDescription();
         if (StringUtils.isNotBlank(extendedDescription)) {
           htmlDescription += "<div class=\"rule-desc\">" + extendedDescription + "</div>";
         }
       }
-      String ruleDetailsMarkup = "";
+      var ruleDetailsMarkup = "";
       if (ruleDetails instanceof StandaloneRuleDetails) {
         ruleDetailsMarkup = "<div>" + renderRuleParams((StandaloneRuleDetails) ruleDetails) + "</div>";
       }
-      String type = ruleDetails.getType();
-      String typeImg64 = type != null ? getAsBase64(SonarLintImages.getTypeImage(type)) : "";
-      String severity = ruleDetails.getSeverity();
-      String severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
+      var type = ruleDetails.getType();
+      var typeImg64 = type != null ? getAsBase64(SonarLintImages.getTypeImage(type)) : "";
+      var severity = ruleDetails.getSeverity();
+      var severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
       return "<h1><span class=\"rulename\">"
         + escapeHTML(ruleName) + "</span><span class=\"rulekey\"> (" + ruleKey + ")</span></h1>"
         + "<div class=\"typeseverity\">"
@@ -85,7 +84,7 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
   }
 
 
-  private String renderRuleParams(StandaloneRuleDetails ruleDetails) {
+  private static String renderRuleParams(StandaloneRuleDetails ruleDetails) {
     if (!ruleDetails.paramDetails().isEmpty()) {
       return "<h2>Parameters</h2>" +
         "<p>" +
@@ -100,10 +99,10 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
   }
 
   private static String renderRuleParam(StandaloneRuleParam param, StandaloneRuleDetails ruleDetails) {
-    String paramDescription = param.description() != null ? param.description() : "";
-    String paramDefaultValue = param.defaultValue();
-    String defaultValue = paramDefaultValue != null ? paramDefaultValue : "(none)";
-    String currentValue = getRuleParamValue(ruleDetails.getKey(), param.name()).orElse(defaultValue);
+    var paramDescription = param.description() != null ? param.description() : "";
+    var paramDefaultValue = param.defaultValue();
+    var defaultValue = paramDefaultValue != null ? paramDefaultValue : "(none)";
+    var currentValue = getRuleParamValue(ruleDetails.getKey(), param.name()).orElse(defaultValue);
     return "<tr>" +
       "<th>" + param.name() + "</th>" +
       "<td class='param-description'>" +
@@ -115,13 +114,13 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
   }
 
   private static Optional<String> getRuleParamValue(String ruleKey, String paramName) {
-    Collection<RuleConfig> rulesConfig = SonarLintGlobalConfiguration.readRulesConfig();
-    Optional<RuleConfig> ruleConfig = rulesConfig.stream()
+    var rulesConfig = SonarLintGlobalConfiguration.readRulesConfig();
+    var ruleConfig = rulesConfig.stream()
       .filter(r -> r.getKey().equals(ruleKey))
       .filter(RuleConfig::isActive)
       .filter(r -> r.getParams().keySet().contains(paramName))
       .findFirst();
-    if (!ruleConfig.isPresent()) {
+    if (ruleConfig.isEmpty()) {
       return Optional.empty();
     }
     return Optional.of(ruleConfig.get().getParams().get(paramName));
@@ -133,9 +132,9 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
   }
 
   public static String escapeHTML(String s) {
-    StringBuilder out = new StringBuilder(Math.max(16, s.length()));
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
+    var out = new StringBuilder(Math.max(16, s.length()));
+    for (var i = 0; i < s.length(); i++) {
+      var c = s.charAt(i);
       if (c > 127 || c == '"' || c == '<' || c == '>' || c == '&') {
         out.append("&#");
         out.append((int) c);
@@ -158,8 +157,8 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
     if (image == null) {
       return "";
     }
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    ImageLoader loader = new ImageLoader();
+    var out = new ByteArrayOutputStream();
+    var loader = new ImageLoader();
     loader.data = new ImageData[] {image.getImageData()};
     loader.save(out, SWT.IMAGE_PNG);
     return Base64.getEncoder().encodeToString(out.toByteArray());

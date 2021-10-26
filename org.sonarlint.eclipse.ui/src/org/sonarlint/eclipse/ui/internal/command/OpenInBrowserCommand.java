@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
@@ -41,10 +40,10 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
 
   @Override
   public void updateElement(UIElement element, Map parameters) {
-    IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+    var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
     if (window != null) {
-      IStructuredSelection selection = (IStructuredSelection) window.getSelectionService().getSelection();
-      Optional<ResolvedBinding> binding = getBinding(getSelectedMarker(selection));
+      var selection = (IStructuredSelection) window.getSelectionService().getSelection();
+      var binding = getBinding(getSelectedMarker(selection));
       if (binding.isPresent()) {
         element.setIcon(binding.get().getEngineFacade().isSonarCloud() ? SonarLintImages.SONARCLOUD_16 : SonarLintImages.SONARQUBE_16);
       }
@@ -54,14 +53,14 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
   @Override
   protected void execute(IMarker selectedMarker) {
     try {
-      Optional<ResolvedBinding> binding = getBinding(selectedMarker);
-      if (!binding.isPresent()) {
+      var binding = getBinding(selectedMarker);
+      if (binding.isEmpty()) {
         SonarLintLogger.get().info("Unable to open issue in browser: project is not bound");
         return;
       }
       SonarLintCorePlugin.getTelemetry().taintVulnerabilitiesInvestigatedRemotely();
-      String issueKey = (String) selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR);
-      String serverIssueLink = buildLink(binding.get().getEngineFacade().getHost(), binding.get().getProjectBinding().projectKey(), issueKey);
+      var issueKey = (String) selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR);
+      var serverIssueLink = buildLink(binding.get().getEngineFacade().getHost(), binding.get().getProjectBinding().projectKey(), issueKey);
       PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(serverIssueLink));
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to open issue in browser", e);
@@ -69,13 +68,13 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
   }
 
   private static Optional<ResolvedBinding> getBinding(IMarker marker) {
-    ISonarLintProject project = Adapters.adapt(marker.getResource().getProject(), ISonarLintProject.class);
+    var project = Adapters.adapt(marker.getResource().getProject(), ISonarLintProject.class);
     return SonarLintCorePlugin.getServersManager().resolveBinding(project);
   }
 
   private static String buildLink(String serverUrl, String projectKey, String issueKey) {
-    String urlEncodedProjectKey = StringUtils.urlEncode(projectKey);
-    String urlEncodedIssueKey = StringUtils.urlEncode(issueKey);
+    var urlEncodedProjectKey = StringUtils.urlEncode(projectKey);
+    var urlEncodedIssueKey = StringUtils.urlEncode(issueKey);
     return serverUrl + "/project/issues?id=" + urlEncodedProjectKey + "&open=" + urlEncodedIssueKey;
   }
 

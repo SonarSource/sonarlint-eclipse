@@ -21,8 +21,6 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -50,41 +48,41 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
 
   @Override
   public IStatus runInWorkspace(IProgressMonitor monitor) {
-    SubMonitor global = SubMonitor.convert(monitor, 100);
+    var global = SubMonitor.convert(monitor, 100);
     try {
       global.setTaskName("Collect changed file(s) list");
       SonarLintMarkerUpdater.deleteAllMarkersFromReport();
-      Collection<ISonarLintFile> collectChangedFiles = collectChangedFiles(projects, global.newChild(20));
+      var collectChangedFiles = collectChangedFiles(projects, global.newChild(20));
 
       if (collectChangedFiles.isEmpty()) {
         SonarLintLogger.get().info("No changed files found");
         return Status.OK_STATUS;
       }
 
-      Map<ISonarLintProject, List<ISonarLintFile>> changedFilesPerProject = collectChangedFiles.stream().collect(Collectors.groupingBy(ISonarLintFile::getProject));
+      var changedFilesPerProject = collectChangedFiles.stream().collect(Collectors.groupingBy(ISonarLintFile::getProject));
 
       long fileCount = changedFilesPerProject.values().stream().flatMap(Collection::stream).count();
 
       SonarLintLogger.get().info("Analyzing " + fileCount + " changed file(s) in " + changedFilesPerProject.size() + " project(s)");
 
       global.setTaskName("Analysis");
-      SubMonitor analysisMonitor = SubMonitor.convert(global.newChild(80), changedFilesPerProject.size());
-      for (Map.Entry<ISonarLintProject, List<ISonarLintFile>> entry : changedFilesPerProject.entrySet()) {
+      var analysisMonitor = SubMonitor.convert(global.newChild(80), changedFilesPerProject.size());
+      for (var entry : changedFilesPerProject.entrySet()) {
         if (monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
         }
-        ISonarLintProject project = entry.getKey();
+        var project = entry.getKey();
         if (!project.isOpen()) {
           analysisMonitor.worked(1);
           continue;
         }
         global.setTaskName("Analyzing project " + project.getName());
-        Collection<FileWithDocument> filesToAnalyze = entry.getValue().stream()
+        var filesToAnalyze = entry.getValue().stream()
           .map(f -> new FileWithDocument(f, null))
           .collect(Collectors.toList());
-        AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.MANUAL_CHANGESET);
-        AbstractSonarProjectJob job = AbstractAnalyzeProjectJob.create(req);
-        SubMonitor subMonitor = analysisMonitor.newChild(1);
+        var req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.MANUAL_CHANGESET);
+        var job = AbstractAnalyzeProjectJob.create(req);
+        var subMonitor = analysisMonitor.newChild(1);
         job.run(subMonitor);
         subMonitor.done();
       }
@@ -97,8 +95,8 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
   }
 
   private static Collection<ISonarLintFile> collectChangedFiles(Collection<ISonarLintProject> projects, IProgressMonitor monitor) {
-    Collection<ISonarLintFile> changedFiles = new ArrayList<>();
-    for (ISonarLintProject project : projects) {
+    var changedFiles = new ArrayList<ISonarLintFile>();
+    for (var project : projects) {
       if (monitor.isCanceled()) {
         break;
       }

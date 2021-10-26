@@ -34,11 +34,10 @@ public abstract class EditExclusionDialog extends TitleAreaDialog implements Sup
   protected Button okButton;
   protected boolean editing;
 
-  
-  public EditExclusionDialog(Shell parentShell) {
+  protected EditExclusionDialog(Shell parentShell) {
     super(parentShell);
   }
-  
+
   @Override
   public boolean isHelpAvailable() {
     return false;
@@ -70,7 +69,7 @@ public abstract class EditExclusionDialog extends TitleAreaDialog implements Sup
    */
   protected Composite createComposite(Composite parentComposite, int numColumns) {
     // creates a composite with standard margins and spacing
-    Composite contents = new Composite(parentComposite, SWT.NONE);
+    var contents = new Composite(parentComposite, SWT.NONE);
 
     contents.setLayout(new GridLayout(numColumns, false));
     contents.setLayoutData(new GridData(GridData.FILL_BOTH));

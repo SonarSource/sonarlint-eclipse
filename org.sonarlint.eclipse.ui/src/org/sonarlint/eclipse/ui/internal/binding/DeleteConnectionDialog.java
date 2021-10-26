@@ -30,7 +30,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
@@ -48,7 +47,7 @@ public class DeleteConnectionDialog extends MessageDialog {
   }
 
   private static int getImage(List<IConnectedEngineFacade> servers) {
-    for (IConnectedEngineFacade iServer : servers) {
+    for (var iServer : servers) {
       if (!iServer.getBoundProjects().isEmpty()) {
         return WARNING;
       }
@@ -57,14 +56,14 @@ public class DeleteConnectionDialog extends MessageDialog {
   }
 
   private static String getMessage(List<IConnectedEngineFacade> servers) {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     if (servers.size() == 1) {
       sb.append(NLS.bind(Messages.deleteServerDialogMessage, servers.get(0).getId()));
     } else {
       sb.append(NLS.bind(Messages.deleteServerDialogMessageMany, Integer.toString(servers.size())));
     }
-    int boundCount = 0;
-    for (IConnectedEngineFacade iServer : servers) {
+    var boundCount = 0;
+    for (var iServer : servers) {
       boundCount += iServer.getBoundProjects().size();
     }
     if (boundCount > 0) {
@@ -81,11 +80,11 @@ public class DeleteConnectionDialog extends MessageDialog {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
       try {
-        for (IConnectedEngineFacade server : servers) {
+        for (var server : servers) {
           if (monitor.isCanceled()) {
             return Status.CANCEL_STATUS;
           }
-          List<ISonarLintProject> boundProjects = server.getBoundProjects();
+          var boundProjects = server.getBoundProjects();
           server.delete();
           // All bound projects have been unbound, so refresh issues and unsubscribe from notifications
           boundProjects.forEach(p -> {
@@ -103,7 +102,7 @@ public class DeleteConnectionDialog extends MessageDialog {
   @Override
   protected void buttonPressed(int buttonId) {
     if (buttonId == OK && !servers.isEmpty()) {
-      Job job = new DeleteServerJob();
+      var job = new DeleteServerJob();
       servers.forEach(server -> JobUtils.scheduleAnalysisOfOpenFiles(job, server.getBoundProjects(), TriggerType.BINDING_CHANGE));
       job.setPriority(Job.BUILD);
       job.schedule();

@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class IssueTracker {
@@ -42,16 +41,16 @@ public class IssueTracker {
     if (cache.isFirstAnalysis(file.getProjectRelativePath())) {
       tracked = rawIssues;
     } else {
-      Collection<Trackable> trackedIssues = new ArrayList<>();
-      Tracking<Trackable, Trackable> tracking = new Tracker<>().trackRaw(() -> rawIssues, () -> cache.getCurrentTrackables(file.getProjectRelativePath()));
+      var trackedIssues = new ArrayList<Trackable>();
+      var tracking = new Tracker<>().trackRaw(() -> rawIssues, () -> cache.getCurrentTrackables(file.getProjectRelativePath()));
       // Previous issues
-      for (Map.Entry<Trackable, Trackable> entry : tracking.getMatchedRaws().entrySet()) {
-        Trackable next = new PreviousTrackable(entry.getValue(), entry.getKey());
+      for (var entry : tracking.getMatchedRaws().entrySet()) {
+        var next = new PreviousTrackable(entry.getValue(), entry.getKey());
         trackedIssues.add(next);
       }
       // New local issues compared to previous analysis
-      for (Trackable raw : tracking.getUnmatchedRaws()) {
-        trackedIssues.add(new LeakedTrackable(raw));
+      for (var rawTrackable : tracking.getUnmatchedRaws()) {
+        trackedIssues.add(new LeakedTrackable(rawTrackable));
       }
       tracked = trackedIssues;
     }
@@ -69,7 +68,7 @@ public class IssueTracker {
   public synchronized Collection<Trackable> matchAndTrackServerIssues(ISonarLintFile file, Collection<Trackable> serverIssues) {
     // store issues (ProtobufIssueTrackable) are of no use since they can't be used in markers. There should have been
     // an analysis before that set the live issues for the file (even if it is empty)
-    Collection<Trackable> current = cache.getLiveOrFail(file.getProjectRelativePath());
+    var current = cache.getLiveOrFail(file.getProjectRelativePath());
     if (current.isEmpty()) {
       // whatever is the base, if current is empty, then nothing to do
       return Collections.emptyList();
@@ -78,13 +77,13 @@ public class IssueTracker {
   }
 
   public static Collection<Trackable> matchAndTrackServerIssues(Collection<Trackable> serverIssues, Collection<Trackable> currentIssues) {
-    Collection<Trackable> trackedIssues = new ArrayList<>();
-    Tracking<Trackable, Trackable> tracking = new Tracker<>().trackServer(() -> currentIssues, () -> serverIssues);
-    for (Map.Entry<Trackable, Trackable> entry : tracking.getMatchedRaws().entrySet()) {
-      Trackable next = new CombinedTrackable(entry.getValue(), entry.getKey());
+    var trackedIssues = new ArrayList<Trackable>();
+    var tracking = new Tracker<>().trackServer(() -> currentIssues, () -> serverIssues);
+    for (var entry : tracking.getMatchedRaws().entrySet()) {
+      var next = new CombinedTrackable(entry.getValue(), entry.getKey());
       trackedIssues.add(next);
     }
-    for (Trackable next : tracking.getUnmatchedRaws()) {
+    for (var next : tracking.getUnmatchedRaws()) {
       if (next.getServerIssueKey() != null) {
         next = new DisconnectedTrackable(next);
       } else if (next.getCreationDate() == null) {

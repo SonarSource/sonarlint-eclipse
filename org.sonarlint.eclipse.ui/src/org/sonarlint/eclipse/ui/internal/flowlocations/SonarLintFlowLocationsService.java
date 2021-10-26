@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.flowlocations;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -60,12 +58,12 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
   private Optional<MarkerFlowLocation> lastSelectedFlowLocation = Optional.empty();
   private boolean showAnnotationsInEditor = true;
 
-  private static final Set<String> sonarlintMarkerViewsIds = new HashSet<>(Arrays.asList(SonarLintReportView.ID, OnTheFlyIssuesView.ID, TaintVulnerabilitiesView.ID));
+  private static final Set<String> sonarlintMarkerViewsIds = Set.of(SonarLintReportView.ID, OnTheFlyIssuesView.ID, TaintVulnerabilitiesView.ID);
 
   @Override
   public void selectionChanged(IWorkbenchPart part, ISelection selection) {
     if (part instanceof IViewPart && sonarlintMarkerViewsIds.contains(((IViewPart) part).getViewSite().getId())) {
-      IMarker selectedMarker = SelectionUtils.findSelectedSonarLintMarker(selection);
+      var selectedMarker = SelectionUtils.findSelectedSonarLintMarker(selection);
       markerSelected(selectedMarker, false, false);
     }
   }
@@ -74,19 +72,19 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
   public void usedAnalysis(AnalysisEvent event) {
     Display.getDefault().asyncExec(() -> {
       if (lastSelectedMarker.isPresent()) {
-        IMarker lastMarker = lastSelectedMarker.get();
+        var lastMarker = lastSelectedMarker.get();
         if (!lastMarker.exists()) {
           // Marker has been deleted during the last analysis
           markerSelected(null, false, false);
         } else {
-          MarkerFlows newIssueFlows = MarkerUtils.getIssueFlows(lastSelectedMarker.get());
+          var newIssueFlows = MarkerUtils.getIssueFlows(lastSelectedMarker.get());
           // Try to reselect the same flow number than before
-          Integer pastFlowNum = lastSelectedFlow.map(MarkerFlow::getNumber).orElse(null);
+          var pastFlowNum = lastSelectedFlow.map(MarkerFlow::getNumber).orElse(null);
           if (pastFlowNum != null && newIssueFlows.count() >= pastFlowNum) {
             lastSelectedFlow = Optional.of(newIssueFlows.getFlows().get(pastFlowNum - 1));
           }
           // Try to select the same flow location
-          Integer pastFlowLocationNum = lastSelectedFlowLocation.map(MarkerFlowLocation::getNumber).orElse(null);
+          var pastFlowLocationNum = lastSelectedFlowLocation.map(MarkerFlowLocation::getNumber).orElse(null);
           if (pastFlowLocationNum != null && lastSelectedFlow.isPresent() && lastSelectedFlow.get().getLocations().size() >= pastFlowLocationNum) {
             lastSelectedFlowLocation = Optional.of(lastSelectedFlow.get().getLocations().get(pastFlowLocationNum - 1));
           }

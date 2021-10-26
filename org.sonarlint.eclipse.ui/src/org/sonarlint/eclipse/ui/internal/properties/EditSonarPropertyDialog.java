@@ -61,7 +61,7 @@ public class EditSonarPropertyDialog extends StatusDialog {
   public EditSonarPropertyDialog(Shell parent, SonarLintProperty property, boolean edit, boolean isNameModifiable) {
     super(parent);
 
-    String title = edit
+    var title = edit
       ? "Edit property"
       : "New property";
     setTitle(title);
@@ -87,15 +87,15 @@ public class EditSonarPropertyDialog extends StatusDialog {
 
   @Override
   protected Control createDialogArea(Composite ancestor) {
-    Composite parent = new Composite(ancestor, SWT.NONE);
-    GridLayout layout = new GridLayout();
+    var parent = new Composite(ancestor, SWT.NONE);
+    var layout = new GridLayout();
     layout.numColumns = 2;
     parent.setLayout(layout);
     parent.setLayoutData(new GridData(GridData.FILL_BOTH));
 
     createLabel(parent, "Name:");
 
-    Composite composite = new Composite(parent, SWT.NONE);
+    var composite = new Composite(parent, SWT.NONE);
     composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     layout = new GridLayout();
     layout.numColumns = 1;
@@ -142,7 +142,7 @@ public class EditSonarPropertyDialog extends StatusDialog {
   }
 
   private static Label createLabel(Composite parent, String name) {
-    Label label = new Label(parent, SWT.NULL);
+    var label = new Label(parent, SWT.NULL);
     label.setText(name);
     label.setLayoutData(new GridData());
 
@@ -150,9 +150,9 @@ public class EditSonarPropertyDialog extends StatusDialog {
   }
 
   private Text createNameText(Composite parent) {
-    int descFlags = fIsNameModifiable ? SWT.BORDER : (SWT.BORDER | SWT.READ_ONLY);
-    Text text = new Text(parent, descFlags);
-    final GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    var descFlags = fIsNameModifiable ? SWT.BORDER : (SWT.BORDER | SWT.READ_ONLY);
+    var text = new Text(parent, descFlags);
+    final var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.widthHint = convertWidthInCharsToPixels(20);
     text.setLayoutData(gd);
     return text;
@@ -160,14 +160,14 @@ public class EditSonarPropertyDialog extends StatusDialog {
 
   @Override
   protected void okPressed() {
-    String name = fNameText == null ? sonarProperty.getName() : fNameText.getText();
+    var name = fNameText == null ? sonarProperty.getName() : fNameText.getText();
     sonarProperty = new SonarLintProperty(name, fValueText.getText());
     super.okPressed();
   }
 
   private void updateStatusAndButtons() {
-    StatusInfo status = fValidationStatus;
-    boolean isEmpty = fNameText != null && fNameText.getText().length() == 0;
+    var status = fValidationStatus;
+    var isEmpty = fNameText != null && fNameText.getText().length() == 0;
     if (!fSuppressError && isEmpty) {
       status = new StatusInfo(IStatus.ERROR, "Please input a name");
     } else if (fNameText != null && !isValidPropertyName(fNameText.getText())) {
@@ -198,8 +198,8 @@ public class EditSonarPropertyDialog extends StatusDialog {
 
   @Override
   protected Point getInitialSize() {
-    Point defaultSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-    Point restoredSize = super.getInitialSize();
+    var defaultSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+    var restoredSize = super.getInitialSize();
     if (defaultSize.x > restoredSize.x) {
       restoredSize.x = defaultSize.x;
     }
@@ -208,9 +208,9 @@ public class EditSonarPropertyDialog extends StatusDialog {
 
   @Override
   protected IDialogSettings getDialogBoundsSettings() {
-    String sectionName = getClass().getName() + "_dialogBounds"; //$NON-NLS-1$
-    IDialogSettings settings = SonarLintUiPlugin.getDefault().getDialogSettings();
-    IDialogSettings section = settings.getSection(sectionName);
+    var sectionName = getClass().getName() + "_dialogBounds"; //$NON-NLS-1$
+    var settings = SonarLintUiPlugin.getDefault().getDialogSettings();
+    var section = settings.getSection(sectionName);
     if (section == null) {
       section = settings.addNewSection(sectionName);
     }

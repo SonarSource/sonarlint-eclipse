@@ -32,7 +32,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -62,8 +61,6 @@ import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
 import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
-import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotification;
-import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
 
@@ -106,7 +103,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         if (isNodeCommandException(msg)) {
           getSonarConsole().info(msg, false);
           Display.getDefault().asyncExec(() -> {
-            MissingNodePopup popup = new MissingNodePopup();
+            var popup = new MissingNodePopup();
             popup.setFadingEnabled(false);
             popup.setDelayClose(0L);
             popup.open();
@@ -135,7 +132,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     @Override
     public void showNotification(Notification notif) {
       Display.getDefault().asyncExec(() -> {
-        GenericNotificationPopup popup = new GenericNotificationPopup(notif.getTitle(), notif.getShortMsg(), notif.getLongMsg());
+        var popup = new GenericNotificationPopup(notif.getTitle(), notif.getShortMsg(), notif.getLongMsg());
         popup.open();
       });
     }
@@ -232,7 +229,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   public synchronized void closeSonarConsole() {
     if (console != null) {
-      IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+      var manager = ConsolePlugin.getDefault().getConsoleManager();
       manager.removeConsoles(new IConsole[] {console});
       this.console = null;
     }
@@ -241,17 +238,12 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public synchronized ListenerFactory listenerFactory() {
     if (listenerFactory == null) {
       // don't replace the anon class with lambda, because then the factory's "create" will always return the same listener instance
-      listenerFactory = (IConnectedEngineFacade s) -> new ServerNotificationListener() {
-        @Override
-        public void handle(ServerNotification notification) {
-          Display.getDefault().asyncExec(() -> {
-            DeveloperNotificationPopup popup = new DeveloperNotificationPopup(s, notification, s.isSonarCloud());
-            popup.open();
-            SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
-            telemetry.devNotificationsReceived(notification.category());
-          });
-        }
-      };
+      listenerFactory = (IConnectedEngineFacade s) -> (notification -> Display.getDefault().asyncExec(() -> {
+        var popup = new DeveloperNotificationPopup(s, notification, s.isSonarCloud());
+        popup.open();
+        SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
+        telemetry.devNotificationsReceived(notification.category());
+      }));
     }
     return listenerFactory;
   }
@@ -274,7 +266,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         // Handle future opened/closed windows
         PlatformUI.getWorkbench().addWindowListener(WINDOW_OPEN_CLOSE_LISTENER);
         // Now we can attach listeners to existing windows
-        for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+        for (var window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
           WindowOpenCloseListener.addListenerToAllPages(window);
         }
       }
@@ -287,10 +279,10 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
 
     private void checkServersStatus() {
-      for (final IConnectedEngineFacade server : SonarLintCorePlugin.getServersManager().getServers()) {
+      for (final var server : SonarLintCorePlugin.getServersManager().getServers()) {
         if (server.getStorageState() != State.UPDATED) {
           Display.getDefault().asyncExec(() -> {
-            ServerStorageNeedUpdatePopup popup = new ServerStorageNeedUpdatePopup(server);
+            var popup = new ServerStorageNeedUpdatePopup(server);
             popup.open();
           });
         }

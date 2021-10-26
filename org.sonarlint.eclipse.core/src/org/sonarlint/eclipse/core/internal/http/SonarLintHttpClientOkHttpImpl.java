@@ -29,7 +29,6 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import org.sonarsource.sonarlint.core.serverapi.HttpClient;
 
 public class SonarLintHttpClientOkHttpImpl implements HttpClient {
@@ -41,8 +40,8 @@ public class SonarLintHttpClientOkHttpImpl implements HttpClient {
 
   @Override
   public Response post(String url, String contentType, String bodyContent) {
-    RequestBody body = RequestBody.create(MediaType.get(contentType), bodyContent);
-    Request request = new Request.Builder()
+    var body = RequestBody.create(MediaType.get(contentType), bodyContent);
+    var request = new Request.Builder()
       .url(url)
       .post(body)
       .build();
@@ -51,7 +50,7 @@ public class SonarLintHttpClientOkHttpImpl implements HttpClient {
 
   @Override
   public Response get(String url) {
-    Request request = new Request.Builder()
+    var request = new Request.Builder()
       .url(url)
       .build();
     return executeRequest(request);
@@ -59,7 +58,7 @@ public class SonarLintHttpClientOkHttpImpl implements HttpClient {
 
   @Override
   public CompletableFuture<Response> getAsync(String url) {
-    Request request = new Request.Builder()
+    var request = new Request.Builder()
       .url(url)
       .build();
     return executeRequestAsync(request);
@@ -67,8 +66,8 @@ public class SonarLintHttpClientOkHttpImpl implements HttpClient {
 
   @Override
   public Response delete(String url, String contentType, String bodyContent) {
-    RequestBody body = RequestBody.create(MediaType.get(contentType), bodyContent);
-    Request request = new Request.Builder()
+    var body = RequestBody.create(MediaType.get(contentType), bodyContent);
+    var request = new Request.Builder()
       .url(url)
       .delete(body)
       .build();
@@ -84,8 +83,8 @@ public class SonarLintHttpClientOkHttpImpl implements HttpClient {
   }
 
   private CompletableFuture<Response> executeRequestAsync(Request request) {
-    Call call = okClient.newCall(request);
-    CompletableFuture<Response> futureResponse = new CompletableFuture<Response>()
+    var call = okClient.newCall(request);
+    var futureResponse = new CompletableFuture<Response>()
       .whenComplete((response, error) -> {
         if (error instanceof CancellationException) {
           call.cancel();
@@ -125,7 +124,7 @@ public class SonarLintHttpClientOkHttpImpl implements HttpClient {
 
       @Override
       public String bodyAsString() {
-        try (ResponseBody body = wrapped.body()) {
+        try (var body = wrapped.body()) {
           return body.string();
         } catch (IOException e) {
           throw new IllegalStateException("Unable to read response body: " + e.getMessage(), e);

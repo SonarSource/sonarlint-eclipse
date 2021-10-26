@@ -49,7 +49,7 @@ public class SonarLintNotifications {
 
 
   public void showNotification(Notification notification) {
-    for (NotificationListener listener : notifListeners) {
+    for (var listener : notifListeners) {
       listener.showNotification(notification);
     }
   }

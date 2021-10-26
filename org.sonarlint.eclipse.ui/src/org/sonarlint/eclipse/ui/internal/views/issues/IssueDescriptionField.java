@@ -28,9 +28,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
-import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
 /**
@@ -51,20 +49,20 @@ public class IssueDescriptionField extends MarkerField {
   }
 
   public static final int getFontWidth(Control control) {
-    GC gc = new GC(control.getDisplay());
-    int width = gc.getFontMetrics().getAverageCharWidth();
+    var gc = new GC(control.getDisplay());
+    var width = gc.getFontMetrics().getAverageCharWidth();
     gc.dispose();
     return width;
   }
 
   @Override
   public String getValue(MarkerItem item) {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     sb.append(item.getAttributeValue(IMarker.MESSAGE, "No message"));
-    IMarker marker = item.getMarker();
+    var marker = item.getMarker();
     // When grouping by severity, MarkerItem will be a MarkerCategory, that doesn't have an attached marker
     if (marker != null) {
-      MarkerFlows issueFlows = MarkerUtils.getIssueFlows(marker);
+      var issueFlows = MarkerUtils.getIssueFlows(marker);
       sb.append(issueFlows.getSummaryDescription());
     }
     return sb.toString();
@@ -85,7 +83,7 @@ public class IssueDescriptionField extends MarkerField {
   }
 
   public static int convertSeverity(@Nullable String severity) {
-    String severityLower = severity != null ? severity.toLowerCase(Locale.ENGLISH) : "";
+    var severityLower = severity != null ? severity.toLowerCase(Locale.ENGLISH) : "";
     final int result;
     if (severityLower.startsWith("blocker")) {
       result = 0;
@@ -111,7 +109,7 @@ public class IssueDescriptionField extends MarkerField {
     } else {
       // If there is no marker maybe we have a groupBy item
       // GroupBy severity
-      String severity = item.getAttributeValue(IMarker.MESSAGE, "");
+      var severity = item.getAttributeValue(IMarker.MESSAGE, "");
       if (severity.indexOf(' ') >= 0) {
         severity = severity.substring(0, severity.indexOf(' '));
       }
@@ -123,7 +121,7 @@ public class IssueDescriptionField extends MarkerField {
   @Override
   public void update(ViewerCell cell) {
     super.update(cell);
-    MarkerItem item = (MarkerItem) cell.getElement();
+    var item = (MarkerItem) cell.getElement();
     if (item != null) {
       cell.setImage(getImage(item));
     }

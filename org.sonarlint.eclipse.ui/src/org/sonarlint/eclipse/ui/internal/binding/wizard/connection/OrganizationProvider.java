@@ -22,14 +22,12 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
-import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
 
 public class OrganizationProvider implements IContentProposalProvider {
@@ -44,14 +42,14 @@ public class OrganizationProvider implements IContentProposalProvider {
 
   @Override
   public IContentProposal[] getProposals(String contents, int position) {
-    List<IContentProposal> list = new ArrayList<>();
+    var list = new ArrayList<IContentProposal>();
     if (contents.isEmpty()) {
-      List<ServerOrganization> allUserOrgs = model.getUserOrgs();
+      var allUserOrgs = model.getUserOrgs();
       if (allUserOrgs != null) {
         allUserOrgs.stream().limit(10).forEach(o -> list.add(new ContentProposal(o.getKey(), o.getName(), toDescription(o))));
       }
     } else {
-      TextSearchIndex<ServerOrganization> organizationsIndex = model.getUserOrgsIndex();
+      var organizationsIndex = model.getUserOrgsIndex();
       Map<ServerOrganization, Double> filtered = organizationsIndex != null ? organizationsIndex.search(contents) : Collections.emptyMap();
       if (filtered.isEmpty()) {
         parentPage.setMessage("No results", IMessageProvider.INFORMATION);
@@ -69,7 +67,7 @@ public class OrganizationProvider implements IContentProposalProvider {
   }
 
   private static String toDescription(ServerOrganization org) {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     sb.append("Name: ").append(org.getName()).append("\n");
     sb.append("Key: ").append(org.getKey()).append("\n");
     sb.append("Description: ").append(org.getDescription());

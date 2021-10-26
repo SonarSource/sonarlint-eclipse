@@ -19,9 +19,6 @@
  */
 package org.sonarlint.eclipse.its;
 
-import java.util.List;
-import org.eclipse.reddeer.eclipse.core.resources.Project;
-import org.eclipse.reddeer.eclipse.core.resources.ProjectItem;
 import org.eclipse.reddeer.eclipse.jdt.ui.javaeditor.JavaEditor;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
@@ -38,24 +35,24 @@ public class LocalLeakTest extends AbstractSonarLintTest {
   public void shouldComputeLocalLeak() {
     new JavaPerspective().open();
 
-    OnTheFlyView issuesView = new OnTheFlyView();
+    var issuesView = new OnTheFlyView();
     issuesView.open();
 
     assertThat(issuesView.getProblemColumns()).containsExactly("Date", "Description", "Resource");
     assertThat(issuesView.getIssues()).isEmpty();
 
-    Project javaSimple = importExistingProjectIntoWorkspace("java/leak", "leak");
+    var javaSimple = importExistingProjectIntoWorkspace("java/leak", "leak");
 
-    ProjectItem helloFile = javaSimple.getProjectItem("src", "hello", "Hello.java");
+    var helloFile = javaSimple.getProjectItem("src", "hello", "Hello.java");
     openFileAndWaitForAnalysisCompletion(helloFile);
 
-    List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
+    var sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
       .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", ""));
 
     // Change content
-    JavaEditor javaEditor = new JavaEditor("Hello.java");
+    var javaEditor = new JavaEditor("Hello.java");
     javaEditor.insertText(7, 43, "\nSystem.out.println(\"Hello1\");");
     doAndWaitForSonarLintAnalysisJob(() -> javaEditor.save());
 
@@ -70,21 +67,21 @@ public class LocalLeakTest extends AbstractSonarLintTest {
   public void dontLooseLeakOnParsingError() {
     new JavaPerspective().open();
 
-    OnTheFlyView issuesView = new OnTheFlyView();
+    var issuesView = new OnTheFlyView();
     issuesView.open();
 
-    Project jsSimple = importExistingProjectIntoWorkspace("js/js-simple", "js-simple");
+    var jsSimple = importExistingProjectIntoWorkspace("js/js-simple", "js-simple");
 
-    ProjectItem helloFile = jsSimple.getProjectItem("src", "hello.js");
+    var helloFile = jsSimple.getProjectItem("src", "hello.js");
     openFileAndWaitForAnalysisCompletion(helloFile);
 
-    List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
+    var sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
       .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""));
 
     // Change content
-    TextEditor textEditor = new TextEditor("hello.js");
+    var textEditor = new TextEditor("hello.js");
     textEditor.insertText(2, 17, "\nvar i;");
     doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 
@@ -95,7 +92,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
         tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
 
     // Insert content that should crash analyzer
-    String beforeCrash = textEditor.getText();
+    var beforeCrash = textEditor.getText();
     textEditor.insertText(3, 8, "\nvar");
     doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 

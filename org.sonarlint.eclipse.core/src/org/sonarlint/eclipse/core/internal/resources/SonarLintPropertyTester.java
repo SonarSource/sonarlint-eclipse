@@ -32,19 +32,19 @@ public class SonarLintPropertyTester extends PropertyTester {
 
   @Override
   public boolean test(Object receiver, String property, Object[] args, @Nullable Object expectedValue) {
-    ISonarLintProject project = getProject(receiver);
+    var project = getProject(receiver);
     if (project == null) {
       return false;
     }
 
     if ("bound".equals(property)) {
-      boolean isBound = SonarLintCorePlugin.loadConfig(project).isBound();
+      var isBound = SonarLintCorePlugin.loadConfig(project).isBound();
       return expectedValue == null
         ? isBound
         : (isBound == ((Boolean) expectedValue).booleanValue());
     }
     if ("autoAnalysisEnabled".equals(property)) {
-      boolean isAuto = SonarLintCorePlugin.loadConfig(project).isAutoEnabled();
+      var isAuto = SonarLintCorePlugin.loadConfig(project).isAutoEnabled();
       return expectedValue == null
         ? isAuto
         : (isAuto == ((Boolean) expectedValue).booleanValue());
@@ -60,7 +60,7 @@ public class SonarLintPropertyTester extends PropertyTester {
         : (project.supportsFullAnalysis() == ((Boolean) expectedValue).booleanValue());
     }
     if ("excluded".equals(property)) {
-      ISonarLintFile file = getFile(receiver);
+      var file = getFile(receiver);
       if (file == null) {
         return true;
       }
@@ -86,11 +86,11 @@ public class SonarLintPropertyTester extends PropertyTester {
       return ((ISonarLintFile) receiver).getProject();
     }
     if (receiver instanceof IAdaptable) {
-      ISonarLintProject project = Adapters.adapt(receiver, ISonarLintProject.class);
+      var project = Adapters.adapt(receiver, ISonarLintProject.class);
       if (project != null) {
         return project;
       }
-      ISonarLintFile file = Adapters.adapt(receiver, ISonarLintFile.class);
+      var file = Adapters.adapt(receiver, ISonarLintFile.class);
       if (file != null) {
         return file.getProject();
       }

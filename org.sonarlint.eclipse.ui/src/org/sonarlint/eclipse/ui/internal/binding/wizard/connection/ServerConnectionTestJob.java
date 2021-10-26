@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -47,15 +46,10 @@ final class ServerConnectionTestJob implements IRunnableWithProgress {
 
   @Override
   public void run(IProgressMonitor monitor) {
-    String msg;
-    if (organization != null) {
-      msg = "Testing access to the organization";
-    } else {
-      msg = "Testing connection";
-    }
+    var msg = organization == null ? "Testing connection" : "Testing access to the organization";
     monitor.beginTask(msg, IProgressMonitor.UNKNOWN);
     try {
-      CompletableFuture<Status> futureStatus = ConnectedEngineFacade.testConnection(url, organization, username, password);
+      var futureStatus = ConnectedEngineFacade.testConnection(url, organization, username, password);
       while (!futureStatus.isDone()) {
         Thread.sleep(500);
         if (monitor.isCanceled()) {

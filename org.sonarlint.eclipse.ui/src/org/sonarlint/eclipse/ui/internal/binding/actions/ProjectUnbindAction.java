@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.binding.actions;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -50,11 +49,11 @@ public class ProjectUnbindAction extends SelectionProviderAction {
       return;
     }
     selectedProjects = new ArrayList<>();
-    Iterator iterator = sel.iterator();
+    var iterator = sel.iterator();
     while (iterator.hasNext()) {
-      Object obj = iterator.next();
+      var obj = iterator.next();
       if (obj instanceof ISonarLintProject) {
-        ISonarLintProject project = (ISonarLintProject) obj;
+        var project = (ISonarLintProject) obj;
         selectedProjects.add(project);
       } else {
         setEnabled(false);
@@ -75,16 +74,15 @@ public class ProjectUnbindAction extends SelectionProviderAction {
     // To handle the case where servers is null, the selectionChanged method is called
     // to ensure servers will be populated.
     if (selectedProjects == null) {
-
-      IStructuredSelection sel = getStructuredSelection();
+      var sel = getStructuredSelection();
       if (sel != null) {
         selectionChanged(sel);
       }
     }
 
     if (selectedProjects != null && !selectedProjects.isEmpty()) {
-      UnbindProjectDialog dsd = new UnbindProjectDialog(shell, selectedProjects);
-      dsd.open();
+      var dialog = new UnbindProjectDialog(shell, selectedProjects);
+      dialog.open();
     }
   }
 

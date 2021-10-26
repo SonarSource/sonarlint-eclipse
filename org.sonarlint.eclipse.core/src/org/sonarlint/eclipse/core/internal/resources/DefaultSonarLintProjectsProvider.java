@@ -19,28 +19,26 @@
  */
 package org.sonarlint.eclipse.core.internal.resources;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 
+import static java.util.function.Predicate.not;
+
 public class DefaultSonarLintProjectsProvider implements ISonarLintProjectsProvider {
 
   @Override
   public Collection<ISonarLintProject> get() {
-    List<ISonarLintProject> result = new ArrayList<>();
-    for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-      if (p.isAccessible()) {
-        ISonarLintProject project = Adapters.adapt(p, ISonarLintProject.class);
-        if (project != null) {
-          result.add(project);
-        }
-      }
-    }
-    return result;
+    return Stream.of(ResourcesPlugin.getWorkspace().getRoot().getProjects())
+      .filter(IProject::isAccessible)
+      .map(p -> Adapters.adapt(p, ISonarLintProject.class))
+      .filter(not(Objects::isNull))
+      .collect(Collectors.toList());
   }
 }

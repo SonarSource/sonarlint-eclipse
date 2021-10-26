@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
-import java.util.Collection;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -28,13 +27,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
@@ -44,25 +40,25 @@ public class UnbindProjectsCommand extends AbstractHandler {
   @Nullable
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    Collection<ISonarLintProject> selectedProjects = SelectionUtils.allSelectedProjects(event, false);
+    var selectedProjects = SelectionUtils.allSelectedProjects(event, false);
 
     if (!selectedProjects.isEmpty()) {
-      Job job = new Job("Unbind projects") {
+      var job = new Job("Unbind projects") {
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
           monitor.beginTask("Unbind projects", selectedProjects.size());
-          for (ISonarLintProject p : selectedProjects) {
-            SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(p);
+          for (var p : selectedProjects) {
+            var projectConfig = SonarLintCorePlugin.loadConfig(p);
             projectConfig.getProjectBinding().ifPresent(b -> {
-              String oldServerId = b.connectionId();
+              var oldServerId = b.connectionId();
               ConnectedEngineFacade.unbind(p);
               JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
               JobUtils.notifyServerViewAfterBindingChange(p, oldServerId);
             });
             monitor.worked(1);
           }
-          IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
+          var labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
           if (labelProvider != null) {
             ((SonarLintProjectDecorator) labelProvider).fireChange(selectedProjects);
           }

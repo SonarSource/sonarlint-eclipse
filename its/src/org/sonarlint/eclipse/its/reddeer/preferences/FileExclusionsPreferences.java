@@ -23,10 +23,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.eclipse.reddeer.core.reference.ReferencedComposite;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyPage;
-import org.eclipse.reddeer.swt.api.Shell;
-import org.eclipse.reddeer.swt.api.Table;
-import org.eclipse.reddeer.swt.api.TableItem;
-import org.eclipse.reddeer.swt.api.Text;
 import org.eclipse.reddeer.swt.impl.button.OkButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
@@ -44,23 +40,23 @@ public class FileExclusionsPreferences extends PropertyPage {
   public void add(String exclusion) {
     new PushButton(referencedComposite, "New...").click();
 
-    Shell shell = new DefaultShell("Create Exclusion");
+    var shell = new DefaultShell("Create Exclusion");
 
-    Text text = new DefaultText(shell);
+    var text = new DefaultText(shell);
     text.setText(exclusion);
 
     new OkButton(shell).click();
   }
 
   public List<String> getExclusions() {
-    Table table = new DefaultTable(this);
+    var table = new DefaultTable(this);
     return table.getItems().stream().map(i -> i.getText(table.getHeaderIndex(VALUE_COL))).collect(Collectors.toList());
   }
 
   public void remove(String exclusion) {
-    Table table = new DefaultTable(referencedComposite);
+    var table = new DefaultTable(referencedComposite);
 
-    for (TableItem item : table.getItems()) {
+    for (var item : table.getItems()) {
       if (exclusion.equals(item.getText(table.getHeaderIndex(VALUE_COL)))) {
         table.select(table.indexOf(item));
         new PushButton(referencedComposite, "Remove").click();

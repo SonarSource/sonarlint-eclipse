@@ -19,20 +19,11 @@
  */
 package org.sonarlint.eclipse.m2e.internal;
 
-import org.eclipse.core.internal.localstore.FileSystemResourceManager;
-import org.eclipse.core.internal.resources.ICoreConstants;
-import org.eclipse.core.internal.resources.Resource;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.internal.IMavenConstants;
-import org.eclipse.m2e.core.project.IMavenProjectFacade;
-import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public class M2eUtils {
@@ -45,12 +36,12 @@ public class M2eUtils {
    * When it is the case we want to keep the most specific one.
    */
   public static boolean isInNestedModule(IFile file) {
-    IProject project = file.getProject();
+    var project = file.getProject();
     try {
       if (project.hasNature(IMavenConstants.NATURE_ID)) {
-        IMavenProjectRegistry projectManager = MavenPlugin.getMavenProjectRegistry();
+        var projectManager = MavenPlugin.getMavenProjectRegistry();
 
-        IMavenProjectFacade projectFacade = projectManager.create(project, null);
+        var projectFacade = projectManager.create(project, null);
         if (projectFacade != null && "pom".equals(projectFacade.getPackaging())) {
           return !toSpecificFile(file).equals(file);
         }
@@ -63,9 +54,9 @@ public class M2eUtils {
 
   private static IFile toSpecificFile(IFile file) {
     IFile finalFile = file;
-    IPath rawLocation = file.getRawLocation();
+    var rawLocation = file.getRawLocation();
     if (rawLocation != null) {
-      IFile moreSpecific = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(rawLocation);
+      var moreSpecific = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(rawLocation);
       if (moreSpecific != null) {
         finalFile = moreSpecific;
       }

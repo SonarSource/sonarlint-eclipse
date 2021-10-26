@@ -55,8 +55,8 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
 
   @Override
   protected Control createContents(Composite parent) {
-    Composite pageComponent = new Composite(parent, SWT.NONE);
-    GridLayout layout = new GridLayout();
+    var pageComponent = new Composite(parent, SWT.NONE);
+    var layout = new GridLayout();
     layout.marginWidth = 0;
     pageComponent.setLayout(layout);
 

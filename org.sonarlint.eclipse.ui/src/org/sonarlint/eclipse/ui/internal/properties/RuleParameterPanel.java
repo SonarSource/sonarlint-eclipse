@@ -35,7 +35,6 @@ import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParamType;
@@ -52,10 +51,10 @@ public class RuleParameterPanel extends Composite {
     this.selectedRuleMetadata = selectedRuleMetadata;
     this.selectedRuleConfig = selectedRuleConfig;
     this.setLayout(new GridLayout());
-    Group group = new Group(this, SWT.LEFT);
+    var group = new Group(this, SWT.LEFT);
     group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     group.setText("Parameters");
-    GridLayout groupLayout = new GridLayout();
+    var groupLayout = new GridLayout();
     groupLayout.verticalSpacing = 0;
     groupLayout.marginHeight = 0;
     group.setLayout(groupLayout);
@@ -66,7 +65,7 @@ public class RuleParameterPanel extends Composite {
     defaultLink.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false));
     defaultLink.setEnabled(selectedRuleConfig.isActive());
     setDefaultLinkVisibility();
-    ScrolledComposite sc = new ScrolledComposite(group, SWT.H_SCROLL | SWT.V_SCROLL);
+    var sc = new ScrolledComposite(group, SWT.H_SCROLL | SWT.V_SCROLL);
     sc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     defaultLink.addListener(SWT.Selection, e -> {
       selectedRuleConfig.getParams().clear();
@@ -85,7 +84,7 @@ public class RuleParameterPanel extends Composite {
     sc.setExpandVertical(true);
     sc.setExpandHorizontal(true);
 
-    GridLayout layout = new GridLayout();
+    var layout = new GridLayout();
     layout.numColumns = 2;
     paramInputsContainer.setLayout(layout);
 
@@ -95,15 +94,15 @@ public class RuleParameterPanel extends Composite {
   }
 
   public void setDefaultLinkVisibility() {
-    boolean allParamAreDefault = selectedRuleMetadata.paramDetails().stream()
+    var allParamAreDefault = selectedRuleMetadata.paramDetails().stream()
       .allMatch(param -> !selectedRuleConfig.getParams().containsKey(param.key())
         || Objects.equals(param.defaultValue(), selectedRuleConfig.getParams().get(param.key())));
     defaultLink.setVisible(!allParamAreDefault);
   }
 
   void addParamInput(Composite parent, StandaloneRuleParam ruleParam) {
-    Label ruleParameterLabel = new Label(parent, SWT.NONE);
-    GridData layoutData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
+    var ruleParameterLabel = new Label(parent, SWT.NONE);
+    var layoutData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
     ruleParameterLabel.setLayoutData(layoutData);
     ruleParameterLabel.setText(ruleParam.name());
 
@@ -131,15 +130,15 @@ public class RuleParameterPanel extends Composite {
   }
 
   private void addTextInput(Composite parent, StandaloneRuleParam ruleParam) {
-    Text ruleParameterInput = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
+    var ruleParameterInput = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+    var layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
     ruleParameterInput.setLayoutData(layoutData);
     configureInput(ruleParam, ruleParameterInput);
   }
 
   private void addStringInput(Composite parent, StandaloneRuleParam ruleParam) {
-    Text ruleParameterInput = new Text(parent, SWT.SINGLE | SWT.BORDER);
-    GridData layoutData = new GridData(SWT.FILL, SWT.NONE, true, false);
+    var ruleParameterInput = new Text(parent, SWT.SINGLE | SWT.BORDER);
+    var layoutData = new GridData(SWT.FILL, SWT.NONE, true, false);
     ruleParameterInput.setLayoutData(layoutData);
     configureInput(ruleParam, ruleParameterInput);
   }
@@ -148,7 +147,7 @@ public class RuleParameterPanel extends Composite {
     ruleParameterInput.setToolTipText(ruleParam.description());
     ruleParameterInput.setText(StringUtils.trimToEmpty(selectedRuleConfig.getParams().getOrDefault(ruleParam.key(), ruleParam.defaultValue())));
     ruleParameterInput.addModifyListener(e -> {
-      String text = ((Text) e.widget).getText();
+      var text = ((Text) e.widget).getText();
       if (!StringUtils.isEmpty(text)) {
         selectedRuleConfig.getParams().put(ruleParam.key(), text);
       } else {
@@ -160,8 +159,8 @@ public class RuleParameterPanel extends Composite {
   }
 
   private void addIntegerInput(Composite parent, StandaloneRuleParam ruleParam) {
-    Spinner ruleParameterInput = new Spinner(parent, SWT.WRAP);
-    GridData layoutData = new GridData(SWT.FILL, SWT.NONE, false, false);
+    var ruleParameterInput = new Spinner(parent, SWT.WRAP);
+    var layoutData = new GridData(SWT.FILL, SWT.NONE, false, false);
     ruleParameterInput.setToolTipText(ruleParam.description());
     ruleParameterInput.setLayoutData(layoutData);
     ruleParameterInput.setMinimum(Integer.MIN_VALUE);
@@ -186,7 +185,7 @@ public class RuleParameterPanel extends Composite {
   }
 
   private void addCheckboxInput(Composite parent, StandaloneRuleParam ruleParam) {
-    Button ruleParameterInput = new Button(parent, SWT.CHECK);
+    var ruleParameterInput = new Button(parent, SWT.CHECK);
     ruleParameterInput.setToolTipText(ruleParam.description());
     ruleParameterInput.setSelection("true".equals(selectedRuleConfig.getParams().getOrDefault(ruleParam.key(), ruleParam.defaultValue())));
     ruleParameterInput.addListener(SWT.Selection, e -> {

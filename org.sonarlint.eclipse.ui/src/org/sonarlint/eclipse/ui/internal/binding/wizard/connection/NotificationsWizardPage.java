@@ -39,7 +39,6 @@ import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
-import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class NotificationsWizardPage extends WizardPage {
 
@@ -57,26 +56,26 @@ public class NotificationsWizardPage extends WizardPage {
   public void createControl(Composite parent) {
 
     container = new Composite(parent, SWT.NONE);
-    GridLayout layout = new GridLayout();
+    var layout = new GridLayout();
     container.setLayout(layout);
 
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
+    var layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
     container.setLayoutData(layoutData);
 
-    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
 
     notificationsEnabledCheckbox = new Button(container, SWT.CHECK);
     notificationsEnabledCheckbox.setLayoutData(gd);
 
-    DataBindingContext dbc = new DataBindingContext();
-    dbc.bindValue(
+    var dataBindingContext = new DataBindingContext();
+    dataBindingContext.bindValue(
       WidgetProperties.selection().observe(notificationsEnabledCheckbox),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_NOTIFICATIONS_ENABLED)
         .observe(model),
       null,
       null);
 
-    WizardPageSupport.create(this, dbc);
+    WizardPageSupport.create(this, dataBindingContext);
 
     notificationsDetails = new Link(container, SWT.WRAP);
     notificationsDetails.setLayoutData(gd);
@@ -97,11 +96,11 @@ public class NotificationsWizardPage extends WizardPage {
   @Override
   public void setVisible(boolean visible) {
     if (visible) {
-      final boolean isSc = model.getConnectionType() == ConnectionType.SONARCLOUD;
-      final String sqOrSc = isSc ? "SonarCloud" : "SonarQube";
+      final var isSc = model.getConnectionType() == ConnectionType.SONARCLOUD;
+      final var sqOrSc = isSc ? "SonarCloud" : "SonarQube";
       notificationsEnabledCheckbox.setText("Receive notifications from " + sqOrSc);
       notificationsEnabledCheckbox.getShell().requestLayout();
-      final String docUrl = isSc ? "https://sonarcloud.io/documentation/user-guide/sonarlint-notifications/"
+      final var docUrl = isSc ? "https://sonarcloud.io/documentation/user-guide/sonarlint-notifications/"
         : "https://docs.sonarqube.org/latest/user-guide/sonarlint-notifications/";
       notificationsDetails.setText("You will receive <a href=\"" + docUrl + "\">notifications</a> from " + sqOrSc + " in situations like:\n" +
         "  - the Quality Gate status of a bound project changes\n" +

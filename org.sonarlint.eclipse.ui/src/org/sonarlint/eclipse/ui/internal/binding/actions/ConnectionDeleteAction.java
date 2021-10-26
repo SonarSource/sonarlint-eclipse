@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.binding.actions;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -40,7 +39,7 @@ public class ConnectionDeleteAction extends SelectionProviderAction {
   public ConnectionDeleteAction(Shell shell, ISelectionProvider selectionProvider) {
     super(selectionProvider, Messages.actionDelete);
     this.shell = shell;
-    ISharedImages sharedImages = PlatformUI.getWorkbench().getSharedImages();
+    var sharedImages = PlatformUI.getWorkbench().getSharedImages();
     setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
     setActionDefinitionId(IWorkbenchCommandConstants.EDIT_DELETE);
   }
@@ -52,11 +51,11 @@ public class ConnectionDeleteAction extends SelectionProviderAction {
       return;
     }
     selectedServers = new ArrayList<>();
-    Iterator iterator = sel.iterator();
+    var iterator = sel.iterator();
     while (iterator.hasNext()) {
-      Object obj = iterator.next();
+      var obj = iterator.next();
       if (obj instanceof IConnectedEngineFacade) {
-        IConnectedEngineFacade server = (IConnectedEngineFacade) obj;
+        var server = (IConnectedEngineFacade) obj;
         selectedServers.add(server);
       } else {
         setEnabled(false);
@@ -77,8 +76,7 @@ public class ConnectionDeleteAction extends SelectionProviderAction {
     // To handle the case where servers is null, the selectionChanged method is called
     // to ensure servers will be populated.
     if (selectedServers == null) {
-
-      IStructuredSelection sel = getStructuredSelection();
+      var sel = getStructuredSelection();
       if (sel != null) {
         selectionChanged(sel);
       }
@@ -87,8 +85,8 @@ public class ConnectionDeleteAction extends SelectionProviderAction {
     if (selectedServers != null && !selectedServers.isEmpty()) {
       // No check is made for valid parameters at this point, since if there is a failure, it
       // should be output to the error log instead of failing silently.
-      DeleteConnectionDialog dsd = new DeleteConnectionDialog(shell, selectedServers);
-      dsd.open();
+      var dialog = new DeleteConnectionDialog(shell, selectedServers);
+      dialog.open();
     }
   }
 

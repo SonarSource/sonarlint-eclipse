@@ -46,14 +46,14 @@ public class RemoteProjectSelectionWizardPage extends AbstractProjectBindingWiza
 
   @Override
   protected void doCreateControl(Composite container) {
-    Text projectKeyText = new Text(container, SWT.BORDER | SWT.SINGLE);
+    var projectKeyText = new Text(container, SWT.BORDER | SWT.SINGLE);
     projectKeyText.setMessage("Start typing to search for your project by name or enter the project key");
-    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
     projectKeyText.setLayoutData(gd);
 
-    DataBindingContext dbc = new DataBindingContext();
-    projectTextBinding = dbc.bindValue(
+    var dataBindingContext = new DataBindingContext();
+    projectTextBinding = dataBindingContext.bindValue(
       WidgetProperties.text(SWT.Modify).observe(projectKeyText),
       BeanProperties.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_REMOTE_PROJECT_KEY)
         .observe(model),
@@ -61,9 +61,9 @@ public class RemoteProjectSelectionWizardPage extends AbstractProjectBindingWiza
       null);
     ControlDecorationSupport.create(projectTextBinding, SWT.LEFT | SWT.TOP);
 
-    WizardPageSupport.create(this, dbc);
+    WizardPageSupport.create(this, dataBindingContext);
 
-    ContentProposalAdapter contentProposalAdapter = new ContentAssistCommandAdapter(
+    var contentProposalAdapter = new ContentAssistCommandAdapter(
       projectKeyText,
       new TextContentAdapter(),
       new RemoteProjectProvider(model, this),

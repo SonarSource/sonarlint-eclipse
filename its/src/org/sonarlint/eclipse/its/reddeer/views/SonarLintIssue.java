@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.its.reddeer.views;
 
-import java.util.List;
 import org.eclipse.reddeer.eclipse.ui.markers.AbstractMarker;
 import org.eclipse.reddeer.eclipse.ui.views.markers.AbstractMarkersSupportView.Column;
 import org.eclipse.reddeer.swt.api.TreeItem;
@@ -48,8 +47,8 @@ public class SonarLintIssue extends AbstractMarker {
   }
 
   private String getCell(String column) {
-    OnTheFlyView onTheFlyView = new OnTheFlyView();
-    List<String> columns = onTheFlyView.getProblemColumns();
+    var onTheFlyView = new OnTheFlyView();
+    var columns = onTheFlyView.getProblemColumns();
     if (columns.contains(column)) {
       return markerItem.getCell(onTheFlyView.getIndexOfColumn(column));
     }

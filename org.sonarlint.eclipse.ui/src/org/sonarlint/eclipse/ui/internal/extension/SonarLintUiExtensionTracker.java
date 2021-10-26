@@ -19,8 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal.extension;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import org.sonarlint.eclipse.core.internal.extension.AbstractSonarLintExtensionTracker;
 import org.sonarlint.eclipse.ui.quickfixes.IMarkerResolutionEnhancer;
 
@@ -30,7 +30,7 @@ public class SonarLintUiExtensionTracker extends AbstractSonarLintExtensionTrack
 
   private final SonarLintEP<IMarkerResolutionEnhancer> markerResolutionEnhancerEp = new SonarLintEP<>("org.sonarlint.eclipse.ui.markerResolutionEnhancer"); //$NON-NLS-1$
 
-  private final Collection<SonarLintEP<?>> allEps = Arrays.asList(markerResolutionEnhancerEp);
+  private final Collection<SonarLintEP<?>> allEps = List.of(markerResolutionEnhancerEp);
 
   private SonarLintUiExtensionTracker() {
     init(allEps);

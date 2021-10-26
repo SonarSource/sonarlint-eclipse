@@ -19,25 +19,18 @@
  */
 package org.sonarlint.eclipse.core.internal.utils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
-import java.net.Proxy.Type;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
-import okhttp3.OkHttpClient.Builder;
 import org.eclipse.core.net.proxy.IProxyData;
-import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IResource;
-import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
@@ -69,10 +62,10 @@ public class SonarLintUtils {
   }
 
   public static OkHttpClient.Builder withProxy(String url, OkHttpClient baseClient) {
-    Builder newBuilder = baseClient.newBuilder()
+    var newBuilder = baseClient.newBuilder()
       .connectTimeout(30, TimeUnit.SECONDS)
       .readTimeout(10, TimeUnit.MINUTES);
-    IProxyService proxyService = SonarLintCorePlugin.getInstance().getProxyService();
+    var proxyService = SonarLintCorePlugin.getInstance().getProxyService();
     IProxyData[] proxyDataForHost;
     try {
       proxyDataForHost = proxyService.select(new URL(url).toURI());
@@ -80,9 +73,9 @@ public class SonarLintUtils {
       throw new IllegalStateException("Invalid URL for server: " + url, e);
     }
     if (proxyDataForHost.length > 0) {
-      IProxyData proxyData = proxyDataForHost[0];
+      var proxyData = proxyDataForHost[0];
       if (proxyData.getHost() != null) {
-        Type proxyType = IProxyData.SOCKS_PROXY_TYPE.equals(proxyData.getType()) ? Proxy.Type.SOCKS : Proxy.Type.HTTP;
+        var proxyType = IProxyData.SOCKS_PROXY_TYPE.equals(proxyData.getType()) ? Proxy.Type.SOCKS : Proxy.Type.HTTP;
         newBuilder.proxy(new Proxy(proxyType, new InetSocketAddress(proxyData.getHost(), proxyData.getPort())));
         if (proxyData.isRequiresAuthentication()) {
           newBuilder.proxyAuthenticator((route, response) -> {
@@ -90,9 +83,9 @@ public class SonarLintUtils {
               // Give up, we've already attempted to authenticate.
               return null;
             }
-            String proxyCrendentials = Credentials.basic(defaultString(proxyData.getUserId(), ""), defaultString(proxyData.getPassword(), ""));
+            var proxyCredentials = Credentials.basic(defaultString(proxyData.getUserId(), ""), defaultString(proxyData.getPassword(), ""));
             return response.request().newBuilder()
-              .header(PROXY_AUTHORIZATION, proxyCrendentials)
+              .header(PROXY_AUTHORIZATION, proxyCredentials)
               .build();
           });
         }
@@ -103,30 +96,16 @@ public class SonarLintUtils {
   }
 
   public static Set<Language> getEnabledLanguages() {
-    EnumSet<Language> languagesDisabledByDefault = EnumSet.of(Language.TS, Language.JAVA, Language.CPP, Language.C, Language.OBJC, Language.SWIFT);
-    EnumSet<Language> enabledLanguages = EnumSet.complementOf(languagesDisabledByDefault);
-    Collection<IAnalysisConfigurator> configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
-    for (IAnalysisConfigurator configurator : configurators) {
+    var languagesDisabledByDefault = EnumSet.of(Language.TS, Language.JAVA, Language.CPP, Language.C, Language.OBJC, Language.SWIFT);
+    var enabledLanguages = EnumSet.complementOf(languagesDisabledByDefault);
+    var configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
+    for (var configurator : configurators) {
       enabledLanguages.addAll(configurator.whitelistedLanguages());
     }
     return enabledLanguages;
   }
 
-  public static Optional<Integer> getPlatformPid() {
-    try {
-      return Optional.of(getJvmPidForJava9Plus());
-    } catch(IllegalStateException e) {
-      return Optional.empty();
-    }
-  }
-
-  private static int getJvmPidForJava9Plus() {
-    try {
-      Class<?> processHandleClass = Class.forName("java.lang.ProcessHandle");
-      Object handle = processHandleClass.getMethod("current").invoke(null);
-      return ((Long) processHandleClass.getMethod("pid").invoke(handle)).intValue();
-    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
-      throw new IllegalStateException("Could not get PID through process handle", e);
-    }
+  public static int getPlatformPid() {
+    return (int) ProcessHandle.current().pid();
   }
 }

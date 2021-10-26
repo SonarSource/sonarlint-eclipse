@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,14 +74,14 @@ public class ConnectedEngineFacadeManager {
     } catch (BackingStoreException e) {
       throw new IllegalStateException(e);
     }
-    String connectionId = getConnectionIdFromNodeName(event.getNode().name());
-    ConnectedEngineFacade old = (ConnectedEngineFacade) facadesByConnectionId.get(connectionId);
+    var connectionId = getConnectionIdFromNodeName(event.getNode().name());
+    var old = (ConnectedEngineFacade) facadesByConnectionId.get(connectionId);
     if (old != null) {
       loadConnection(event.getNode(), old);
       old.stop();
       fireServerEvent(old, EVENT_CHANGED);
     } else {
-      ConnectedEngineFacade newFacade = new ConnectedEngineFacade(connectionId);
+      var newFacade = new ConnectedEngineFacade(connectionId);
       loadConnection(event.getNode(), newFacade);
       facadesByConnectionId.put(newFacade.getId(), newFacade);
       fireServerEvent(newFacade, EVENT_ADDED);
@@ -94,8 +92,8 @@ public class ConnectedEngineFacadeManager {
 
     @Override
     public void removed(NodeChangeEvent event) {
-      String serverId = getConnectionIdFromNodeName(event.getChild().name());
-      IConnectedEngineFacade serverToRemove = facadesByConnectionId.get(serverId);
+      var serverId = getConnectionIdFromNodeName(event.getChild().name());
+      var serverToRemove = facadesByConnectionId.get(serverId);
       facadesByConnectionId.remove(serverId);
       if (serverToRemove != null) {
         fireServerEvent(serverToRemove, EVENT_REMOVED);
@@ -113,14 +111,14 @@ public class ConnectedEngineFacadeManager {
     @Override
     public void removed(NodeChangeEvent event) {
       if (event.getChild().name().equals(PREF_SERVERS)) {
-        Collection<IConnectedEngineFacade> removedServers = new ArrayList<>(facadesByConnectionId.values());
+        var removedServers = new ArrayList<>(facadesByConnectionId.values());
         facadesByConnectionId.clear();
-        for (IConnectedEngineFacade server : removedServers) {
+        for (var server : removedServers) {
           fireServerEvent(server, EVENT_REMOVED);
         }
         // Reload default values
         facadesByConnectionId.putAll(loadServersList(DefaultScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID).node(PREF_SERVERS)));
-        for (IConnectedEngineFacade server : facadesByConnectionId.values()) {
+        for (var server : facadesByConnectionId.values()) {
           fireServerEvent(server, EVENT_ADDED);
         }
       }
@@ -130,9 +128,9 @@ public class ConnectedEngineFacadeManager {
     public void added(NodeChangeEvent event) {
       if (event.getChild().name().equals(PREF_SERVERS)) {
         // Default servers
-        Collection<IConnectedEngineFacade> removedServers = new ArrayList<>(facadesByConnectionId.values());
+        var removedServers = new ArrayList<>(facadesByConnectionId.values());
         facadesByConnectionId.clear();
-        for (IConnectedEngineFacade server : removedServers) {
+        for (var server : removedServers) {
           fireServerEvent(server, EVENT_REMOVED);
         }
         ((IEclipsePreferences) event.getChild()).addNodeChangeListener(serversNodeChangeListener);
@@ -141,15 +139,15 @@ public class ConnectedEngineFacadeManager {
   };
 
   public void init() {
-    IEclipsePreferences rootNode = getSonarLintPreferenceNode();
+    var rootNode = getSonarLintPreferenceNode();
     rootNode.addNodeChangeListener(rootNodeChangeListener);
     try {
       if (rootNode.nodeExists(PREF_SERVERS)) {
-        Preferences serversNode = rootNode.node(PREF_SERVERS);
+        var serversNode = rootNode.node(PREF_SERVERS);
         ((IEclipsePreferences) serversNode).addNodeChangeListener(serversNodeChangeListener);
         facadesByConnectionId.putAll(loadServersList(serversNode));
-        for (String serverNodeName : serversNode.childrenNames()) {
-          IEclipsePreferences serverNode = ((IEclipsePreferences) serversNode.node(serverNodeName));
+        for (var serverNodeName : serversNode.childrenNames()) {
+          var serverNode = ((IEclipsePreferences) serversNode.node(serverNodeName));
           serverNode.addPreferenceChangeListener(connectedEngineChangeListener);
         }
       } else {
@@ -161,14 +159,14 @@ public class ConnectedEngineFacadeManager {
   }
 
   public void stop() {
-    IEclipsePreferences rootNode = getSonarLintPreferenceNode();
+    var rootNode = getSonarLintPreferenceNode();
     rootNode.removeNodeChangeListener(rootNodeChangeListener);
     try {
       if (rootNode.nodeExists(PREF_SERVERS)) {
-        Preferences serversNode = rootNode.node(PREF_SERVERS);
+        var serversNode = rootNode.node(PREF_SERVERS);
         ((IEclipsePreferences) serversNode).removeNodeChangeListener(serversNodeChangeListener);
-        for (String serverNodeName : serversNode.childrenNames()) {
-          IEclipsePreferences serverNode = ((IEclipsePreferences) serversNode.node(serverNodeName));
+        for (var serverNodeName : serversNode.childrenNames()) {
+          var serverNode = ((IEclipsePreferences) serversNode.node(serverNodeName));
           serverNode.removePreferenceChangeListener(connectedEngineChangeListener);
         }
       }
@@ -196,7 +194,7 @@ public class ConnectedEngineFacadeManager {
       return;
     }
 
-    List<IConnectedEngineFacadeLifecycleListener> clone = new ArrayList<>();
+    var clone = new ArrayList<IConnectedEngineFacadeLifecycleListener>();
     clone.addAll(connectionsListeners);
     for (IConnectedEngineFacadeLifecycleListener srl : clone) {
       if (b == EVENT_ADDED) {
@@ -216,12 +214,12 @@ public class ConnectedEngineFacadeManager {
   private static Map<String, IConnectedEngineFacade> loadServersList(Preferences serversNode) {
     Map<String, IConnectedEngineFacade> result = new LinkedHashMap<>();
     try {
-      for (String serverNodeName : serversNode.childrenNames()) {
-        Preferences serverNode = serversNode.node(serverNodeName);
-        String serverId = getConnectionIdFromNodeName(serverNodeName);
-        ConnectedEngineFacade s = new ConnectedEngineFacade(serverId);
-        loadConnection(serverNode, s);
-        result.put(s.getId(), s);
+      for (var serverNodeName : serversNode.childrenNames()) {
+        var serverNode = serversNode.node(serverNodeName);
+        var serverId = getConnectionIdFromNodeName(serverNodeName);
+        var facade = new ConnectedEngineFacade(serverId);
+        loadConnection(serverNode, facade);
+        result.put(facade.getId(), facade);
       }
     } catch (BackingStoreException e) {
       throw unableToLoadServerList(e);
@@ -234,7 +232,7 @@ public class ConnectedEngineFacadeManager {
   }
 
   private static void loadConnection(Preferences connectionNode, ConnectedEngineFacade facade) {
-    String url = connectionNode.get(URL_ATTRIBUTE, "");
+    var url = connectionNode.get(URL_ATTRIBUTE, "");
     url = StringUtils.removeEnd(url, "/");
     if (ConnectedEngineFacade.OLD_SONARCLOUD_URL.equals(url)) {
       // Migration
@@ -266,8 +264,8 @@ public class ConnectedEngineFacadeManager {
 
   private static void storeCredentials(IConnectedEngineFacade server, String username, String password) {
     try {
-      ISecurePreferences secureConnectionsNode = getSecureConnectionsNode();
-      ISecurePreferences secureConnectionNode = secureConnectionsNode.node(getConnectionNodeName(server));
+      var secureConnectionsNode = getSecureConnectionsNode();
+      var secureConnectionNode = secureConnectionsNode.node(getConnectionNodeName(server));
       secureConnectionNode.put(USERNAME_ATTRIBUTE, username, true);
       secureConnectionNode.put(PASSWORD_ATTRIBUTE, password, true);
       secureConnectionsNode.flush();
@@ -277,10 +275,10 @@ public class ConnectedEngineFacadeManager {
   }
 
   public void removeServer(IConnectedEngineFacade server) {
-    String serverNodeName = getConnectionNodeName(server);
+    var serverNodeName = getConnectionNodeName(server);
     try {
-      IEclipsePreferences rootNode = getSonarLintPreferenceNode();
-      Preferences serversNode = rootNode.node(PREF_SERVERS);
+      var rootNode = getSonarLintPreferenceNode();
+      var serversNode = rootNode.node(PREF_SERVERS);
       if (serversNode.nodeExists(serverNodeName)) {
         // No need to notify listener for every deleted property
         ((IEclipsePreferences) serversNode.node(serverNodeName)).removePreferenceChangeListener(connectedEngineChangeListener);
@@ -294,7 +292,7 @@ public class ConnectedEngineFacadeManager {
   }
 
   private static void tryRemoveSecureProperties(String serverNodeName) {
-    ISecurePreferences secureServersNode = getSecureConnectionsNode();
+    var secureServersNode = getSecureConnectionsNode();
     if (secureServersNode.nodeExists(serverNodeName)) {
       secureServersNode.node(serverNodeName).removeNode();
     }
@@ -306,7 +304,7 @@ public class ConnectedEngineFacadeManager {
    * @return an array containing all servers
    */
   public List<IConnectedEngineFacade> getServers() {
-    return Collections.unmodifiableList(new ArrayList<>(facadesByConnectionId.values()));
+    return List.copyOf(facadesByConnectionId.values());
   }
 
   /**
@@ -343,8 +341,8 @@ public class ConnectedEngineFacadeManager {
     return config
       .getProjectBinding()
       .flatMap(b -> {
-        Optional<IConnectedEngineFacade> server = findById(b.connectionId());
-        if (!server.isPresent()) {
+        var server = findById(b.connectionId());
+        if (server.isEmpty()) {
           SonarLintLogger.get().error("Project '" + project.getName() + "' binding refers to an unknown connection: '" + b.connectionId()
             + "'. Please fix project binding or unbind project.");
           return Optional.empty();
@@ -362,7 +360,7 @@ public class ConnectedEngineFacadeManager {
     try {
       if (!rootNode.nodeExists(PREF_SERVERS)) {
         // User is probably editing a default server. So we have to make them persistent.
-        Collection<IConnectedEngineFacade> defaultServers = new ArrayList<>(facadesByConnectionId.values());
+        var defaultServers = new ArrayList<>(facadesByConnectionId.values());
         facadesByConnectionId.clear();
         for (IConnectedEngineFacade iServer : defaultServers) {
           addServer(iServer, "", "");
@@ -376,16 +374,16 @@ public class ConnectedEngineFacadeManager {
     if (facade.hasAuth()) {
       storeCredentials(facade, username, password);
     }
-    ConnectedEngineFacade connectionToUpdate = (ConnectedEngineFacade) facadesByConnectionId.get(facade.getId());
+    var connectionToUpdate = (ConnectedEngineFacade) facadesByConnectionId.get(facade.getId());
     update(connectionToUpdate, facade.getHost(), facade.getOrganization(), facade.hasAuth(), facade.areNotificationsDisabled());
 
     fireServerEvent(connectionToUpdate, EVENT_CHANGED);
   }
 
   private void addOrUpdateProperties(IConnectedEngineFacade facade) {
-    IEclipsePreferences rootNode = getSonarLintPreferenceNode();
-    Preferences serversNode = rootNode.node(PREF_SERVERS);
-    IEclipsePreferences serverNode = (IEclipsePreferences) serversNode.node(getConnectionNodeName(facade));
+    var rootNode = getSonarLintPreferenceNode();
+    var serversNode = rootNode.node(PREF_SERVERS);
+    var serverNode = (IEclipsePreferences) serversNode.node(getConnectionNodeName(facade));
     try {
       serverNode.removePreferenceChangeListener(connectedEngineChangeListener);
       serverNode.put(URL_ATTRIBUTE, facade.getHost());
@@ -420,11 +418,11 @@ public class ConnectedEngineFacadeManager {
 
   @Nullable
   private static String getFromSecure(IConnectedEngineFacade facade, String attribute) throws StorageException {
-    ISecurePreferences secureConnectionsNode = getSecureConnectionsNode();
+    var secureConnectionsNode = getSecureConnectionsNode();
     if (!secureConnectionsNode.nodeExists(getConnectionNodeName(facade))) {
       return null;
     }
-    ISecurePreferences secureConnectionNode = secureConnectionsNode.node(getConnectionNodeName(facade));
+    var secureConnectionNode = secureConnectionsNode.node(getConnectionNodeName(facade));
     return secureConnectionNode.get(attribute, null);
   }
 

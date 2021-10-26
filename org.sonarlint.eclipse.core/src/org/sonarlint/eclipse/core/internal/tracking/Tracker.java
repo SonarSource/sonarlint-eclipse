@@ -20,10 +20,8 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import org.eclipse.jdt.annotation.Nullable;
@@ -82,22 +80,22 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
       return;
     }
 
-    Map<SearchKey, List<BASE>> baseSearch = new HashMap<>();
-    for (BASE base : tracking.getUnmatchedBases()) {
-      SearchKey searchKey = factory.apply(base);
+    var baseSearch = new HashMap<SearchKey, List<BASE>>();
+    for (var base : tracking.getUnmatchedBases()) {
+      var searchKey = factory.apply(base);
       if (!baseSearch.containsKey(searchKey)) {
         baseSearch.put(searchKey, new ArrayList<>());
       }
       baseSearch.get(searchKey).add(base);
     }
 
-    for (RAW raw : tracking.getUnmatchedRaws()) {
-      SearchKey rawKey = factory.apply(raw);
-      Collection<BASE> bases = baseSearch.get(rawKey);
+    for (var raw : tracking.getUnmatchedRaws()) {
+      var rawKey = factory.apply(raw);
+      var bases = baseSearch.get(rawKey);
       if (bases != null && !bases.isEmpty()) {
         // TODO taking the first one. Could be improved if there are more than 2 issues on the same line.
         // Message could be checked to take the best one.
-        BASE match = bases.iterator().next();
+        var match = bases.iterator().next();
         tracking.match(raw, match);
         baseSearch.get(rawKey).remove(match);
       }

@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -32,8 +33,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -55,7 +54,7 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
     if (event.getType() == IResourceChangeEvent.POST_BUILD) {
-      final Collection<ISonarLintFile> changedFiles = new ArrayList<>();
+      final var changedFiles = new ArrayList<ISonarLintFile>();
       try {
         event.getDelta().accept(delta -> visitDelta(changedFiles, delta));
       } catch (CoreException e) {
@@ -63,11 +62,11 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
       }
 
       if (!changedFiles.isEmpty()) {
-        Map<ISonarLintProject, Collection<ISonarLintFile>> filesPerProject = changedFiles.stream()
-          .collect(Collectors.groupingBy(ISonarLintFile::getProject, Collectors.toCollection(ArrayList::new)));
+        Map<ISonarLintProject, List<ISonarLintFile>> filesPerProject = changedFiles.stream()
+          .collect(Collectors.groupingBy(ISonarLintFile::getProject, Collectors.toList()));
 
         SonarLintUiPlugin.removePostBuildListener();
-        Job job = new AnalyzeOpenedFiles(filesPerProject);
+        var job = new AnalyzeOpenedFiles(filesPerProject);
         JobUtils.scheduleAfter(job, SonarLintUiPlugin::addPostBuildListener);
         job.schedule();
       }
@@ -76,24 +75,24 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
 
   private static class AnalyzeOpenedFiles extends Job {
 
-    private final Map<ISonarLintProject, Collection<ISonarLintFile>> changedFilesPerProject;
+    private final Map<ISonarLintProject, List<ISonarLintFile>> changedFilesPerProject;
 
-    AnalyzeOpenedFiles(Map<ISonarLintProject, Collection<ISonarLintFile>> changedFilesPerProject) {
+    AnalyzeOpenedFiles(Map<ISonarLintProject, List<ISonarLintFile>> changedFilesPerProject) {
       super("Find opened files");
       this.changedFilesPerProject = changedFilesPerProject;
     }
 
     @Override
     public IStatus run(IProgressMonitor monitor) {
-      for (Map.Entry<ISonarLintProject, Collection<ISonarLintFile>> entry : changedFilesPerProject.entrySet()) {
-        ISonarLintProject project = entry.getKey();
+      for (var entry : changedFilesPerProject.entrySet()) {
+        var project = entry.getKey();
 
-        Collection<FileWithDocument> filesToAnalyze = entry.getValue().stream()
+        var filesToAnalyze = entry.getValue().stream()
           .map(f -> {
-            IEditorPart editorPart = PlatformUtils.findEditor(f);
+            var editorPart = PlatformUtils.findEditor(f);
             if (editorPart instanceof ITextEditor) {
-              ITextEditor textEditor = (ITextEditor) editorPart;
-              IDocument doc = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
+              var textEditor = (ITextEditor) editorPart;
+              var doc = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
               return new FileWithDocument(f, doc);
             }
             if (editorPart != null) {
@@ -105,7 +104,7 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
           .filter(Objects::nonNull)
           .collect(Collectors.toList());
         if (!filesToAnalyze.isEmpty()) {
-          AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.EDITOR_CHANGE);
+          var request = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.EDITOR_CHANGE);
           JobUtils.scheduleAutoAnalysisIfEnabled(request);
         }
       }
@@ -118,17 +117,17 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
       return false;
     }
 
-    ISonarLintProject resourceSonarLintProject = Adapters.adapt(delta.getResource().getProject(), ISonarLintProject.class);
+    var resourceSonarLintProject = Adapters.adapt(delta.getResource().getProject(), ISonarLintProject.class);
     if (resourceSonarLintProject != null && !SonarLintUtils.isSonarLintFileCandidate(delta.getResource())) {
       return false;
     }
 
-    ISonarLintProject sonarLintProject = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
+    var sonarLintProject = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
     if (sonarLintProject != null) {
       return SonarLintCorePlugin.loadConfig(sonarLintProject).isAutoEnabled();
     }
 
-    ISonarLintFile sonarLintFile = Adapters.adapt(delta.getResource(), ISonarLintFile.class);
+    var sonarLintFile = Adapters.adapt(delta.getResource(), ISonarLintFile.class);
     if (sonarLintFile != null && isChanged(delta)) {
       changedFiles.add(sonarLintFile);
       return true;

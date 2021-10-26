@@ -88,7 +88,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
 
     @Override
     public String getColumnText(Object element, int columnIndex) {
-      SonarLintProperty data = (SonarLintProperty) element;
+      var data = (SonarLintProperty) element;
 
       switch (columnIndex) {
         case 0:
@@ -149,8 +149,8 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
   protected Control createContents(final Composite ancestor) {
     loadProperties();
 
-    Composite parent = new Composite(ancestor, SWT.NONE);
-    GridLayout layout = new GridLayout();
+    var parent = new Composite(ancestor, SWT.NONE);
+    var layout = new GridLayout();
     layout.numColumns = 2;
     layout.marginHeight = 0;
     layout.marginWidth = 0;
@@ -160,38 +160,38 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
       createLinkToGlobal(ancestor, parent);
     }
 
-    Composite innerParent = new Composite(parent, SWT.NONE);
-    GridLayout innerLayout = new GridLayout();
+    var innerParent = new Composite(parent, SWT.NONE);
+    var innerLayout = new GridLayout();
     innerLayout.numColumns = 2;
     innerLayout.marginHeight = 0;
     innerLayout.marginWidth = 0;
     innerParent.setLayout(innerLayout);
-    GridData gd = new GridData(GridData.FILL_BOTH);
+    var gd = new GridData(GridData.FILL_BOTH);
     gd.horizontalSpan = 2;
     innerParent.setLayoutData(gd);
 
-    Composite tableComposite = new Composite(innerParent, SWT.NONE);
-    GridData data = new GridData(GridData.FILL_BOTH);
+    var tableComposite = new Composite(innerParent, SWT.NONE);
+    var data = new GridData(GridData.FILL_BOTH);
     data.widthHint = 360;
     data.heightHint = convertHeightInCharsToPixels(10);
     tableComposite.setLayoutData(data);
 
-    TableColumnLayout columnLayout = new TableColumnLayout();
+    var columnLayout = new TableColumnLayout();
     tableComposite.setLayout(columnLayout);
-    Table table = new Table(tableComposite, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
+    var table = new Table(tableComposite, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
 
     table.setHeaderVisible(true);
     table.setLinesVisible(true);
 
-    GC gc = new GC(getShell());
+    var gc = new GC(getShell());
     gc.setFont(JFaceResources.getDialogFont());
 
-    TableColumn propertyNameColumn = new TableColumn(table, SWT.NONE);
+    var propertyNameColumn = new TableColumn(table, SWT.NONE);
     propertyNameColumn.setText("Name");
     int minWidth = computeMinimumColumnWidth(gc, "Name");
     columnLayout.setColumnData(propertyNameColumn, new ColumnWeightData(1, minWidth, true));
 
-    TableColumn propertyValueColumn = new TableColumn(table, SWT.NONE);
+    var propertyValueColumn = new TableColumn(table, SWT.NONE);
     propertyValueColumn.setText(VALUE);
     minWidth = computeMinimumColumnWidth(gc, VALUE);
     columnLayout.setColumnData(propertyValueColumn, new ColumnWeightData(1, minWidth, true));
@@ -221,7 +221,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
 
   @Override
   protected Composite createButtons(Composite innerParent) {
-    Composite buttons = super.createButtons(innerParent);
+    var buttons = super.createButtons(innerParent);
 
     upButton = new Button(buttons, SWT.PUSH);
     upButton.setText("Up");
@@ -236,10 +236,10 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
   }
 
   private static void createLinkToGlobal(final Composite ancestor, Composite parent) {
-    Link fLink = new Link(parent, SWT.NONE);
+    var fLink = new Link(parent, SWT.NONE);
     fLink.setText("<A>Configure Workspace Settings...</A>");
     fLink.setLayoutData(new GridData());
-    SelectionAdapter sl = new SelectionAdapter() {
+    var sl = new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         PreferencesUtil.createPreferenceDialogOn(ancestor.getShell(), PREFERENCE_ID, null, null).open();
@@ -255,20 +255,20 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
 
   @Override
   protected void edit() {
-    IStructuredSelection selection = (IStructuredSelection) fTableViewer.getSelection();
+    var selection = (IStructuredSelection) fTableViewer.getSelection();
 
-    Object[] objects = selection.toArray();
+    var objects = selection.toArray();
     if ((objects == null) || (objects.length != 1)) {
       return;
     }
 
-    SonarLintProperty data = (SonarLintProperty) selection.getFirstElement();
+    var data = (SonarLintProperty) selection.getFirstElement();
     edit(data);
   }
 
   @Override
   protected void add() {
-    SonarLintProperty newProperty = editSonarProperty(new SonarLintProperty("", ""), false, true);
+    var newProperty = editSonarProperty(new SonarLintProperty("", ""), false, true);
     if (newProperty != null) {
       sonarProperties.add(newProperty);
       fTableViewer.refresh();
@@ -288,8 +288,8 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
   }
 
   protected void edit(SonarLintProperty data) {
-    SonarLintProperty oldProp = data;
-    SonarLintProperty newProp = editSonarProperty(new SonarLintProperty(oldProp), true, false);
+    var oldProp = data;
+    var newProp = editSonarProperty(new SonarLintProperty(oldProp), true, false);
     if (newProp != null) {
       data.setValue(newProp.getValue());
       fTableViewer.refresh(data);
@@ -302,14 +302,14 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
    * Updates the buttons.
    */
   protected void updateButtons() {
-    IStructuredSelection selection = (IStructuredSelection) fTableViewer.getSelection();
-    int selectionCount = selection.size();
-    int itemCount = fTableViewer.getTable().getItemCount();
+    var selection = (IStructuredSelection) fTableViewer.getSelection();
+    var selectionCount = selection.size();
+    var itemCount = fTableViewer.getTable().getItemCount();
 
     editButton.setEnabled(selectionCount == 1);
     removeButton.setEnabled(selectionCount > 0 && selectionCount <= itemCount);
 
-    int index = sonarProperties.indexOf(selection.getFirstElement());
+    var index = sonarProperties.indexOf(selection.getFirstElement());
 
     removeButton.setEnabled(index >= 0);
     upButton.setEnabled(itemCount > 1 && index > 0);
@@ -326,7 +326,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
    * @return the created or modified property, or <code>null</code> if the edition failed
    */
   protected SonarLintProperty editSonarProperty(SonarLintProperty property, boolean edit, boolean isNameModifiable) {
-    EditSonarPropertyDialog dialog = new EditSonarPropertyDialog(getShell(), property, edit, isNameModifiable);
+    var dialog = new EditSonarPropertyDialog(getShell(), property, edit, isNameModifiable);
     if (dialog.open() == Window.OK) {
       return dialog.getSonarProperty();
     }
@@ -352,17 +352,17 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
    *  and <code>false</code> if it should move down
    */
   private void swap(boolean up) {
-    IStructuredSelection selection = (IStructuredSelection) fTableViewer.getSelection();
+    var selection = (IStructuredSelection) fTableViewer.getSelection();
 
-    Object[] objects = selection.toArray();
+    var objects = selection.toArray();
     if ((objects == null) || (objects.length != 1)) {
       return;
     }
 
-    SonarLintProperty data = (SonarLintProperty) selection.getFirstElement();
+    var data = (SonarLintProperty) selection.getFirstElement();
 
-    int index = sonarProperties.indexOf(data);
-    int target = up ? (index - 1) : (index + 1);
+    var index = sonarProperties.indexOf(data);
+    var target = up ? (index - 1) : (index + 1);
 
     if (index >= 0) {
       sonarProperties.remove(index);
@@ -389,10 +389,10 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
   private void loadProperties() {
     sonarProperties = new ArrayList<>();
     if (isGlobal()) {
-      String props = getPreferenceStore().getString(SonarLintGlobalConfiguration.PREF_EXTRA_ARGS);
+      var props = getPreferenceStore().getString(SonarLintGlobalConfiguration.PREF_EXTRA_ARGS);
       sonarProperties.addAll(SonarLintGlobalConfiguration.deserializeExtraProperties(props));
     } else {
-      SonarLintProjectConfiguration sonarProject = getProjectConfig();
+      var sonarProject = getProjectConfig();
       if (sonarProject != null) {
         sonarProperties.addAll(sonarProject.getExtraProperties());
       }
@@ -402,10 +402,10 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
   @Override
   public boolean performOk() {
     if (isGlobal()) {
-      String props = SonarLintGlobalConfiguration.serializeExtraProperties(sonarProperties);
+      var props = SonarLintGlobalConfiguration.serializeExtraProperties(sonarProperties);
       getPreferenceStore().setValue(SonarLintGlobalConfiguration.PREF_EXTRA_ARGS, props);
     } else {
-      SonarLintProjectConfiguration projectConfig = getProjectConfig();
+      var projectConfig = getProjectConfig();
       if (projectConfig != null) {
         projectConfig.getExtraProperties().clear();
         projectConfig.getExtraProperties().addAll(sonarProperties);
@@ -428,7 +428,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
 
   @Nullable
   private SonarLintProjectConfiguration getProjectConfig() {
-    ISonarLintProject project = getProject();
+    var project = getProject();
     if (project != null) {
       return SonarLintCorePlugin.loadConfig(project);
     }

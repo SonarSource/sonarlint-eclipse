@@ -45,24 +45,24 @@ public class AnalyzeProjectsJob extends WorkspaceJob {
 
   @Override
   public IStatus runInWorkspace(IProgressMonitor monitor) {
-    SubMonitor global = SubMonitor.convert(monitor, 100);
+    var global = SubMonitor.convert(monitor, 100);
     try {
       global.setTaskName("Analysis");
       SonarLintMarkerUpdater.deleteAllMarkersFromReport();
-      SubMonitor analysisMonitor = SubMonitor.convert(global.newChild(100), filesPerProject.size());
-      for (Map.Entry<ISonarLintProject, Collection<FileWithDocument>> entry : filesPerProject.entrySet()) {
+      var analysisMonitor = SubMonitor.convert(global.newChild(100), filesPerProject.size());
+      for (var entry : filesPerProject.entrySet()) {
         if (monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
         }
-        ISonarLintProject project = entry.getKey();
+        var project = entry.getKey();
         if (!project.isOpen()) {
           analysisMonitor.worked(1);
           continue;
         }
         global.setTaskName("Analyzing project " + project.getName());
-        AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, entry.getValue(), TriggerType.MANUAL);
-        AbstractSonarProjectJob job = AbstractAnalyzeProjectJob.create(req);
-        SubMonitor subMonitor = analysisMonitor.newChild(1);
+        var req = new AnalyzeProjectRequest(project, entry.getValue(), TriggerType.MANUAL);
+        var job = AbstractAnalyzeProjectJob.create(req);
+        var subMonitor = analysisMonitor.newChild(1);
         job.run(subMonitor);
         subMonitor.done();
       }

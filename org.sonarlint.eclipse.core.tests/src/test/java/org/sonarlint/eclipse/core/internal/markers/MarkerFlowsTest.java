@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
@@ -29,40 +29,40 @@ public class MarkerFlowsTest extends SonarTestCase {
 
   @Test
   public void display_a_correct_summary_for_secondary_locations_only_flows() {
-    MarkerFlow flow1 = new MarkerFlow(0);
+    var flow1 = new MarkerFlow(0);
     new MarkerFlowLocation(flow1, "message1");
-    MarkerFlow flow2 = new MarkerFlow(0);
+    var flow2 = new MarkerFlow(0);
     new MarkerFlowLocation(flow2, "message2");
-    MarkerFlow flow3 = new MarkerFlow(0);
+    var flow3 = new MarkerFlow(0);
     new MarkerFlowLocation(flow3, "message3");
-    MarkerFlows markerFlows = new MarkerFlows(Arrays.asList(flow1, flow2, flow3));
+    var markerFlows = new MarkerFlows(List.of(flow1, flow2, flow3));
 
     assertThat(markerFlows.getSummaryDescription()).isEqualTo(" [+3 locations]");
   }
 
   @Test
   public void display_a_correct_summary_for_multiple_flows() {
-    MarkerFlow flow1 = new MarkerFlow(0);
+    var flow1 = new MarkerFlow(0);
     new MarkerFlowLocation(flow1, "message1");
     new MarkerFlowLocation(flow1, "message11");
-    MarkerFlow flow2 = new MarkerFlow(0);
+    var flow2 = new MarkerFlow(0);
     new MarkerFlowLocation(flow2, "message2");
     new MarkerFlowLocation(flow2, "message22");
-    MarkerFlow flow3 = new MarkerFlow(0);
+    var flow3 = new MarkerFlow(0);
     new MarkerFlowLocation(flow3, "message3");
     new MarkerFlowLocation(flow3, "message33");
-    MarkerFlows markerFlows = new MarkerFlows(Arrays.asList(flow1, flow2, flow3));
+    var markerFlows = new MarkerFlows(List.of(flow1, flow2, flow3));
 
     assertThat(markerFlows.getSummaryDescription()).isEqualTo(" [+3 flows]");
   }
 
   @Test
   public void display_a_correct_summary_for_single_flow() {
-    MarkerFlow flow1 = new MarkerFlow(0);
+    var flow1 = new MarkerFlow(0);
     new MarkerFlowLocation(flow1, "message1");
     new MarkerFlowLocation(flow1, "message11");
     new MarkerFlowLocation(flow1, "message111");
-    MarkerFlows markerFlows = new MarkerFlows(Arrays.asList(flow1));
+    var markerFlows = new MarkerFlows(List.of(flow1));
 
     assertThat(markerFlows.getSummaryDescription()).isEqualTo(" [+3 locations]");
   }

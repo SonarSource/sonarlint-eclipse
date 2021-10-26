@@ -24,7 +24,6 @@ import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -55,20 +54,20 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
   @Override
   protected Control createContents(final Composite parent) {
 
-    Composite composite = new Composite(parent, SWT.NONE);
-    GridLayout gridLayout = new GridLayout(2, false);
+    var composite = new Composite(parent, SWT.NONE);
+    var gridLayout = new GridLayout(2, false);
     gridLayout.marginWidth = 0;
     gridLayout.marginHeight = 0;
     composite.setLayout(gridLayout);
 
-    Link text = new Link(composite, SWT.NONE);
-    GridData textGd = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
+    var text = new Link(composite, SWT.NONE);
+    var textGd = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
     text.setLayoutData(textGd);
     text.setText("By sharing anonymous SonarLint usage statistics, you help us understand how SonarLint is used so "
       + "we can improve the plugin to work even better for you.\nWe don't collect source code, IP addresses, or any personally identifying "
       + "information. And we don't share the data with anyone else.\n\nSee a <a href=\"#\">sample of the data.</a>");
 
-    final DefaultToolTip tip = new DefaultToolTip(text, ToolTip.RECREATE, true);
+    final var tip = new DefaultToolTip(text, ToolTip.RECREATE, true);
     tip.setText("{\n"
       + "    \"days_since_installation\": 27,\n"
       + "    \"days_of_use\": 5,\n"
@@ -119,7 +118,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
     text.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        Point cursorLocation = PlatformUI.getWorkbench().getDisplay().getCursorLocation();
+        var cursorLocation = PlatformUI.getWorkbench().getDisplay().getCursorLocation();
         tip.show(PlatformUI.getWorkbench().getDisplay().map(null, text, cursorLocation.x, cursorLocation.y));
       }
     });
@@ -127,7 +126,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
     enabledBtn = new Button(composite, SWT.CHECK);
     enabledBtn.setText("Share anonymous SonarLint statistics");
     enabledBtn.setSelection(SonarLintCorePlugin.getTelemetry().enabled());
-    GridData layoutData = new GridData();
+    var layoutData = new GridData();
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
 

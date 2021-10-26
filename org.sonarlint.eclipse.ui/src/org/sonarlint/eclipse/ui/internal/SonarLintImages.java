@@ -24,7 +24,6 @@ import java.util.Locale;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
@@ -88,11 +87,11 @@ public final class SonarLintImages {
 
   @Nullable
   public static Image getIssueImage(String severity, @Nullable String type) {
-    String key = severity + "/" + type;
-    ImageRegistry imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
-    Image image = imageRegistry.get(key);
+    var key = severity + "/" + type;
+    var imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
+    var image = imageRegistry.get(key);
     if (image == null) {
-      ImageDescriptor severityImage = createImageDescriptor("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
+      var severityImage = createImageDescriptor("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
       ImageDescriptor typeImage = null;
       if (type != null) {
         typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
@@ -125,9 +124,9 @@ public final class SonarLintImages {
     @Override
     protected void drawCompositeImage(int width, int height) {
       if (CompatibilityUtils.supportDifferentIconsForZoomLevels()) {
-        CachedImageDataProvider severityDataProvider = createCachedImageDataProvider(severity);
+        var severityDataProvider = createCachedImageDataProvider(severity);
         if (type != null) {
-          CachedImageDataProvider typeDataProvider = createCachedImageDataProvider(type);
+          var typeDataProvider = createCachedImageDataProvider(type);
           drawImage(typeDataProvider, 0, 0);
           drawImage(severityDataProvider, 16, 0);
         } else {
@@ -158,16 +157,16 @@ public final class SonarLintImages {
 
   private static Image createImage(String key) {
     createImageDescriptor(key);
-    ImageRegistry imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
+    var imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
     return imageRegistry.get(key);
   }
 
   @Nullable
   private static ImageDescriptor createImageDescriptor(String key) {
-    ImageRegistry imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
-    ImageDescriptor imageDescriptor = imageRegistry.getDescriptor(key);
+    var imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
+    var imageDescriptor = imageRegistry.getDescriptor(key);
     if (imageDescriptor == null) {
-      URL url = getIconUrl(key);
+      var url = getIconUrl(key);
       if (url != null) {
         imageDescriptor = ImageDescriptor.createFromURL(url);
       } else {

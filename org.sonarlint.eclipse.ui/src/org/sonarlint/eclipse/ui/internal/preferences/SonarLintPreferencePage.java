@@ -88,13 +88,13 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     protected void doFillIntoGrid(Composite parent, int numColumns) {
       super.doFillIntoGrid(parent, numColumns);
       getTextControl().setToolTipText(NODE_JS_TOOLTIP);
-      final Path detectedNodeJsPath = SonarLintCorePlugin.getNodeJsManager().getNodeJsPath();
+      final var detectedNodeJsPath = SonarLintCorePlugin.getNodeJsManager().getNodeJsPath();
       getTextControl().setMessage(detectedNodeJsPath != null ? detectedNodeJsPath.toString() : "Node.js not found");
     }
 
     @Override
     protected boolean doCheckState() {
-      String stringValue = getStringValue();
+      var stringValue = getStringValue();
       Path path;
       try {
         path = Paths.get(stringValue);
@@ -112,11 +112,11 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     @Nullable
     @Override
     protected String changePressed() {
-      FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
+      var dialog = new FileDialog(getShell(), SWT.OPEN);
       if (getStringValue().trim().length() > 0) {
         dialog.setFileName(getStringValue());
       }
-      String file = dialog.open();
+      var file = dialog.open();
       if (file != null) {
         file = file.trim();
         if (file.length() > 0) {
@@ -130,7 +130,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
   @Override
   public boolean performOk() {
-    boolean result = super.performOk();
+    var result = super.performOk();
     TestFileClassifier.get().reload();
     SonarLintCorePlugin.getNodeJsManager().reload();
     JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);

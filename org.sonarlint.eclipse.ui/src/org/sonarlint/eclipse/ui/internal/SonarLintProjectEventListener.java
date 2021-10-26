@@ -36,8 +36,8 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
     if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-      List<ISonarLintProject> projectToSubscribeToNotifications = new ArrayList<>();
-      List<ISonarLintProject> projectToUnsubscribeFromNotifications = new ArrayList<>();
+      var projectToSubscribeToNotifications = new ArrayList<ISonarLintProject>();
+      var projectToUnsubscribeFromNotifications = new ArrayList<ISonarLintProject>();
       try {
         event.getDelta().accept(delta -> visitDelta(delta, projectToSubscribeToNotifications, projectToUnsubscribeFromNotifications));
       } catch (CoreException e) {
@@ -53,7 +53,7 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
   private static boolean visitDelta(IResourceDelta delta, List<ISonarLintProject> projectToSubscribeToNotifications,
     List<ISonarLintProject> projectToUnsubscribeFromNotifications) {
     if ((delta.getFlags() & IResourceDelta.OPEN) != 0) {
-      ISonarLintProject project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
+      var project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
       if (project != null) {
         if (project.isOpen() && SonarLintCorePlugin.loadConfig(project).isBound()) {
           projectToSubscribeToNotifications.add(project);

@@ -41,7 +41,7 @@ public class ShowHideIssueFlowsMarkerResolver extends SortableMarkerResolver {
   @Override
   public String getDescription() {
     String action;
-    String theIssue = " the issue: " + marker.getAttribute(IMarker.MESSAGE, "unknown");
+    var theIssue = " the issue: " + marker.getAttribute(IMarker.MESSAGE, "unknown");
     String suffix;
     if (alreadySelected) {
       action = "Hide";

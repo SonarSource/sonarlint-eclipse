@@ -28,7 +28,6 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class SonarLintReportView extends MarkerViewWithBottomPanel {
 
@@ -53,10 +52,10 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
   @Override
   protected void populateBottomPanel(Composite bottom) {
     this.bottom = bottom;
-    RowLayout bottomLayout = new RowLayout();
+    var bottomLayout = new RowLayout();
     bottomLayout.center = true;
     bottom.setLayout(bottomLayout);
-    GridData bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+    var bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     bottom.setLayoutData(bottomLayoutData);
 
     label = new Label(bottom, SWT.NONE);

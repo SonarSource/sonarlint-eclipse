@@ -21,11 +21,9 @@ package org.sonarlint.eclipse.ui.internal.binding.actions;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.actions.SelectionProviderAction;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
@@ -50,11 +48,11 @@ public class ConnectionBindProjectsAction extends SelectionProviderAction {
       return;
     }
     servers = new ArrayList<>();
-    Iterator iterator = sel.iterator();
+    var iterator = sel.iterator();
     while (iterator.hasNext()) {
-      Object obj = iterator.next();
+      var obj = iterator.next();
       if (obj instanceof IConnectedEngineFacade) {
-        IConnectedEngineFacade server = (IConnectedEngineFacade) obj;
+        var server = (IConnectedEngineFacade) obj;
         servers.add(server);
       } else {
         setEnabled(false);
@@ -75,15 +73,14 @@ public class ConnectionBindProjectsAction extends SelectionProviderAction {
     // To handle the case where servers is null, the selectionChanged method is called
     // to ensure servers will be populated.
     if (servers == null) {
-
-      IStructuredSelection sel = getStructuredSelection();
+      var sel = getStructuredSelection();
       if (sel != null) {
         selectionChanged(sel);
       }
     }
 
     if (servers != null && !servers.isEmpty()) {
-      final WizardDialog dialog = ProjectBindingWizard.createDialogSkipServerSelection(shell, Collections.emptyList(), (ConnectedEngineFacade) servers.get(0));
+      final var dialog = ProjectBindingWizard.createDialogSkipServerSelection(shell, Collections.emptyList(), (ConnectedEngineFacade) servers.get(0));
       dialog.open();
     }
   }

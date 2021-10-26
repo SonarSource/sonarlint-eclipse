@@ -20,8 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.binding.actions;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -44,8 +42,8 @@ public class NewConnectionWizardAction extends Action {
 
   @Override
   public void run() {
-    IWorkbench workbench = PlatformUI.getWorkbench();
-    WizardDialog dialog = ServerConnectionWizard.createDialog(workbench.getActiveWorkbenchWindow().getShell());
+    var workbench = PlatformUI.getWorkbench();
+    var dialog = ServerConnectionWizard.createDialog(workbench.getActiveWorkbenchWindow().getShell());
     dialog.open();
   }
 

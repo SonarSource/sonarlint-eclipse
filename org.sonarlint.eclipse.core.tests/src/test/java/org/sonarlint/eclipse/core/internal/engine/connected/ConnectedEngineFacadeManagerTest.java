@@ -60,8 +60,8 @@ public class ConnectedEngineFacadeManagerTest {
   public void roundTripUsingPublicMethods() throws Exception {
     assertThat(ROOT.nodeExists(PREF_SERVERS)).isFalse();
     assertThat(ROOT_SECURE.nodeExists(PREF_SERVERS)).isFalse();
-    String id = "foo/bar";
-    IConnectedEngineFacade server = manager.create(id, "http://foo", "bar", "login", "pwd", false);
+    var id = "foo/bar";
+    var server = manager.create(id, "http://foo", "bar", "login", "pwd", false);
     manager.addServer(server, "login", "pwd");
     assertThat(manager.getServers()).containsExactly(server);
     assertThat(manager.findById(id)).contains(server);
@@ -77,7 +77,7 @@ public class ConnectedEngineFacadeManagerTest {
     assertThat(ROOT_SECURE.node(PREF_SERVERS).node("foo%2Fbar").get(USERNAME_ATTRIBUTE, null)).isEqualTo("login");
     assertThat(ROOT_SECURE.node(PREF_SERVERS).node("foo%2Fbar").get(PASSWORD_ATTRIBUTE, null)).isEqualTo("pwd");
 
-    IConnectedEngineFacade serverUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
+    var serverUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
     try {
       manager.addServer(serverUpdated, "login2", "pwd2");
       fail("Expected exception");
@@ -104,7 +104,7 @@ public class ConnectedEngineFacadeManagerTest {
   public void should_use_defaults_from_plugin_customization() throws Exception {
     assertThat(ROOT.nodeExists(PREF_SERVERS)).isFalse();
     assertThat(manager.getServers()).hasSize(1);
-    IConnectedEngineFacade iServer = manager.findById("default").get();
+    var iServer = manager.findById("default").get();
     assertThat(iServer.getId()).isEqualTo("default");
     assertThat(iServer.getOrganization()).isEqualTo("myOrg");
     assertThat(iServer.hasAuth()).isTrue();
@@ -115,7 +115,7 @@ public class ConnectedEngineFacadeManagerTest {
   public void edit_defaults_from_plugin_customization() throws Exception {
     assertThat(ROOT.nodeExists(PREF_SERVERS)).isFalse();
     assertThat(manager.getServers()).hasSize(1);
-    IConnectedEngineFacade iServer = manager.findById("default").get();
+    var iServer = manager.findById("default").get();
     assertThat(iServer.getId()).isEqualTo("default");
 
     manager.updateConnection(manager.create("default", "http://foo2", "bar2", "toto", null, false), "toto", null);
@@ -127,12 +127,12 @@ public class ConnectedEngineFacadeManagerTest {
 
   @Test
   public void test_listeners() {
-    List<IConnectedEngineFacade> removed = new ArrayList<>();
-    List<IConnectedEngineFacade> changed = new ArrayList<>();
-    List<IConnectedEngineFacade> added = new ArrayList<>();
+    var removed = new ArrayList<IConnectedEngineFacade>();
+    var changed = new ArrayList<IConnectedEngineFacade>();
+    var added = new ArrayList<IConnectedEngineFacade>();
     addListener(removed, changed, added);
 
-    IConnectedEngineFacade defaultServer = manager.findById("default").get();
+    var defaultServer = manager.findById("default").get();
     manager.removeServer(defaultServer);
     assertThat(manager.getServers()).isEmpty();
     assertThat(removed).containsExactly(defaultServer);
@@ -141,8 +141,8 @@ public class ConnectedEngineFacadeManagerTest {
 
     removed.clear();
 
-    String id = "foo/bar";
-    IConnectedEngineFacade newServer = manager.create(id, "http://foo", "bar", "login", "pwd", false);
+    var id = "foo/bar";
+    var newServer = manager.create(id, "http://foo", "bar", "login", "pwd", false);
     manager.addServer(newServer, "login", "pwd");
     assertThat(removed).isEmpty();
     assertThat(changed).isEmpty();
@@ -150,7 +150,7 @@ public class ConnectedEngineFacadeManagerTest {
 
     added.clear();
 
-    IConnectedEngineFacade serverUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
+    var serverUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
     manager.updateConnection(serverUpdated, "login2", "pwd2");
     assertThat(removed).isEmpty();
     assertThat(changed).containsExactly(serverUpdated);
@@ -160,12 +160,12 @@ public class ConnectedEngineFacadeManagerTest {
   // SLE-63 Emulate external changes
   @Test
   public void test_external_changes() throws Exception {
-    IConnectedEngineFacade defaultServer = manager.findById("default").get();
+    var defaultServer = manager.findById("default").get();
     manager.removeServer(defaultServer);
 
-    List<IConnectedEngineFacade> removed = new ArrayList<>();
-    List<IConnectedEngineFacade> changed = new ArrayList<>();
-    List<IConnectedEngineFacade> added = new ArrayList<>();
+    var removed = new ArrayList<IConnectedEngineFacade>();
+    var changed = new ArrayList<IConnectedEngineFacade>();
+    var added = new ArrayList<IConnectedEngineFacade>();
     addListener(removed, changed, added);
 
     ROOT.node(PREF_SERVERS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo");
@@ -176,7 +176,7 @@ public class ConnectedEngineFacadeManagerTest {
 
     added.clear();
 
-    IConnectedEngineFacade server = manager.findById("foo/bar").get();
+    var server = manager.findById("foo/bar").get();
 
     ROOT.node(PREF_SERVERS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo:9000");
     ROOT.node(PREF_SERVERS).node("foo%2Fbar").putBoolean(AUTH_ATTRIBUTE, true);
@@ -212,7 +212,7 @@ public class ConnectedEngineFacadeManagerTest {
 
   @Test
   public void test_external_changes_on_existing_servers() throws Exception {
-    IConnectedEngineFacade defaultServer = manager.findById("default").get();
+    var defaultServer = manager.findById("default").get();
     manager.removeServer(defaultServer);
 
     manager.stop();
@@ -222,12 +222,12 @@ public class ConnectedEngineFacadeManagerTest {
 
     manager.init();
 
-    List<IConnectedEngineFacade> removed = new ArrayList<>();
-    List<IConnectedEngineFacade> changed = new ArrayList<>();
-    List<IConnectedEngineFacade> added = new ArrayList<>();
+    var removed = new ArrayList<IConnectedEngineFacade>();
+    var changed = new ArrayList<IConnectedEngineFacade>();
+    var added = new ArrayList<IConnectedEngineFacade>();
     addListener(removed, changed, added);
 
-    IConnectedEngineFacade server = manager.findById("foo/bar").get();
+    var server = manager.findById("foo/bar").get();
     assertThat(server.getId()).isEqualTo("foo/bar");
     assertThat(server.getHost()).isEqualTo("http://foo");
 
@@ -246,10 +246,10 @@ public class ConnectedEngineFacadeManagerTest {
 
   @Test
   public void should_ignore_case_for_scheme_and_host_when_finding_connection() {
-    IConnectedEngineFacade server = manager.create("ID", "http://foo", "bar", "login", "pwd", false);
+    var server = manager.create("ID", "http://foo", "bar", "login", "pwd", false);
     manager.addServer(server, "login", "pwd");
 
-    List<IConnectedEngineFacade> facades = manager.findByUrl("HTTP://FOO");
+    var facades = manager.findByUrl("HTTP://FOO");
     assertThat(facades).contains(server);
   }
 

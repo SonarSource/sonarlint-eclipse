@@ -37,7 +37,7 @@ public class MandatoryURLValidator implements IValidator {
       return ValidationStatus.error("You must provide a server URL");
     }
     try {
-      URL url = new URL((String) value);
+      var url = new URL((String) value);
       if (StringUtils.isBlank(url.getHost())) {
         return ValidationStatus.error("Please provide a valid URL");
       }

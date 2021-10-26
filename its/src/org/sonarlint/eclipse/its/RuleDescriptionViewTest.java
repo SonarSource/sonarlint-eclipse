@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.its;
 
-import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
@@ -38,16 +37,16 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     assumeTrue(isPhotonOrGreater());
 
     new JavaPerspective().open();
-    RuleDescriptionView ruleDescriptionView = new RuleDescriptionView();
+    var ruleDescriptionView = new RuleDescriptionView();
     ruleDescriptionView.open();
-    OnTheFlyView onTheFlyView = new OnTheFlyView();
+    var onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
 
-    Project project = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
+    var project = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
 
     openFileAndWaitForAnalysisCompletion(project.getResource("src", "hello", "Hello.java"));
 
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));

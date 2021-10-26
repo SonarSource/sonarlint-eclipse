@@ -73,7 +73,7 @@ class WindowOpenCloseListener implements IWindowListener {
   }
 
   static void addListenerToAllPages(IWorkbenchWindow window) {
-    for (IWorkbenchPage page : window.getPages()) {
+    for (var page : window.getPages()) {
       addListenersToPage(page);
     }
   }
@@ -86,7 +86,7 @@ class WindowOpenCloseListener implements IWindowListener {
   }
 
   static void removeListenerFromAllPages(IWorkbenchWindow window) {
-    for (IWorkbenchPage page : window.getPages()) {
+    for (var page : window.getPages()) {
       removeListenersFromPage(page);
     }
   }

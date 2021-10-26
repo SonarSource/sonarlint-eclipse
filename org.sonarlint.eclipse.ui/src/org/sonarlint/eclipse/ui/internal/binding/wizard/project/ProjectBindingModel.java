@@ -50,7 +50,7 @@ public class ProjectBindingModel extends ModelObject {
   }
 
   public void setServer(ConnectedEngineFacade server) {
-    ConnectedEngineFacade old = this.server;
+    var old = this.server;
     this.server = server;
     firePropertyChange(PROPERTY_SERVER, old, this.server);
   }
@@ -60,7 +60,7 @@ public class ProjectBindingModel extends ModelObject {
   }
 
   public void setRemoteProjectKey(String remoteProjectKey) {
-    String old = this.remoteProjectKey;
+    var old = this.remoteProjectKey;
     this.remoteProjectKey = remoteProjectKey;
     firePropertyChange(PROPERTY_REMOTE_PROJECT_KEY, old, this.remoteProjectKey);
   }
@@ -70,7 +70,7 @@ public class ProjectBindingModel extends ModelObject {
   }
 
   public void setEclipseProjects(List<ISonarLintProject> eclipseProjects) {
-    List<ISonarLintProject> old = this.eclipseProjects;
+    var old = this.eclipseProjects;
     this.eclipseProjects = new ArrayList<>(eclipseProjects);
     firePropertyChange(PROPERTY_SERVER, old, this.eclipseProjects);
   }

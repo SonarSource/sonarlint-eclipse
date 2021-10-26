@@ -49,14 +49,14 @@ public class DeactivateRuleUtils {
    * Deactivate the rule associated with a marker.
    */
   public static void deactivateRule(IMarker marker) {
-    RuleKey ruleKey = MarkerUtils.getRuleKey(marker);
+    var ruleKey = MarkerUtils.getRuleKey(marker);
     if (ruleKey == null) {
       return;
     }
 
     SonarLintGlobalConfiguration.disableRule(ruleKey);
 
-    WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
+    var op = new WorkspaceModifyOperation() {
       @Override
       protected void execute(IProgressMonitor monitor) throws CoreException {
         removeReportIssuesMarkers(ruleKey);
@@ -99,7 +99,7 @@ public class DeactivateRuleUtils {
 
   private static Stream<IMarker> findSonarLintMarkers(ISonarLintProject project, String id) {
     try {
-      IMarker[] markers = project.getResource().findMarkers(id, false, IResource.DEPTH_INFINITE);
+      var markers = project.getResource().findMarkers(id, false, IResource.DEPTH_INFINITE);
       return Stream.of(markers);
     } catch (CoreException e) {
       SonarLintLogger.get().error("Could not get report markers for project: " + project.getName());

@@ -52,8 +52,8 @@ public class UsernamePasswordWizardPage extends AbstractServerConnectionWizardPa
     createUsernameOrTokenField(container);
     createPasswordField(container);
 
-    DataBindingContext dbc = new DataBindingContext();
-    usernameTextBinding = dbc.bindValue(
+    var dataBindingContext = new DataBindingContext();
+    usernameTextBinding = dataBindingContext.bindValue(
       WidgetProperties.text(SWT.Modify).observe(serverUsernameText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_USERNAME)
         .observe(model),
@@ -61,7 +61,7 @@ public class UsernamePasswordWizardPage extends AbstractServerConnectionWizardPa
         new MandatoryStringValidator("You must provide a login")),
       null);
     ControlDecorationSupport.create(usernameTextBinding, SWT.LEFT | SWT.TOP);
-    passwordTextBinding = dbc.bindValue(
+    passwordTextBinding = dataBindingContext.bindValue(
       WidgetProperties.text(SWT.Modify).observe(serverPasswordText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_PASSWORD)
         .observe(model),
@@ -70,23 +70,23 @@ public class UsernamePasswordWizardPage extends AbstractServerConnectionWizardPa
       null);
     ControlDecorationSupport.create(passwordTextBinding, SWT.LEFT | SWT.TOP);
 
-    WizardPageSupport.create(this, dbc);
+    WizardPageSupport.create(this, dataBindingContext);
   }
 
   private void createPasswordField(final Composite container) {
-    Label labelPassword = new Label(container, SWT.NULL);
+    var labelPassword = new Label(container, SWT.NULL);
     labelPassword.setText(Messages.ServerLocationWizardPage_label_password);
     serverPasswordText = new Text(container, SWT.BORDER | SWT.SINGLE | SWT.PASSWORD);
-    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
     serverPasswordText.setLayoutData(gd);
   }
 
   private void createUsernameOrTokenField(final Composite container) {
-    Label labelUsername = new Label(container, SWT.NULL);
+    var labelUsername = new Label(container, SWT.NULL);
     labelUsername.setText("Username:");
     serverUsernameText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
     serverUsernameText.setLayoutData(gd);
   }

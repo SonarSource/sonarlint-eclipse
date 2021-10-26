@@ -20,13 +20,11 @@
 package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Set;
+import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -37,7 +35,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
@@ -53,9 +50,9 @@ import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 public class JdtUtils {
 
   public void configure(IPreAnalysisContext context, IProgressMonitor monitor) {
-    IProject project = (IProject) context.getProject().getResource();
+    var project = (IProject) context.getProject().getResource();
     if (project != null) {
-      IJavaProject javaProject = JavaCore.create(project);
+      var javaProject = JavaCore.create(project);
       configureJavaProject(javaProject, context);
     }
   }
@@ -73,7 +70,7 @@ public class JdtUtils {
    * SLE-34 Remove Java files that are not compiled.This should automatically exclude files that are excluded / unparseable.
    */
   public static boolean shouldExclude(IFile file) {
-    IJavaElement javaElt = JavaCore.create(file);
+    var javaElt = JavaCore.create(file);
     if (javaElt == null) {
       // Not a Java file, don't exclude it
       return false;
@@ -81,9 +78,9 @@ public class JdtUtils {
     if (!javaElt.exists()) {
       // SLE-218 Visual Cobol with JVM Development make JDT think .cbl files are Java files.
       // But still we want to analyze them, so only exclude files having the original java source content type.
-      IContentType javaContentType = Platform.getContentTypeManager().getContentType(JavaCore.JAVA_SOURCE_CONTENT_TYPE);
-      String[] fileExtensions = javaContentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
-      return Arrays.asList(fileExtensions).contains(file.getFileExtension());
+      var javaContentType = Platform.getContentTypeManager().getContentType(JavaCore.JAVA_SOURCE_CONTENT_TYPE);
+      var fileExtensions = javaContentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
+      return List.of(fileExtensions).contains(file.getFileExtension());
     }
     return !javaElt.getJavaProject().isOnClasspath(javaElt) || !isStructureKnown(javaElt);
   }
@@ -98,14 +95,14 @@ public class JdtUtils {
 
   // Visible for testing
   public void configureJavaProject(IJavaProject javaProject, IPreAnalysisContext context) {
-    String javaSource = javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
-    String javaTarget = javaProject.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true);
+    var javaSource = javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
+    var javaTarget = javaProject.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true);
 
     context.setAnalysisProperty("sonar.java.source", javaSource);
     context.setAnalysisProperty("sonar.java.target", javaTarget);
 
     try {
-      JavaProjectConfiguration configuration = new JavaProjectConfiguration();
+      var configuration = new JavaProjectConfiguration();
       configuration.dependentProjects().add(javaProject);
       addClassPathToSonarProject(javaProject, configuration, true, false, false);
       configurationToProperties(context, configuration);
@@ -126,8 +123,8 @@ public class JdtUtils {
    */
   private static void addClassPathToSonarProject(IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject, boolean isTestEntry, boolean isWithoutTestCode)
     throws JavaModelException {
-    IClasspathEntry[] classPath = javaProject.getResolvedClasspath(true);
-    for (IClasspathEntry entry : classPath) {
+    var classPath = javaProject.getResolvedClasspath(true);
+    for (var entry : classPath) {
       switch (entry.getEntryKind()) {
         case IClasspathEntry.CPE_SOURCE:
           processSourceEntry(entry, context, topProject, isTestEntry, isWithoutTestCode);
@@ -149,15 +146,15 @@ public class JdtUtils {
 
   @Nullable
   protected static String getAbsolutePathAsString(IPath path) {
-    IPath absolutePath = getAbsolutePath(path);
+    var absolutePath = getAbsolutePath(path);
     return absolutePath != null ? absolutePath.toString() : null;
   }
 
   @Nullable
   private static IPath getAbsolutePath(IPath path) {
     // IPath should be resolved this way in order to handle linked resources (SONARIDE-271)
-    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-    IResource res = root.findMember(path);
+    var root = ResourcesPlugin.getWorkspace().getRoot();
+    var res = root.findMember(path);
     if (res != null) {
       if (res.getLocation() != null) {
         return pathIfExist(res.getLocation());
@@ -172,7 +169,7 @@ public class JdtUtils {
 
   @Nullable
   private static IPath pathIfExist(IPath path) {
-    File file = path.toFile();
+    var file = path.toFile();
     if (file.exists()) {
       return path;
     }
@@ -180,7 +177,7 @@ public class JdtUtils {
   }
 
   private static void processOutputDir(IPath outputDir, JavaProjectConfiguration context, boolean topProject, boolean testEntry) throws JavaModelException {
-    String outDir = getAbsolutePathAsString(outputDir);
+    var outDir = getAbsolutePathAsString(outputDir);
     if (outDir != null) {
       if (topProject) {
         if (testEntry) {
@@ -225,7 +222,7 @@ public class JdtUtils {
     if (!topProject && !entry.isExported()) {
       return;
     }
-    final String libPath = resolveLibrary(javaProject, entry);
+    final var libPath = resolveLibrary(javaProject, entry);
     if (libPath != null) {
       if (testEntry || isTest(entry)) {
         context.testLibraries().add(libPath);
@@ -246,9 +243,9 @@ public class JdtUtils {
     if (isTest(entry) && isWithoutTestCode) {
       return;
     }
-    IJavaModel javaModel = javaProject.getJavaModel();
-    IJavaProject referredProject = javaModel.getJavaProject(entry.getPath().segment(0));
-    Set<Object> dependentProjects = (testEntry || isTest(entry)) ? context.testDependentProjects() : context.dependentProjects();
+    var javaModel = javaProject.getJavaModel();
+    var referredProject = javaModel.getJavaProject(entry.getPath().segment(0));
+    var dependentProjects = (testEntry || isTest(entry)) ? context.testDependentProjects() : context.dependentProjects();
     if (!dependentProjects.contains(referredProject)) {
       dependentProjects.add(referredProject);
       addClassPathToSonarProject(referredProject, context, false, testEntry || isTest(entry), isWithoutTestCode || isWithoutTestCode(entry));
@@ -258,7 +255,7 @@ public class JdtUtils {
   @Nullable
   private static String resolveLibrary(IJavaProject javaProject, IClasspathEntry entry) {
     final String libPath;
-    IResource member = findPath(javaProject.getProject(), entry.getPath());
+    var member = findPath(javaProject.getProject(), entry.getPath());
     if (member != null) {
       libPath = member.getLocation().toOSString();
     } else {
@@ -272,9 +269,9 @@ public class JdtUtils {
 
   @Nullable
   private static IResource findPath(IProject project, IPath path) {
-    IResource member = project.findMember(path);
+    var member = project.findMember(path);
     if (member == null) {
-      IWorkspaceRoot workSpaceRoot = project.getWorkspace().getRoot();
+      var workSpaceRoot = project.getWorkspace().getRoot();
       member = workSpaceRoot.findMember(path);
     }
     return member;
@@ -285,9 +282,9 @@ public class JdtUtils {
    * This is a kind of workaround, which is based on the fact that M2Eclipse configures exclusion pattern "**" for directories with resources.
    */
   private static boolean isSourceExcluded(IClasspathEntry entry) {
-    IPath[] exclusionPatterns = entry.getExclusionPatterns();
+    var exclusionPatterns = entry.getExclusionPatterns();
     if (exclusionPatterns != null) {
-      for (IPath exclusionPattern : exclusionPatterns) {
+      for (var exclusionPattern : exclusionPatterns) {
         if ("**".equals(exclusionPattern.toString())) {
           return true;
         }
@@ -297,7 +294,7 @@ public class JdtUtils {
   }
 
   private static boolean isTest(IClasspathEntry entry) {
-    for (IClasspathAttribute attribute : entry.getExtraAttributes()) {
+    for (var attribute : entry.getExtraAttributes()) {
       if (IClasspathAttribute.TEST.equals(attribute.getName()) && "true".equals(attribute.getValue())) { //$NON-NLS-1$
         return true;
       }
@@ -306,7 +303,7 @@ public class JdtUtils {
   }
 
   private static boolean isWithoutTestCode(IClasspathEntry entry) {
-    for (IClasspathAttribute attribute : entry.getExtraAttributes()) {
+    for (var attribute : entry.getExtraAttributes()) {
       if (IClasspathAttribute.WITHOUT_TEST_CODE.equals(attribute.getName()) && "true".equals(attribute.getValue())) { //$NON-NLS-1$
         return true;
       }
@@ -322,16 +319,16 @@ public class JdtUtils {
   }
 
   public static ISonarLintFileType qualify(ISonarLintFile slFile) {
-    IFile file = slFile.getResource().getAdapter(IFile.class);
+    var file = slFile.getResource().getAdapter(IFile.class);
     if (file == null) {
       return ISonarLintFileType.UNKNOWN;
     }
-    IJavaElement javaElement = JavaCore.create(file);
+    var javaElement = JavaCore.create(file);
     if (javaElement == null || !javaElement.exists()) {
       // Not a Java element, don't qualify the file
       return ISonarLintFileType.UNKNOWN;
     }
-    IPackageFragmentRoot packageFragmentRoot = (IPackageFragmentRoot) javaElement.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+    var packageFragmentRoot = (IPackageFragmentRoot) javaElement.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
     if (packageFragmentRoot == null) {
       return ISonarLintFileType.UNKNOWN;
     }

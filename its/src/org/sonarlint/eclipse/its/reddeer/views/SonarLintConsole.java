@@ -37,14 +37,14 @@ public class SonarLintConsole extends ConsoleView {
   @SuppressWarnings("unchecked")
   public void openConsole(Matcher<String> textMatcher) {
     activate();
-    ToolItemMenuItem menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Open Console"), textMatcher);
+    var menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Open Console"), textMatcher);
     menu.select();
     new WaitUntil(new ConsoleHasLabel(textMatcher));
   }
 
   public void enableVerboseOutput() {
     activate();
-    ToolItemMenuItem menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Configure logs"), "Verbose output");
+    var menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Configure logs"), "Verbose output");
     if (!menu.isSelected()) {
       menu.select();
     }
@@ -52,7 +52,7 @@ public class SonarLintConsole extends ConsoleView {
 
   public void enableAnalysisLogs() {
     activate();
-    ToolItemMenuItem menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Configure logs"), "Analysis logs");
+    var menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Configure logs"), "Analysis logs");
     if (!menu.isSelected()) {
       menu.select();
     }
@@ -60,7 +60,7 @@ public class SonarLintConsole extends ConsoleView {
 
   public void showConsole(ShowConsoleOption option) {
     activate();
-    ToolItemMenuItem menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Show Console"), option.label);
+    var menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Show Console"), option.label);
     if (!menu.isSelected()) {
       menu.select();
     }

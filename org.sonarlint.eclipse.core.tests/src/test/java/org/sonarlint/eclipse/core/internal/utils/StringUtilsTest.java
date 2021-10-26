@@ -32,18 +32,18 @@ public class StringUtilsTest {
     assertThat(StringUtils.joinSkipNull(Arrays.asList("a", null, "c"), ",")).isEqualTo("a,c");
     assertThat(StringUtils.joinSkipNull(Arrays.asList(null, "b", "c"), ",")).isEqualTo("b,c");
     assertThat(StringUtils.joinSkipNull(Arrays.asList(null, null, "c"), ",")).isEqualTo("c");
-    assertThat(StringUtils.joinSkipNull(Arrays.<String>asList(null, null, null), ",")).isEqualTo("");
+    assertThat(StringUtils.joinSkipNull(Arrays.asList(null, null, null), ",")).isEmpty();
   }
 
   @Test
   public void testIsBlank() {
-    assertThat(StringUtils.isBlank(null)).isEqualTo(true);
-    assertThat(StringUtils.isBlank("")).isEqualTo(true);
-    assertThat(StringUtils.isBlank("   ")).isEqualTo(true);
-    assertThat(StringUtils.isBlank("\t \n")).isEqualTo(true);
-    assertThat(StringUtils.isBlank("abc")).isEqualTo(false);
-    assertThat(StringUtils.isBlank("ab c")).isEqualTo(false);
-    assertThat(StringUtils.isBlank(" abc")).isEqualTo(false);
+    assertThat(StringUtils.isBlank(null)).isTrue();
+    assertThat(StringUtils.isBlank("")).isTrue();
+    assertThat(StringUtils.isBlank("   ")).isTrue();
+    assertThat(StringUtils.isBlank("\t \n")).isTrue();
+    assertThat(StringUtils.isBlank("abc")).isFalse();
+    assertThat(StringUtils.isBlank("ab c")).isFalse();
+    assertThat(StringUtils.isBlank(" abc")).isFalse();
   }
 
 }

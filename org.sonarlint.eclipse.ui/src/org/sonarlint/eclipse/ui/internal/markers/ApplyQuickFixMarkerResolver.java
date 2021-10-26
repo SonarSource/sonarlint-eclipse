@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.markers;
 
-import java.util.Arrays;
 import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,11 +27,9 @@ import org.eclipse.jface.text.DocumentRewriteSessionType;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.Position;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -73,14 +70,14 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
 
   @Override
   public void run(IMarker marker) {
-    ISonarLintFile file = Adapters.adapt(marker.getResource(), ISonarLintFile.class);
+    var file = Adapters.adapt(marker.getResource(), ISonarLintFile.class);
     if (file == null) {
       return;
     }
-    ITextEditor openEditor = openEditor(file, marker);
+    var openEditor = openEditor(file, marker);
     Display.getDefault().asyncExec(() -> {
       if (fix.isValid()) {
-        IDocument document = applyIn(openEditor, fix);
+        var document = applyIn(openEditor, fix);
         SonarLintCorePlugin.getTelemetry().addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker).toString());
         scheduleAnalysis(new FileWithDocument(file, document));
       } else {
@@ -90,14 +87,14 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
   }
 
   private static void scheduleAnalysis(FileWithDocument fileWithDoc) {
-    ISonarLintFile file = fileWithDoc.getFile();
-    AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Arrays.asList(fileWithDoc), TriggerType.QUICK_FIX);
+    var file = fileWithDoc.getFile();
+    var request = new AnalyzeProjectRequest(file.getProject(), List.of(fileWithDoc), TriggerType.QUICK_FIX);
     JobUtils.scheduleAutoAnalysisIfEnabled(request);
   }
 
   @Nullable
   private static ITextEditor openEditor(ISonarLintFile file, IMarker marker) {
-    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     IEditorPart textEditor;
     try {
       textEditor = IDE.openEditor(page, marker);
@@ -111,7 +108,7 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
     } else {
       // After opening editor with IDE.openEditor, the marker position is selected.
       // Clear the selection
-      ITextViewer viewer = textEditor.getAdapter(ITextViewer.class);
+      var viewer = textEditor.getAdapter(ITextViewer.class);
       if (viewer != null) {
         viewer.setSelectedRange(viewer.getSelectedRange().x, 0);
       }
@@ -120,15 +117,15 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
   }
 
   private static IDocument applyIn(ITextEditor openEditor, MarkerQuickFix fix) {
-    IDocument document = openEditor.getDocumentProvider().getDocument(openEditor.getEditorInput());
+    var document = openEditor.getDocumentProvider().getDocument(openEditor.getEditorInput());
     // IDocumentExtension4 appeared before oldest supported version, no need to check
-    IDocumentExtension4 extendedDocument = (IDocumentExtension4) document;
+    var extendedDocument = (IDocumentExtension4) document;
     DocumentRewriteSession session = null;
     try {
       session = extendedDocument.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
-      List<MarkerTextEdit> textEdits = fix.getTextEdits();
+      var textEdits = fix.getTextEdits();
       // We only want to select edited location when there is only one text edit
-      boolean selectUpdatedText = textEdits.size() == 1;
+      var selectUpdatedText = textEdits.size() == 1;
       textEdits.forEach(textEdit -> apply(openEditor, extendedDocument, textEdit, selectUpdatedText));
     } catch (Exception e) {
       SonarLintLogger.get().error("Cannot apply the quick fix", e);
@@ -141,13 +138,13 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
   }
 
   private static void apply(ITextEditor textEditor, IDocumentExtension4 document, MarkerTextEdit textEdit, boolean selectUpdatedText) {
-    IMarker editMarker = textEdit.getMarker();
+    var editMarker = textEdit.getMarker();
     try {
       if (editMarker.exists()) {
-        int start = MarkerUtilities.getCharStart(editMarker);
-        int end = MarkerUtilities.getCharEnd(editMarker);
+        var start = MarkerUtilities.getCharStart(editMarker);
+        var end = MarkerUtilities.getCharEnd(editMarker);
         // look up the current range of the marker when the document has been edited
-        Position markerPosition = LocationsUtils.getMarkerPosition(editMarker, textEditor);
+        var markerPosition = LocationsUtils.getMarkerPosition(editMarker, textEditor);
         if (markerPosition != null) {
           if (markerPosition.isDeleted()) {
             // do nothing if position has been deleted
@@ -160,7 +157,7 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
           }
         }
         document.replace(start, end - start, textEdit.getNewText(), document.getModificationStamp() + 1);
-        ITextViewer viewer = textEditor.getAdapter(ITextViewer.class);
+        var viewer = textEditor.getAdapter(ITextViewer.class);
         if (viewer != null) {
           viewer.setSelectedRange(start, selectUpdatedText ? textEdit.getNewText().length() : 0);
           viewer.revealRange(start, textEdit.getNewText().length());

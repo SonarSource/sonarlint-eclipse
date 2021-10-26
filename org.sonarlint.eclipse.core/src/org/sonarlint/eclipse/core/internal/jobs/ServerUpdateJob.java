@@ -21,8 +21,6 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
@@ -30,8 +28,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
 
 public class ServerUpdateJob extends Job {
@@ -44,7 +40,7 @@ public class ServerUpdateJob extends Job {
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
-    List<ISonarLintProject> projectsToUpdate = server.getBoundProjects();
+    var projectsToUpdate = server.getBoundProjects();
     monitor.beginTask("Update SonarLint binding data for all associated projects", projectsToUpdate.size() + 1);
     try {
       server.updateStorage(monitor);
@@ -56,14 +52,14 @@ public class ServerUpdateJob extends Job {
     }
     monitor.worked(1);
 
-    Set<String> seenProjectKeys = new HashSet<>();
-    List<IStatus> failures = new ArrayList<>();
-    for (ISonarLintProject projectToUpdate : projectsToUpdate) {
+    var seenProjectKeys = new HashSet<String>();
+    var failures = new ArrayList<IStatus>();
+    for (var projectToUpdate : projectsToUpdate) {
       if (monitor.isCanceled()) {
         return Status.CANCEL_STATUS;
       }
       try {
-        SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(projectToUpdate);
+        var config = SonarLintCorePlugin.loadConfig(projectToUpdate);
         config.getProjectBinding().ifPresent(b -> {
           if (seenProjectKeys.add(b.projectKey())) {
             server.updateProjectStorage(b.projectKey(), monitor);

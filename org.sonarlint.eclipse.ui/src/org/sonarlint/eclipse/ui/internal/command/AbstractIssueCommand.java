@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.command;
 
 import java.util.ArrayList;
-import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -37,7 +36,7 @@ import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 public abstract class AbstractIssueCommand extends AbstractHandler {
 
   public Display getDisplay() {
-    Display display = Display.getCurrent();
+    var display = Display.getCurrent();
     if (display == null) {
       display = Display.getDefault();
     }
@@ -46,12 +45,11 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
 
   @Nullable
   protected static IMarker getSelectedMarker(IStructuredSelection selection) {
-    List<IMarker> selectedSonarMarkers = new ArrayList<>();
+    var selectedSonarMarkers = new ArrayList<IMarker>();
 
-    @SuppressWarnings("rawtypes")
-    List elems = selection.toList();
-    for (Object elem : elems) {
-      IMarker marker = Adapters.adapt(elem, IMarker.class);
+    var elems = selection.toList();
+    for (var elem : elems) {
+      var marker = Adapters.adapt(elem, IMarker.class);
       if (marker != null) {
         selectedSonarMarkers.add(marker);
       }
@@ -62,7 +60,7 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
   @Nullable
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    IMarker marker = getSelectedMarker((IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event));
+    var marker = getSelectedMarker((IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event));
     if (marker != null) {
       execute(marker);
     }

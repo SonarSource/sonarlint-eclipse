@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.notifications;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import org.junit.Rule;
@@ -38,16 +37,16 @@ public class NotificationsTrackerTest {
 
   @Test
   public void should_return_current_time_when_storage_missing() throws IOException {
-    NotificationsTracker tracker = new NotificationsTracker(tmp.newFolder().toPath());
-    ZonedDateTime pivot = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
+    var tracker = new NotificationsTracker(tmp.newFolder().toPath());
+    var pivot = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
     assertThat(pivot.isBefore(tracker.getLastEventPolling())).isTrue();
   }
 
   @Test
   public void should_return_current_time_previously_set() throws IOException {
-    Path basedir = tmp.newFolder().toPath();
-    NotificationsTracker tracker = new NotificationsTracker(basedir);
-    ZonedDateTime pivot = ZonedDateTime.now().minus(1, ChronoUnit.HOURS);
+    var basedir = tmp.newFolder().toPath();
+    var tracker = new NotificationsTracker(basedir);
+    var pivot = ZonedDateTime.now().minus(1, ChronoUnit.HOURS);
     tracker.setLastEventPolling(pivot);
 
     assertThat(new NotificationsTracker(basedir).getLastEventPolling()).isEqualTo(pivot.truncatedTo(ChronoUnit.MILLIS));
@@ -55,9 +54,9 @@ public class NotificationsTrackerTest {
 
   @Test
   public void should_create_required_subdirs() throws IOException {
-    Path basedir = tmp.newFolder().toPath().resolve("sub").resolve("sub2");
-    NotificationsTracker tracker = new NotificationsTracker(basedir);
-    ZonedDateTime pivot = ZonedDateTime.now().minus(1, ChronoUnit.HOURS);
+    var basedir = tmp.newFolder().toPath().resolve("sub").resolve("sub2");
+    var tracker = new NotificationsTracker(basedir);
+    var pivot = ZonedDateTime.now().minus(1, ChronoUnit.HOURS);
     tracker.setLastEventPolling(pivot);
 
     assertThat(basedir.toFile().isDirectory()).isTrue();
@@ -65,36 +64,36 @@ public class NotificationsTrackerTest {
 
   @Test
   public void should_return_current_time_when_storage_corrupt() throws IOException {
-    Path basedir = tmp.newFolder().toPath();
+    var basedir = tmp.newFolder().toPath();
     Files.write(basedir.resolve(NotificationsTracker.FILENAME), "garbage".getBytes());
 
-    NotificationsTracker tracker = new NotificationsTracker(basedir);
-    ZonedDateTime pivot = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
+    var tracker = new NotificationsTracker(basedir);
+    var pivot = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
     assertThat(pivot.isBefore(tracker.getLastEventPolling())).isTrue();
   }
 
   @Test
   public void should_return_current_time_when_storage_broken() throws IOException {
-    Path notReallyDir = tmp.newFile().toPath();
-    NotificationsTracker tracker = new NotificationsTracker(notReallyDir);
-    ZonedDateTime pivot = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
+    var notReallyDir = tmp.newFile().toPath();
+    var tracker = new NotificationsTracker(notReallyDir);
+    var pivot = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
     assertThat(pivot.isBefore(tracker.getLastEventPolling())).isTrue();
   }
 
   @Test
   public void should_not_crash_when_cannot_write_storage() throws IOException {
-    Path notReallyDir = tmp.newFile().toPath();
-    NotificationsTracker tracker = new NotificationsTracker(notReallyDir);
-    ZonedDateTime pivot = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
+    var notReallyDir = tmp.newFile().toPath();
+    var tracker = new NotificationsTracker(notReallyDir);
+    var pivot = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
     tracker.setLastEventPolling(pivot);
     assertThat(tracker.getLastEventPolling()).isEqualTo(pivot);
   }
 
   @Test
   public void should_return_time_without_re_reading() throws IOException {
-    Path basedir = tmp.newFolder().toPath();
-    NotificationsTracker tracker = new NotificationsTracker(basedir);
-    ZonedDateTime pivot = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
+    var basedir = tmp.newFolder().toPath();
+    var tracker = new NotificationsTracker(basedir);
+    var pivot = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
     tracker.setLastEventPolling(pivot);
 
     FileUtils.deleteRecursively(basedir);

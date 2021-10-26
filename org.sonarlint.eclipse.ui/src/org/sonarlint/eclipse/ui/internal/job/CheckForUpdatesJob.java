@@ -41,14 +41,14 @@ public class CheckForUpdatesJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-      SubMonitor subMonitor = SubMonitor.convert(monitor, SonarLintCorePlugin.getServersManager().getServers().size());
+      var subMonitor = SubMonitor.convert(monitor, SonarLintCorePlugin.getServersManager().getServers().size());
       subMonitor.setTaskName("Check for updates of binding data on SonarQube/SonarCloud");
-      for (final IConnectedEngineFacade server : SonarLintCorePlugin.getServersManager().getServers()) {
+      for (final var server : SonarLintCorePlugin.getServersManager().getServers()) {
         subMonitor.subTask("Checking for updates of binding data from server '" + server.getId() + "'");
-        SubMonitor serverMonitor = subMonitor.newChild(1);
+        var serverMonitor = subMonitor.newChild(1);
 
-        IStatus status = checkForUpdates(server, serverMonitor);
-        if (status.matches(Status.CANCEL)) {
+        var status = checkForUpdates(server, serverMonitor);
+        if (status.matches(IStatus.CANCEL)) {
           return status;
         }
 
@@ -68,7 +68,7 @@ public class CheckForUpdatesJob extends Job {
 
       if (server.hasUpdates()) {
         Display.getDefault().asyncExec(() -> {
-          ServerUpdateAvailablePopup popup = new ServerUpdateAvailablePopup(server);
+          var popup = new ServerUpdateAvailablePopup(server);
           popup.open();
         });
       }

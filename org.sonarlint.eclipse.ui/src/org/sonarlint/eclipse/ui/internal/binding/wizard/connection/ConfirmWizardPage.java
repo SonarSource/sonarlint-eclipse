@@ -39,15 +39,15 @@ public class ConfirmWizardPage extends WizardPage {
   @Override
   public void createControl(Composite parent) {
 
-    Composite container = new Composite(parent, SWT.NONE);
-    GridLayout layout = new GridLayout();
+    var container = new Composite(parent, SWT.NONE);
+    var layout = new GridLayout();
     container.setLayout(layout);
 
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
+    var layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
     container.setLayoutData(layoutData);
 
-    Label label = new Label(container, SWT.WRAP);
-    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    var label = new Label(container, SWT.WRAP);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
     label.setLayoutData(gd);
     if (model.isEdit()) {
       label.setText("Connection successfully edited. Click finish to save your changes and schedule an update of all project bindings.");

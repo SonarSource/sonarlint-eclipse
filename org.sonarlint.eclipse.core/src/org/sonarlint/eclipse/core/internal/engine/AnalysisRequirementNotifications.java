@@ -22,11 +22,9 @@ package org.sonarlint.eclipse.core.internal.engine;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.SkipReason;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
@@ -46,25 +44,25 @@ public class AnalysisRequirementNotifications {
   }
 
   public static void notifyOnceForSkippedPlugins(AnalysisResults analysisResults, Collection<PluginDetails> allPlugins) {
-    Set<Language> attemptedLanguages = analysisResults.languagePerFile().values()
+    var attemptedLanguages = analysisResults.languagePerFile().values()
       .stream()
       .filter(Objects::nonNull)
       .collect(toSet());
     attemptedLanguages.forEach(l -> {
-      final Optional<PluginDetails> correspondingPlugin = allPlugins.stream().filter(p -> p.key().equals(l.getPluginKey())).findFirst();
+      final var correspondingPlugin = allPlugins.stream().filter(p -> p.key().equals(l.getPluginKey())).findFirst();
       correspondingPlugin.flatMap(PluginDetails::skipReason).ifPresent(skipReason -> {
         if (skipReason instanceof SkipReason.UnsatisfiedRuntimeRequirement) {
-          final SkipReason.UnsatisfiedRuntimeRequirement runtimeRequirement = (SkipReason.UnsatisfiedRuntimeRequirement) skipReason;
-          final String shortMsg = "SonarLint failed to analyze " + l.getLabel() + " code";
+          final var runtimeRequirement = (SkipReason.UnsatisfiedRuntimeRequirement) skipReason;
+          final var shortMsg = "SonarLint failed to analyze " + l.getLabel() + " code";
           if (runtimeRequirement.getRuntime() == SkipReason.UnsatisfiedRuntimeRequirement.RuntimeRequirement.JRE) {
-            String content = String.format(
+            var content = String.format(
               "SonarLint requires Java runtime version %s or later to analyze %s code. "
                 + "Current version is %s.\n"
                 + "See <a href=\"https://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM\">the Eclipse Wiki</a> to configure your IDE to run with a more recent JRE.",
               runtimeRequirement.getMinVersion(), l.getLabel(), runtimeRequirement.getCurrentVersion());
             createNotificationOnce(shortMsg, content);
           } else if (runtimeRequirement.getRuntime() == SkipReason.UnsatisfiedRuntimeRequirement.RuntimeRequirement.NODEJS) {
-            StringBuilder content = new StringBuilder(
+            var content = new StringBuilder(
               String.format("SonarLint requires Node.js runtime version %s or later to analyze %s code.", runtimeRequirement.getMinVersion(), l.getLabel()));
             if (runtimeRequirement.getCurrentVersion() != null) {
               content.append(String.format(" Current version is %s.", runtimeRequirement.getCurrentVersion()));

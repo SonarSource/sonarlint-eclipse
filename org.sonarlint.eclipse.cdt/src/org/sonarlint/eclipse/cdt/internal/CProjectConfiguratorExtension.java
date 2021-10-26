@@ -77,7 +77,7 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
   @Override
   public boolean canConfigure(ISonarLintProject project) {
     try {
-      IProject underlyingProject = project.getResource() instanceof IProject ? (IProject) project.getResource() : null;
+      var underlyingProject = project.getResource() instanceof IProject ? (IProject) project.getResource() : null;
       // Constants are inlined so this should not cause ClassNotFound
       return cdtUtils != null &&
         underlyingProject != null &&
@@ -97,7 +97,7 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
   @Override
   public String language(ISonarLintFile file) {
     if (canConfigure(file.getProject())) {
-      IFile iFile = file.getResource() instanceof IFile ? (IFile) file.getResource() : null;
+      var iFile = file.getResource() instanceof IFile ? (IFile) file.getResource() : null;
       if (cdtUtils != null && iFile != null) {
         return cdtUtils.language(iFile);
       }

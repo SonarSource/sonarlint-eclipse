@@ -25,16 +25,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.core.matcher.WithLabelMatcher;
-import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.core.resources.Resource;
-import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyDialog;
 import org.eclipse.reddeer.eclipse.ui.markers.AbstractMarker;
 import org.eclipse.reddeer.eclipse.ui.markers.matcher.MarkerDescriptionMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.eclipse.ui.views.markers.ProblemsView;
 import org.eclipse.reddeer.eclipse.ui.views.markers.ProblemsView.ProblemType;
 import org.eclipse.reddeer.eclipse.ui.views.markers.QuickFixWizard;
-import org.eclipse.reddeer.jface.text.contentassist.ContentAssistant;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
 import org.eclipse.reddeer.swt.impl.table.DefaultTable;
@@ -67,10 +64,10 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   public void shouldApplyQuickFixThroughContentAssist() {
     importAndOpenQuickFixableFile();
 
-    TextEditor editor = new TextEditor(FILE_NAME);
+    var editor = new TextEditor(FILE_NAME);
     editor.setCursorPosition(8, 14);
     // uses the keyboard and may not work on non-US layouts
-    ContentAssistant assistant = editor.openQuickFixContentAssistant();
+    var assistant = editor.openQuickFixContentAssistant();
     assertThat(assistant.getProposals()).element(0).isEqualTo(QUICK_FIX_MESSAGE);
     assistant.chooseProposal(QUICK_FIX_MESSAGE);
 
@@ -83,7 +80,7 @@ public class QuickFixesTest extends AbstractSonarLintTest {
     setMarkerSeverityToWarning(MarkerSeverity.WARNING);
     importAndOpenQuickFixableFile();
 
-    TextEditor editor = new TextEditor(FILE_NAME);
+    var editor = new TextEditor(FILE_NAME);
     editor.activate();
     applyFixThrough(findQuickFixableMarkerInProblemsView().openQuickFix());
 
@@ -94,7 +91,7 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   public void shouldApplyQuickFixThroughOnTheFlyViewContextMenu() {
     importAndOpenQuickFixableFile();
 
-    TextEditor editor = new TextEditor(FILE_NAME);
+    var editor = new TextEditor(FILE_NAME);
     editor.activate();
     new OnTheFlyView().getItems().get(0).select();
     new ContextMenuItem("Quick Fix").select();
@@ -120,7 +117,7 @@ public class QuickFixesTest extends AbstractSonarLintTest {
     // default issue severity is INFO and reddeer supports only ERROR and WARNING
     setMarkerSeverityToWarning(MarkerSeverity.WARNING);
     importAndOpenQuickFixableFile();
-    TextEditor editor = new TextEditor(FILE_NAME);
+    var editor = new TextEditor(FILE_NAME);
     editor.insertText(0, PLACEHOLDER_LICENSE_HEADER);
 
     applyFixThrough(findQuickFixableMarkerInProblemsView().openQuickFix());
@@ -132,8 +129,8 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   public void shouldApplyQuickFixAfterFileModifiedOnFileSystem() throws IOException {
     // default issue severity is INFO and reddeer supports only ERROR and WARNING
     setMarkerSeverityToWarning(MarkerSeverity.WARNING);
-    Resource file = importAndOpenQuickFixableFile();
-    TextEditor editor = new TextEditor(FILE_NAME);
+    var file = importAndOpenQuickFixableFile();
+    var editor = new TextEditor(FILE_NAME);
     Files.write(getFilePath(file), (PLACEHOLDER_LICENSE_HEADER + editor.getText()).getBytes());
     editor.activate();
 
@@ -149,7 +146,7 @@ public class QuickFixesTest extends AbstractSonarLintTest {
     importAndOpenQuickFixableFile();
     new TextEditor(FILE_NAME).insertText(8, 14, "random change");
 
-    QuickFixWizard quickFixWizard = findQuickFixableMarkerInProblemsView().openQuickFix();
+    var quickFixWizard = findQuickFixableMarkerInProblemsView().openQuickFix();
     boolean quickFixProposed = new DefaultTable(quickFixWizard, 0).containsItem(QUICK_FIX_MESSAGE);
     quickFixWizard.cancel();
 
@@ -158,8 +155,8 @@ public class QuickFixesTest extends AbstractSonarLintTest {
 
   private Resource importAndOpenQuickFixableFile() {
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("java/quick-fixes", "quick-fixes");
-    Resource file = rootProject.getResource("src", "hello", FILE_NAME);
+    var rootProject = importExistingProjectIntoWorkspace("java/quick-fixes", "quick-fixes");
+    var file = rootProject.getResource("src", "hello", FILE_NAME);
     openFileAndWaitForAnalysisCompletion(file);
     return file;
   }
@@ -171,17 +168,17 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   }
 
   private static void setMarkerSeverityToWarning(MarkerSeverity severity) {
-    WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
+    var preferenceDialog = new WorkbenchPreferenceDialog();
     preferenceDialog.open();
-    SonarLintPreferences preferences = new SonarLintPreferences(preferenceDialog);
+    var preferences = new SonarLintPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
     preferences.setMarkersSeverity(severity);
     preferenceDialog.ok();
   }
 
   private static Path getFilePath(Resource resource) {
-    PropertyDialog properties = resource.openProperties();
-    String filePath = new DefaultText(properties, new WithLabelMatcher("Location:")).getText();
+    var properties = resource.openProperties();
+    var filePath = new DefaultText(properties, new WithLabelMatcher("Location:")).getText();
     properties.cancel();
     return Paths.get(filePath);
   }

@@ -41,13 +41,13 @@ public class TaintVulnerabilitiesView extends MarkerViewWithBottomPanel {
   
   @Override
   protected void populateBottomPanel(Composite bottom) {
-    RowLayout bottomLayout = new RowLayout();
+    var bottomLayout = new RowLayout();
     bottomLayout.center = true;
     bottom.setLayout(bottomLayout);
-    GridData bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+    var bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     bottom.setLayoutData(bottomLayoutData);
 
-    Link label = new Link(bottom, SWT.NONE);
+    var label = new Link(bottom, SWT.NONE);
     label.setText("This view displays taint vulnerabilities found by SonarQube or SonarCloud on the main branch during last analysis. <a>Learn more</a>");
     label.addListener(SWT.Selection, e -> {
       try {

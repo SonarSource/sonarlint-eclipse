@@ -23,13 +23,8 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.Position;
-import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractMarkerAnnotationModel;
@@ -47,15 +42,15 @@ public class LocationsUtils {
   public static ITextEditor findOpenEditorFor(IMarker sonarlintMarker) {
     // Find IFile and open Editor
     // Super defensing programming because we don't really understand what is initialized at startup (SLE-122)
-    IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+    var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
     if (window == null) {
       return null;
     }
-    IWorkbenchPage page = window.getActivePage();
+    var page = window.getActivePage();
     if (page == null) {
       return null;
     }
-    for (IEditorReference editor : page.getEditorReferences()) {
+    for (var editor : page.getEditorReferences()) {
       IEditorInput editorInput;
       try {
         editorInput = editor.getEditorInput();
@@ -64,7 +59,7 @@ public class LocationsUtils {
         continue;
       }
       if (editorInput instanceof IFileEditorInput && ((IFileEditorInput) editorInput).getFile().equals(sonarlintMarker.getResource())) {
-        IEditorPart editorPart = editor.getEditor(false);
+        var editorPart = editor.getEditor(false);
         if (editorPart instanceof ITextEditor) {
           return (ITextEditor) editorPart;
         }
@@ -75,9 +70,9 @@ public class LocationsUtils {
 
   public static @Nullable Position getMarkerPosition(IMarker marker, ITextEditor textEditor) {
     // look up the current range of the marker when the document has been edited
-    IAnnotationModel model = textEditor.getDocumentProvider().getAnnotationModel(textEditor.getEditorInput());
+    var model = textEditor.getDocumentProvider().getAnnotationModel(textEditor.getEditorInput());
     if (model instanceof AbstractMarkerAnnotationModel) {
-      AbstractMarkerAnnotationModel markerModel = (AbstractMarkerAnnotationModel) model;
+      var markerModel = (AbstractMarkerAnnotationModel) model;
       return markerModel.getMarkerPosition(marker);
     }
     return null;

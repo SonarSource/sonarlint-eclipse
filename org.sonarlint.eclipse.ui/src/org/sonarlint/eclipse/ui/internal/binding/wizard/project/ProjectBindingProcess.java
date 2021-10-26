@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ProjectStorageUpdateJob;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -36,13 +35,13 @@ import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 public class ProjectBindingProcess {
 
   public static Job scheduleProjectBinding(String serverId, List<ISonarLintProject> projects, String projectKey) {
-    ProjectStorageUpdateJob job = new ProjectStorageUpdateJob(serverId, projectKey);
-    List<ISonarLintProject> projectToSubscribeToNotifications = new ArrayList<>();
+    var job = new ProjectStorageUpdateJob(serverId, projectKey);
+    var projectToSubscribeToNotifications = new ArrayList<ISonarLintProject>();
     projects.forEach(p -> {
-      boolean changed = false;
-      SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(p);
-      String oldServerId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
-      String oldProjectKey = projectConfig.getProjectBinding().map(EclipseProjectBinding::projectKey).orElse(null);
+      var changed = false;
+      var projectConfig = SonarLintCorePlugin.loadConfig(p);
+      var oldServerId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
+      var oldProjectKey = projectConfig.getProjectBinding().map(EclipseProjectBinding::projectKey).orElse(null);
       if (!Objects.equals(serverId, oldServerId) || !Objects.equals(projectKey, oldProjectKey)) {
         // We can ignore path prefixes for now, they will be update by the ProjectStorageUpdateJob
         projectConfig.setProjectBinding(new EclipseProjectBinding(serverId, projectKey, "", ""));

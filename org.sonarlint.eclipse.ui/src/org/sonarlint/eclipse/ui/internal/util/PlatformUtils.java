@@ -19,20 +19,14 @@
  */
 package org.sonarlint.eclipse.ui.internal.util;
 
-import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -50,7 +44,7 @@ public final class PlatformUtils {
    * Opens editor for given file.
    */
   public static void openEditor(IFile file) {
-    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     try {
       IDE.openEditor(page, file);
     } catch (PartInitException e) {
@@ -67,12 +61,10 @@ public final class PlatformUtils {
       return;
     }
 
-    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     try {
-      Map<String, Object> map = new HashMap<>(1);
-      map.put(IMarker.LINE_NUMBER, Integer.valueOf(line));
-      IMarker marker = file.createMarker(IMarker.TEXT);
-      marker.setAttributes(map);
+      var marker = file.createMarker(IMarker.TEXT);
+      marker.setAttributes(Map.of(IMarker.LINE_NUMBER, line));
       IDE.openEditor(page, marker);
       marker.delete();
     } catch (CoreException e) {
@@ -82,14 +74,14 @@ public final class PlatformUtils {
 
   @Nullable
   public static IEditorPart findEditor(ISonarLintFile file) {
-    IWorkbench workbench = PlatformUI.getWorkbench();
+    var workbench = PlatformUI.getWorkbench();
     if (workbench == null) {
       return null;
     }
-    for (IWorkbenchWindow win : workbench.getWorkbenchWindows()) {
-      for (IWorkbenchPage page : win.getPages()) {
+    for (var win : workbench.getWorkbenchWindows()) {
+      for (var page : win.getPages()) {
         // handle the common case where the editor input is a FileEditorInput and ISonarLintFile wrap an IFile
-        IEditorPart result = findInFileEditorInput(file.getResource(), page);
+        var result = findInFileEditorInput(file.getResource(), page);
         if (result != null) {
           return result;
         }
@@ -107,7 +99,7 @@ public final class PlatformUtils {
   private static IEditorPart findInFileEditorInput(IResource resource, IWorkbenchPage page) {
     if (resource instanceof IFile) {
       // Don't use page.findEditor(IEditorInput) because it will try to restore the editor before returning it
-      IEditorReference[] references = page.findEditors(new FileEditorInput((IFile) resource), null, IWorkbenchPage.MATCH_INPUT);
+      var references = page.findEditors(new FileEditorInput((IFile) resource), null, IWorkbenchPage.MATCH_INPUT);
       if (references.length == 0) {
         return null;
       }
@@ -120,14 +112,14 @@ public final class PlatformUtils {
   private static IEditorPart findInOtherEditors(ISonarLintFile file, IWorkbenchPage page) {
     // check for editors that have their own kind of input that adapts to IFile,
     // being careful not to force loading of the editor
-    for (IEditorReference ref : page.getEditorReferences()) {
-      IEditorPart part = ref.getEditor(false);
+    for (var ref : page.getEditorReferences()) {
+      var part = ref.getEditor(false);
       if (part == null) {
         continue;
       }
-      IFile editorFile = Adapters.adapt(part.getEditorInput(), IFile.class);
+      var editorFile = Adapters.adapt(part.getEditorInput(), IFile.class);
       if (editorFile != null) {
-        ISonarLintFile editorSlFile = Adapters.adapt(editorFile, ISonarLintFile.class);
+        var editorSlFile = Adapters.adapt(editorFile, ISonarLintFile.class);
         if (editorSlFile != null && editorSlFile.equals(file)) {
           return part;
         }

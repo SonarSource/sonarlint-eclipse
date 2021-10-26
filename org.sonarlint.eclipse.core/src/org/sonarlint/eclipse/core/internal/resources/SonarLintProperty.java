@@ -60,7 +60,7 @@ public class SonarLintProperty {
     if (obj.getClass() != getClass()) {
       return false;
     }
-    SonarLintProperty rhs = (SonarLintProperty) obj;
+    var rhs = (SonarLintProperty) obj;
     return name.equals(rhs.name) && value.equals(rhs.value);
   }
 

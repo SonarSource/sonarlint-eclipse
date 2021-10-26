@@ -19,14 +19,14 @@
  */
 package org.sonarlint.eclipse.tests.common;
 
-import org.eclipse.core.resources.IWorkspace;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
 import org.junit.Assert;
 
@@ -62,12 +62,12 @@ public class JobHelpers {
      * 
      * See http://www.eclipse.org/articles/Article-Resource-deltas/resource-deltas.html
      */
-    IWorkspace workspace = ResourcesPlugin.getWorkspace();
-    IJobManager jobManager = Job.getJobManager();
+    var workspace = ResourcesPlugin.getWorkspace();
+    var jobManager = Job.getJobManager();
     jobManager.suspend();
     try {
-      Job[] jobs = jobManager.find(null);
-      for (int i = 0; i < jobs.length; i++) {
+      var jobs = jobManager.find(null);
+      for (var i = 0; i < jobs.length; i++) {
         if (jobs[i] instanceof WorkspaceJob || jobs[i].getClass().getName().endsWith("JREUpdateJob")) {
           jobs[i].join();
         }
@@ -88,14 +88,14 @@ public class JobHelpers {
     waitForJobs(BuildJobMatcher.INSTANCE, 60 * 1000);
   }
 
-  public static void waitForJobs(IJobMatcher matcher, int maxWaitMillis) {
-    final long limit = System.currentTimeMillis() + maxWaitMillis;
+  public static void waitForJobs(Predicate<Job> matcher, int maxWaitMillis) {
+    final var limit = System.currentTimeMillis() + maxWaitMillis;
     while (true) {
-      Job job = getJob(matcher);
+      var job = getJob(matcher);
       if (job == null) {
         return;
       }
-      boolean timeout = System.currentTimeMillis() > limit;
+      var timeout = System.currentTimeMillis() > limit;
       Assert.assertFalse("Timeout while waiting for completion of job: " + job, timeout);
       job.wakeUp();
       try {
@@ -106,37 +106,28 @@ public class JobHelpers {
     }
   }
 
-  private static Job getJob(IJobMatcher matcher) {
-    Job[] jobs = Job.getJobManager().find(null);
-    for (Job job : jobs) {
-      if (matcher.matches(job)) {
-        return job;
-      }
-    }
-    return null;
+  private static Job getJob(Predicate<Job> matcher) {
+    return Stream.of(Job.getJobManager().find(null))
+      .filter(matcher)
+      .findFirst()
+      .orElse(null);
   }
 
-  public static interface IJobMatcher {
+  static class LaunchJobMatcher implements Predicate<Job> {
 
-    boolean matches(Job job);
+    public static final Predicate<Job> INSTANCE = new LaunchJobMatcher();
 
-  }
-
-  static class LaunchJobMatcher implements IJobMatcher {
-
-    public static final IJobMatcher INSTANCE = new LaunchJobMatcher();
-
-    public boolean matches(Job job) {
+    public boolean test(Job job) {
       return job.getClass().getName().matches("(.*\\.DebugUIPlugin.*)");
     }
 
   }
 
-  static class BuildJobMatcher implements IJobMatcher {
+  static class BuildJobMatcher implements Predicate<Job> {
 
-    public static final IJobMatcher INSTANCE = new BuildJobMatcher();
+    public static final Predicate<Job> INSTANCE = new BuildJobMatcher();
 
-    public boolean matches(Job job) {
+    public boolean test(Job job) {
       return (job instanceof WorkspaceJob) || job.getClass().getName().matches("(.*\\.AutoBuild.*)")
         || job.getClass().getName().endsWith("JREUpdateJob");
     }

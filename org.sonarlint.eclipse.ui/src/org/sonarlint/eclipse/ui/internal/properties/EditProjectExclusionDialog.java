@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
-import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.util.regex.PatternSyntaxException;
 import org.eclipse.core.databinding.validation.ValidationStatus;
@@ -29,8 +28,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.window.Window;
@@ -38,7 +35,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -101,12 +97,12 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
   @Override
   protected Control createDialogArea(Composite parent) {
     // top level composite
-    Composite parentComposite = (Composite) super.createDialogArea(parent);
+    var parentComposite = (Composite) super.createDialogArea(parent);
 
     initializeDialogUnits(parentComposite);
 
     // creates dialog area composite
-    Composite contents = createComposite(parentComposite, 3);
+    var contents = createComposite(parentComposite, 3);
 
     // creates and lay outs dialog area widgets
     createWidgets(contents);
@@ -181,7 +177,7 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
     patternField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
     // callbacks
-    SelectionListener radioListener = new SelectionAdapter() {
+    var radioListener = new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         onSelectType();
@@ -242,8 +238,8 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
     if (!initialized) {
       return;
     }
-    String validationMessage = STANDARD_MESSAGE;
-    int validationStatus = IMessageProvider.NONE;
+    var validationMessage = STANDARD_MESSAGE;
+    var validationStatus = IMessageProvider.NONE;
 
     if (StringUtils.isEmpty(editItem.item())) {
       validationMessage = "The field is empty";
@@ -259,7 +255,7 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
     } else {
       
       try {
-        FileSystem fs = FileSystems.getDefault();
+        var fs = FileSystems.getDefault();
         fs.getPathMatcher("glob:" + editItem);
       } catch (PatternSyntaxException e) {
         validationMessage = "The pattern has an invalid syntax";
@@ -268,11 +264,7 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
     }
 
     setMessage(validationMessage, validationStatus);
-    if (validationStatus != IMessageProvider.ERROR) {
-      okButton.setEnabled(true);
-    } else {
-      okButton.setEnabled(false);
-    }
+    okButton.setEnabled(validationStatus != IMessageProvider.ERROR);
   }
 
   /**
@@ -286,11 +278,11 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
       if (arr.length == 0) {
         return ValidationStatus.ok();
       }
-      Object obj = arr[0];
+      var obj = arr[0];
       return (obj instanceof IFolder) ? ValidationStatus.ok() : ValidationStatus.error("Select a folder");
     };
 
-    ViewerFilter viewFilter = new ViewerFilter() {
+    var viewFilter = new ViewerFilter() {
       @Override
       public boolean select(Viewer viewer, Object parentElement, Object element) {
         if (element instanceof IFolder) {
@@ -301,9 +293,9 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
       }
     };
 
-    ILabelProvider lp = new WorkbenchLabelProvider();
-    ITreeContentProvider cp = new WorkbenchContentProvider();
-    ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(getShell(), lp, cp);
+    var lp = new WorkbenchLabelProvider();
+    var cp = new WorkbenchContentProvider();
+    var dialog = new ElementTreeSelectionDialog(getShell(), lp, cp);
     dialog.setTitle("Select Folder");
     dialog.setInput(project.getResource());
     dialog.setAllowMultiple(false);
@@ -316,8 +308,8 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
     }
 
     if (dialog.open() == Window.OK) {
-      Object obj = dialog.getFirstResult();
-      IFolder folder = (IFolder) obj;
+      var obj = dialog.getFirstResult();
+      var folder = (IFolder) obj;
       if (folder != null) {
         editItem = new ExclusionItem(Type.DIRECTORY, folder.getProjectRelativePath().toString());
         directoryField.setText(editItem.item());
@@ -341,25 +333,25 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
       return file != null ? ValidationStatus.ok() : ValidationStatus.error("Select a file");
     };
 
-    ViewerFilter viewFilter = new ViewerFilter() {
+    var viewFilter = new ViewerFilter() {
       @Override
       public boolean select(Viewer viewer, Object parentElement, Object element) {
         if (element instanceof IFolder) {
-          IFolder folder = (IFolder) element;
+          var folder = (IFolder) element;
           return SonarLintUtils.isSonarLintFileCandidate(folder);
         }
 
         if (element instanceof IFile) {
-          ISonarLintFile file = Adapters.adapt(element, ISonarLintFile.class);
+          var file = Adapters.adapt(element, ISonarLintFile.class);
           return file != null;
         }
         return false;
       }
     };
 
-    ILabelProvider lp = new WorkbenchLabelProvider();
-    ITreeContentProvider cp = new WorkbenchContentProvider();
-    ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(getShell(), lp, cp);
+    var lp = new WorkbenchLabelProvider();
+    var cp = new WorkbenchContentProvider();
+    var dialog = new ElementTreeSelectionDialog(getShell(), lp, cp);
     dialog.setTitle("Select File");
     dialog.setInput(project.getResource());
     dialog.setAllowMultiple(false);
@@ -371,8 +363,8 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
     }
 
     if (dialog.open() == Window.OK) {
-      Object obj = dialog.getFirstResult();
-      ISonarLintFile file = Adapters.adapt(obj, ISonarLintFile.class);
+      var obj = dialog.getFirstResult();
+      var file = Adapters.adapt(obj, ISonarLintFile.class);
       if (file != null) {
         editItem = new ExclusionItem(Type.FILE, file.getProjectRelativePath());
         fileField.setText(editItem.item());

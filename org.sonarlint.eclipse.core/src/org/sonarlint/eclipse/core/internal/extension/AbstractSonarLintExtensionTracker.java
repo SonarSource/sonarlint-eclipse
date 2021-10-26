@@ -20,18 +20,16 @@
 package org.sonarlint.eclipse.core.internal.extension;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
-import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.dynamichelpers.ExtensionTracker;
 import org.eclipse.core.runtime.dynamichelpers.IExtensionChangeHandler;
 import org.eclipse.core.runtime.dynamichelpers.IExtensionTracker;
-import org.eclipse.core.runtime.dynamichelpers.IFilter;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public abstract class AbstractSonarLintExtensionTracker implements IExtensionChangeHandler {
@@ -57,15 +55,15 @@ public abstract class AbstractSonarLintExtensionTracker implements IExtensionCha
 
   protected void init(Collection<SonarLintEP<?>> allEpsToWatch) {
     this.allEpsToWatch = allEpsToWatch;
-    IExtensionRegistry reg = Platform.getExtensionRegistry();
-    IExtensionPoint[] epArray = allEpsToWatch.stream().map(ep -> reg.getExtensionPoint(ep.id)).toArray(IExtensionPoint[]::new);
+    var reg = Platform.getExtensionRegistry();
+    var epArray = allEpsToWatch.stream().map(ep -> reg.getExtensionPoint(ep.id)).toArray(IExtensionPoint[]::new);
     // initial population
-    for (IExtensionPoint ep : epArray) {
-      for (IExtension ext : ep.getExtensions()) {
+    for (var ep : epArray) {
+      for (var ext : ep.getExtensions()) {
         addExtension(TRACKER, ext);
       }
     }
-    IFilter filter = ExtensionTracker.createExtensionPointFilter(epArray);
+    var filter = ExtensionTracker.createExtensionPointFilter(epArray);
     TRACKER.registerHandler(this, filter);
   }
 
@@ -79,8 +77,8 @@ public abstract class AbstractSonarLintExtensionTracker implements IExtensionCha
 
   @Override
   public void addExtension(IExtensionTracker tracker, IExtension extension) {
-    IConfigurationElement[] configs = extension.getConfigurationElements();
-    for (final IConfigurationElement element : configs) {
+    var configs = extension.getConfigurationElements();
+    for (final var element : configs) {
       try {
         instanciateAndRegister(tracker, extension, element);
       } catch (CoreException e) {
@@ -106,7 +104,7 @@ public abstract class AbstractSonarLintExtensionTracker implements IExtensionCha
     // stop using objects associated with the removed extension
     for (SonarLintEP ep : allEpsToWatch) {
       if (ep.id.equals(extension.getExtensionPointUniqueIdentifier())) {
-        ep.instances.removeAll(Arrays.asList(objects));
+        ep.instances.removeAll(List.of(objects));
         break;
       }
     }

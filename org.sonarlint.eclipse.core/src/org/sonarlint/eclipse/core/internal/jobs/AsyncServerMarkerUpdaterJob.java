@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
@@ -54,17 +53,17 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
   }
 
   private void updateMarkers(IProgressMonitor monitor) {
-    for (Map.Entry<ISonarLintIssuable, Collection<Trackable>> entry : issuesPerResource.entrySet()) {
-      ISonarLintIssuable issuable = entry.getKey();
+    for (var entry : issuesPerResource.entrySet()) {
+      var issuable = entry.getKey();
       if (issuable instanceof ISonarLintFile) {
-        IDocument documentOrNull = docPerFile.get(issuable);
+        var documentOrNull = docPerFile.get(issuable);
         final IDocument documentNotNull;
         if (documentOrNull == null) {
           documentNotNull = ((ISonarLintFile) issuable).getDocument();
         } else {
           documentNotNull = documentOrNull;
         }
-        ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(issuable.getResource());
+        var markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(issuable.getResource());
         try {
           getJobManager().beginRule(markerRule, monitor);
           SonarLintMarkerUpdater.updateMarkersWithServerSideData(issuable, documentNotNull, entry.getValue(), triggerType);

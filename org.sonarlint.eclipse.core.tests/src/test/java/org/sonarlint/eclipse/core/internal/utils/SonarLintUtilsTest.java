@@ -22,30 +22,11 @@ package org.sonarlint.eclipse.core.internal.utils;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-// Using JUnit native assumptions, tests were failing with AssertJ assumptions
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
 
 public class SonarLintUtilsTest {
 
   @Test
-  public void shouldReturnPidOnJdk9Plus() {
-    assumeTrue(isJava9Plus());
-    assertThat(SonarLintUtils.getPlatformPid()).isNotEmpty();
-  }
-
-  @Test
-  
-  public void shouldReturnEmptyVersionOnJdk8() {
-    assumeFalse(isJava9Plus());
-    assertThat(SonarLintUtils.getPlatformPid()).isEmpty();
-  }
-
-  private static boolean isJava9Plus() {
-    try {
-      return Class.forName("java.lang.Runtime").getMethod("version") != null;
-    } catch(Throwable t) {
-      return false;
-    }
+  public void shouldReturnPid() {
+    assertThat(SonarLintUtils.getPlatformPid()).isNotZero();
   }
 }

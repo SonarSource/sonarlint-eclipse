@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.its;
 
-import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
@@ -33,14 +32,14 @@ public class MavenTest extends AbstractSonarLintTest {
   @Test
   public void shouldNotAnalyzeResourcesInSubModules() {
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("java/maven", "sample-maven");
-    Project sampleModule1Project = importExistingProjectIntoWorkspace("java/maven/sample-module1", "sample-module1");
+    var rootProject = importExistingProjectIntoWorkspace("java/maven", "sample-maven");
+    var sampleModule1Project = importExistingProjectIntoWorkspace("java/maven/sample-module1", "sample-module1");
     importExistingProjectIntoWorkspace("java/maven/sample-module2");
 
     int previousAnalysisJobCount = scheduledAnalysisJobCount.get();
     rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open();
     assertThat(scheduledAnalysisJobCount.get()).isEqualTo(previousAnalysisJobCount);
-    DefaultEditor defaultEditor = new DefaultEditor();
+    var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers()).isEmpty();
     defaultEditor.close();
 

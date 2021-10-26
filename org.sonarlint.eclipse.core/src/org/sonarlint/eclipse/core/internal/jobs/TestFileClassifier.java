@@ -19,15 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider.ISonarLintFileType;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -53,29 +51,27 @@ public class TestFileClassifier {
    * Should be called when preferences are changed.
    */
   public void reload() {
-    String allTestPattern = SonarLintGlobalConfiguration.getTestFileRegexps();
-    String[] testPatterns = allTestPattern.split(",");
+    var allTestPattern = SonarLintGlobalConfiguration.getTestFileRegexps();
+    var testPatterns = allTestPattern.split(",");
     pathMatchersForTests = createMatchersForTests(testPatterns);
   }
 
   private static List<PathMatcher> createMatchersForTests(String[] testPatterns) {
-    final List<PathMatcher> pathMatchers = new ArrayList<>();
-    FileSystem fs = FileSystems.getDefault();
-    for (String testPattern : testPatterns) {
-      pathMatchers.add(fs.getPathMatcher("glob:" + testPattern));
-    }
-    return pathMatchers;
+    var fs = FileSystems.getDefault();
+    return Stream.of(testPatterns)
+      .map(pattern -> fs.getPathMatcher("glob:" + pattern))
+      .collect(Collectors.toList());
   }
 
   public boolean isTest(ISonarLintFile file) {
-    for (IFileTypeProvider typeProvider : SonarLintExtensionTracker.getInstance().getTypeProviders()) {
+    for (var typeProvider : SonarLintExtensionTracker.getInstance().getTypeProviders()) {
       if (typeProvider.qualify(file) == ISonarLintFileType.TEST) {
         SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' qualified as test by '" + typeProvider.getClass().getSimpleName() + "'");
         return true;
       }
     }
-    Path fileRelativePath = Paths.get(file.getProjectRelativePath());
-    for (PathMatcher matcher : pathMatchersForTests) {
+    var fileRelativePath = Paths.get(file.getProjectRelativePath());
+    for (var matcher : pathMatchersForTests) {
       if (matcher.matches(fileRelativePath)) {
         SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' qualified as test by file pattern");
         return true;

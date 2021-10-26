@@ -58,7 +58,7 @@ public class NodeJsManager {
 
   private synchronized void initNodeIfNeeded() {
     if (!nodeInit) {
-      NodeJsHelper helper = new NodeJsHelper();
+      var helper = new NodeJsHelper();
       helper.detect(getNodeJsPathFromConfig());
       this.nodeInit = true;
       this.nodeJsPath = helper.getNodeJsPath();
@@ -80,7 +80,7 @@ public class NodeJsManager {
 
   @Nullable
   private static Path getNodeJsPathFromConfig() {
-    final String nodejsPathStr = SonarLintGlobalConfiguration.getNodejsPath();
+    final var nodejsPathStr = SonarLintGlobalConfiguration.getNodejsPath();
     if (StringUtils.isNotBlank(nodejsPathStr)) {
       try {
         return Paths.get(nodejsPathStr);

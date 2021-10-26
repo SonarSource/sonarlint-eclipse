@@ -47,7 +47,7 @@ public class ServerUpdateAvailablePopup extends AbstractSonarLintPopup {
     addLink("Remind me later", e -> ServerUpdateAvailablePopup.this.close());
 
     addLink("Update now", e -> {
-      ServerUpdateJob job = new ServerUpdateJob(server);
+      var job = new ServerUpdateJob(server);
       JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
       job.schedule();
       close();

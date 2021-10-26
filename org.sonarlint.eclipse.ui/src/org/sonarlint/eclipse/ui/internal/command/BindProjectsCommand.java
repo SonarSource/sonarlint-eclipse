@@ -19,22 +19,19 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
-import java.util.Collection;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
 public class BindProjectsCommand extends AbstractHandler {
 
   private static Display getDisplay() {
-    Display display = Display.getCurrent();
+    var display = Display.getCurrent();
     if (display == null) {
       display = Display.getDefault();
     }
@@ -44,11 +41,11 @@ public class BindProjectsCommand extends AbstractHandler {
   @Nullable
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    Collection<ISonarLintProject> selectedProjects = SelectionUtils.allSelectedProjects(event, false);
+    var selectedProjects = SelectionUtils.allSelectedProjects(event, false);
 
     if (!selectedProjects.isEmpty()) {
-      final Display display = getDisplay();
-      final WizardDialog dialog = ProjectBindingWizard.createDialog(display.getActiveShell(), selectedProjects);
+      final var display = getDisplay();
+      final var dialog = ProjectBindingWizard.createDialog(display.getActiveShell(), selectedProjects);
       BusyIndicator.showWhile(display, dialog::open);
     }
 

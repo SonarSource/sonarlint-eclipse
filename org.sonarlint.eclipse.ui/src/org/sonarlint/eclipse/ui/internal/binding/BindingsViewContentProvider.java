@@ -37,11 +37,11 @@ public class BindingsViewContentProvider extends BaseContentProvider implements 
   @Override
   public Object[] getChildren(Object element) {
     if (element instanceof IConnectedEngineFacade) {
-      ConnectedEngineFacade server = (ConnectedEngineFacade) element;
+      var server = (ConnectedEngineFacade) element;
       return server.getBoundRemoteProjects(new NullProgressMonitor()).toArray();
     }
     if (element instanceof RemoteSonarProject) {
-      RemoteSonarProject project = (RemoteSonarProject) element;
+      var project = (RemoteSonarProject) element;
       return ((ConnectedEngineFacade) getParent(element)).getBoundProjects(project.getProjectKey()).toArray();
     }
     return new Object[0];
@@ -67,7 +67,7 @@ public class BindingsViewContentProvider extends BaseContentProvider implements 
       return !((IConnectedEngineFacade) element).getBoundProjects().isEmpty();
     }
     if (element instanceof RemoteSonarProject) {
-      RemoteSonarProject project = (RemoteSonarProject) element;
+      var project = (RemoteSonarProject) element;
       return !((ConnectedEngineFacade) getParent(element)).getBoundProjects(project.getProjectKey()).isEmpty();
     }
     return false;

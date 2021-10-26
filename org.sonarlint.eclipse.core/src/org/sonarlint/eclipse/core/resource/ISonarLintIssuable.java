@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.resource;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IPath;
 
 /**
  * Common interface for all SonarLint objects that can have issues (=marker)
@@ -51,14 +50,14 @@ public interface ISonarLintIssuable {
    * Resource container that will be displayed in marker properties.
    */
   default String getResourceContainerForMarker() {
-    IPath path = getResource().getFullPath();
+    var path = getResource().getFullPath();
     // n is the number of segments in container, not path
-    int n = path.segmentCount() - 1;
+    var n = path.segmentCount() - 1;
     if (n <= 0) {
       return "";
     }
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < n; ++i) {
+    var sb = new StringBuilder();
+    for (var i = 0; i < n; ++i) {
       if (i != 0) {
         sb.append('/');
       }

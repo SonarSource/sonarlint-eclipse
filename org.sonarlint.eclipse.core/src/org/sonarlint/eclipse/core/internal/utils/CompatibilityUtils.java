@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.utils;
 
 import org.eclipse.core.runtime.Platform;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 
 public class CompatibilityUtils {
@@ -35,12 +34,12 @@ public class CompatibilityUtils {
   }
 
   private static Version platformVersion() {
-    Bundle platform = Platform.getBundle("org.eclipse.platform");
+    var platform = Platform.getBundle("org.eclipse.platform");
     return platform != null ? platform.getVersion() : Version.emptyVersion;
   }
 
   public static boolean supportMarkerResolutionRelevance() {
-    Bundle eclipseUiIde = Platform.getBundle("org.eclipse.ui.ide");
+    var eclipseUiIde = Platform.getBundle("org.eclipse.ui.ide");
     return eclipseUiIde != null && eclipseUiIde.getVersion().compareTo(Version.parseVersion("3.14")) >= 0;
   }
 

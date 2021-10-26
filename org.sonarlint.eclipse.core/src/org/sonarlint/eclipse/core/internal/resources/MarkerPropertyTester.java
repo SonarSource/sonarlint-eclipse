@@ -33,12 +33,12 @@ public class MarkerPropertyTester extends PropertyTester {
    */
   @Override
   public boolean test(Object receiver, String property, Object[] args, @Nullable Object expectedValue) {
-    IMarker marker = Adapters.adapt(receiver, IMarker.class);
+    var marker = Adapters.adapt(receiver, IMarker.class);
     if (marker == null) {
       return false;
     }
 
-    ISonarLintFile sonarLintFile = Adapters.adapt(marker.getResource(), ISonarLintFile.class);
+    var sonarLintFile = Adapters.adapt(marker.getResource(), ISonarLintFile.class);
     if (sonarLintFile == null) {
       return false;
     }

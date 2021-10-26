@@ -21,9 +21,7 @@ package org.sonarlint.eclipse.its.reddeer.preferences;
 
 import java.util.List;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyPage;
-import org.eclipse.reddeer.swt.api.Shell;
 import org.eclipse.reddeer.swt.api.Spinner;
-import org.eclipse.reddeer.swt.api.Text;
 import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.swt.impl.button.OkButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
@@ -42,9 +40,9 @@ public class RuleConfigurationPreferences extends PropertyPage {
   public void add(String exclusion) {
     new PushButton(referencedComposite, "New...").click();
 
-    Shell shell = new DefaultShell("Create Exclusion");
+    var shell = new DefaultShell("Create Exclusion");
 
-    Text text = new DefaultText(shell);
+    var text = new DefaultText(shell);
     text.setText(exclusion);
 
     new OkButton(shell).click();

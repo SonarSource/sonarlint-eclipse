@@ -27,13 +27,13 @@ public class BuildWrapperJsonFactory {
   private static final String COMPILER = "clang";
 
   public String create(Collection<ConfiguredFile> files, String baseDirPath) {
-    StringBuilder builder = new StringBuilder();
+    var builder = new StringBuilder();
     builder.append("{"
       + "\"version\":0,"
       + "\"captures\":[");
 
-    boolean first = true;
-    for (ConfiguredFile file : files) {
+    var first = true;
+    for (var file : files) {
       if (first) {
         first = false;
       } else {
@@ -47,8 +47,8 @@ public class BuildWrapperJsonFactory {
   }
 
   private static void writeFile(StringBuilder builder, String baseDirPath, String filePath, String[] includes, Map<String, String> symbols) {
-    String probeStdout = probeStdout(symbols);
-    String probeStderr = probeStderr(includes);
+    var probeStdout = probeStdout(symbols);
+    var probeStderr = probeStderr(includes);
     writeCompilerProbe(builder, filePath, probeStdout, probeStderr);
     builder.append(",");
     writeCompilerProbe(builder, filePath, probeStdout, probeStderr);
@@ -65,8 +65,8 @@ public class BuildWrapperJsonFactory {
   }
 
   private static String probeStderr(String[] includes) {
-    StringBuilder builder = new StringBuilder("#include <...> search starts here:\n");
-    for (String include : includes) {
+    var builder = new StringBuilder("#include <...> search starts here:\n");
+    for (var include : includes) {
       builder.append(" ").append(include).append("\n");
     }
     builder.append("End of search list.\n");
@@ -74,8 +74,8 @@ public class BuildWrapperJsonFactory {
   }
 
   private static String probeStdout(Map<String, String> symbols) {
-    StringBuilder builder = new StringBuilder();
-    for (Map.Entry<String, String> symbol : symbols.entrySet()) {
+    var builder = new StringBuilder();
+    for (var symbol : symbols.entrySet()) {
       builder.append("#define " + symbol.getKey() + " " + symbol.getValue()).append("\n");
     }
     return builder.toString();
@@ -98,8 +98,8 @@ public class BuildWrapperJsonFactory {
 
     char c;
     int i;
-    int len = string.length();
-    StringBuilder sb = new StringBuilder(len + 4);
+    var len = string.length();
+    var sb = new StringBuilder(len + 4);
     String t;
 
     sb.append('"');

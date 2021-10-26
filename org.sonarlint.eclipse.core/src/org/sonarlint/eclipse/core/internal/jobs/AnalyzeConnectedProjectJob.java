@@ -86,7 +86,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
   @Override
   protected Collection<Trackable> trackFileIssues(ISonarLintFile file, List<Trackable> trackables, IssueTracker issueTracker, TriggerType triggerType, int totalTrackedFiles,
     IProgressMonitor monitor) {
-    Collection<Trackable> tracked = super.trackFileIssues(file, trackables, issueTracker, triggerType, totalTrackedFiles, monitor);
+    var tracked = super.trackFileIssues(file, trackables, issueTracker, triggerType, totalTrackedFiles, monitor);
     if (!tracked.isEmpty()) {
       tracked = trackServerIssuesSync(engineFacade, file, tracked, triggerType.shouldUpdateFileIssuesSync(totalTrackedFiles), monitor);
     }

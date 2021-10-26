@@ -27,7 +27,6 @@ import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProviderChangedEvent;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
@@ -38,10 +37,10 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
   @Override
   public void decorate(Object element, IDecoration decoration) {
-    ISonarLintProject project = Adapters.adapt(element, ISonarLintProject.class);
+    var project = Adapters.adapt(element, ISonarLintProject.class);
     if (project != null && project.isOpen()) {
-      SonarLintProjectConfiguration p = SonarLintCorePlugin.loadConfig(project);
-      if (!p.isAutoEnabled()) {
+      var config = SonarLintCorePlugin.loadConfig(project);
+      if (!config.isAutoEnabled()) {
         return;
       }
       SonarLintCorePlugin.getServersManager().resolveBinding(project)
@@ -56,8 +55,8 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
   @Override
   public void dispose() {
-    Object[] listeners = fListeners.getListeners();
-    for (int i = 0; i < listeners.length; i++) {
+    var listeners = fListeners.getListeners();
+    for (var i = 0; i < listeners.length; i++) {
       fListeners.remove(listeners[i]);
     }
   }
@@ -78,9 +77,9 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
   public void fireChange(Collection<ISonarLintProject> elements) {
     if (fListeners != null && !fListeners.isEmpty()) {
-      LabelProviderChangedEvent event = new LabelProviderChangedEvent(this, elements.stream().map(ISonarLintProject::getObjectToNotify).toArray());
-      Object[] listeners = fListeners.getListeners();
-      for (int i = 0; i < listeners.length; i++) {
+      var event = new LabelProviderChangedEvent(this, elements.stream().map(ISonarLintProject::getObjectToNotify).toArray());
+      var listeners = fListeners.getListeners();
+      for (var i = 0; i < listeners.length; i++) {
         ((ILabelProviderListener) listeners[i]).labelProviderChanged(event);
       }
     }
