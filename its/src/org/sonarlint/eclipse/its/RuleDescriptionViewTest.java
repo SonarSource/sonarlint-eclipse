@@ -28,14 +28,11 @@ import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.junit.Assume.assumeTrue;
 
 public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
   @Test
   public void openRuleDescription() {
-    assumeTrue(isPhotonOrGreater());
-
     new JavaPerspective().open();
     var ruleDescriptionView = new RuleDescriptionView();
     ruleDescriptionView.open();

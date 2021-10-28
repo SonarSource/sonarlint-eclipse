@@ -26,7 +26,6 @@ import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
 
 public final class SonarLintImages {
 
@@ -123,23 +122,13 @@ public final class SonarLintImages {
 
     @Override
     protected void drawCompositeImage(int width, int height) {
-      if (CompatibilityUtils.supportDifferentIconsForZoomLevels()) {
-        var severityDataProvider = createCachedImageDataProvider(severity);
-        if (type != null) {
-          var typeDataProvider = createCachedImageDataProvider(type);
-          drawImage(typeDataProvider, 0, 0);
-          drawImage(severityDataProvider, 16, 0);
-        } else {
-          drawImage(severityDataProvider, 0, 0);
-        }
+      var severityDataProvider = createCachedImageDataProvider(severity);
+      if (type != null) {
+        var typeDataProvider = createCachedImageDataProvider(type);
+        drawImage(typeDataProvider, 0, 0);
+        drawImage(severityDataProvider, 16, 0);
       } else {
-        // Keep using deprecated methods for backward compatibility
-        if (type != null) {
-          drawImage(type.getImageData(), 0, 0);
-          drawImage(severity.getImageData(), 16, 0);
-        } else {
-          drawImage(severity.getImageData(), 0, 0);
-        }
+        drawImage(severityDataProvider, 0, 0);
       }
     }
 

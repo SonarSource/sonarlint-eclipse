@@ -32,7 +32,6 @@ import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.junit.Assume.assumeTrue;
 
 public class RulesConfigurationTest extends AbstractSonarLintTest {
 
@@ -111,8 +110,6 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
   @Test
   public void open_rules_configuration() {
-    assumeTrue(isMarsOrGreater());
-
     var ruleConfigurationPreferences = openRuleConfigurationPreferences();
 
     assertThat(ruleConfigurationPreferences.getItems()).hasSize(6 /* HTML, Java, JavaScript, PHP, Python, Secrets - no TypeScript */);
