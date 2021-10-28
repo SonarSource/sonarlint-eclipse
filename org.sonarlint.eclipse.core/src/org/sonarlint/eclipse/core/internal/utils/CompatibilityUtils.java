@@ -28,16 +28,6 @@ public class CompatibilityUtils {
     // utility class, forbidden constructor
   }
 
-  // SLE-516
-  public static boolean supportDifferentIconsForZoomLevels() {
-    return platformVersion().compareTo(Version.parseVersion("4.7")) >= 0;
-  }
-
-  private static Version platformVersion() {
-    var platform = Platform.getBundle("org.eclipse.platform");
-    return platform != null ? platform.getVersion() : Version.emptyVersion;
-  }
-
   public static boolean supportMarkerResolutionRelevance() {
     var eclipseUiIde = Platform.getBundle("org.eclipse.ui.ide");
     return eclipseUiIde != null && eclipseUiIde.getVersion().compareTo(Version.parseVersion("3.14")) >= 0;

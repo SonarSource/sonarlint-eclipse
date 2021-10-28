@@ -74,7 +74,6 @@ import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.junit.Assume.assumeTrue;
 
 public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
@@ -155,7 +154,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseJavaJunit() {
-    assumeTrue(supportJunit());
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/java-junit", "java-junit");
 
@@ -197,7 +195,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseJava8() {
-    assumeTrue(supportJava8());
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/java8", "java8");
 

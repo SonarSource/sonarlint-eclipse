@@ -20,7 +20,7 @@
 package org.sonarlint.eclipse.core.internal.quickfixes;
 
 import org.eclipse.core.resources.IMarker;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.eclipse.core.runtime.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class MarkerTextEdit {

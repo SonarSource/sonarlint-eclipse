@@ -195,36 +195,6 @@ public abstract class AbstractSonarLintTest {
     resource.select();
   }
 
-  /**
-   * JavaSE-1.8 was added in Kepler SR2 / Luna
-   */
-  protected boolean supportJava8() {
-    return platformVersion().compareTo(new Version("4.4")) >= 0;
-  }
-
-  /**
-   * JUnit was shipped in ???
-   */
-  protected boolean supportJunit() {
-    return platformVersion().compareTo(new Version("4.4")) >= 0;
-  }
-
-  public static boolean isPhotonOrGreater() {
-    return platformVersion().compareTo(new Version("4.8")) >= 0;
-  }
-
-  public static boolean isOxygenOrGreater() {
-    return platformVersion().compareTo(new Version("4.7")) >= 0;
-  }
-
-  public static boolean isMarsOrGreater() {
-    return platformVersion().compareTo(new Version("4.5")) >= 0;
-  }
-
-  public static boolean isNeonOrGreater() {
-    return platformVersion().compareTo(new Version("4.6")) >= 0;
-  }
-
   public static boolean is2020_12OrGreater() {
     return platformVersion().compareTo(new Version("4.18")) >= 0;
   }

@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.eclipse.core.runtime.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 

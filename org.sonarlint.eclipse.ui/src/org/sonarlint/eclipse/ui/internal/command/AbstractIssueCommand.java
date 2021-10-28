@@ -24,11 +24,11 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 
 /**
  * A handler for a command on an issue
