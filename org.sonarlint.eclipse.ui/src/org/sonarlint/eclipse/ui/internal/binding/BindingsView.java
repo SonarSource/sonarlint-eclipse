@@ -84,7 +84,7 @@ public class BindingsView extends CommonNavigator {
     noServersPage = createDefaultPage(toolkit);
     book.showPage(mainPage);
 
-    var contextSupport = (IContextService) getSite().getService(IContextService.class);
+    var contextSupport = getSite().getService(IContextService.class);
     contextSupport.activateContext(SERVERS_VIEW_CONTEXT);
     deferInitialization();
   }
@@ -182,21 +182,25 @@ public class BindingsView extends CommonNavigator {
         tableViewer = getCommonViewer();
         getSite().setSelectionProvider(tableViewer);
 
-        try {
-          if (tableViewer.getTree().getItemCount() > 0) {
-            var obj = tableViewer.getTree().getItem(0).getData();
-            tableViewer.setSelection(new StructuredSelection(obj));
-          } else {
-            toggleDefaultPage();
-          }
-        } catch (Exception e1) {
-          throw new IllegalStateException("Unable to update servers", e1);
-        }
+        tryLoadInitialServers();
       } catch (Exception e2) {
         // ignore - view has already been closed
       }
     });
 
+  }
+
+  private void tryLoadInitialServers() {
+    try {
+      if (tableViewer.getTree().getItemCount() > 0) {
+        var obj = tableViewer.getTree().getItem(0).getData();
+        tableViewer.setSelection(new StructuredSelection(obj));
+      } else {
+        toggleDefaultPage();
+      }
+    } catch (Exception e1) {
+      throw new IllegalStateException("Unable to update servers", e1);
+    }
   }
 
   protected void refreshConnectionContent(final IConnectedEngineFacade server) {

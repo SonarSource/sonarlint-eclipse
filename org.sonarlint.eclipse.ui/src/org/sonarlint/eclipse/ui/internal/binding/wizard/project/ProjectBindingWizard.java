@@ -174,10 +174,15 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
 
   @Override
   public boolean performFinish() {
-    var serverId = model.getServer().getId();
-    getDialogSettings().put(STORE_LAST_SELECTED_SERVER_ID, serverId);
-    ProjectBindingProcess.scheduleProjectBinding(serverId, model.getEclipseProjects(), model.getRemoteProjectKey());
-    return true;
+    var server = model.getServer();
+    if (server == null) {
+      return false;
+    } else {
+      var serverId = server.getId();
+      getDialogSettings().put(STORE_LAST_SELECTED_SERVER_ID, serverId);
+      ProjectBindingProcess.scheduleProjectBinding(serverId, model.getEclipseProjects(), model.getRemoteProjectKey());
+      return true;
+    }
   }
 
   @Override
@@ -203,6 +208,10 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
 
   private void tryAutoBind() {
     var index = model.getProjectIndex();
+    if (index == null) {
+      // Give up, inconsistent model state
+      return;
+    }
     ServerProject bestCandidate = null;
     for (var project : model.getEclipseProjects()) {
       var results = index.search(project.getName());
@@ -227,6 +236,10 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   }
 
   private boolean waitForServerUpdate(WizardPage currentPage) {
+    var server = model.getServer();
+    if (server == null) {
+      return false;
+    }
     currentPage.setMessage(null);
     try {
       getContainer().run(true, true, new IRunnableWithProgress() {
@@ -235,7 +248,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
           monitor.beginTask("Waiting for background server storage update task to complete", IProgressMonitor.UNKNOWN);
           try {
-            while (model.getServer().getStorageState() == State.UPDATING) {
+            while (server.getStorageState() == State.UPDATING) {
               if (monitor.isCanceled()) {
                 throw new InterruptedException("Cancelled");
               }
@@ -257,6 +270,10 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   }
 
   private boolean tryUpdateServerStorage(WizardPage currentPage) {
+    var server = model.getServer();
+    if (server == null) {
+      return false;
+    }
     currentPage.setMessage(null);
     try {
       getContainer().run(true, true, new IRunnableWithProgress() {
@@ -265,7 +282,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
           monitor.beginTask("Update SonarLint storage for the server", IProgressMonitor.UNKNOWN);
           try {
-            model.getServer().updateStorage(monitor);
+            server.updateStorage(monitor);
           } finally {
             monitor.done();
           }
@@ -283,6 +300,10 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   }
 
   private boolean tryLoadProjectList(WizardPage currentPage, boolean fetchProjectList) {
+    var server = model.getServer();
+    if (server == null) {
+      return false;
+    }
     currentPage.setMessage(null);
     try {
       getContainer().run(true, true, new IRunnableWithProgress() {
@@ -291,9 +312,9 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
           try {
             if (fetchProjectList) {
-              model.getServer().updateProjectList(monitor);
+              server.updateProjectList(monitor);
             }
-            model.setProjectIndex(model.getServer().computeProjectIndex());
+            model.setProjectIndex(server.computeProjectIndex());
           } finally {
             monitor.done();
           }

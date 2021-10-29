@@ -38,10 +38,11 @@ public class ProjectSelectionDialog {
       .stream()
       .sorted(Comparator.comparing(ISonarLintProject::getName))
       .collect(Collectors.toList());
-    var dialog = new ElementListSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), new SonarLintProjectLabelProvider());
+    var dialog = new ElementListSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+      new SonarLintProjectLabelProvider());
     dialog.setElements(projects.toArray());
-    dialog.setMessage(
-      "Select the project containing the file " + filePath + ".\nThis Eclipse project will be bound to the project '" + projectKey + "' using connection '" + connectionId + "'");
+    dialog.setMessage("Select the project containing the file " + filePath +
+        ".\nThis Eclipse project will be bound to the project '" + projectKey + "' using connection '" + connectionId + "'");
     dialog.setTitle("SonarLint - Project binding");
     dialog.setHelpAvailable(false);
     if (dialog.open() == Window.OK) {

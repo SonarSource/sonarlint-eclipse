@@ -56,6 +56,7 @@ public class SonarLintTelemetry {
 
   private TelemetryManager telemetry;
 
+  @Nullable
   private TelemetryJob scheduledJob;
 
   static Path getStorageFilePath() {

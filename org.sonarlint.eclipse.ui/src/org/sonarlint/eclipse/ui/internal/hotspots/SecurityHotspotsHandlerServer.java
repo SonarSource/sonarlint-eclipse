@@ -316,7 +316,9 @@ public class SecurityHotspotsHandlerServer {
 
     private static Optional<ISonarLintProject> bindProjectTo(FetchedHotspot fetchedHotspot, String projectKey) {
       var connection = fetchedHotspot.origin;
-      var pickedProject = DisplayUtils.syncExec(() -> ProjectSelectionDialog.pickProject(fetchedHotspot.hotspot.filePath, projectKey, connection.getId()));
+      var pickedProject = DisplayUtils.syncExec(
+        () -> ProjectSelectionDialog.pickProject(fetchedHotspot.hotspot.filePath, projectKey, connection.getId())
+      );
       if (pickedProject.isEmpty()) {
         return Optional.empty();
       }
