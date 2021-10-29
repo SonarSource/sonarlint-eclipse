@@ -35,6 +35,7 @@ public class DisplayUtils {
   private static class RunnableWithResult<T> implements Runnable {
 
     private final Supplier<T> supplier;
+    @Nullable
     private T result;
 
     private RunnableWithResult(Supplier<T> supplier) {
