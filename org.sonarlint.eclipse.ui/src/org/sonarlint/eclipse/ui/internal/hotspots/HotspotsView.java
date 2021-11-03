@@ -342,7 +342,7 @@ public class HotspotsView extends ViewPart {
     for (var column : hotspotViewer.getTable().getColumns()) {
       column.pack();
     }
-    splitter.layout();
+    splitter.requestLayout();
 
     openMarkerOfSelectedHotspot();
   }

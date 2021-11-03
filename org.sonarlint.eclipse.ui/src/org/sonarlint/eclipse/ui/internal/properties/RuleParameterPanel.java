@@ -71,7 +71,7 @@ public class RuleParameterPanel extends Composite {
       selectedRuleConfig.getParams().clear();
       paramInputsContainer.dispose();
       createParamInputs(sc);
-      paramInputsContainer.getShell().requestLayout();
+      paramInputsContainer.requestLayout();
       setDefaultLinkVisibility();
     });
 
