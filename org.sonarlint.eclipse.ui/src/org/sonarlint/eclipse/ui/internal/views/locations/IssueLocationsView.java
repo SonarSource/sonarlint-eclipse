@@ -426,6 +426,8 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       SonarLintUiPlugin.getSonarlintMarkerSelectionService().flowLocationSelected(((FlowLocationNode) selectedNode).getLocation());
     } else if (selectedNode instanceof LocationFileGroupNode) {
       SonarLintUiPlugin.getSonarlintMarkerSelectionService().flowLocationSelected(((LocationFileGroupNode) selectedNode).getChildren().get(0).getLocation());
+    } else if (selectedNode instanceof String) {
+      // No secondary locations: nothing to react upon
     } else {
       throw new IllegalStateException("Unsupported node type");
     }
