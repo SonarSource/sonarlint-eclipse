@@ -214,7 +214,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
 
     updateButtons();
     Dialog.applyDialogFont(parent);
-    innerParent.layout();
+    innerParent.requestLayout();
 
     return parent;
   }

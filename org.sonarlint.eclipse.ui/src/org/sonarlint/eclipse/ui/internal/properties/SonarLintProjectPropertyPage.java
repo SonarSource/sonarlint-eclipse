@@ -144,7 +144,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     } else {
       addServerLink.setVisible(false);
     }
-    container.layout(true, true);
+    container.requestLayout();
   }
 
   private static String serverName(final String serverId) {
