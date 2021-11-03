@@ -47,6 +47,25 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
   }
 
   @Test
+  public void shouldShowIssueWithSingleLocation() {
+    openAndAnalyzeFile("SimpleIssue.java");
+
+    var issueTitle = "Complete the task associated to this TODO comment.";
+    assertThat(onTheFlyView.getIssues())
+      .extracting(SonarLintIssue::getDescription)
+      .containsOnly(issueTitle);
+    onTheFlyView.getItems().get(0).select();
+
+    var flowItems = locationsView.getTree().getItems();
+    assertThat(flowItems).hasSize(1);
+
+    var locationRoot = flowItems.get(0);
+    assertThat(locationRoot.getText()).isEqualTo("No additional locations associated with this issue");
+    locationRoot.select();
+    // SLE-479 No exception should be thrown
+  }
+
+  @Test
   public void shouldShowSingleFlow() {
     var helloEditor = openAndAnalyzeFile("SingleFlow.java");
 
