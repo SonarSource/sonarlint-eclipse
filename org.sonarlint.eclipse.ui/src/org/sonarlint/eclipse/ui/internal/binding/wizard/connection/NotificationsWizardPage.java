@@ -34,6 +34,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -44,7 +45,8 @@ public class NotificationsWizardPage extends WizardPage {
 
   private final ServerConnectionModel model;
   private Button notificationsEnabledCheckbox;
-  private Link notificationsDetails;
+  private Link notificationsLink;
+  private Text notificationsDetails;
   private Composite container;
 
   public NotificationsWizardPage(ServerConnectionModel model) {
@@ -77,9 +79,9 @@ public class NotificationsWizardPage extends WizardPage {
 
     WizardPageSupport.create(this, dataBindingContext);
 
-    notificationsDetails = new Link(container, SWT.WRAP);
-    notificationsDetails.setLayoutData(gd);
-    notificationsDetails.addSelectionListener(new SelectionAdapter() {
+    notificationsLink = new Link(container, SWT.NONE);
+    notificationsLink.setLayoutData(gd);
+    notificationsLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         try {
@@ -90,6 +92,9 @@ public class NotificationsWizardPage extends WizardPage {
       }
     });
 
+    notificationsDetails = new Text(container, SWT.WRAP);
+    notificationsLink.setLayoutData(gd);
+
     setControl(container);
   }
 
@@ -99,13 +104,13 @@ public class NotificationsWizardPage extends WizardPage {
       final var isSc = model.getConnectionType() == ConnectionType.SONARCLOUD;
       final var sqOrSc = isSc ? "SonarCloud" : "SonarQube";
       notificationsEnabledCheckbox.setText("Receive notifications from " + sqOrSc);
-      notificationsEnabledCheckbox.requestLayout();
       final var docUrl = isSc ? "https://sonarcloud.io/documentation/user-guide/sonarlint-notifications/"
         : "https://docs.sonarqube.org/latest/user-guide/sonarlint-notifications/";
-      notificationsDetails.setText("You will receive <a href=\"" + docUrl + "\">notifications</a> from " + sqOrSc + " in situations like:\n" +
+      notificationsLink.setText("You will receive <a href=\"" + docUrl + "\">notifications</a> from " + sqOrSc + " in situations like:");
+      notificationsDetails.setText(
         "  - the Quality Gate status of a bound project changes\n" +
         "  - the latest analysis of a bound project on " + sqOrSc + " raises new issues assigned to you");
-      notificationsDetails.requestLayout();
+      container.requestLayout();
     }
     super.setVisible(visible);
   }
