@@ -272,6 +272,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       }
 
       SonarLintCorePlugin.getInstance().notificationsManager().subscribeAllNeedingProjectsToNotifications(SonarLintUiPlugin.getDefault().listenerFactory());
+      SonarLintCorePlugin.getInstance().subscribeGitProjectListeners();
 
       hotspotsHandlerServer.init();
 

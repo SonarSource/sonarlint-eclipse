@@ -55,6 +55,7 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
     if ((delta.getFlags() & IResourceDelta.OPEN) != 0) {
       var project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
       if (project != null) {
+        project.registerGitListeners();
         if (project.isOpen() && SonarLintCorePlugin.loadConfig(project).isBound()) {
           projectToSubscribeToNotifications.add(project);
         } else {

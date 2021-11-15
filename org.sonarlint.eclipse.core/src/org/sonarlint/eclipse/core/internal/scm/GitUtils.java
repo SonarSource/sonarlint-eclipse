@@ -26,6 +26,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class GitUtils {
+
   public static boolean isIgnored(ISonarLintFile file) {
     var builder = new FileRepositoryBuilder();
     var fileToCheckLocation = file.getResource().getLocation();

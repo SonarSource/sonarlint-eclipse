@@ -41,6 +41,7 @@ import org.sonarlint.eclipse.core.internal.notifications.NotificationsTracker;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsTrackerRegistry;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
@@ -236,5 +237,10 @@ public class SonarLintCorePlugin extends Plugin {
 
   public static void saveConfig(ISonarLintProject project, SonarLintProjectConfiguration config) {
     getInstance().getProjectConfigManager().save(project.getScopeContext(), config);
+  }
+
+
+  public void subscribeGitProjectListeners() {
+    ProjectsProviderUtils.allProjects().forEach(ISonarLintProject::registerGitListeners);
   }
 }
