@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +29,9 @@ import java.util.Optional;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -41,15 +44,43 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.core.resource.ProjectGitState;
 
 public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
 
   private static final String UNABLE_TO_ANALYZE_CHANGED_FILES = "Unable to collect changed files";
 
   private final IProject project;
+  private ProjectGitState oldStateForProject;
 
   public DefaultSonarLintProjectAdapter(IProject project) {
     this.project = project;
+    oldStateForProject = new ProjectGitState(project);
+  }
+
+  @Override
+  public void registerGitListeners() {
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(event -> {
+      LOGGER.info(">>> " + "IResourceChangeListener" + " called with " + event);
+      Arrays.stream(ResourcesPlugin.getWorkspace().getRoot().getProjects()).forEach(project -> {
+        ProjectGitState currentStateForProject = getStateForProject(project);
+        if (!currentStateForProject.sameAs(oldStateForProject)) {
+          LOGGER.info(">>> " + "IResourceChangeListener: " +
+            "Git branch changed from: " + oldStateForProject.getCurrentBranchName()
+            + "to: " + currentStateForProject.getCurrentBranchName());
+          oldStateForProject = currentStateForProject;
+        }
+      });
+    }, IResourceChangeEvent.POST_CHANGE);
+  }
+
+  ProjectGitState getStateForProject(IProject project) {
+    ProjectGitState projectGitState = new ProjectGitState(project);
+    String branchName = getBranchName();
+    if (branchName != null){
+      projectGitState.setCurrentBranchName(branchName);
+    }
+    return projectGitState;
   }
 
   @Override

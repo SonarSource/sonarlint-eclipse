@@ -23,10 +23,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IScopeContext;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jgit.events.RepositoryEvent;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -116,6 +118,11 @@ public interface ISonarLintProject extends ISonarLintIssuable {
   }
 
   default void registerGitListeners() {
+    // empty implementation for adapters
+  }
+  
+  @Nullable
+  default String getBranchName() {
     LOGGER.info(">>> Registering Git listeners for " + this.getName());
     var resource = getResource();
     var resourcePath = resource.getLocation();
@@ -125,15 +132,12 @@ public interface ISonarLintProject extends ISonarLintIssuable {
       LOGGER.error("!!! Could not find Git dir for " + resourceFile);
     } else {
       try (var repository = builder.build()) {
-        var listeners = repository.getListenerList();
-        listeners.addIndexChangedListener(event -> logBranchName("IndexChangedListener", event));
-        listeners.addRefsChangedListener(event -> logBranchName("RefsChangedListener", event));
-        listeners.addWorkingTreeModifiedListener(event -> logBranchName("WorkingTreeModifiedListener", event));
-        listeners.addConfigChangedListener(event -> logBranchName("ConfigChangedListener", event));
+        return repository.getBranch();
       } catch (IOException e) {
         LOGGER.error("!!! Could not register Git listeners", e);
       }
     }
+    return null;
   }
 
   private static void logBranchName(String listenerName, RepositoryEvent<?> event) {
