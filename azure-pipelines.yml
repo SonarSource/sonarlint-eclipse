@@ -326,7 +326,12 @@ stages:
         name: mavenSettings
         inputs:
           secureFile: 'maven-settings.xml'
-      - template: prepare-sq-analysis-steps.yml
+      - task: SonarQubePrepare@5
+        name: prepareSqAnalysis
+        displayName: Prepare SonarQube analysis
+        inputs:
+          SonarQube: 'Next'
+          scannerMode: 'Other'
       - bash: |
           set -e
           sudo apt-get update
@@ -379,6 +384,9 @@ stages:
           mavenOptions: $(MAVEN_OPTS)
           sonarQubeRunAnalysis: true
           sqMavenPluginVersionChoice: 'latest'
+      - task: SonarQubePublish@5
+        inputs:
+          pollingTimeoutSec: '300'          
 - template: promote-stage.yml@commonTemplates
   parameters:
     stageDependencies:
