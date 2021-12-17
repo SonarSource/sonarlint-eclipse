@@ -33,7 +33,7 @@ import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.resources.IResource;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
+import org.sonarsource.sonarlint.core.commons.Language;
 
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.defaultString;
 

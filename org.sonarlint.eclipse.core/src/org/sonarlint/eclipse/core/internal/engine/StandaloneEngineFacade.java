@@ -20,11 +20,15 @@
 package org.sonarlint.eclipse.core.internal.engine;
 
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -33,16 +37,17 @@ import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
 import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
+import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneSonarLintEngine;
+import org.sonarsource.sonarlint.core.commons.Language;
 
 import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 public class StandaloneEngineFacade {
@@ -55,12 +60,13 @@ public class StandaloneEngineFacade {
       SonarLintLogger.get().info("Starting standalone SonarLint engine " + SonarLintUtils.getPluginVersion() + "...");
       var pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle().findEntries("/plugins", "*.jar", false);
       if (pluginEntriesEnum != null) {
-        var pluginEntries = Collections.list(pluginEntriesEnum);
+        var pluginJarPaths = Collections.list(pluginEntriesEnum).stream().map(StandaloneEngineFacade::toPath).filter(Objects::nonNull)
+          .collect(toList());
         SonarLintLogger.get().debug("Loading embedded analyzers...");
-        pluginEntries.stream().forEach(e -> SonarLintLogger.get().debug("  - " + e.getFile()));
+        pluginJarPaths.stream().forEach(p -> SonarLintLogger.get().debug("  - " + p));
         var nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
         var globalConfig = StandaloneGlobalConfiguration.builder()
-          .addPlugins(pluginEntries.toArray(new URL[0]))
+          .addPlugins(pluginJarPaths.stream().toArray(Path[]::new))
           .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
           .setLogOutput(new SonarLintAnalyzerLogOutput())
           .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
@@ -78,6 +84,20 @@ public class StandaloneEngineFacade {
       }
     }
     return wrappedEngine;
+  }
+
+  @Nullable
+  public static Path toPath(URL bundleEntry) {
+    try {
+      URL url = FileLocator.resolve(bundleEntry);
+      if (!url.getProtocol().equals("file")) {
+        SonarLintLogger.get().error("Unable to load plugin " + bundleEntry);
+      }
+      return Paths.get(url.toURI());
+    } catch (Exception e) {
+      SonarLintLogger.get().error("Unable to load plugin " + bundleEntry, e);
+      return null;
+    }
   }
 
   private <G> Optional<G> withEngine(Function<StandaloneSonarLintEngine, G> function) {

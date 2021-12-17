@@ -21,8 +21,8 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
-import org.sonarsource.sonarlint.core.client.api.common.QuickFix;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
+import org.sonarsource.sonarlint.core.analysis.api.Flow;
+import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
 
 public class WrappedTrackable implements Trackable {
 
@@ -65,11 +65,6 @@ public class WrappedTrackable implements Trackable {
   @Override
   public String getRuleKey() {
     return trackable.getRuleKey();
-  }
-
-  @Override
-  public String getRuleName() {
-    return trackable.getRuleName();
   }
 
   @Override

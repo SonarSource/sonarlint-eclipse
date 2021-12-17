@@ -38,7 +38,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry.EclipseTelemetryAttributesProvider;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
+import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryHttpClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;

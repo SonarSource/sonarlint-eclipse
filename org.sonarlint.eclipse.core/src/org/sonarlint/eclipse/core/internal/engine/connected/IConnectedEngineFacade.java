@@ -28,15 +28,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
+import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
-import org.sonarsource.sonarlint.core.serverapi.project.ServerProject;
 
 public interface IConnectedEngineFacade {
 
@@ -109,8 +108,6 @@ public interface IConnectedEngineFacade {
 
   void updateProjectStorage(String moduleKey, IProgressMonitor monitor);
 
-  State getStorageState();
-
   List<ISonarLintProject> getBoundProjects();
 
   List<ISonarLintProject> getBoundProjects(String projectKey);
@@ -118,10 +115,6 @@ public interface IConnectedEngineFacade {
   void notifyAllListenersStateChanged();
 
   void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsDisabled);
-
-  void checkForUpdates(IProgressMonitor progress);
-
-  boolean hasUpdates();
 
   void updateProjectList(IProgressMonitor monitor);
 

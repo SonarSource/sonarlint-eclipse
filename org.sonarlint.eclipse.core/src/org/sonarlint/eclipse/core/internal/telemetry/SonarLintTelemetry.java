@@ -41,8 +41,9 @@ import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.telemetry.InternalDebug;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClientAttributesProvider;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryHttpClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
@@ -99,7 +100,7 @@ public class SonarLintTelemetry {
       this.scheduledJob = new TelemetryJob();
       scheduledJob.schedule(TimeUnit.MINUTES.toMillis(1));
     } catch (Exception e) {
-      if (org.sonarsource.sonarlint.core.client.api.util.SonarLintUtils.isInternalDebugEnabled()) {
+      if (InternalDebug.isEnabled()) {
         SonarLintLogger.get().error("Failed during periodic telemetry job", e);
       }
     }

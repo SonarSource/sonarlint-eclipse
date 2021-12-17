@@ -59,7 +59,7 @@ import org.sonarlint.eclipse.core.listener.TaintVulnerabilitiesListener;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.common.QuickFix;
+import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssueLocation;
 
@@ -263,7 +263,6 @@ public class SonarLintMarkerUpdater {
     var existingAttributes = marker.getAttributes();
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, trackable.getRuleName());
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.SEVERITY, SonarLintGlobalConfiguration.getMarkerSeverity());
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.MESSAGE, trackable.getMessage());
@@ -339,7 +338,7 @@ public class SonarLintMarkerUpdater {
   }
 
   private static Optional<IMarker> createMarkerForTextRange(IDocument document, IResource resource, String markerId, @Nullable String message,
-    org.sonarsource.sonarlint.core.client.api.common.@Nullable TextRange textRange) {
+    org.sonarsource.sonarlint.core.analysis.api.@Nullable TextRange textRange) {
     try {
       var marker = resource.createMarker(markerId);
       if (message != null) {

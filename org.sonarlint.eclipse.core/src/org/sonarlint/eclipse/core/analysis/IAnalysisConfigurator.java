@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
+import org.sonarsource.sonarlint.core.commons.Language;
 
 /**
  * Implemented by components that configure the analysis on certain environments.

@@ -20,9 +20,9 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
+import org.sonarsource.sonarlint.core.commons.log.ClientLogOutput;
 
-public final class SonarLintAnalyzerLogOutput implements LogOutput {
+public final class SonarLintAnalyzerLogOutput implements ClientLogOutput {
 
   @Override
   public void log(String msg, Level level) {

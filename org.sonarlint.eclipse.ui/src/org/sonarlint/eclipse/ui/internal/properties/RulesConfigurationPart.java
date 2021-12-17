@@ -61,9 +61,9 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.commons.Language;
 
 // Inspired by: http://www.vogella.com/tutorials/EclipseJFaceTree/article.html
 public class RulesConfigurationPart {

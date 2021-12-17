@@ -19,8 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.engine.connected;
 
-import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,16 +30,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.Version;
@@ -48,6 +49,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
 import org.sonarlint.eclipse.core.internal.engine.SkippedPluginsNotifier;
+import org.sonarlint.eclipse.core.internal.engine.StandaloneEngineFacade;
 import org.sonarlint.eclipse.core.internal.http.PreemptiveAuthenticatorInterceptor;
 import org.sonarlint.eclipse.core.internal.http.SonarLintHttpClientOkHttpImpl;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
@@ -60,49 +62,47 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
+import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectionValidator;
 import org.sonarsource.sonarlint.core.client.api.connected.GlobalStorageStatus;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 import org.sonarsource.sonarlint.core.client.api.connected.SonarAnalyzer;
-import org.sonarsource.sonarlint.core.client.api.connected.StateListener;
-import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
+import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.commons.http.HttpClient;
+import org.sonarsource.sonarlint.core.commons.progress.ProgressMonitor;
 import org.sonarsource.sonarlint.core.notifications.ServerNotificationsRegistry;
 import org.sonarsource.sonarlint.core.serverapi.EndpointParams;
-import org.sonarsource.sonarlint.core.serverapi.HttpClient;
 import org.sonarsource.sonarlint.core.serverapi.ServerApi;
 import org.sonarsource.sonarlint.core.serverapi.ServerApiHelper;
+import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.GetSecurityHotspotRequestParams;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
 import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
-import org.sonarsource.sonarlint.core.serverapi.project.ServerProject;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toList;
 
-public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListener {
+public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
   public static final String OLD_SONARCLOUD_URL = "https://sonarqube.com";
 
-  private static final String NEED_UPDATE = "Need data update";
+  private static final String NEED_UPDATE = "Need storage update";
+  private static final String UNKNOWN = "Unknown";
   private final String id;
   private String host;
+  @Nullable
   private String organization;
   private boolean hasAuth;
   private ConnectedSonarLintEngine wrappedEngine;
   private final List<IConnectedEngineFacadeListener> facadeListeners = new ArrayList<>();
-  private GlobalStorageStatus updateStatus;
-  private boolean hasUpdates;
   private boolean notificationsDisabled;
   // Cache the project list to avoid dead lock
   private final Map<String, ServerProject> allProjectsByKey = new ConcurrentHashMap<>();
@@ -138,12 +138,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       var globalConfig = builder.build();
       try {
         this.wrappedEngine = new ConnectedSonarLintEngineImpl(globalConfig);
-        this.wrappedEngine.addStateListener(this);
-        this.updateStatus = wrappedEngine.getGlobalStorageStatus();
-        if (wrappedEngine.getState().equals(State.UPDATED)) {
-          reloadProjects(wrappedEngine);
-          SkippedPluginsNotifier.notifyForSkippedPlugins(wrappedEngine.getPluginDetails(), id);
-        }
+        reloadProjects(wrappedEngine);
+        SkippedPluginsNotifier.notifyForSkippedPlugins(wrappedEngine.getPluginDetails(), id);
       } catch (Throwable e) {
         SonarLintLogger.get().error("Unable to start connected SonarLint engine", e);
         wrappedEngine = null;
@@ -153,9 +149,9 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   }
 
   @Nullable
-  private static URL findEmbeddedPlugin(String pluginNamePattern, String logPrefix) {
+  private static Path findEmbeddedPlugin(String pluginNamePattern, String logPrefix) {
     var pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle()
-            .findEntries("/plugins", pluginNamePattern, false);
+      .findEntries("/plugins", pluginNamePattern, false);
     if (pluginEntriesEnum == null) {
       return null;
     }
@@ -164,11 +160,11 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     if (pluginUrls.size() > 1) {
       throw new IllegalStateException("Multiple plugins found");
     }
-    return pluginUrls.size() == 1 ? pluginUrls.get(0) : null;
+    return pluginUrls.size() == 1 ? StandaloneEngineFacade.toPath(pluginUrls.get(0)) : null;
   }
 
   @Nullable
-  private static URL findEmbeddedSecretsPlugin() {
+  private static Path findEmbeddedSecretsPlugin() {
     return findEmbeddedPlugin("sonar-secrets-plugin-*.jar", "Found Secrets detection plugin: ");
   }
 
@@ -197,14 +193,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   }
 
   @Override
-  public void stateChanged(State state) {
-    if (state.equals(State.UPDATED)) {
-      reloadProjects(wrappedEngine);
-    }
-    notifyAllListenersStateChanged();
-  }
-
-  @Override
   public void notifyAllListenersStateChanged() {
     for (var listener : facadeListeners) {
       listener.stateChanged(this);
@@ -226,6 +214,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     return this;
   }
 
+  @Nullable
   @Override
   public String getOrganization() {
     return organization;
@@ -247,106 +236,47 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   }
 
   @Override
-  public State getStorageState() {
-    return withEngine(ConnectedSonarLintEngine::getState).orElse(State.UNKNOWN);
-  }
-
-  @Override
-  public void checkForUpdates(IProgressMonitor progress) {
-    this.hasUpdates = false;
-    try {
-      var subMonitor = SubMonitor.convert(progress, getBoundProjects().size() + 1);
-      var globalMonitor = subMonitor.newChild(1);
-      SonarLintLogger.get().info("Check for updates from server '" + getId() + "'");
-      withEngine(engine -> engine.checkIfGlobalStorageNeedUpdate(createEndpointParams(), buildClientWithProxyAndCredentials(),
-        new WrappedProgressMonitor(globalMonitor, "Check for configuration updates on server '" + getId() + "'"))).ifPresent(checkForUpdateResult -> {
-          if (checkForUpdateResult.needUpdate()) {
-            this.hasUpdates = true;
-            checkForUpdateResult.changelog().forEach(line -> SonarLintLogger.get().info("  - " + line));
-          }
-        });
-
-      var projectKeys = getBoundProjects()
-        .stream()
-        .map(SonarLintCorePlugin::loadConfig)
-        .map(SonarLintProjectConfiguration::getProjectBinding)
-        // Useless in practice because we only have bound projects
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .map(ProjectBinding::projectKey)
-        .collect(Collectors.toSet());
-
-      for (var projectKey : projectKeys) {
-        var projectMonitor = subMonitor.newChild(1);
-        if (progress.isCanceled()) {
-          return;
-        }
-        SonarLintLogger.get().info("Check for binding data updates on '" + getId() + "' for project '" + projectKey + "'");
-        withEngine(engine -> engine.checkIfProjectStorageNeedUpdate(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKey,
-          new WrappedProgressMonitor(projectMonitor, "Checking for binding data update for project '" + projectKey + "'"))).ifPresent(projectUpdateCheckResult -> {
-            if (projectUpdateCheckResult.needUpdate()) {
-              this.hasUpdates = true;
-              SonarLintLogger.get().info("For project '" + projectKey + "':");
-              projectUpdateCheckResult.changelog().forEach(line -> SonarLintLogger.get().info("  - " + line));
-            }
-          });
-      }
-    } catch (DownloadException e) {
-      // If server is not reachable, just ignore
-      SonarLintLogger.get().debug("Unable to check for binding data updates on '" + getId() + "'", e);
-    } finally {
-      notifyAllListenersStateChanged();
-    }
-  }
-
-  @Override
-  public boolean hasUpdates() {
-    return hasUpdates;
-  }
-
-  @Override
   public String getServerVersion() {
-    if (getStorageState() != State.UPDATED) {
+    if (wrappedEngine == null) {
+      return UNKNOWN;
+    }
+    GlobalStorageStatus globalStorageStatus = wrappedEngine.getGlobalStorageStatus();
+    if (globalStorageStatus == null || globalStorageStatus.isStale()) {
       return NEED_UPDATE;
     }
-    return updateStatus.getServerVersion();
+    return globalStorageStatus.getServerVersion();
   }
 
   @Override
   public String getUpdateDate() {
-    if (getStorageState() != State.UPDATED) {
+    if (wrappedEngine == null) {
+      return UNKNOWN;
+    }
+    GlobalStorageStatus globalStorageStatus = wrappedEngine.getGlobalStorageStatus();
+    if (globalStorageStatus == null || globalStorageStatus.isStale()) {
       return NEED_UPDATE;
     }
-    return new SimpleDateFormat().format(updateStatus.getLastUpdateDate());
+    return new SimpleDateFormat().format(globalStorageStatus.getLastUpdateDate());
   }
 
   @Override
   public String getSonarLintStorageStateLabel() {
-    var state = withEngine(ConnectedSonarLintEngine::getState).orElse(State.UNKNOWN);
-    switch (state) {
-      case UNKNOWN:
-        return "Unknown";
-      case NEVER_UPDATED:
-      case NEED_UPDATE:
-        return NEED_UPDATE;
-      case UPDATED:
-        var sb = new StringBuilder();
-        if (!isSonarCloud()) {
-          sb.append("Version: ");
-          sb.append(getServerVersion());
-          sb.append(", ");
-        }
-        sb.append("Last storage update: ");
-        sb.append(getUpdateDate());
-        if (hasUpdates) {
-          sb.append(", New updates available");
-        }
-        return sb.toString();
-      case UPDATING:
-        return "Updating data...";
-      default:
-        throw new IllegalArgumentException(state.name());
+    if (wrappedEngine == null) {
+      return UNKNOWN;
     }
+    GlobalStorageStatus globalStorageStatus = wrappedEngine.getGlobalStorageStatus();
+    if (globalStorageStatus == null || globalStorageStatus.isStale()) {
+      return NEED_UPDATE;
+    }
+    var sb = new StringBuilder();
+    if (!isSonarCloud()) {
+      sb.append("Version: ");
+      sb.append(getServerVersion());
+      sb.append(", ");
+    }
+    sb.append("Last storage update: ");
+    sb.append(getUpdateDate());
+    return sb.toString();
   }
 
   @Override
@@ -392,7 +322,15 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   @Nullable
   @Override
   public RuleDetails getRuleDescription(String ruleKey, @Nullable String projectKey) {
-    return withEngine(engine -> engine.getActiveRuleDetails(ruleKey, projectKey)).orElse(null);
+    return withEngine(engine -> {
+      try {
+        return engine.getActiveRuleDetails(createEndpointParams(), buildClientWithProxyAndCredentials(), ruleKey, projectKey).get(1, TimeUnit.MINUTES);
+      } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        SonarLintLogger.get().error("Unable to get rule description for rule " + ruleKey, e);
+        return null;
+      }
+    })
+      .orElse(null);
   }
 
   public synchronized void stop() {
@@ -409,17 +347,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   @Override
   public void updateStorage(IProgressMonitor monitor) {
     doWithEngine(engine -> {
-      var updateResult = engine.update(createEndpointParams(), buildClientWithProxyAndCredentials(),
-        new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "'"));
-      var tooOld = updateResult.analyzers().stream()
-        .filter(SonarAnalyzer::sonarlintCompatible)
-        .filter(ConnectedEngineFacade::tooOld)
-        .collect(Collectors.toList());
-      if (!tooOld.isEmpty()) {
-        SonarLintLogger.get().error(buildMinimumVersionFailMessage(tooOld));
-      }
-      updateStatus = updateResult.status();
-      hasUpdates = false;
+      engine.update(createEndpointParams(), buildClientWithProxyAndCredentials(),
+        new WrappedProgressMonitor(monitor, "Update storage for connection '" + getId() + "'"));
       SkippedPluginsNotifier.notifyForSkippedPlugins(engine.getPluginDetails(), id);
     });
   }
@@ -431,13 +360,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       return version.compareTo(minimum) < 0;
     }
     return false;
-  }
-
-  private static String buildMinimumVersionFailMessage(Collection<SonarAnalyzer> failingAnalyzers) {
-    return "The following plugins do not meet the required minimum versions, please upgrade them on your SonarQube server:\n  " +
-      failingAnalyzers.stream()
-        .map(p -> p.key() + " (installed: " + p.version() + ", minimum: " + p.minimumVersion() + ")")
-        .collect(Collectors.joining("\n  "));
   }
 
   @Override
@@ -533,7 +455,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     var withProxy = buildOkHttpClientWithProxyAndCredentials(url, username, password);
     var endpointPAramsWithoutOrg = createEndpointParams(url, null);
     var serverApi = new ServerApi(endpointPAramsWithoutOrg, new SonarLintHttpClientOkHttpImpl(withProxy.build()));
-    return serverApi.organization().listUserOrganizations(new WrappedProgressMonitor(monitor, "Fetch organizations"));
+    return serverApi.organization().listUserOrganizations(new ProgressMonitor(new WrappedProgressMonitor(monitor, "Fetch organizations")));
   }
 
   public HttpClient buildClientWithProxyAndCredentials() {
@@ -614,7 +536,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       return Optional.of(remoteProjectFromStorage);
     } else {
       var serverApi = new ServerApi(createEndpointParams(), buildClientWithProxyAndCredentials());
-      var project = serverApi.project().getProject(projectKey, new WrappedProgressMonitor(monitor, "Fetch project name"));
+      monitor.subTask("Fetch project name");
+      var project = serverApi.component().getProject(projectKey);
       if (project.isPresent()) {
         allProjectsByKey.put(projectKey, project.get());
       }

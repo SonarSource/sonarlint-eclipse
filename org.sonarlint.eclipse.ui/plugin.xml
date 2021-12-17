@@ -479,11 +479,6 @@
         name="Description">
     </markerField>
     <markerField
-        class="org.sonarlint.eclipse.ui.internal.views.issues.IssueRuleNameField"
-        id="org.sonarlint.eclipse.ui.views.issues.issueRuleNameField"
-        name="Rule name">
-    </markerField>
-    <markerField
         class="org.sonarlint.eclipse.ui.internal.views.issues.IssueRuleKeyField"
         id="org.sonarlint.eclipse.ui.views.issues.issueRuleKeyField"
         name="%sonar.issues.view.rulekeyfield">
