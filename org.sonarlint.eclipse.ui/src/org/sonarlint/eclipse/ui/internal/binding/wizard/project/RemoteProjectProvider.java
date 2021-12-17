@@ -27,7 +27,7 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
-import org.sonarsource.sonarlint.core.serverapi.project.ServerProject;
+import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
 
 public class RemoteProjectProvider implements IContentProposalProvider {
 

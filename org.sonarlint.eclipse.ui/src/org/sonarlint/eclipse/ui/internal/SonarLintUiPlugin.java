@@ -54,13 +54,10 @@ import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
 import org.sonarlint.eclipse.ui.internal.hotspots.SecurityHotspotsHandlerServer;
-import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
-import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
 import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
 
@@ -166,8 +163,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     SonarLintMarkerUpdater.setTaintVulnerabilitiesListener(SonarLintUiPlugin::notifyTaintVulnerabilitiesDisplayed);
 
-    new CheckForUpdatesJob().schedule((long) 10 * 1000);
-
     startupAsync();
   }
 
@@ -258,8 +253,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     public IStatus run(IProgressMonitor monitor) {
       SonarLintLogger.get().info("Starting SonarLint for Eclipse " + SonarLintUtils.getPluginVersion());
 
-      checkServersStatus();
-
       JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
 
       if (PlatformUI.isWorkbenchRunning()) {
@@ -278,16 +271,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       return Status.OK_STATUS;
     }
 
-    private void checkServersStatus() {
-      for (final var server : SonarLintCorePlugin.getServersManager().getServers()) {
-        if (server.getStorageState() != State.UPDATED) {
-          Display.getDefault().asyncExec(() -> {
-            var popup = new ServerStorageNeedUpdatePopup(server);
-            popup.open();
-          });
-        }
-      }
-    }
   }
 
   public void startupAsync() {

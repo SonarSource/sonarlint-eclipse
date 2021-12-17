@@ -26,13 +26,13 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
-import org.sonarsource.sonarlint.core.client.api.common.SkipReason;
+import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.plugin.commons.SkipReason;
 
 import static java.util.stream.Collectors.toList;
 import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.getEnabledLanguages;
-import static org.sonarsource.sonarlint.core.client.api.common.Language.getLanguagesByPluginKey;
+import static org.sonarsource.sonarlint.core.commons.Language.getLanguagesByPluginKey;
 
 public class SkippedPluginsNotifier {
 

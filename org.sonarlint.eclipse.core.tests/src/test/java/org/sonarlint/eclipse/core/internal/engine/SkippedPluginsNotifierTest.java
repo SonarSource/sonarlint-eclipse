@@ -22,8 +22,6 @@ package org.sonarlint.eclipse.core.internal.engine;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,7 +29,7 @@ import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
-import org.sonarsource.sonarlint.core.client.api.common.SkipReason;
+import org.sonarsource.sonarlint.core.plugin.commons.SkipReason;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -62,82 +60,46 @@ public class SkippedPluginsNotifierTest {
 
   @Test
   public void dontNotifyIfNoSkippedPlugins() {
-    List<PluginDetails> plugins = List.of(new FakePluginDetails("plugin1", "Plugin 1", "1.0", null));
+    List<PluginDetails> plugins = List.of(new PluginDetails("plugin1", "Plugin 1", "1.0", null));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
     assertThat(notifications).isEmpty();
   }
 
   @Test
   public void notifyIfSkippedPlugin_IncompatiblePluginApi() {
-    List<PluginDetails> plugins = List.of(new FakePluginDetails("plugin1", "Plugin 1", "1.0", SkipReason.IncompatiblePluginApi.INSTANCE));
+    List<PluginDetails> plugins = List.of(new PluginDetails("plugin1", "Plugin 1", "1.0", SkipReason.IncompatiblePluginApi.INSTANCE));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
     assertThat(notifications).usingFieldByFieldElementComparator()
       .containsOnly(
         new Notification("Rules not available",
           "Some rules are not available until some requirements are satisfied",
-      "Some analyzers can not be loaded.\n\n"
-        + " - 'Plugin 1' is not compatible with this version of SonarLint. Ensure you are using the latest version of SonarLint and check SonarLint output for details." + System.lineSeparator()));
+          "Some analyzers can not be loaded.\n\n"
+            + " - 'Plugin 1' is not compatible with this version of SonarLint. Ensure you are using the latest version of SonarLint and check SonarLint output for details."
+            + System.lineSeparator()));
   }
 
   @Test
   public void notifyIfSkippedPlugin_UnsatisfiedDependency() {
-    List<PluginDetails> plugins = List.of(new FakePluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.UnsatisfiedDependency("java")));
+    List<PluginDetails> plugins = List.of(new PluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.UnsatisfiedDependency("java")));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, "mySq");
     assertThat(notifications).usingFieldByFieldElementComparator()
       .containsOnly(
         new Notification("Rules not available",
           "Some rules are not available until some requirements are satisfied",
-      "Some analyzers from connection 'mySq' can not be loaded.\n\n"
-        + " - 'Plugin 1' is missing dependency 'java'" + System.lineSeparator()));
+          "Some analyzers from connection 'mySq' can not be loaded.\n\n"
+            + " - 'Plugin 1' is missing dependency 'java'" + System.lineSeparator()));
   }
 
   @Test
   public void notifyIfSkippedPlugin_IncompatiblePluginVersion() {
-    List<PluginDetails> plugins = List.of(new FakePluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.IncompatiblePluginVersion("2.0")));
+    List<PluginDetails> plugins = List.of(new PluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.IncompatiblePluginVersion("2.0")));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, "mySq");
     assertThat(notifications).usingFieldByFieldElementComparator()
       .containsOnly(
         new Notification("Rules not available",
           "Some rules are not available until some requirements are satisfied",
-      "Some analyzers from connection 'mySq' can not be loaded.\n\n"
-        + " - 'Plugin 1' is too old for SonarLint. Current version is 1.0. Minimal supported version is 2.0. Please update your binding." + System.lineSeparator()));
-  }
-
-  private static class FakePluginDetails implements PluginDetails {
-
-    private final String key;
-    private final String name;
-    private final String version;
-    private @Nullable
-    final SkipReason skipReason;
-
-    public FakePluginDetails(String key, String name, String version, @Nullable SkipReason skipReason) {
-      this.key = key;
-      this.name = name;
-      this.version = version;
-      this.skipReason = skipReason;
-    }
-
-    @Override
-    public String key() {
-      return key;
-    }
-
-    @Override
-    public String name() {
-      return name;
-    }
-
-    @Override
-    public String version() {
-      return version;
-    }
-
-    @Override
-    public Optional<SkipReason> skipReason() {
-      return Optional.ofNullable(skipReason);
-    }
-
+          "Some analyzers from connection 'mySq' can not be loaded.\n\n"
+            + " - 'Plugin 1' is too old for SonarLint. Current version is 1.0. Minimal supported version is 2.0. Please update your binding." + System.lineSeparator()));
   }
 
 }

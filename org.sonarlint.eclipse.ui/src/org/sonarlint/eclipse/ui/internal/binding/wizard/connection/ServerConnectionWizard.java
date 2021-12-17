@@ -57,7 +57,7 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
-import org.sonarsource.sonarlint.core.client.api.exceptions.UnsupportedServerException;
+import org.sonarsource.sonarlint.core.serverapi.exception.UnsupportedServerException;
 
 public class ServerConnectionWizard extends Wizard implements INewWizard, IPageChangingListener {
 

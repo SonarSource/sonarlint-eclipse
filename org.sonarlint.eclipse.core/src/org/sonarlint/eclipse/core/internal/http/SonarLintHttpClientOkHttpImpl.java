@@ -29,7 +29,7 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import org.sonarsource.sonarlint.core.serverapi.HttpClient;
+import org.sonarsource.sonarlint.core.commons.http.HttpClient;
 
 public class SonarLintHttpClientOkHttpImpl implements HttpClient {
   private final OkHttpClient okClient;

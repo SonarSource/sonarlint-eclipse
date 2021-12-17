@@ -50,8 +50,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
-import org.sonarsource.sonarlint.core.serverapi.project.ServerProject;
+import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
@@ -189,16 +188,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   public void pageChanged(PageChangedEvent event) {
     if (event.getSelectedPage() == remoteProjectSelectionWizardPage) {
       Display.getDefault().asyncExec(() -> {
-        var success = true;
-        var fetchProjectList = false;
-        if (model.getServer().getStorageState() == State.UPDATING) {
-          success = waitForServerUpdate(remoteProjectSelectionWizardPage);
-        } else if (model.getServer().getStorageState() != State.UPDATED) {
-          success = tryUpdateServerStorage(remoteProjectSelectionWizardPage);
-        } else {
-          fetchProjectList = true;
-        }
-        success = tryLoadProjectList(remoteProjectSelectionWizardPage, fetchProjectList);
+        var success = tryLoadProjectList(remoteProjectSelectionWizardPage, true);
         if (success && isEmpty(model.getRemoteProjectKey())) {
           tryAutoBind();
         }
@@ -233,70 +223,6 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
       model.setRemoteProjectKey(bestCandidate.getKey());
     }
 
-  }
-
-  private boolean waitForServerUpdate(WizardPage currentPage) {
-    var server = model.getServer();
-    if (server == null) {
-      return false;
-    }
-    currentPage.setMessage(null);
-    try {
-      getContainer().run(true, true, new IRunnableWithProgress() {
-
-        @Override
-        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-          monitor.beginTask("Waiting for background server storage update task to complete", IProgressMonitor.UNKNOWN);
-          try {
-            while (server.getStorageState() == State.UPDATING) {
-              if (monitor.isCanceled()) {
-                throw new InterruptedException("Cancelled");
-              }
-              Thread.sleep(500);
-            }
-          } finally {
-            monitor.done();
-          }
-        }
-      });
-    } catch (InvocationTargetException e) {
-      SonarLintLogger.get().debug("Error wating for server storage update to complete", e.getCause());
-      currentPage.setMessage(e.getCause().getMessage(), IMessageProvider.ERROR);
-      return false;
-    } catch (InterruptedException e) {
-      return false;
-    }
-    return true;
-  }
-
-  private boolean tryUpdateServerStorage(WizardPage currentPage) {
-    var server = model.getServer();
-    if (server == null) {
-      return false;
-    }
-    currentPage.setMessage(null);
-    try {
-      getContainer().run(true, true, new IRunnableWithProgress() {
-
-        @Override
-        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-          monitor.beginTask("Update SonarLint storage for the server", IProgressMonitor.UNKNOWN);
-          try {
-            server.updateStorage(monitor);
-          } finally {
-            monitor.done();
-          }
-        }
-      });
-    } catch (InvocationTargetException e) {
-      SonarLintLogger.get().debug("Unable to update the storage for the server", e.getCause());
-      currentPage.setMessage(e.getCause().getMessage(), IMessageProvider.ERROR);
-      return false;
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      return false;
-    }
-    return true;
   }
 
   private boolean tryLoadProjectList(WizardPage currentPage, boolean fetchProjectList) {

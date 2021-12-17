@@ -34,8 +34,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
+import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
+import org.sonarsource.sonarlint.core.commons.Language;
 
 /**
  * Two situations:
@@ -50,7 +50,7 @@ class EclipseInputFile implements ClientInputFile {
   private final IDocument editorDocument;
   private final Path tempDirectory;
   private Path filePath;
-  private long documentModificationStamp;
+  private final long documentModificationStamp;
 
   EclipseInputFile(boolean isTestFile, ISonarLintFile file, Path tempDirectory, @Nullable IDocument editorDocument, @Nullable Language language) {
     this.isTestFile = isTestFile;

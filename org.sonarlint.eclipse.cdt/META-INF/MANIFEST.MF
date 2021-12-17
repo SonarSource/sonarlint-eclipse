@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.filebuffers,
  org.eclipse.cdt.core;resolution:=optional,
  org.sonarlint.eclipse.core,
- org.sonarsource.sonarlint.core.sonarlint-core,
+ org.sonarsource.sonarlint.core.sonarlint-core-osgi,
  org.eclipse.core.filesystem,
  org.eclipse.jdt.annotation;resolution:=optional
 Export-Package: org.sonarlint.eclipse.cdt.internal;x-friends:="org.sonarlint.eclipse.core.tests"

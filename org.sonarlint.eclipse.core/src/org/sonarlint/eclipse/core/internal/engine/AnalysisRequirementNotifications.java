@@ -25,9 +25,9 @@ import java.util.Objects;
 import java.util.Set;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
+import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
-import org.sonarsource.sonarlint.core.client.api.common.SkipReason;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
+import org.sonarsource.sonarlint.core.plugin.commons.SkipReason;
 
 import static java.util.stream.Collectors.toSet;
 

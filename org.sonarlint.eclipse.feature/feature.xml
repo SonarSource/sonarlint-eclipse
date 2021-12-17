@@ -39,7 +39,7 @@
       <import plugin="org.eclipse.ui.navigator"/>
       <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.ui.forms"/>
-      <import plugin="org.sonarsource.sonarlint.core.sonarlint-core" version="5.0.0" match="greaterOrEqual"/>
+      <import plugin="org.sonarsource.sonarlint.core.sonarlint-core-osgi" version="7.1.0" match="greaterOrEqual"/>
       <import plugin="minimal-json" version="0.9.5" match="greaterOrEqual"/>
    </requires>
 
@@ -48,7 +48,7 @@
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
+         unpack="true"/>
 
    <plugin
          id="org.sonarlint.eclipse.ui"
@@ -58,7 +58,7 @@
          unpack="false"/>
 
    <plugin
-         id="org.sonarsource.sonarlint.core.sonarlint-core"
+         id="org.sonarsource.sonarlint.core.sonarlint-core-osgi"
          download-size="0"
          install-size="0"
          version="0.0.0"

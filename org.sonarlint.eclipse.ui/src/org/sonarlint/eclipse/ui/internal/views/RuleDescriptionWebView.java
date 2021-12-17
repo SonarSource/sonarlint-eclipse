@@ -42,7 +42,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.exceptions.SonarLintException;
+import org.sonarsource.sonarlint.core.commons.SonarLintException;
 
 /**
  * Display details of a rule in a web browser
@@ -160,7 +160,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
         ruleDetails = resolvedBinding.getEngineFacade().getRuleDescription(ruleKey, resolvedBinding.getProjectBinding().projectKey());
         browser.updateRule(ruleDetails);
       } catch (SonarLintException e) {
-        SonarLintLogger.get().error("Unable to display rule descrioption", e);
+        SonarLintLogger.get().error("Unable to display rule description", e);
       }
     } else {
       ruleDetails = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getRuleDescription(ruleKey);

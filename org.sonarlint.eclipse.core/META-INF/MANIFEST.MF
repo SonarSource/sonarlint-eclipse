@@ -40,7 +40,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.filesystem,
  org.eclipse.team.core,
  org.eclipse.jdt.annotation;resolution:=optional,
- org.sonarsource.sonarlint.core.sonarlint-core;bundle-version="5.1.0",
+ org.sonarsource.sonarlint.core.sonarlint-core-osgi;bundle-version="7.1.0",
  minimal-json;bundle-version="0.9.5",
  org.eclipse.jgit;resolution:=optional
 Bundle-ActivationPolicy: lazy

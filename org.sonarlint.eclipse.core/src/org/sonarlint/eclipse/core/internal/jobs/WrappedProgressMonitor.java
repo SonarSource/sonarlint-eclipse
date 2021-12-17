@@ -20,9 +20,9 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
+import org.sonarsource.sonarlint.core.commons.progress.ClientProgressMonitor;
 
-public class WrappedProgressMonitor extends ProgressMonitor {
+public class WrappedProgressMonitor implements ClientProgressMonitor {
 
   private final IProgressMonitor wrapped;
   private int worked = 0;
@@ -47,6 +47,11 @@ public class WrappedProgressMonitor extends ProgressMonitor {
   @Override
   public void setMessage(String msg) {
     wrapped.subTask(msg);
+  }
+
+  @Override
+  public void setIndeterminate(boolean arg0) {
+    // Not available in Eclipse
   }
 
 }
