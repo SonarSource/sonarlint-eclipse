@@ -18,7 +18,7 @@
   <name>SonarLint for Eclipse Integration Tests</name>
 
   <properties>
-    <tycho.version>2.3.0</tycho.version>
+    <tycho.version>2.5.0</tycho.version>
     <license.title>SonarLint for Eclipse ITs</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
