@@ -136,6 +136,6 @@ At this point, and if the artifact exists at the specified path, it should be us
 
 ### License
 
-Copyright 2015-2021 SonarSource.
+Copyright 2015-2022 SonarSource.
 
 Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.gnu.org/licenses/lgpl.txt)
