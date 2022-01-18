@@ -6,7 +6,10 @@ pool:
 
 variables:
   - group: sonarsource-build-variables
-
+  - name: oldest_it_target
+    value: 'photon'
+  - name: latest_it_target
+    value: '2021-12'
 resources:
   repositories:
     - repository: commonTemplates
@@ -177,13 +180,13 @@ stages:
       displayName: Run ITs
       strategy:
         matrix:
-          Photon:
-            TARGET_PLATFORM: 'photon'
+          Oldest:
+            TARGET_PLATFORM: $(oldest_it_target)
             SQ_VERSION: 'LATEST_RELEASE[7.9]'
             imageName: 'ubuntu-18.04'
             Category: '-DexcludedGroups=SonarCloud'
-          2020_06:
-            TARGET_PLATFORM: '2020-06'
+          Latest:
+            TARGET_PLATFORM: $(latest_it_target)
             SQ_VERSION: 'SonarCloud'
             imageName: 'ubuntu-18.04'
             Category: '-Dgroups=SonarCloud'
@@ -343,12 +346,12 @@ stages:
       - task: DownloadBuildArtifacts@0
         displayName: 'Download IT Coverage report'
         inputs:
-          artifactName: ITCoverage_photon
+          artifactName: ITCoverage_$(oldest_it_target)
           downloadPath: $(Agent.BuildDirectory)
       - task: DownloadBuildArtifacts@0
         displayName: 'Download IT Coverage report'
         inputs:
-          artifactName: ITCoverage_2020-06
+          artifactName: ITCoverage_$(latest_it_target)
           downloadPath: $(Agent.BuildDirectory)
       - task: DownloadBuildArtifacts@0
         displayName: 'Download IT Coverage report'
@@ -358,8 +361,8 @@ stages:
       - bash: |
           set -e
           mkdir $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/
-          mv $(Agent.BuildDirectory)/ITCoverage_photon/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/it-coverage-photon.exec
-          mv $(Agent.BuildDirectory)/ITCoverage_2020-06/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/it-coverage-2020-06.exec
+          mv $(Agent.BuildDirectory)/ITCoverage_$(oldest_it_target)/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/it-coverage-$(oldest_it_target).exec
+          mv $(Agent.BuildDirectory)/ITCoverage_$(latest_it_target)/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/it-coverage-$(latest_it_target).exec
           mv $(Agent.BuildDirectory)/ITCoverage_milestones/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/it-coverage-milestones.exec
         displayName: 'Move IT Coverage report to test target dir'
       - task: Maven@3
