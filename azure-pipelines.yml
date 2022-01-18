@@ -189,7 +189,7 @@ stages:
             Category: '-Dgroups=SonarCloud'
           Milestone:
             TARGET_PLATFORM: 'milestones'
-            SQ_VERSION: 'DOGFOOD'
+            SQ_VERSION: 'DEV'
             imageName: 'ubuntu-18.04'
             # SonarCloud category already excluded in the pom.xml
             Category: ''
