@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -43,7 +44,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jdt.annotation.Nullable;
-import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
@@ -72,7 +72,6 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectionValidator;
 import org.sonarsource.sonarlint.core.client.api.connected.GlobalStorageStatus;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
-import org.sonarsource.sonarlint.core.client.api.connected.SonarAnalyzer;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.commons.http.HttpClient;
@@ -89,6 +88,7 @@ import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
@@ -353,15 +353,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     });
   }
 
-  private static boolean tooOld(SonarAnalyzer analyzer) {
-    if (analyzer.minimumVersion() != null && analyzer.version() != null) {
-      var minimum = Version.parseVersion(analyzer.minimumVersion());
-      var version = Version.parseVersion(analyzer.version());
-      return version.compareTo(minimum) < 0;
-    }
-    return false;
-  }
-
   @Override
   public void updateProjectList(IProgressMonitor monitor) {
     doWithEngine(engine -> {
@@ -612,5 +603,21 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   public Optional<ServerHotspot> getServerHotspot(String hotspotKey, String projectKey) {
     var serverApi = new ServerApi(createEndpointParams(), buildClientWithProxyAndCredentials());
     return serverApi.hotspot().fetch(new GetSecurityHotspotRequestParams(hotspotKey, projectKey));
+  }
+
+  @Override
+  public void sync(Set<String> projectKeysToUpdate, IProgressMonitor monitor) {
+    doWithEngine(engine -> {
+      engine.sync(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKeysToUpdate,
+        new WrappedProgressMonitor(monitor, "Synchronize projects storage for connection '" + getId() + "'"));
+    });
+  }
+
+  @Override
+  public void syncAllProjects(IProgressMonitor monitor) {
+    var projectKeysToUpdate = getBoundProjects().stream().map(p -> {
+      return SonarLintCorePlugin.loadConfig(p).getProjectBinding().get().projectKey();
+    }).collect(toSet());
+    sync(projectKeysToUpdate, monitor);
   }
 }
