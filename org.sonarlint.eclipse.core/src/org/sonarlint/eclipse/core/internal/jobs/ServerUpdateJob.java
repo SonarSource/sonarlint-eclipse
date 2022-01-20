@@ -20,8 +20,6 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
@@ -29,8 +27,9 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.commons.progress.CanceledException;
+
+import static java.util.stream.Collectors.toSet;
 
 public class ServerUpdateJob extends Job {
   private final IConnectedEngineFacade server;
@@ -54,20 +53,24 @@ public class ServerUpdateJob extends Job {
     }
     monitor.worked(1);
 
-    var seenProjectKeys = new HashSet<String>();
+    var projectKeysToUpdate = projectsToUpdate.stream().map(p -> {
+      return SonarLintCorePlugin.loadConfig(p).getProjectBinding().get().projectKey();
+    }).collect(toSet());
+
+    server.sync(projectKeysToUpdate, monitor);
+
     var failures = new ArrayList<IStatus>();
-    for (var projectToUpdate : projectsToUpdate) {
+    for (var projectKeyToUpdate : projectKeysToUpdate) {
       if (monitor.isCanceled()) {
         return Status.CANCEL_STATUS;
       }
       try {
-        updateProject(projectToUpdate, monitor, seenProjectKeys);
-
+        server.updateProjectStorage(projectKeyToUpdate, monitor);
       } catch (Exception e) {
         if (e instanceof CanceledException && monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
         }
-        failures.add(newUpdateFailedStatus(projectToUpdate, e));
+        failures.add(newUpdateFailedStatus(projectKeyToUpdate, e));
       }
       monitor.worked(1);
     }
@@ -79,18 +82,9 @@ public class ServerUpdateJob extends Job {
     return Status.OK_STATUS;
   }
 
-  private Status newUpdateFailedStatus(ISonarLintProject projectToUpdate, Exception e) {
-    var message = String.format("Unable to update binding data for project '%s'", projectToUpdate.getName());
+  private Status newUpdateFailedStatus(String projectKeyToUpdate, Exception e) {
+    var message = String.format("Unable to update binding data for project '%s'", projectKeyToUpdate);
     return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, message, e);
-  }
-
-  private void updateProject(ISonarLintProject projectToUpdate, IProgressMonitor monitor, Set<String> seenProjectKeys) {
-    var config = SonarLintCorePlugin.loadConfig(projectToUpdate);
-    config.getProjectBinding().ifPresent(b -> {
-      if (seenProjectKeys.add(b.projectKey())) {
-        server.updateProjectStorage(b.projectKey(), monitor);
-      }
-    });
   }
 
 }

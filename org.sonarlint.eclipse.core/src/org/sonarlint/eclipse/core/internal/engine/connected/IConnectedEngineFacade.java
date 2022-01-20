@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
@@ -125,4 +126,8 @@ public interface IConnectedEngineFacade {
   List<ISonarLintFile> getServerFileExclusions(ProjectBinding binding, Collection<ISonarLintFile> files, Predicate<ISonarLintFile> testFilePredicate);
 
   Optional<ServerHotspot> getServerHotspot(String hotspotKey, String projectKey);
+
+  void syncAllProjects(IProgressMonitor monitor);
+
+  void sync(Set<String> projectKeysToUpdate, IProgressMonitor monitor);
 }
