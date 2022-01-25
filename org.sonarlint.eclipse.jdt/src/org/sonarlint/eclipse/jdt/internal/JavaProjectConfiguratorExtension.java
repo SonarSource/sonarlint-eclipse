@@ -39,15 +39,25 @@ public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, 
 
   private final JdtUtils javaProjectConfigurator;
   private final boolean jdtPresent;
+  private final boolean jdtUiPresent;
 
   public JavaProjectConfiguratorExtension() {
     jdtPresent = isJdtPresent();
+    jdtUiPresent = isJdtUiPresent();
     javaProjectConfigurator = jdtPresent ? new JdtUtils() : null;
   }
 
   private static boolean isJdtPresent() {
+    return isClassPresentAtRuntime("org.eclipse.jdt.core.JavaCore");
+  }
+
+  private static boolean isJdtUiPresent() {
+    return isClassPresentAtRuntime("org.eclipse.jdt.ui.text.java.IJavaCompletionProposal");
+  }
+
+  private static boolean isClassPresentAtRuntime(String className) {
     try {
-      Class.forName("org.eclipse.jdt.core.JavaCore");
+      Class.forName(className);
       return true;
     } catch (ClassNotFoundException e) {
       return false;
@@ -91,8 +101,8 @@ public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, 
 
   @Override
   public ISonarLintMarkerResolver enhance(ISonarLintMarkerResolver resolution, IMarker marker) {
-    if (jdtPresent) {
-      return JdtUtils.enhance(resolution, marker);
+    if (jdtUiPresent) {
+      return JdtUiUtils.enhance(resolution, marker);
     }
     return resolution;
   }
