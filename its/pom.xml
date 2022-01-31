@@ -21,7 +21,7 @@
     <license.title>SonarLint for Eclipse ITs</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <target.platform>2019-06</target.platform>
+    <target.platform>latest</target.platform>
     <tycho.localArtifacts>ignore</tycho.localArtifacts>
     <!-- http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime -->
     <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext -Dsonarlint.telemetry.disabled=true</tycho.testArgLine>
@@ -206,7 +206,7 @@
       <activation>
         <property>
           <name>target.platform</name>
-          <value>milestones</value>
+          <value>ibuilds</value>
         </property>
       </activation>
       <build>
@@ -244,7 +244,7 @@
       <activation>
         <property>
           <name>target.platform</name>
-          <value>!milestones</value>
+          <value>!ibuilds</value>
         </property>
       </activation>
       <build>
