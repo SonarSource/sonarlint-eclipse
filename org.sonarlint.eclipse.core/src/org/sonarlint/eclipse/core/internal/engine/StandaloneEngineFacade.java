@@ -19,9 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal.engine;
 
+import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -89,11 +89,8 @@ public class StandaloneEngineFacade {
   @Nullable
   public static Path toPath(URL bundleEntry) {
     try {
-      URL url = FileLocator.resolve(bundleEntry);
-      if (!url.getProtocol().equals("file")) {
-        SonarLintLogger.get().error("Unable to load plugin " + bundleEntry);
-      }
-      return Paths.get(url.toURI());
+      URL localURL = FileLocator.toFileURL(bundleEntry);
+      return new File(localURL.getFile()).toPath();
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to load plugin " + bundleEntry, e);
       return null;

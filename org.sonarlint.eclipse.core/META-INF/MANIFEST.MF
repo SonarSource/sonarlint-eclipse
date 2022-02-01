@@ -9,7 +9,6 @@ Bundle-ClassPath: .,
 Bundle-Activator: org.sonarlint.eclipse.core.internal.SonarLintCorePlugin
 Bundle-Vendor: %bundle_vendor
 Bundle-Localization: OSGI-INF/l10n/bundle
-Eclipse-BundleShape: dir
 Export-Package: org.sonarlint.eclipse.core,
  org.sonarlint.eclipse.core.analysis,
  org.sonarlint.eclipse.core.configurator,
