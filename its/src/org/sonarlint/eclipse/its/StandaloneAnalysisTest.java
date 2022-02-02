@@ -45,9 +45,9 @@ import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImport
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
 import org.eclipse.reddeer.jface.condition.WindowIsAvailable;
 import org.eclipse.reddeer.swt.api.Button;
-import org.eclipse.reddeer.swt.api.MenuItem;
 import org.eclipse.reddeer.swt.condition.ShellIsAvailable;
 import org.eclipse.reddeer.swt.impl.button.FinishButton;
+import org.eclipse.reddeer.swt.impl.button.OkButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
@@ -135,12 +135,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
 
     // Trigger manual analysis of all files
-    rootProject.getTreeItem().select();
-    doAndWaitForSonarLintAnalysisJob(() -> {
-      MenuItem menuItem = new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze");
-      menuItem.select();
-      new PushButton(new DefaultShell("Confirmation"), "OK").click();
-    });
+    rootProject.select();
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    doAndWaitForSonarLintAnalysisJob(() -> new OkButton(new DefaultShell("Confirmation")).click());
 
     var reportView = new ReportView();
     var items = reportView.getItems();
@@ -248,7 +245,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       open(rootProject.getResource("src", "root", "nested", "example.py"));
 
       new WaitUntil(new ShellIsAvailable("Default Eclipse preferences for PyDev"));
-      new PushButton(new DefaultShell("Default Eclipse preferences for PyDev"), "OK").click();
+      new OkButton(new DefaultShell("Default Eclipse preferences for PyDev")).click();
     });
 
     assertThat(onTheFlyView.getIssues())

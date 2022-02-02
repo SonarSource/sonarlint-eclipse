@@ -24,7 +24,7 @@ import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.eclipse.jdt.ui.javaeditor.JavaEditor;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
-import org.eclipse.reddeer.swt.impl.button.PushButton;
+import org.eclipse.reddeer.swt.impl.button.OkButton;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
@@ -86,7 +86,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES);
     rootProject.select();
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
-    doAndWaitForSonarLintAnalysisJob(() -> new PushButton(new DefaultShell("Confirmation"), "OK").click());
+    doAndWaitForSonarLintAnalysisJob(() -> new OkButton(new DefaultShell("Confirmation")).click());
 
     assertThat(issuesView.getIssues()).isEmpty();
   }
