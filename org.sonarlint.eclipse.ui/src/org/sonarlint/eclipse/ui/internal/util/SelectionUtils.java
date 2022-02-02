@@ -112,12 +112,10 @@ public final class SelectionUtils {
   }
 
   private static void collectFiles(Set<ISonarLintFile> selectedFiles, Object elem, boolean onlyIfProjectSupportsFullAnalysis) {
-    var container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
-    if (container != null) {
-      container.projects().stream()
-        .filter(ISonarLintProject::isOpen)
-        .filter(p -> !onlyIfProjectSupportsFullAnalysis || p.supportsFullAnalysis())
-        .forEach(p -> selectedFiles.addAll(p.files()));
+    // SLE-503 Start with the more specific to the more generic
+    var file = Adapters.adapt(elem, ISonarLintFile.class);
+    if (file != null) {
+      selectedFiles.add(file);
       return;
     }
     var project = Adapters.adapt(elem, ISonarLintProject.class);
@@ -125,9 +123,12 @@ public final class SelectionUtils {
       selectedFiles.addAll(project.files());
       return;
     }
-    var file = Adapters.adapt(elem, ISonarLintFile.class);
-    if (file != null) {
-      selectedFiles.add(file);
+    var container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
+    if (container != null) {
+      container.projects().stream()
+        .filter(ISonarLintProject::isOpen)
+        .filter(p -> !onlyIfProjectSupportsFullAnalysis || p.supportsFullAnalysis())
+        .forEach(p -> selectedFiles.addAll(p.files()));
     }
   }
 
