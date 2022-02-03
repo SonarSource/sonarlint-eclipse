@@ -40,7 +40,7 @@ public class ProjectStorageUpdateJob extends Job {
   protected IStatus run(IProgressMonitor monitor) {
     try {
       var server = SonarLintCorePlugin.getServersManager().findById(connectionId);
-      server.ifPresent(s -> s.updateProjectStorage(projectKey, monitor));
+      server.ifPresent(s -> s.updateProjectStorage(projectKey, null, monitor));
       return Status.OK_STATUS;
     } catch (Exception e) {
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update SonarLint binding data for project '" + projectKey + "' on '" + connectionId + "'", e);

@@ -785,6 +785,17 @@
                  mnemonic="R">
          </command>
       </menuContribution>
+      <menuContribution
+              allPopups="false"
+              locationURI="toolbar:org.eclipse.ui.trim.status">
+          <toolbar
+              id="org.sonarlint.eclipse.ui.internal.toolbar"
+              label="SonarLint Toolbar">
+            <control
+              class="org.sonarlint.eclipse.ui.internal.toolbar.SonarLintToolbarContribution">
+            </control>
+          </toolbar>
+      </menuContribution>
   </extension>
 
   <extension point="org.eclipse.ui.commands">
@@ -1218,5 +1229,5 @@
         </viewShortcut>
     </perspectiveExtension>
   </extension>
-
+  
 </plugin>

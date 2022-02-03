@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 
@@ -59,6 +60,9 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
           projectToSubscribeToNotifications.add(project);
         } else {
           projectToUnsubscribeFromNotifications.add(project);
+        }
+        if (!project.isOpen()) {
+          VcsService.projectClosed(project);
         }
       }
       return false;

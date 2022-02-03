@@ -19,13 +19,11 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
-import org.eclipse.core.runtime.Adapters;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
-import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+
+import static org.sonarlint.eclipse.ui.internal.util.PlatformUtils.doIfSonarLintFileInEditor;
 
 public class DeleteTaintMarkersOnEditorClosed implements IPartListener2 {
   @Override
@@ -55,16 +53,7 @@ public class DeleteTaintMarkersOnEditorClosed implements IPartListener2 {
 
   @Override
   public void partClosed(IWorkbenchPartReference partRef) {
-    var part = partRef.getPart(true);
-    if (part instanceof IEditorPart) {
-      var input = ((IEditorPart) part).getEditorInput();
-      if (input instanceof IFileEditorInput) {
-        var sonarLintFile = Adapters.adapt(input, ISonarLintFile.class);
-        if (sonarLintFile != null) {
-          SonarLintMarkerUpdater.deleteTaintMarkers(sonarLintFile);
-        }
-      }
-    }
+    doIfSonarLintFileInEditor(partRef, (f, p) -> SonarLintMarkerUpdater.deleteTaintMarkers(f));
   }
 
   @Override

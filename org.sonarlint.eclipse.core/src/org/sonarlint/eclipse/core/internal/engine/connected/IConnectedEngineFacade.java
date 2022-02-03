@@ -34,6 +34,7 @@ import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
+import org.sonarsource.sonarlint.core.client.api.connected.ProjectBranches;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
@@ -107,7 +108,7 @@ public interface IConnectedEngineFacade {
   @Nullable
   RuleDetails getRuleDescription(String ruleKey, @Nullable String projectKey);
 
-  void updateProjectStorage(String moduleKey, IProgressMonitor monitor);
+  void updateProjectStorage(String projectKey, @Nullable String branchName, IProgressMonitor monitor);
 
   List<ISonarLintProject> getBoundProjects();
 
@@ -130,4 +131,6 @@ public interface IConnectedEngineFacade {
   void syncAllProjects(IProgressMonitor monitor);
 
   void sync(Set<String> projectKeysToUpdate, IProgressMonitor monitor);
+
+  ProjectBranches getServerBranches(String projectKey);
 }

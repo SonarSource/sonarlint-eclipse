@@ -227,7 +227,7 @@
                 </dependency>
                 <dependency>
                   <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.jgit.feature.group</artifactId>
+                  <artifactId>org.eclipse.egit.feature.group</artifactId>
                 </dependency>
               </dependencies>
             </configuration>
@@ -292,7 +292,7 @@
                 </dependency>
                 <dependency>
                   <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.jgit.feature.group</artifactId>
+                  <artifactId>org.eclipse.egit.feature.group</artifactId>
                 </dependency>
               </dependencies>
             </configuration>

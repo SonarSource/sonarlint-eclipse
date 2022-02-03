@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -37,6 +38,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.AsyncServerMarkerUpdaterJob;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
+import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -93,7 +95,7 @@ public class ServerIssueUpdater {
           if (issuable instanceof ISonarLintFile) {
             var file = ((ISonarLintFile) issuable);
             var issueTracker = issueTrackerRegistry.getOrCreate(project);
-            var serverIssues = fetchServerIssues(engineFacade, projectBinding, (ISonarLintFile) issuable, monitor);
+            var serverIssues = fetchServerIssues(engineFacade, projectBinding, VcsService.getServerBranch(project), (ISonarLintFile) issuable, monitor);
             Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
             Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(file, serverIssuesTrackable);
             issueTracker.updateCache(file, tracked);
@@ -116,12 +118,13 @@ public class ServerIssueUpdater {
 
   public static List<ServerIssue> fetchServerIssues(ConnectedEngineFacade engineFacade,
     ProjectBinding projectBinding,
+    @Nullable String branchName,
     ISonarLintFile file, IProgressMonitor monitor) {
     var filePath = file.getProjectRelativePath();
 
     try {
       SonarLintLogger.get().debug("Download server issues for " + file.getName());
-      return engineFacade.downloadServerIssues(projectBinding, filePath, monitor);
+      return engineFacade.downloadServerIssues(projectBinding, branchName, filePath, monitor);
     } catch (DownloadException e) {
       SonarLintLogger.get().info(e.getMessage());
       return engineFacade.getServerIssues(projectBinding, filePath);

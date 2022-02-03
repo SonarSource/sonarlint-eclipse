@@ -59,6 +59,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
@@ -71,6 +72,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEng
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectionValidator;
 import org.sonarsource.sonarlint.core.client.api.connected.GlobalStorageStatus;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
+import org.sonarsource.sonarlint.core.client.api.connected.ProjectBranches;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 import org.sonarsource.sonarlint.core.commons.Language;
@@ -404,10 +406,10 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   }
 
   @Override
-  public void updateProjectStorage(String projectKey, IProgressMonitor monitor) {
+  public void updateProjectStorage(String projectKey, @Nullable String branchName, IProgressMonitor monitor) {
     doWithEngine(engine -> {
       engine.updateProject(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKey,
-        true, new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for project '" + projectKey + "'"));
+        true, branchName, new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for project '" + projectKey + "'"));
       getBoundProjects(projectKey).forEach(p -> {
         var projectBinding = engine.calculatePathPrefixes(projectKey, p.files().stream().map(ISonarLintFile::getProjectRelativePath).collect(toList()));
         var idePathPrefix = projectBinding.idePathPrefix();
@@ -579,15 +581,16 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     return this;
   }
 
-  public void downloadServerIssues(String projectKey, IProgressMonitor monitor) {
+  public void downloadServerIssues(String projectKey, @Nullable String branchName, IProgressMonitor monitor) {
     doWithEngine(
-      engine -> engine.downloadServerIssues(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKey, false, new WrappedProgressMonitor(monitor, "Fetch issues")));
+      engine -> engine.downloadServerIssues(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKey, false, branchName,
+        new WrappedProgressMonitor(monitor, "Fetch issues")));
   }
 
-  public List<ServerIssue> downloadServerIssues(ProjectBinding projectBinding, String filePath, IProgressMonitor monitor) {
+  public List<ServerIssue> downloadServerIssues(ProjectBinding projectBinding, @Nullable String branchName, String filePath, IProgressMonitor monitor) {
     return withEngine(
       engine -> engine.downloadServerIssues(createEndpointParams(), buildClientWithProxyAndCredentials(), projectBinding, filePath,
-        true, new WrappedProgressMonitor(monitor, "Fetch issues")))
+        true, branchName, new WrappedProgressMonitor(monitor, "Fetch issues")))
           .orElse(emptyList());
   }
 
@@ -606,11 +609,18 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   }
 
   @Override
+  public ProjectBranches getServerBranches(String projectKey) {
+    return withEngine(engine -> engine.getServerBranches(projectKey)).orElse(new ProjectBranches(Set.of(), Optional.empty()));
+  }
+
+  @Override
   public void sync(Set<String> projectKeysToUpdate, IProgressMonitor monitor) {
     doWithEngine(engine -> {
       engine.sync(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKeysToUpdate,
         new WrappedProgressMonitor(monitor, "Synchronize projects storage for connection '" + getId() + "'"));
     });
+    // Force recompute of best server branch
+    VcsService.clearVcsCache();
   }
 
   @Override
