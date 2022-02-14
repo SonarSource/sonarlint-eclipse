@@ -57,8 +57,6 @@ public class ServerUpdateJob extends Job {
       return SonarLintCorePlugin.loadConfig(p).getProjectBinding().get().projectKey();
     }).collect(toSet());
 
-    server.sync(projectKeysToUpdate, monitor);
-
     var failures = new ArrayList<IStatus>();
     for (var projectKeyToUpdate : projectKeysToUpdate) {
       if (monitor.isCanceled()) {
@@ -74,6 +72,9 @@ public class ServerUpdateJob extends Job {
       }
       monitor.worked(1);
     }
+
+    server.sync(projectKeysToUpdate, monitor);
+
     monitor.done();
     if (!failures.isEmpty()) {
       var message = String.format("Failed to update binding data for %d project(s)", failures.size());
