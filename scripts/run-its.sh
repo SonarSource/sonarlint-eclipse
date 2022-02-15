@@ -21,7 +21,7 @@ expect_param() {
     fi
 }
 
-target_platform=2019-06
+target_platform=latest
 sq_version=LATEST_RELEASE
 
 args=()
