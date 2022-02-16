@@ -109,8 +109,8 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
 
   private void openSonarLintPreferences() {
     var dialog = PreferencesUtil.createPreferenceDialogOn(
-            getShell(), RulesConfigurationPage.RULES_CONFIGURATION_ID,
-            new String[]{RulesConfigurationPage.RULES_CONFIGURATION_ID}, null);
+      getShell(), RulesConfigurationPage.RULES_CONFIGURATION_ID,
+      new String[] {RulesConfigurationPage.RULES_CONFIGURATION_ID}, null);
     dialog.open();
   }
 
@@ -214,6 +214,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
       + "pre { padding: .7em; border-top: 1px solid " + hexColor(this.foreground, 200) + "; border-bottom: 1px solid "
       + hexColor(this.foreground, 100)
       + "; overflow: auto;}"
+      + "pre > code {padding: 0; background-color: transparent; white-space: pre; overflow-x: scroll;}"
       + "code, pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;}"
       + "ul { padding-left: 2.5em; list-style: disc;}"
       + ".rule-desc { line-height: 1.5em }"
