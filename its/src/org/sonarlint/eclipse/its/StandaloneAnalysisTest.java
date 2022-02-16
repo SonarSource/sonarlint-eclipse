@@ -399,8 +399,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var workspace = ResourcesPlugin.getWorkspace();
     final var iProject = workspace.getRoot().getProject("secret-gitignored");
 
-    var gitFolder = iProject.getFolder("git");
-    gitFolder.move(gitFolder.getParent().getFullPath().append(".git"), true, null);
     var file = iProject.getFile(new Path("secret.txt"));
     file.create(new ByteArrayInputStream("AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw".getBytes()), true, null);
 

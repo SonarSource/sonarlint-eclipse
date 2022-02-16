@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -56,6 +57,8 @@ import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
 import org.osgi.service.prefs.BackingStoreException;
@@ -86,6 +89,9 @@ public abstract class AbstractSonarLintTest {
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
   private static SonarLintConsole consoleView;
+
+  @ClassRule
+  public static TemporaryFolder tempFolder = new TemporaryFolder();
 
   @After
   public void cleanup() {
@@ -152,11 +158,22 @@ public abstract class AbstractSonarLintTest {
   }
 
   protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
+    File projectFolder;
+    try {
+      projectFolder = tempFolder.newFolder();
+      FileUtils.copyDirectory(new File("projects", relativePathFromProjectsFolder), projectFolder);
+      File gitFolder = new File(projectFolder, "git");
+      if (gitFolder.exists()) {
+        FileUtils.moveDirectory(gitFolder, new File(projectFolder, ".git"));
+      }
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
     var dialog = new ExternalProjectImportWizardDialog();
     dialog.open();
     var importPage = new WizardProjectsImportPage(dialog);
-    importPage.copyProjectsIntoWorkspace(true);
-    importPage.setRootDirectory(new File("projects", relativePathFromProjectsFolder).getAbsolutePath());
+    importPage.copyProjectsIntoWorkspace(false);
+    importPage.setRootDirectory(projectFolder.getAbsolutePath());
     var projects = importPage.getProjects();
     assertThat(projects).hasSize(1);
     dialog.finish();
