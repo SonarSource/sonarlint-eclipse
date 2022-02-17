@@ -34,6 +34,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
 import static org.sonarlint.eclipse.ui.internal.util.PlatformUtils.doIfSonarLintFileInEditor;
@@ -47,15 +48,11 @@ public class SonarLintToolbarContribution extends WorkbenchWindowControlContribu
     Composite page = new Composite(parent, SWT.NONE);
 
     GridLayout gridLayout = new GridLayout(1, false);
-    gridLayout.marginHeight = 0;
-    gridLayout.marginWidth = 0;
-    gridLayout.marginLeft = 0;
-    gridLayout.marginRight = 7;
-    gridLayout.verticalSpacing = 0;
-    gridLayout.horizontalSpacing = 0;
+    gridLayout.marginHeight = 3;
     page.setLayout(gridLayout);
 
     label = new Label(page, SWT.NONE);
+    label.setImage(SonarLintImages.SONARLINT_ICON_IMG);
 
     IWorkbenchPart activePart = getWorkbenchWindow().getActivePage().getActivePart();
     doIfSonarLintFileInEditor(activePart, (f, p) -> slFileSelected(f));
@@ -81,15 +78,15 @@ public class SonarLintToolbarContribution extends WorkbenchWindowControlContribu
         return;
       }
     }
-    updateLabel("");
+    updateTooltip("");
   }
 
   private void slFileSelected(ISonarLintFile slFile) {
-    updateLabel(VcsService.getServerBranch(slFile.getProject()));
+    updateTooltip(VcsService.getServerBranch(slFile.getProject()));
   }
 
-  private void updateLabel(@Nullable String content) {
-    label.setText(content != null ? content : "");
+  private void updateTooltip(@Nullable String content) {
+    label.setToolTipText(content != null ? content : "");
     label.getParent().getParent().requestLayout();
   }
 
