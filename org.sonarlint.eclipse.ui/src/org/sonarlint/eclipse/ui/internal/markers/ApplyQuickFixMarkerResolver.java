@@ -74,8 +74,8 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
     if (file == null) {
       return;
     }
-    var openEditor = openEditor(file, marker);
     Display.getDefault().asyncExec(() -> {
+      var openEditor = openEditor(file, marker);
       if (fix.isValid()) {
         var document = applyIn(openEditor, fix);
         SonarLintCorePlugin.getTelemetry().addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker).toString());
