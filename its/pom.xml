@@ -198,7 +198,7 @@
 
   <profiles>
     <profile>
-      <id>milestones</id>
+      <id>ibuilds</id>
       <activation>
         <property>
           <name>target.platform</name>
@@ -211,7 +211,7 @@
             <groupId>org.eclipse.tycho</groupId>
             <artifactId>tycho-surefire-plugin</artifactId>
             <configuration>
-              <excludedGroups>org.sonarlint.eclipse.its.RequiresExtraDependency,org.sonarlint.eclipse.its.SonarCloud</excludedGroups>
+              <excludedGroups>org.sonarlint.eclipse.its.RequiresExtraDependency</excludedGroups>
               <dependencies>
                 <dependency>
                   <type>p2-installable-unit</type>
@@ -249,6 +249,8 @@
             <groupId>org.eclipse.tycho</groupId>
             <artifactId>tycho-surefire-plugin</artifactId>
             <configuration>
+              <!-- Don't run SonarCloud ITs on all axis, just one (ibuilds) is enough -->
+              <excludedGroups>org.sonarlint.eclipse.its.SonarCloud</excludedGroups>
               <dependencies>
                 <dependency>
                   <type>p2-installable-unit</type>
