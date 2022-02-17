@@ -19,6 +19,9 @@
  */
 package org.sonarlint.eclipse.its;
 
+import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.eclipse.condition.ProjectExists;
+import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
@@ -30,13 +33,20 @@ import static org.assertj.core.api.Assertions.tuple;
 public class MavenTest extends AbstractSonarLintTest {
 
   @Test
-  public void shouldNotAnalyzeResourcesInSubModules() {
+  public void shouldNotAnalyzeResourcesInNestedModules() {
     new JavaPerspective().open();
-    var rootProject = importExistingProjectIntoWorkspace("java/maven", "sample-maven");
-    var sampleModule1Project = importExistingProjectIntoWorkspace("java/maven/sample-module1", "sample-module1");
+    importExistingProjectIntoWorkspace("java/maven");
+    importExistingProjectIntoWorkspace("java/maven/sample-module1");
     importExistingProjectIntoWorkspace("java/maven/sample-module2");
 
+    // Use package explorer to wait for module 1 since reddeer doesn't support hierarchical layout of project explorer
+    // https://github.com/eclipse/reddeer/issues/2161
+    var packageExplorer = new PackageExplorerPart();
+    new WaitUntil(new ProjectExists("sample-module1", packageExplorer));
+    var sampleModule1Project = packageExplorer.getProject("sample-module1");
+
     int previousAnalysisJobCount = scheduledAnalysisJobCount.get();
+    var rootProject = packageExplorer.getProject("sample-maven");
     rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open();
     assertThat(scheduledAnalysisJobCount.get()).isEqualTo(previousAnalysisJobCount);
     var defaultEditor = new DefaultEditor();

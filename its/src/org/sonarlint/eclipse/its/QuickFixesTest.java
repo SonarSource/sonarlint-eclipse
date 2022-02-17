@@ -73,7 +73,7 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   }
 
   @Before
-  public void importProjecy() {
+  public void importProject() {
     rootProject = importExistingProjectIntoWorkspace("java/quick-fixes", "quick-fixes");
   }
 
