@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.its;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -33,7 +32,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
@@ -58,10 +56,8 @@ import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.hamcrest.core.StringContains;
 import org.junit.Assume;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 import org.sonarlint.eclipse.its.reddeer.conditions.OnTheFlyViewIsEmpty;
 import org.sonarlint.eclipse.its.reddeer.perspectives.PhpPerspective;
 import org.sonarlint.eclipse.its.reddeer.perspectives.PydevPerspective;
@@ -76,9 +72,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 public class StandaloneAnalysisTest extends AbstractSonarLintTest {
-
-  @ClassRule
-  public static TemporaryFolder temp = new TemporaryFolder();
 
   @Test
   public void shouldAnalyseJava() {
@@ -323,7 +316,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   @Category(RequiresExtraDependency.class)
   public void shouldAnalyseVirtualProject() throws Exception {
-    var remoteProjectDir = temp.newFolder();
+    var remoteProjectDir = tempFolder.newFolder();
     FileUtils.copyDirectory(new File("projects/java/java-simple"), remoteProjectDir);
 
     new JavaPerspective().open();
@@ -355,59 +348,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", 9));
-  }
-
-  @Test
-  public void shouldFindSecretsInTextFiles() {
-    new JavaPerspective().open();
-    var rootProject = importExistingProjectIntoWorkspace("secrets/secret-in-text-file", "secret-in-text-file");
-
-    openFileAndWaitForAnalysisCompletion(rootProject.getResource("secret"));
-
-    var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("Make sure this AWS Secret Access Key is not disclosed.", 3));
-
-    var preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
-    preferencesShell.close();
-  }
-
-  @Test
-  public void shouldFindSecretsInSourceFiles() {
-    new JavaPerspective().open();
-    var rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", "secret-java");
-
-    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
-
-    var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
-
-    var preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
-    preferencesShell.close();
-  }
-
-  @Test
-  public void shouldNotTriggerAnalysisForGitIgnoredFiles() throws CoreException {
-    new JavaPerspective().open();
-    var rootProject = importExistingProjectIntoWorkspace("secrets/secret-gitignored", "secret-gitignored");
-
-    var workspace = ResourcesPlugin.getWorkspace();
-    final var iProject = workspace.getRoot().getProject("secret-gitignored");
-
-    var file = iProject.getFile(new Path("secret.txt"));
-    file.create(new ByteArrayInputStream("AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw".getBytes()), true, null);
-
-    openFileAndWaitForAnalysisCompletion(rootProject.getResource("secret.txt"));
-
-    var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .isEmpty();
   }
 
 }

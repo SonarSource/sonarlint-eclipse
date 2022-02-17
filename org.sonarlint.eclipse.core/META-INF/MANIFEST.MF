@@ -44,6 +44,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.sonarsource.sonarlint.core.sonarlint-core-osgi;bundle-version="7.1.0",
  minimal-json;bundle-version="0.9.5",
  org.eclipse.jgit;resolution:=optional,
- org.eclipse.egit.core;resolution:=optional
+ org.eclipse.egit.core;resolution:=optional,
+ org.eclipse.egit.ui;resolution:=optional
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11

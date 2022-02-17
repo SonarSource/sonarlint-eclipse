@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.its;
 
 import java.time.Instant;
+import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -129,7 +130,8 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     wizard.next();
 
     assertThat(wizard.isNextEnabled()).isFalse();
-    wizard.finish();
+    // This will trigger an update of the binding background job
+    wizard.finish(TimePeriod.VERY_LONG);
 
     var projectBindingWizard = new ProjectBindingWizard();
     var projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);

@@ -91,14 +91,14 @@ public abstract class AbstractSonarLintTest {
   private static SonarLintConsole consoleView;
 
   @ClassRule
-  public static TemporaryFolder tempFolder = new TemporaryFolder();
+  public static final TemporaryFolder tempFolder = new TemporaryFolder();
 
   @After
-  public void cleanup() {
-
-    restoreDefaultRulesConfiguration();
+  public final void cleanup() {
 
     new CleanWorkspaceRequirement().fulfill();
+
+    restoreDefaultRulesConfiguration();
 
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SECRETS_EVER_DETECTED);
   }
@@ -107,6 +107,7 @@ public abstract class AbstractSonarLintTest {
   private static IJobChangeListener sonarlintItJobListener;
   protected static final AtomicInteger scheduledAnalysisJobCount = new AtomicInteger();
   private static final List<CountDownLatch> analysisJobCountDownLatch = new CopyOnWriteArrayList<>();
+  private static File projectsFolder;
 
   @BeforeClass
   public static final void beforeClass() throws BackingStoreException {
@@ -155,12 +156,17 @@ public abstract class AbstractSonarLintTest {
       assertThat(matcher.find()).isTrue();
       hotspotServerPort = Integer.parseInt(matcher.group(1));
     }
+
+    try {
+      projectsFolder = tempFolder.newFolder();
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
-    File projectFolder;
+    File projectFolder = new File(projectsFolder, relativePathFromProjectsFolder);
     try {
-      projectFolder = tempFolder.newFolder();
       FileUtils.copyDirectory(new File("projects", relativePathFromProjectsFolder), projectFolder);
       File gitFolder = new File(projectFolder, "git");
       if (gitFolder.exists()) {

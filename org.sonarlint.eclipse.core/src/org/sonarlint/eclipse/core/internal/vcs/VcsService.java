@@ -23,12 +23,40 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.annotation.Nullable;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class VcsService {
+
+  public static final boolean IS_EGIT_5_12_BUNDLE_AVAILABLE;
+  static {
+    boolean result = false;
+    try {
+      Bundle egitBundle = Platform.getBundle("org.eclipse.egit.core");
+      result = egitBundle != null && (egitBundle.getState() & (Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED)) != 0
+        && egitBundle.getVersion().compareTo(new Version(5, 12, 0)) >= 0;
+    } catch (Throwable exception) {
+      // Assume that it's not available.
+    }
+    IS_EGIT_5_12_BUNDLE_AVAILABLE = result;
+  }
+
+  public static final boolean IS_EGIT_UI_BUNDLE_AVAILABLE;
+  static {
+    boolean result = false;
+    try {
+      Bundle egitUiBundle = Platform.getBundle("org.eclipse.egit.ui");
+      result = egitUiBundle != null && (egitUiBundle.getState() & (Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED)) != 0;
+    } catch (Throwable exception) {
+      // Assume that it's not available.
+    }
+    IS_EGIT_UI_BUNDLE_AVAILABLE = result;
+  }
 
   private static final Map<ISonarLintProject, Object> previousCommitRefCache = new ConcurrentHashMap<>();
   private static final Map<ISonarLintProject, Optional<String>> electedServerBranchCache = new ConcurrentHashMap<>();
@@ -36,19 +64,13 @@ public class VcsService {
   private VcsService() {
   }
 
-  private static boolean isEGitPresent() {
-    try {
-      Class.forName("org.eclipse.egit.core.info.GitInfo");
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
-  }
-
   public static VcsFacade getFacade() {
     // For now we only support eGit
-    if (isEGitPresent()) {
-      return new EGitVcsFacade();
+    if (IS_EGIT_5_12_BUNDLE_AVAILABLE) {
+      return new EGit5dot12VcsFacade();
+    }
+    if (IS_EGIT_UI_BUNDLE_AVAILABLE) {
+      return new OldEGitVcsFacade();
     }
     return new NoOpVcsFacade();
   }

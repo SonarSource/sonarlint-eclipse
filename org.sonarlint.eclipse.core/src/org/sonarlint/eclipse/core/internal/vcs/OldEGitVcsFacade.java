@@ -20,12 +20,12 @@
 package org.sonarlint.eclipse.core.internal.vcs;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Adapters;
-import org.eclipse.egit.core.info.GitInfo;
+import org.eclipse.egit.core.project.RepositoryMapping;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
@@ -34,17 +34,29 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.vcs.GitUtils;
 
-public class EGitVcsFacade implements VcsFacade {
+/**
+ * Uses internal EGit
+ *
+ */
+public class OldEGitVcsFacade implements VcsFacade {
 
   private static final SonarLintLogger LOG = SonarLintLogger.get();
 
   @Override
   public boolean isIgnored(ISonarLintFile file) {
-    GitInfo gitInfo = Adapters.adapt(file.getResource(), GitInfo.class);
-    if (gitInfo == null) {
+    try {
+      Class resourceStateFactoryClass = Class.forName("org.eclipse.egit.ui.internal.resources.ResourceStateFactory");
+      Method getInstance = resourceStateFactoryClass.getMethod("getInstance");
+      Object resourceStateFactory = getInstance.invoke(null);
+      Method get = resourceStateFactoryClass.getMethod("get", IResource.class);
+      Object resourceState = get.invoke(resourceStateFactory, file.getResource());
+      Class resourceStateClass = Class.forName("org.eclipse.egit.ui.internal.resources.ResourceState");
+      Method isIgnored = resourceStateClass.getMethod("isIgnored");
+      return (boolean) isIgnored.invoke(resourceState);
+    } catch (Exception e) {
+      LOG.debug("Unable to call eGit", e);
       return false;
     }
-    return gitInfo.getGitState().isIgnored();
   }
 
   @Override
@@ -54,9 +66,9 @@ public class EGitVcsFacade implements VcsFacade {
   }
 
   static <G> Optional<G> withRepo(IResource resource, Function<Repository, G> repoFunction) {
-    GitInfo gitInfo = Adapters.adapt(resource, GitInfo.class);
-    if (gitInfo != null) {
-      Repository repository = gitInfo.getRepository();
+    RepositoryMapping mapping = RepositoryMapping.getMapping(resource);
+    if (mapping != null) {
+      Repository repository = mapping.getRepository();
       if (repository != null) {
         return Optional.ofNullable(repoFunction.apply(repository));
       }
@@ -67,9 +79,9 @@ public class EGitVcsFacade implements VcsFacade {
   @Override
   @Nullable
   public String getCurrentCommitRef(ISonarLintProject project) {
-    return EGitVcsFacade.<String>withRepo(project.getResource(), repo -> {
+    return OldEGitVcsFacade.<String>withRepo(project.getResource(), repo -> {
       try {
-        return Optional.ofNullable(repo.exactRef(Constants.HEAD)).map(r -> r.toString()).orElse(null);
+        return Optional.ofNullable(repo.exactRef(Constants.HEAD)).map(Object::toString).orElse(null);
       } catch (IOException e) {
         LOG.debug("Unable to get current commit", e);
         return null;
