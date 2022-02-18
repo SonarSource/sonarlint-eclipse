@@ -55,7 +55,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
   @ClassRule
   public static Orchestrator orchestrator = Orchestrator.builderEnv()
-    .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[7.9]"))
+    .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[8.9]"))
     .build();
 
   private static WsClient adminWsClient;

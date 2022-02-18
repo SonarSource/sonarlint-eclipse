@@ -182,7 +182,7 @@ stages:
             imageName: 'ubuntu-18.04'
           Latest:
             TARGET_PLATFORM: 'latest'
-            SQ_VERSION: 'SonarCloud'
+            SQ_VERSION: 'LATEST_RELEASE[8.9]'
             imageName: 'ubuntu-18.04'
           IBuilds:
             TARGET_PLATFORM: 'ibuilds'
