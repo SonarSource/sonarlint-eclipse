@@ -88,13 +88,16 @@ public abstract class AbstractSonarLintTest {
 
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
-  private static SonarLintConsole consoleView;
 
   @ClassRule
   public static final TemporaryFolder tempFolder = new TemporaryFolder();
 
   @After
   public final void cleanup() {
+
+    SonarLintConsole consoleView = new SonarLintConsole();
+    System.out.println(consoleView.getConsoleView().getConsoleText());
+    consoleView.getConsoleView().clearConsole();
 
     new CleanWorkspaceRequirement().fulfill();
 
@@ -143,14 +146,13 @@ public abstract class AbstractSonarLintTest {
       Job.getJobManager().addJobChangeListener(sonarlintItJobListener);
     }
 
-    if (consoleView == null) {
-      consoleView = new SonarLintConsole();
-      consoleView.open();
-      consoleView.openConsole("SonarLint");
-      consoleView.enableAnalysisLogs();
-      consoleView.showConsole(ShowConsoleOption.NEVER);
-      new WaitUntil(new ConsoleHasText(consoleView, "Started security hotspot handler on port"));
-      var consoleText = consoleView.getConsoleText();
+    SonarLintConsole consoleView = new SonarLintConsole();
+    consoleView.enableVerboseOutput();
+    consoleView.enableAnalysisLogs();
+    consoleView.showConsole(ShowConsoleOption.NEVER);
+    if (hotspotServerPort == -1) {
+      new WaitUntil(new ConsoleHasText(consoleView.getConsoleView(), "Started security hotspot handler on port"));
+      var consoleText = consoleView.getConsoleView().getConsoleText();
       var pattern = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
       var matcher = pattern.matcher(consoleText);
       assertThat(matcher.find()).isTrue();
