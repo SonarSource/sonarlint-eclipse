@@ -21,10 +21,12 @@ package org.sonarlint.eclipse.its;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.reddeer.common.exception.RedDeerException;
+import org.eclipse.reddeer.common.wait.AbstractWait;
+import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.core.matcher.WithLabelMatcher;
+import org.eclipse.reddeer.core.lookup.ShellLookup;
 import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.core.resources.Resource;
 import org.eclipse.reddeer.eclipse.ui.markers.AbstractMarker;
@@ -33,14 +35,18 @@ import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.eclipse.ui.views.markers.ProblemsView;
 import org.eclipse.reddeer.eclipse.ui.views.markers.ProblemsView.ProblemType;
 import org.eclipse.reddeer.eclipse.ui.views.markers.QuickFixWizard;
+import org.eclipse.reddeer.jface.text.contentassist.ContentAssistant;
 import org.eclipse.reddeer.requirements.openperspective.OpenPerspectiveRequirement.OpenPerspective;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
+import org.eclipse.reddeer.swt.impl.menu.ShellMenuItem;
 import org.eclipse.reddeer.swt.impl.table.DefaultTable;
-import org.eclipse.reddeer.swt.impl.text.DefaultText;
+import org.eclipse.reddeer.workbench.condition.ContentAssistantShellIsOpened;
 import org.eclipse.reddeer.workbench.condition.TextEditorContainsText;
+import org.eclipse.reddeer.workbench.exception.WorkbenchLayerException;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -53,6 +59,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @OpenPerspective(JavaPerspective.class)
 public class QuickFixesTest extends AbstractSonarLintTest {
+  private static final String QUICK_FIXES_PROJECT_NAME = "quick-fixes";
   private static final String ISSUE_MESSAGE = "Remove this unnecessary cast to \"int\".";
   private static final String QUICK_FIX_MESSAGE = "Remove the cast to \"int\"";
   private static final String EXPECTED_TEXT = "return hashCode();";
@@ -74,7 +81,7 @@ public class QuickFixesTest extends AbstractSonarLintTest {
 
   @Before
   public void importProject() {
-    rootProject = importExistingProjectIntoWorkspace("java/quick-fixes", "quick-fixes");
+    rootProject = importExistingProjectIntoWorkspace("java/quick-fixes", QUICK_FIXES_PROJECT_NAME);
   }
 
   @Test
@@ -83,12 +90,33 @@ public class QuickFixesTest extends AbstractSonarLintTest {
 
     var editor = new TextEditor(FILE_NAME);
     editor.setCursorPosition(8, 14);
-    // uses the keyboard and may not work on non-US layouts
-    var assistant = editor.openQuickFixContentAssistant();
+    var assistant = openQuickFixContentAssistant(editor);
     assertThat(assistant.getProposals()).element(0).isEqualTo(QUICK_FIX_MESSAGE);
     assistant.chooseProposal(QUICK_FIX_MESSAGE);
 
     new WaitUntil(new TextEditorContainsText(editor, EXPECTED_TEXT));
+  }
+
+  private ContentAssistant openQuickFixContentAssistant(TextEditor editor) {
+    editor.activate();
+    AbstractWait.sleep(TimePeriod.SHORT);
+
+    ShellMenuItem menu;
+    try {
+      menu = new ShellMenuItem("Edit", "Quick Fix");
+    } catch (RedDeerException e) {
+      // log.info("Quick fix menu not found, open via keyboard shortcut");
+      return editor.openQuickFixContentAssistant();
+
+    }
+    if (!menu.isEnabled()) {
+      throw new WorkbenchLayerException("Quick Fix is disabled!");
+    }
+    Shell[] shells = ShellLookup.getInstance().getShells();
+    menu.select();
+    ContentAssistantShellIsOpened caw = new ContentAssistantShellIsOpened(shells);
+    new WaitUntil(caw);
+    return new ContentAssistant(caw.getContentAssistTable());
   }
 
   @Test
@@ -139,10 +167,13 @@ public class QuickFixesTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldApplyQuickFixAfterFileModifiedOnFileSystem() throws IOException {
-    var file = openQuickFixableFile();
+    Resource file = openQuickFixableFile();
     var editor = new TextEditor(FILE_NAME);
-    Files.write(getFilePath(file), (PLACEHOLDER_LICENSE_HEADER + editor.getText()).getBytes());
+    var ioFile = ResourcesPlugin.getWorkspace().getRoot().getProject(QUICK_FIXES_PROJECT_NAME).getFile("src/hello/" + FILE_NAME).getLocation().toFile();
+    Files.write(ioFile.toPath(), (PLACEHOLDER_LICENSE_HEADER + editor.getText()).getBytes());
+    file.refresh();
     editor.activate();
+    new WaitUntil(new TextEditorContainsText(editor, PLACEHOLDER_LICENSE_HEADER));
 
     applyFixThrough(findQuickFixableMarkerInProblemsView().openQuickFix());
 
@@ -180,13 +211,6 @@ public class QuickFixesTest extends AbstractSonarLintTest {
     preferenceDialog.select(preferences);
     preferences.setMarkersSeverity(severity);
     preferenceDialog.ok();
-  }
-
-  private static Path getFilePath(Resource resource) {
-    var properties = resource.openProperties();
-    var filePath = new DefaultText(properties, new WithLabelMatcher("Location:")).getText();
-    properties.cancel();
-    return Paths.get(filePath);
   }
 
   private static AbstractMarker findQuickFixableMarkerInProblemsView() {
