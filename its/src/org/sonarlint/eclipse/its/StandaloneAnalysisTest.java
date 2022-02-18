@@ -39,12 +39,7 @@ import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyDialog;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
-import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
-import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
-import org.eclipse.reddeer.jface.condition.WindowIsAvailable;
-import org.eclipse.reddeer.swt.api.Button;
 import org.eclipse.reddeer.swt.condition.ShellIsAvailable;
-import org.eclipse.reddeer.swt.impl.button.FinishButton;
 import org.eclipse.reddeer.swt.impl.button.OkButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
@@ -224,12 +219,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Category(RequiresExtraDependency.class)
   public void shouldAnalysePython() {
     new PydevPerspective().open();
-    importPythonProjectIntoWorkspace("python");
+    importExistingProjectIntoWorkspace("python");
 
     var onTheFlyView = new OnTheFlyView();
-    onTheFlyView.open();
-    // workaround a view refresh problem
-    onTheFlyView.close();
     onTheFlyView.open();
 
     var rootProject = new PydevPackageExplorer().getProject("python");
@@ -247,26 +239,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
         tuple("Merge this if statement with the enclosing one. [+1 location]", "example.py"),
         tuple("Replace print statement by built-in function.", "example.py"),
         tuple("Replace \"<>\" by \"!=\".", "example.py"));
-  }
-
-  private static void importPythonProjectIntoWorkspace(String relativePathFromProjectsFolder) {
-    var dialog = new ExternalProjectImportWizardDialog();
-    dialog.open();
-    var importPage = new WizardProjectsImportPage(dialog);
-    importPage.copyProjectsIntoWorkspace(true);
-    importPage.setRootDirectory(new File("projects", relativePathFromProjectsFolder).getAbsolutePath());
-    var projects = importPage.getProjects();
-    assertThat(projects).hasSize(1);
-    Button button = new FinishButton(dialog);
-    button.click();
-    new PushButton(new DefaultShell("Python not configured"), "Don't ask again").click();
-
-    new WaitWhile(new WindowIsAvailable(dialog), TimePeriod.LONG);
-    try {
-      new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
-    } catch (NoClassDefFoundError e) {
-      // do nothing, reddeer.workbench plugin is not available
-    }
   }
 
   // Need PDT

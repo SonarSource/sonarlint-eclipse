@@ -49,10 +49,15 @@ import org.eclipse.reddeer.eclipse.core.resources.Resource;
 import org.eclipse.reddeer.eclipse.ui.navigator.resources.ProjectExplorer;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
+import org.eclipse.reddeer.jface.condition.WindowIsAvailable;
 import org.eclipse.reddeer.junit.runner.RedDeerSuite;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement.CleanWorkspace;
 import org.eclipse.reddeer.requirements.closeeditors.CloseAllEditorsRequirement.CloseAllEditors;
+import org.eclipse.reddeer.swt.api.Button;
+import org.eclipse.reddeer.swt.impl.button.FinishButton;
+import org.eclipse.reddeer.swt.impl.button.PushButton;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
@@ -184,7 +189,20 @@ public abstract class AbstractSonarLintTest {
     importPage.setRootDirectory(projectFolder.getAbsolutePath());
     var projects = importPage.getProjects();
     assertThat(projects).hasSize(1);
-    dialog.finish();
+
+    // Don't use dialog.finish() as in PyDev there is an extra step before waiting for the windows to be closed
+    Button button = new FinishButton(dialog);
+    button.click();
+
+    try {
+      var pythonNotConfiguredDialog = new DefaultShell("Python not configured");
+      new PushButton(pythonNotConfiguredDialog, "Don't ask again").click();
+    } catch (Exception e) {
+      // Do nothing
+    }
+
+    new WaitWhile(new WindowIsAvailable(dialog), TimePeriod.LONG);
+    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
 
   protected static final Project importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder, String projectName) {
