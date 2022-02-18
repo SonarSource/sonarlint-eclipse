@@ -221,9 +221,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new PydevPerspective().open();
     importExistingProjectIntoWorkspace("python");
 
-    var onTheFlyView = new OnTheFlyView();
-    onTheFlyView.open();
-
     var rootProject = new PydevPackageExplorer().getProject("python");
     rootProject.getTreeItem().select();
     doAndWaitForSonarLintAnalysisJob(() -> {
@@ -233,6 +230,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       new OkButton(new DefaultShell("Default Eclipse preferences for PyDev")).click();
     });
 
+    var onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
     assertThat(onTheFlyView.getIssues())
       .extracting(SonarLintIssue::getDescription, SonarLintIssue::getResource)
       .containsOnly(
