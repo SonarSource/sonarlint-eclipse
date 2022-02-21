@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -48,14 +49,21 @@ import org.eclipse.reddeer.eclipse.core.resources.Resource;
 import org.eclipse.reddeer.eclipse.ui.navigator.resources.ProjectExplorer;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
+import org.eclipse.reddeer.jface.condition.WindowIsAvailable;
 import org.eclipse.reddeer.junit.runner.RedDeerSuite;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement.CleanWorkspace;
 import org.eclipse.reddeer.requirements.closeeditors.CloseAllEditorsRequirement.CloseAllEditors;
+import org.eclipse.reddeer.swt.api.Button;
+import org.eclipse.reddeer.swt.impl.button.FinishButton;
+import org.eclipse.reddeer.swt.impl.button.PushButton;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
 import org.osgi.service.prefs.BackingStoreException;
@@ -85,14 +93,20 @@ public abstract class AbstractSonarLintTest {
 
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
-  private static SonarLintConsole consoleView;
+
+  @ClassRule
+  public static final TemporaryFolder tempFolder = new TemporaryFolder();
 
   @After
-  public void cleanup() {
+  public final void cleanup() {
 
-    restoreDefaultRulesConfiguration();
+    SonarLintConsole consoleView = new SonarLintConsole();
+    System.out.println(consoleView.getConsoleView().getConsoleText());
+    consoleView.getConsoleView().clearConsole();
 
     new CleanWorkspaceRequirement().fulfill();
+
+    restoreDefaultRulesConfiguration();
 
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SECRETS_EVER_DETECTED);
   }
@@ -101,6 +115,7 @@ public abstract class AbstractSonarLintTest {
   private static IJobChangeListener sonarlintItJobListener;
   protected static final AtomicInteger scheduledAnalysisJobCount = new AtomicInteger();
   private static final List<CountDownLatch> analysisJobCountDownLatch = new CopyOnWriteArrayList<>();
+  private static File projectsFolder;
 
   @BeforeClass
   public static final void beforeClass() throws BackingStoreException {
@@ -136,30 +151,59 @@ public abstract class AbstractSonarLintTest {
       Job.getJobManager().addJobChangeListener(sonarlintItJobListener);
     }
 
-    if (consoleView == null) {
-      consoleView = new SonarLintConsole();
-      consoleView.open();
-      consoleView.openConsole("SonarLint");
-      consoleView.enableAnalysisLogs();
-      consoleView.showConsole(ShowConsoleOption.NEVER);
-      new WaitUntil(new ConsoleHasText(consoleView, "Started security hotspot handler on port"));
-      var consoleText = consoleView.getConsoleText();
+    SonarLintConsole consoleView = new SonarLintConsole();
+    consoleView.enableVerboseOutput();
+    consoleView.enableAnalysisLogs();
+    consoleView.showConsole(ShowConsoleOption.NEVER);
+    if (hotspotServerPort == -1) {
+      ConsoleHasText consoleHasText = new ConsoleHasText(consoleView.getConsoleView(), "Started security hotspot handler on port");
+      new WaitUntil(consoleHasText);
+      var consoleText = consoleHasText.getResult();
       var pattern = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
       var matcher = pattern.matcher(consoleText);
       assertThat(matcher.find()).isTrue();
       hotspotServerPort = Integer.parseInt(matcher.group(1));
     }
+
+    try {
+      projectsFolder = tempFolder.newFolder();
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
+    File projectFolder = new File(projectsFolder, relativePathFromProjectsFolder);
+    try {
+      FileUtils.copyDirectory(new File("projects", relativePathFromProjectsFolder), projectFolder);
+      File gitFolder = new File(projectFolder, "git");
+      if (gitFolder.exists()) {
+        FileUtils.moveDirectory(gitFolder, new File(projectFolder, ".git"));
+      }
+    } catch (Exception e) {
+      throw new IllegalStateException(e);
+    }
     var dialog = new ExternalProjectImportWizardDialog();
     dialog.open();
     var importPage = new WizardProjectsImportPage(dialog);
-    importPage.copyProjectsIntoWorkspace(true);
-    importPage.setRootDirectory(new File("projects", relativePathFromProjectsFolder).getAbsolutePath());
+    importPage.copyProjectsIntoWorkspace(false);
+    importPage.setRootDirectory(projectFolder.getAbsolutePath());
     var projects = importPage.getProjects();
     assertThat(projects).hasSize(1);
-    dialog.finish();
+
+    // Don't use dialog.finish() as in PyDev there is an extra step before waiting for the windows to be closed
+    Button button = new FinishButton(dialog);
+    button.click();
+
+    try {
+      var pythonNotConfiguredDialog = new DefaultShell("Python not configured");
+      new PushButton(pythonNotConfiguredDialog, "Don't ask again").click();
+    } catch (Exception e) {
+      // Do nothing
+    }
+
+    new WaitWhile(new WindowIsAvailable(dialog), TimePeriod.LONG);
+    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
 
   protected static final Project importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder, String projectName) {
