@@ -35,6 +35,7 @@ import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
+import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
@@ -75,7 +76,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
     IProgressMonitor monitor) {
     if (triggerType.shouldUpdateProjectIssuesSync(rawIssuesPerResource.size())) {
       SonarLintLogger.get().debug("Download engineFacade issues for project " + getProject().getName());
-      engineFacade.downloadServerIssues(binding.projectKey(), monitor);
+      engineFacade.downloadServerIssues(binding.projectKey(), VcsService.getServerBranch(getProject()), monitor);
     }
     super.trackIssues(docPerFile, rawIssuesPerResource, triggerType, monitor);
     if (triggerType.shouldUpdateFileIssuesAsync()) {
@@ -106,7 +107,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
     IProgressMonitor monitor) {
     List<ServerIssue> serverIssues;
     if (updateServerIssues) {
-      serverIssues = ServerIssueUpdater.fetchServerIssues(engineFacade, binding, file, monitor);
+      serverIssues = ServerIssueUpdater.fetchServerIssues(engineFacade, binding, VcsService.getServerBranch(getProject()), file, monitor);
     } else {
       serverIssues = engineFacade.getServerIssues(binding, file.getProjectRelativePath());
     }

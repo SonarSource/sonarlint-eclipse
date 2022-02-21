@@ -17,5 +17,21 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-@org.eclipse.jdt.annotation.NonNullByDefault
-package org.sonarlint.eclipse.core.internal.scm;
+package org.sonarlint.eclipse.core.internal.vcs;
+
+import java.util.Optional;
+import java.util.Set;
+import org.eclipse.jdt.annotation.Nullable;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+
+public interface VcsFacade {
+
+  boolean isIgnored(ISonarLintFile file);
+
+  Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, @Nullable String serverMainBranch);
+
+  @Nullable
+  Object getCurrentCommitRef(ISonarLintProject project);
+
+}

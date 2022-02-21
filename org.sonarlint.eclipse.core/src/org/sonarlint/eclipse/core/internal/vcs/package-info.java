@@ -17,25 +17,5 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.engine.connected;
-
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
-
-public class ResolvedBinding {
-  private final EclipseProjectBinding projectBinding;
-  private final IConnectedEngineFacade engineFacade;
-
-  public ResolvedBinding(EclipseProjectBinding projectBinding, IConnectedEngineFacade engineFacade) {
-    this.projectBinding = projectBinding;
-    this.engineFacade = engineFacade;
-  }
-
-  public EclipseProjectBinding getProjectBinding() {
-    return projectBinding;
-  }
-
-  public IConnectedEngineFacade getEngineFacade() {
-    return engineFacade;
-  }
-
-}
+@org.eclipse.jdt.annotation.NonNullByDefault
+package org.sonarlint.eclipse.core.internal.vcs;
