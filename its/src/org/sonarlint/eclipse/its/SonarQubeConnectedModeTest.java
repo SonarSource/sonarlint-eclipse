@@ -30,6 +30,7 @@ import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.core.condition.WidgetIsFound;
 import org.eclipse.reddeer.core.matcher.WithTextMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
@@ -38,7 +39,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
@@ -54,11 +54,8 @@ import static org.assertj.core.api.Assertions.tuple;
 public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
   @ClassRule
-  public static TemporaryFolder temp = new TemporaryFolder();
-
-  @ClassRule
   public static Orchestrator orchestrator = Orchestrator.builderEnv()
-    .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[7.9]"))
+    .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[8.9]"))
     .build();
 
   private static WsClient adminWsClient;
@@ -75,9 +72,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
         .setKey(PROJECT_NAME).build());
   }
 
-  @Override
   @Before
-  public void cleanup() {
+  public void cleanBindings() {
     var bindingsView = new BindingsView();
     bindingsView.open();
     bindingsView.removeAllBindings();
@@ -241,7 +237,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
         tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
 
     var preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
-    preferencesShell.close();
+    new DefaultLink(preferencesShell, "Dismiss").click();
   }
 
 }

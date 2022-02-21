@@ -20,47 +20,54 @@
 package org.sonarlint.eclipse.its.reddeer.views;
 
 import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.eclipse.condition.ConsoleHasLabel;
 import org.eclipse.reddeer.eclipse.ui.console.ConsoleView;
 import org.eclipse.reddeer.swt.impl.menu.ToolItemMenuItem;
 import org.eclipse.reddeer.swt.impl.toolbar.DefaultToolItem;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.StringEndsWith;
+import org.sonarlint.eclipse.its.reddeer.conditions.ConsoleHasLabel;
 
-public class SonarLintConsole extends ConsoleView {
+public class SonarLintConsole {
 
-  public void openConsole(String text) {
-    // Console name starts with a sequence number
-    openConsole(StringEndsWith.endsWith(text + " Console"));
+  private final ConsoleView consoleView;
+
+  public SonarLintConsole() {
+    consoleView = new ConsoleView();
+    // Console name starts with a sequence number that we can't forsee
+    openConsole(StringEndsWith.endsWith("SonarLint Console"));
+  }
+
+  public ConsoleView getConsoleView() {
+    return consoleView;
   }
 
   @SuppressWarnings("unchecked")
-  public void openConsole(Matcher<String> textMatcher) {
-    activate();
-    var menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Open Console"), textMatcher);
+  private void openConsole(Matcher<String> textMatcher) {
+    consoleView.open();
+    var menu = new ToolItemMenuItem(new DefaultToolItem(consoleView.getCTabItem().getFolder(), "Open Console"), textMatcher);
     menu.select();
-    new WaitUntil(new ConsoleHasLabel(textMatcher));
+    new WaitUntil(new ConsoleHasLabel(consoleView, textMatcher));
   }
 
   public void enableVerboseOutput() {
-    activate();
-    var menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Configure logs"), "Verbose output");
+    consoleView.activate();
+    var menu = new ToolItemMenuItem(new DefaultToolItem(consoleView.getCTabItem().getFolder(), "Configure logs"), "Verbose output");
     if (!menu.isSelected()) {
       menu.select();
     }
   }
 
   public void enableAnalysisLogs() {
-    activate();
-    var menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Configure logs"), "Analysis logs");
+    consoleView.activate();
+    var menu = new ToolItemMenuItem(new DefaultToolItem(consoleView.getCTabItem().getFolder(), "Configure logs"), "Analysis logs");
     if (!menu.isSelected()) {
       menu.select();
     }
   }
 
   public void showConsole(ShowConsoleOption option) {
-    activate();
-    var menu = new ToolItemMenuItem(new DefaultToolItem(cTabItem.getFolder(), "Show Console"), option.label);
+    consoleView.activate();
+    var menu = new ToolItemMenuItem(new DefaultToolItem(consoleView.getCTabItem().getFolder(), "Show Console"), option.label);
     if (!menu.isSelected()) {
       menu.select();
     }
@@ -74,7 +81,7 @@ public class SonarLintConsole extends ConsoleView {
 
     private final String label;
 
-    private ShowConsoleOption(String label) {
+    ShowConsoleOption(String label) {
       this.label = label;
     }
   }
