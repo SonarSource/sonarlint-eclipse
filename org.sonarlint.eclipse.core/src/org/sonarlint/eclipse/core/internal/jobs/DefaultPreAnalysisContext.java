@@ -35,8 +35,6 @@ import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 
 public class DefaultPreAnalysisContext implements IPreAnalysisContext {
 
-  private static final String SEPARATOR = ",";
-
   private final ISonarLintProject project;
   private final Map<String, String> analysisProperties;
   private final Path tempDir;
@@ -67,7 +65,7 @@ public class DefaultPreAnalysisContext implements IPreAnalysisContext {
 
   @Override
   public void setAnalysisProperty(String key, Collection<String> values) {
-    setAnalysisProperty(key, StringUtils.joinSkipNull(values, SEPARATOR));
+    setAnalysisProperty(key, StringUtils.joinWithCommaSkipNull(values));
   }
 
   @Override

@@ -34,6 +34,7 @@ public class StringUtils {
 
   public static final String EMPTY = "";
   public static final int INDEX_NOT_FOUND = -1;
+  private static final String COMMA_SEPARATOR = ",";
 
   private StringUtils() {
   }
@@ -78,6 +79,18 @@ public class StringUtils {
     return values.stream()
       .filter(Objects::nonNull)
       .collect(joining(separator));
+  }
+
+  public static String joinWithCommaSkipNull(Collection<String> values) {
+    return values.stream()
+      .filter(Objects::nonNull)
+      .map(StringUtils::csvEscape)
+      .collect(joining(COMMA_SEPARATOR));
+  }
+
+  private static String csvEscape(String string) {
+    // escape only when needed
+    return string.contains(",") ? ("\"" + string + "\"") : string;
   }
 
   public static String[] split(@Nullable String str, String separator) {

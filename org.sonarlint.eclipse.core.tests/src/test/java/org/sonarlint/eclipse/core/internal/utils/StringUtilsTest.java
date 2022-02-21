@@ -19,31 +19,44 @@
  */
 package org.sonarlint.eclipse.core.internal.utils;
 
-import java.util.Arrays;
 import org.junit.Test;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isBlank;
+import static org.sonarlint.eclipse.core.internal.utils.StringUtils.joinSkipNull;
 
 public class StringUtilsTest {
 
   @Test
   public void testJoin() {
-    assertThat(StringUtils.joinSkipNull(Arrays.asList("a", "b", "c"), ",")).isEqualTo("a,b,c");
-    assertThat(StringUtils.joinSkipNull(Arrays.asList("a", null, "c"), ",")).isEqualTo("a,c");
-    assertThat(StringUtils.joinSkipNull(Arrays.asList(null, "b", "c"), ",")).isEqualTo("b,c");
-    assertThat(StringUtils.joinSkipNull(Arrays.asList(null, null, "c"), ",")).isEqualTo("c");
-    assertThat(StringUtils.joinSkipNull(Arrays.asList(null, null, null), ",")).isEmpty();
+    assertThat(joinSkipNull(asList("a", "b", "c"), ",")).isEqualTo("a,b,c");
+    assertThat(joinSkipNull(asList("a", null, "c"), ",")).isEqualTo("a,c");
+    assertThat(joinSkipNull(asList(null, "b", "c"), ",")).isEqualTo("b,c");
+    assertThat(joinSkipNull(asList(null, null, "c"), ",")).isEqualTo("c");
+    assertThat(joinSkipNull(asList(null, null, null), ",")).isEmpty();
+  }
+
+  @Test
+  public void testJoinWithComma() {
+    assertThat(StringUtils.joinWithCommaSkipNull(asList("a", "b", "c"))).isEqualTo("a,b,c");
+    assertThat(StringUtils.joinWithCommaSkipNull(asList("a", null, "c"))).isEqualTo("a,c");
+    assertThat(StringUtils.joinWithCommaSkipNull(asList(null, "b", "c"))).isEqualTo("b,c");
+    assertThat(StringUtils.joinWithCommaSkipNull(asList(null, null, "c"))).isEqualTo("c");
+    assertThat(StringUtils.joinWithCommaSkipNull(asList(null, null, null))).isEmpty();
+    assertThat(StringUtils.joinWithCommaSkipNull(asList(null, null, null))).isEmpty();
+    assertThat(StringUtils.joinWithCommaSkipNull(asList("with,comma", "another,one", null, "no_comma"))).isEqualTo("\"with,comma\",\"another,one\",no_comma");
   }
 
   @Test
   public void testIsBlank() {
-    assertThat(StringUtils.isBlank(null)).isTrue();
-    assertThat(StringUtils.isBlank("")).isTrue();
-    assertThat(StringUtils.isBlank("   ")).isTrue();
-    assertThat(StringUtils.isBlank("\t \n")).isTrue();
-    assertThat(StringUtils.isBlank("abc")).isFalse();
-    assertThat(StringUtils.isBlank("ab c")).isFalse();
-    assertThat(StringUtils.isBlank(" abc")).isFalse();
+    assertThat(isBlank(null)).isTrue();
+    assertThat(isBlank("")).isTrue();
+    assertThat(isBlank("   ")).isTrue();
+    assertThat(isBlank("\t \n")).isTrue();
+    assertThat(isBlank("abc")).isFalse();
+    assertThat(isBlank("ab c")).isFalse();
+    assertThat(isBlank(" abc")).isFalse();
   }
 
 }

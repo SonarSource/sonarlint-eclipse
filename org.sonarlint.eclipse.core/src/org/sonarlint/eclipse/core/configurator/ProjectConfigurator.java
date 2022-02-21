@@ -29,7 +29,7 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 /**
  * Implemented by components that configure the analysis on certain environments.
  * For example, we have configurators for C/C++ projects in Eclipse CDT and for Java projects.
- * 
+ *
  * Other products also use this interface, so <b>it should be kept stable</b>.
  * @deprecated since 3.0 replaced by {@link IAnalysisConfigurator}
  */
@@ -75,11 +75,11 @@ public abstract class ProjectConfigurator {
   }
 
   public static void setPropertyList(Map<String, String> properties, String key, Collection<String> values) {
-    properties.put(key, StringUtils.joinSkipNull(values, SEPARATOR));
+    properties.put(key, StringUtils.joinWithCommaSkipNull(values));
   }
 
   public static void appendPropertyList(Map<String, String> properties, String key, Collection<String> values) {
-    appendProperty(properties, key, StringUtils.joinSkipNull(values, SEPARATOR));
+    appendProperty(properties, key, StringUtils.joinWithCommaSkipNull(values));
   }
 
 }
