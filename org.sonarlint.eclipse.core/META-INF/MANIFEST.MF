@@ -28,6 +28,7 @@ Export-Package: org.sonarlint.eclipse.core,
  org.sonarlint.eclipse.core.internal.telemetry;x-friends:="org.sonarlint.eclipse.ui,org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.core.internal.tracking;x-friends:="org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.core.internal.utils;x-friends:="org.sonarlint.eclipse.core.tests,org.sonarlint.eclipse.jdt,org.sonarlint.eclipse.ui",
+ org.sonarlint.eclipse.core.internal.vcs;x-friends:="org.sonarlint.eclipse.ui",
  org.sonarlint.eclipse.core.listener,
  org.sonarlint.eclipse.core.resource
 Require-Bundle: org.eclipse.equinox.security,
@@ -42,6 +43,8 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.jdt.annotation;resolution:=optional,
  org.sonarsource.sonarlint.core.sonarlint-core-osgi;bundle-version="7.1.0",
  minimal-json;bundle-version="0.9.5",
- org.eclipse.jgit;resolution:=optional
+ org.eclipse.jgit;resolution:=optional,
+ org.eclipse.egit.core;resolution:=optional,
+ org.eclipse.egit.ui;resolution:=optional
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11

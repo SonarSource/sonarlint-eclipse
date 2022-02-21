@@ -20,9 +20,7 @@
 package org.sonarlint.eclipse.ui.internal;
 
 import java.util.List;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -33,24 +31,15 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDo
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 
+import static org.sonarlint.eclipse.ui.internal.util.PlatformUtils.doIfSonarLintFileInEditor;
+
 /**
  * Responsible to trigger analysis when editor are opened
  */
 public class OpenEditorAnalysisTrigger implements IPartListener2 {
   @Override
   public void partOpened(IWorkbenchPartReference partRef) {
-    var part = partRef.getPart(true);
-    if (part instanceof IEditorPart) {
-      var editorPart = (IEditorPart) part;
-      var input = ((IEditorPart) part).getEditorInput();
-      if (input instanceof IFileEditorInput) {
-        var file = ((IFileEditorInput) input).getFile();
-        var sonarLintFile = Adapters.adapt(file, ISonarLintFile.class);
-        if (sonarLintFile != null) {
-          scheduleUpdate(editorPart, sonarLintFile);
-        }
-      }
-    }
+    doIfSonarLintFileInEditor(partRef, (f, p) -> scheduleUpdate(p, f));
   }
 
   private static void scheduleUpdate(IEditorPart editorPart, ISonarLintFile sonarLintFile) {

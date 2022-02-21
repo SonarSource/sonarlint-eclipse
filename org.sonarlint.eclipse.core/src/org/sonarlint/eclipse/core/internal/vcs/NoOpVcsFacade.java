@@ -17,25 +17,29 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.engine.connected;
+package org.sonarlint.eclipse.core.internal.vcs;
 
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
+import java.util.Optional;
+import java.util.Set;
+import org.eclipse.jdt.annotation.Nullable;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-public class ResolvedBinding {
-  private final EclipseProjectBinding projectBinding;
-  private final IConnectedEngineFacade engineFacade;
+public class NoOpVcsFacade implements VcsFacade {
 
-  public ResolvedBinding(EclipseProjectBinding projectBinding, IConnectedEngineFacade engineFacade) {
-    this.projectBinding = projectBinding;
-    this.engineFacade = engineFacade;
+  @Override
+  public boolean isIgnored(ISonarLintFile file) {
+    return false;
   }
 
-  public EclipseProjectBinding getProjectBinding() {
-    return projectBinding;
+  @Override
+  public Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, String serverMainBranch) {
+    return Optional.empty();
   }
 
-  public IConnectedEngineFacade getEngineFacade() {
-    return engineFacade;
+  @Override
+  public @Nullable Object getCurrentCommitRef(ISonarLintProject project) {
+    return null;
   }
 
 }

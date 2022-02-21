@@ -29,7 +29,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.scm.GitUtils;
+import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -94,17 +94,7 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
 
   @Override
   public boolean isScmIgnored() {
-    // we only support git at the moment
-    return isJGitPresent() && GitUtils.isIgnored(this);
-  }
-
-  private static boolean isJGitPresent() {
-    try {
-      Class.forName("org.eclipse.jgit.lib.Repository");
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
+    return VcsService.getFacade().isIgnored(this);
   }
 
   @Override

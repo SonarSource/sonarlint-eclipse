@@ -63,7 +63,7 @@ public class ServerUpdateJob extends Job {
         return Status.CANCEL_STATUS;
       }
       try {
-        server.updateProjectStorage(projectKeyToUpdate, monitor);
+        server.updateProjectStorage(projectKeyToUpdate, null, monitor);
       } catch (Exception e) {
         if (e instanceof CanceledException && monitor.isCanceled()) {
           return Status.CANCEL_STATUS;

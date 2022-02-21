@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.util;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -27,7 +28,10 @@ import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -126,6 +130,25 @@ public final class PlatformUtils {
       }
     }
     return null;
+  }
+
+  public static void doIfSonarLintFileInEditor(IWorkbenchPartReference partRef, BiConsumer<ISonarLintFile, IEditorPart> consumer) {
+    var part = partRef.getPart(true);
+    doIfSonarLintFileInEditor(part, consumer);
+  }
+
+  public static void doIfSonarLintFileInEditor(IWorkbenchPart part, BiConsumer<ISonarLintFile, IEditorPart> consumer) {
+    if (part instanceof IEditorPart) {
+      var editorPart = (IEditorPart) part;
+      var input = editorPart.getEditorInput();
+      if (input instanceof IFileEditorInput) {
+        var file = ((IFileEditorInput) input).getFile();
+        ISonarLintFile slFile = Adapters.adapt(file, ISonarLintFile.class);
+        if (slFile != null) {
+          consumer.accept(slFile, editorPart);
+        }
+      }
+    }
   }
 
 }
