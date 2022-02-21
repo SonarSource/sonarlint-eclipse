@@ -195,7 +195,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
     var underTest = new AnalyzeStandaloneProjectJob(new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze), TriggerType.EDITOR_CHANGE));
     underTest.schedule();
-    assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
+    assertThat(underTest.join(20_000, new NullProgressMonitor())).isTrue();
     var status = underTest.getResult();
     assertThat(status.isOK()).isTrue();
 
