@@ -27,10 +27,13 @@ import org.eclipse.reddeer.common.wait.AbstractWait;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.core.lookup.ShellLookup;
+import org.eclipse.reddeer.eclipse.condition.ProblemExists;
 import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.core.resources.Resource;
 import org.eclipse.reddeer.eclipse.ui.markers.AbstractMarker;
+import org.eclipse.reddeer.eclipse.ui.markers.matcher.AbstractMarkerMatcher;
 import org.eclipse.reddeer.eclipse.ui.markers.matcher.MarkerDescriptionMatcher;
+import org.eclipse.reddeer.eclipse.ui.markers.matcher.MarkerTypeMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.eclipse.ui.views.markers.ProblemsView;
 import org.eclipse.reddeer.eclipse.ui.views.markers.ProblemsView.ProblemType;
@@ -214,7 +217,9 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   }
 
   private static AbstractMarker findQuickFixableMarkerInProblemsView() {
-    return new ProblemsView().getProblems(ProblemType.ALL, new MarkerDescriptionMatcher(ISSUE_MESSAGE)).get(0);
+    AbstractMarkerMatcher[] matchers = new AbstractMarkerMatcher[] {new MarkerTypeMatcher("SonarLint On-The-Fly Issue"), new MarkerDescriptionMatcher(ISSUE_MESSAGE)};
+    new WaitUntil(new ProblemExists(ProblemType.WARNING, matchers));
+    return new ProblemsView().getProblems(ProblemType.WARNING, matchers).get(0);
   }
 
 }
