@@ -777,6 +777,17 @@
          </command>
       </menuContribution>
       <menuContribution
+              allPopups="false"
+              locationURI="toolbar:org.eclipse.ui.trim.status">
+          <toolbar
+                  id="org.sonarlint.eclipse.ui.internal.toolbar"
+                  label="SonarLint Toolbar">
+              <control
+                      class="org.sonarlint.eclipse.ui.internal.toolbar.SonarLintToolbarContribution">
+              </control>
+          </toolbar>
+      </menuContribution>
+      <menuContribution
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView">
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
