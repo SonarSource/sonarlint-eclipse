@@ -20,6 +20,7 @@
 
 package org.sonarlint.eclipse.ui.internal.toolbar;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.ISelection;
@@ -42,58 +43,61 @@ import static org.sonarlint.eclipse.ui.internal.util.PlatformUtils.doIfSonarLint
 
 public class SonarLintToolbarContribution extends WorkbenchWindowControlContribution implements ISelectionListener, IPartListener2 {
 
-    private Label label;
+  private Label label;
 
-    @Override
-    protected Control createControl(Composite parent) {
-        Composite page = new Composite(parent, SWT.NONE);
+  @Override
+  protected Control createControl(Composite parent) {
+    var page = new Composite(parent, SWT.NONE);
 
-        GridLayout gridLayout = new GridLayout(1, false);
-        gridLayout.marginHeight = 3;
-        page.setLayout(gridLayout);
+    var gridLayout = new GridLayout(1, false);
+    gridLayout.marginHeight = 3;
+    page.setLayout(gridLayout);
 
-        label = new Label(page, SWT.NONE);
-        label.setImage(SonarLintImages.SONARLINT_ICON_IMG);
+    label = new Label(page, SWT.NONE);
+    label.setImage(SonarLintImages.SONARLINT_ICON_IMG);
 
-        IWorkbenchPart activePart = getWorkbenchWindow().getActivePage().getActivePart();
-        doIfSonarLintFileInEditor(activePart, (f, p) -> slFileSelected(f));
-        getWorkbenchWindow().getSelectionService().addSelectionListener(this);
-        getWorkbenchWindow().getActivePage().addPartListener(this);
-        return label;
+    var activePart = getWorkbenchWindow().getActivePage().getActivePart();
+    doIfSonarLintFileInEditor(activePart, (f, p) -> slFileSelected(f));
+    getWorkbenchWindow().getSelectionService().addSelectionListener(this);
+    getWorkbenchWindow().getActivePage().addPartListener(this);
+    return label;
+  }
+
+  @Override
+  public void dispose() {
+    getWorkbenchWindow().getSelectionService().removeSelectionListener(this);
+    getWorkbenchWindow().getActivePage().removePartListener(this);
+    super.dispose();
+  }
+
+  @Override
+  public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+    var element = SelectionUtils.getSingleElement(selection);
+    if (element != null) {
+      var slFile = Adapters.adapt(element, ISonarLintFile.class);
+      if (slFile != null) {
+        slFileSelected(slFile);
+        return;
+      }
     }
-
-    @Override
-    public void dispose() {
-        getWorkbenchWindow().getSelectionService().removeSelectionListener(this);
-        getWorkbenchWindow().getActivePage().removePartListener(this);
-        super.dispose();
+    var editorFile = Adapters.adapt(part.getSite().getPage().getActiveEditor().getEditorInput(), IFile.class);
+    if (editorFile != null) {
+      var editorSlFile = Adapters.adapt(editorFile, ISonarLintFile.class);
+      slFileSelected(editorSlFile);
     }
+  }
 
-    @Override
-    public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-        Object element = SelectionUtils.getSingleElement(selection);
-        if (element != null) {
-            ISonarLintFile slFile = Adapters.adapt(element, ISonarLintFile.class);
-            if (slFile != null) {
-                slFileSelected(slFile);
-                return;
-            }
-        }
-        updateTooltip("");
-    }
+  private void slFileSelected(ISonarLintFile slFile) {
+    updateTooltip(slFile.getResource().getName() + " - Branch: " + VcsService.getServerBranch(slFile.getProject()));
+  }
 
-    private void slFileSelected(ISonarLintFile slFile) {
-        updateTooltip(VcsService.getServerBranch(slFile.getProject()));
-    }
+  private void updateTooltip(@Nullable String content) {
+    label.setToolTipText(content != null ? content : "");
+  }
 
-    private void updateTooltip(@Nullable String content) {
-        label.setToolTipText(content != null ? content : "");
-        label.getParent().getParent().requestLayout();
-    }
-
-    @Override
-    public void partActivated(IWorkbenchPartReference partRef) {
-        doIfSonarLintFileInEditor(partRef, (f, p) -> slFileSelected(f));
-    }
+  @Override
+  public void partActivated(IWorkbenchPartReference partRef) {
+    doIfSonarLintFileInEditor(partRef, (f, p) -> slFileSelected(f));
+  }
 
 }
