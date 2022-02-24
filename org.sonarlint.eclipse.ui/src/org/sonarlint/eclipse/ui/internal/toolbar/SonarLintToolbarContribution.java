@@ -20,22 +20,26 @@
 
 package org.sonarlint.eclipse.ui.internal.toolbar;
 
+import java.util.Optional;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Adapters;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
@@ -80,7 +84,11 @@ public class SonarLintToolbarContribution extends WorkbenchWindowControlContribu
         return;
       }
     }
-    var editorFile = Adapters.adapt(part.getSite().getPage().getActiveEditor().getEditorInput(), IFile.class);
+    IEditorPart activeEditor = part.getSite().getPage().getActiveEditor();
+    if (activeEditor == null) {
+      return;
+    }
+    var editorFile = Adapters.adapt(activeEditor.getEditorInput(), IFile.class);
     if (editorFile != null) {
       var editorSlFile = Adapters.adapt(editorFile, ISonarLintFile.class);
       slFileSelected(editorSlFile);
@@ -88,11 +96,20 @@ public class SonarLintToolbarContribution extends WorkbenchWindowControlContribu
   }
 
   private void slFileSelected(ISonarLintFile slFile) {
-    updateTooltip(slFile.getResource().getName() + " - Branch: " + VcsService.getServerBranch(slFile.getProject()));
-  }
-
-  private void updateTooltip(@Nullable String content) {
-    label.setToolTipText(content != null ? content : "");
+    ISonarLintProject project = slFile.getProject();
+    Optional<ResolvedBinding> binding = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+    if (binding.isEmpty()) {
+      label.setToolTipText("");
+      return;
+    }
+    var serverBranch = VcsService.getServerBranch(project);
+    String toolTipText;
+    if (serverBranch != null) {
+      toolTipText = slFile.getResource().getName() + " - Branch: " + serverBranch;
+    } else {
+      toolTipText = "Can not get server branch.";
+    }
+    label.setToolTipText(toolTipText);
   }
 
   @Override
