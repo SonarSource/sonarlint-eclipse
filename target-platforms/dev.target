@@ -2,15 +2,6 @@
 <?pde version="3.8"?>
 <target includeMode="feature" name="sonarlint-eclipse-dev" sequenceNumber="1">
 <locations>
-<location path="${M2_REPO}/commons-io/commons-io/2.6" type="Directory"/>
-<location path="${M2_REPO}/org/mockito/mockito-core/3.7.7" type="Directory"/>
-<location path="${M2_REPO}/net/bytebuddy/byte-buddy/1.10.19" type="Directory"/>
-<location path="${M2_REPO}/net/bytebuddy/byte-buddy-agent/1.10.19" type="Directory"/>
-<location path="${M2_REPO}/org/objenesis/objenesis/3.1" type="Directory"/>
-<location path="${M2_REPO}/org/assertj/assertj-core/3.19.0" type="Directory"/>
-<location path="${M2_REPO}/com/google/code/gson/gson/2.9.0" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.35.1.2719" type="Directory"/>
-<location includeSource="true" path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core-osgi/8.5.0.46122" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
@@ -33,6 +24,50 @@
 	<unit id="org.eclipse.reddeer.eclipse.feature.feature.group" version="0.0.0"/>
 	<unit id="org.eclipse.reddeer.ui.feature.feature.group" version="0.0.0"/>
 </location>
+  <location includeSource="true" missingManifest="error" type="Maven">
+    <dependencies>
+      <dependency>
+        <groupId>com.eclipsesource.minimal-json</groupId>
+        <artifactId>minimal-json</artifactId>
+        <version>0.9.5</version>
+        <type>jar</type>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.6</version>
+        <type>jar</type>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.19.0</version>
+        <type>jar</type>
+      </dependency>
+      <dependency>
+        <groupId>org.sonarsource.orchestrator</groupId>
+        <artifactId>sonar-orchestrator-osgi</artifactId>
+        <version>3.35.1.2719</version>
+        <type>jar</type>
+      </dependency>
+      <dependency>
+        <groupId>org.sonarsource.sonarlint.core</groupId>
+        <artifactId>sonarlint-core-osgi</artifactId>
+        <version>8.5.0.46122</version>
+        <type>jar</type>
+      </dependency>
+    </dependencies>
+  </location>
+  <location includeDependencyScope="compile" includeSource="true" missingManifest="error" type="Maven">
+    <dependencies>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>3.7.7</version>
+        <type>jar</type>
+      </dependency>
+    </dependencies>
+  </location>
 </locations>
 	<targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
 </target>
