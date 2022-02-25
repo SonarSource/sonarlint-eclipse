@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
@@ -107,5 +108,13 @@ public class SonarLintUtils {
 
   public static int getPlatformPid() {
     return (int) ProcessHandle.current().pid();
+  }
+
+  public static ThreadFactory threadFactory(String name, boolean daemon) {
+    return runnable -> {
+      var result = new Thread(runnable, name);
+      result.setDaemon(daemon);
+      return result;
+    };
   }
 }
