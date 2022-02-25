@@ -21,19 +21,18 @@
 package org.sonarlint.eclipse.ui.internal.toolbar;
 
 import java.util.Optional;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.Adapters;
-import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
@@ -41,16 +40,16 @@ import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
 import static org.sonarlint.eclipse.ui.internal.util.PlatformUtils.doIfSonarLintFileInEditor;
 
-public class SonarLintToolbarContribution extends WorkbenchWindowControlContribution implements ISelectionListener, IPartListener2 {
+public class SonarLintToolbarContribution extends WorkbenchWindowControlContribution {
 
   private Label label;
 
   @Override
   protected Control createControl(Composite parent) {
+
     var page = new Composite(parent, SWT.NONE);
 
     var gridLayout = new GridLayout(1, false);
@@ -60,61 +59,66 @@ public class SonarLintToolbarContribution extends WorkbenchWindowControlContribu
     label = new Label(page, SWT.NONE);
     label.setImage(SonarLintImages.SONARLINT_ICON_IMG);
 
-    var activePart = getWorkbenchWindow().getActivePage().getActivePart();
-    doIfSonarLintFileInEditor(activePart, (f, p) -> slFileSelected(f));
-    getWorkbenchWindow().getSelectionService().addSelectionListener(this);
-    getWorkbenchWindow().getActivePage().addPartListener(this);
+    label.addMouseTrackListener(new MouseTrackAdapter() {
+      @Override
+      public void mouseEnter(MouseEvent e) {
+        updateTooltip();
+      }
+    });
     return label;
   }
 
-  @Override
-  public void dispose() {
-    getWorkbenchWindow().getSelectionService().removeSelectionListener(this);
-    getWorkbenchWindow().getActivePage().removePartListener(this);
-    super.dispose();
-  }
-
-  @Override
-  public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-    var element = SelectionUtils.getSingleElement(selection);
-    if (element != null) {
-      var slFile = Adapters.adapt(element, ISonarLintFile.class);
-      if (slFile != null) {
-        slFileSelected(slFile);
-        return;
-      }
-    }
-    IEditorPart activeEditor = part.getSite().getPage().getActiveEditor();
-    if (activeEditor == null) {
+  private void updateTooltip() {
+    var activePart = getWorkbenchWindow().getActivePage().getActiveEditor();
+    if (activePart == null) {
+      refreshLabel(null);
       return;
     }
-    var editorFile = Adapters.adapt(activeEditor.getEditorInput(), IFile.class);
-    if (editorFile != null) {
-      var editorSlFile = Adapters.adapt(editorFile, ISonarLintFile.class);
-      slFileSelected(editorSlFile);
-    }
+    doIfSonarLintFileInEditor(activePart, (f, p) -> refreshLabel(f));
   }
 
-  private void slFileSelected(ISonarLintFile slFile) {
-    ISonarLintProject project = slFile.getProject();
-    Optional<ResolvedBinding> binding = SonarLintCorePlugin.getServersManager().resolveBinding(project);
-    if (binding.isEmpty()) {
-      label.setToolTipText("");
-      return;
-    }
-    var serverBranch = VcsService.getServerBranch(project);
-    String toolTipText;
-    if (serverBranch != null) {
-      toolTipText = slFile.getResource().getName() + " - Branch: " + serverBranch;
+  private void refreshLabel(@Nullable ISonarLintFile f) {
+    if (f != null) {
+      new UpdateSonarLintToolbarJob(f).schedule();
     } else {
-      toolTipText = "Can not get server branch.";
+      updateLabelTooltipInUIThread("");
     }
-    label.setToolTipText(toolTipText);
   }
 
-  @Override
-  public void partActivated(IWorkbenchPartReference partRef) {
-    doIfSonarLintFileInEditor(partRef, (f, p) -> slFileSelected(f));
+  private class UpdateSonarLintToolbarJob extends Job {
+
+    private final ISonarLintFile slFile;
+
+    public UpdateSonarLintToolbarJob(ISonarLintFile openedFileInEditor) {
+      super("Refresh SonarLint toolbar for " + openedFileInEditor.getName());
+      setPriority(Job.DECORATE);
+      setSystem(true);
+      this.slFile = openedFileInEditor;
+    }
+
+    @Override
+    public IStatus run(IProgressMonitor monitor) {
+      ISonarLintProject project = slFile.getProject();
+      Optional<ResolvedBinding> binding = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+      if (binding.isEmpty()) {
+        updateLabelTooltipInUIThread("");
+        return Status.OK_STATUS;
+      }
+      var serverBranch = VcsService.getServerBranch(project);
+      String toolTipText;
+      if (serverBranch != null) {
+        toolTipText = slFile.getResource().getName() + " - Branch: " + serverBranch;
+      } else {
+        toolTipText = "Can not get server branch.";
+      }
+      updateLabelTooltipInUIThread(toolTipText);
+      return Status.OK_STATUS;
+    }
+
+  }
+
+  private void updateLabelTooltipInUIThread(String text) {
+    getWorkbenchWindow().getShell().getDisplay().syncExec(() -> label.setToolTipText(text));
   }
 
 }
