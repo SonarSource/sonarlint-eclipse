@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -69,7 +71,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private IPropertyChangeListener prefListener;
 
-  private LogListener logListener;
+  private SonarLintConsoleLogger logListener;
   private PopupNotification notifListener;
 
   private SonarLintConsole console;
@@ -88,27 +90,35 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   }
 
   private class SonarLintConsoleLogger implements LogListener {
+
+    /**
+     * We need to process logs asynchronously to not slow down the source of logs, and not lock the UI. Still we need to preserve log
+     * ordering. So we don't use asyncExec, but instead use a single thread executor service + syncExec
+     * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=421303
+     */
+    private final ExecutorService logConsumer = Executors.newSingleThreadExecutor(SonarLintUtils.threadFactory("sonarlint-log-consummer", true));
+
     @Override
     public void info(String msg, boolean fromAnalyzer) {
       if (PlatformUI.isWorkbenchRunning()) {
-        getSonarConsole().info(msg, fromAnalyzer);
+        doAsyncInUiThread(() -> getSonarConsole().info(msg, fromAnalyzer));
       }
     }
 
     @Override
     public void error(String msg, boolean fromAnalyzer) {
       if (PlatformUI.isWorkbenchRunning()) {
-        if (isNodeCommandException(msg)) {
-          getSonarConsole().info(msg, false);
-          Display.getDefault().asyncExec(() -> {
+        doAsyncInUiThread(() -> {
+          if (isNodeCommandException(msg)) {
+            getSonarConsole().info(msg, false);
             var popup = new MissingNodePopup();
             popup.setFadingEnabled(false);
             popup.setDelayClose(0L);
             popup.open();
-          });
-        } else {
-          getSonarConsole().error(msg, fromAnalyzer);
-        }
+          } else {
+            getSonarConsole().error(msg, fromAnalyzer);
+          }
+        });
       }
     }
 
@@ -119,8 +129,16 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     @Override
     public void debug(String msg, boolean fromAnalyzer) {
       if (PlatformUI.isWorkbenchRunning()) {
-        getSonarConsole().debug(msg, fromAnalyzer);
+        doAsyncInUiThread(() -> getSonarConsole().debug(msg, fromAnalyzer));
       }
+    }
+
+    void doAsyncInUiThread(Runnable task) {
+      logConsumer.submit(() -> Display.getDefault().syncExec(task));
+    }
+
+    public void shutdown() {
+      logConsumer.shutdown();
     }
 
   }
@@ -185,6 +203,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_FLOW_LOCATION_SERVICE);
     SonarLintLogger.get().removeLogListener(logListener);
+    logListener.shutdown();
     SonarLintNotifications.get().removeNotificationListener(notifListener);
     if (PlatformUI.isWorkbenchRunning()) {
       for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
