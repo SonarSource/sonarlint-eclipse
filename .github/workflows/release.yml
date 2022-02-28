@@ -13,15 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     name: Start release process
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.BINARIES_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.BINARIES_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.BINARIES_AWS_REGION }}    
       - name: SL release
         id: sl_release
         with:
-          distribute: true
           publish_to_binaries: true
-          attach_artifacts_to_github_release: false
           slack_channel: team-sonarlint-java
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+          BINARIES_AWS_DEPLOY: ${{ secrets.BINARIES_AWS_DEPLOY }}
           BURGRX_USER: ${{ secrets.BURGRX_USER }}
           BURGRX_PASSWORD: ${{ secrets.BURGRX_PASSWORD }}
           PATH_PREFIX: ${{ secrets.BINARIES_PATH_PREFIX }}
@@ -30,7 +35,7 @@ jobs:
           RELEASE_SSH_KEY: ${{ secrets.RELEASE_SSH_KEY }}
           SLACK_API_TOKEN: ${{secrets.SLACK_API_TOKEN }}
         # Put your action repo here
-        uses: SonarSource/gh-action_release/main@v3
+        uses: SonarSource/gh-action_release/main@v4
 
       - name: Check outputs
         if: always()
