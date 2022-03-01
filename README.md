@@ -44,8 +44,6 @@ Normally, m2e will automatically suggest to install missing connectors (Tycho co
 2. In Eclipse, import the project root as Maven project
 3. (Optional) In Eclipse, import the `its/` folder as Maven project
 4. Open `target-platforms/dev.target` with the target platform editor
-    - Click on **Environment** tab and add `M2_REPO` variable pointing to your local maven repo (for example `/home/youruser/.m2/repository`)
-    - On the **Definition** tab, click **Reload**
     - Click **Set as Target Platform** (or **Reload Target Platform**) in the top-right corner
 
 At this point you should be all set, unless Eclipse is not able to generate protobuf sources.
@@ -107,31 +105,8 @@ http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassd
 Adding a dependency
 -------------------
 
-Must be an osgi bundle.
-
-### For Maven
-
-Add the artifact to the parent pom.
-
-Run `mvn compile` to get the artifact downloaded so that you can inspect its manifest in the jar.
-
-Find the name of the bundle from its manifest, see the `Bundle-SymbolicName` property.
-
-Edit the manifest of the package where you want to add the dependency (for example: `org.sonarlint.eclipse.core/META-INF/MANIFEST.MF`), add the bundle in the `Require-Bundle` property, using its symbolic name.
-
-If the bundle is not needed at runtime, don't forget to mark it optional, to avoid including in the package.
-(Edit properties on the **Dependencies** tab, or append `;resolution:=optional`)
-
-To verify the content of the package: `mvn clean package` and check content of the ZIP in plugins folder.
-
-### For Eclipse
-
-Add to `target-platforms/dev.target` (or whatever target you use) the path of the artifact in your local maven repository as a filesystem path, similar to already existing dependencies.
-
-In the target editor (or open `plugin.xml`), click **Set as Target Platform**.
-Note that this will trigger a compilation in Eclipse.
-
-At this point, and if the artifact exists at the specified path, it should be usable, and Eclipse will be able to compile the project.
+We should avoid adding external dependencies, as we want all bundles we provide in our update site to be signed, and we don't want to sign third-party components. Third-party libs should be bundled/shaded into
+our own plugins.
 
 ### License
 

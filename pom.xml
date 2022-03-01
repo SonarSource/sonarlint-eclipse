@@ -55,7 +55,7 @@
     <license.title>SonarLint for Eclipse</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>2.6.0</tycho.version>
+    <tycho.version>2.7.1</tycho.version>
     <jdk.min.version>11</jdk.min.version>
     <!-- Same protobuf version than the one in SonarLint Core-->
     <protobuf.version>3.20.0</protobuf.version>
@@ -75,16 +75,6 @@
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
     <artifactsToPublish>${project.groupId}:org.sonarlint.eclipse.site:zip</artifactsToPublish>
   </properties>
-
-  <!-- These dependencies will be added to the target platform -->
-  <dependencies>
-    <!-- Tests deps, will not be packaged in the update site -->
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>3.7.7</version>
-    </dependency>
-  </dependencies>
 
   <build>
     <pluginManagement>
@@ -197,7 +187,6 @@
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>target-platform-configuration</artifactId>
         <configuration>
-          <pomDependencies>consider</pomDependencies>
           <target>
             <file>../target-platforms/build.target</file>
           </target>

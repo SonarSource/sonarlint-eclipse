@@ -1,37 +1,41 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
 <target name="sonarlint-eclipse-build" sequenceNumber="2">
-<locations>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.platform.ide" version="0.0.0"/>
-<unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
-<repository location="https://download.eclipse.org/releases/2021-12/"/>
-</location>
-  <location includeSource="true" missingManifest="error" type="Maven">
-    <dependencies>
-      <dependency>
-        <groupId>org.assertj</groupId>
-        <artifactId>assertj-core</artifactId>
-        <version>3.19.0</version>
-        <type>jar</type>
-      </dependency>
-      <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
-        <version>3.7.7</version>
-        <type>jar</type>
-      </dependency>
-      <dependency>
-        <groupId>org.sonarsource.sonarlint.core</groupId>
-        <artifactId>sonarlint-core-osgi</artifactId>
-        <version>8.5.0.46122</version>
-        <type>jar</type>
-      </dependency>
-    </dependencies>
-  </location>
-</locations>
+  <locations>
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+      <unit id="org.eclipse.cdt.feature.group" version="0.0.0" />
+      <unit id="org.eclipse.jdt.feature.group" version="0.0.0" />
+      <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0" />
+      <unit id="org.eclipse.platform.ide" version="0.0.0" />
+      <unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0" />
+      <unit id="org.eclipse.egit.feature.group" version="0.0.0" />
+      <repository location="https://download.eclipse.org/releases/2022-03/" />
+    </location>
+    <location includeSource="true" missingManifest="error" type="Maven">
+      <dependencies>
+        <dependency>
+          <groupId>org.assertj</groupId>
+          <artifactId>assertj-core</artifactId>
+          <version>3.19.0</version>
+          <type>jar</type>
+        </dependency>
+        <dependency>
+          <groupId>org.sonarsource.sonarlint.core</groupId>
+          <artifactId>sonarlint-core-osgi</artifactId>
+          <version>8.5.0.46122</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>
+    </location>
+    <location includeDependencyDepth="infinite" includeDependencyScope="compile" includeSource="true" missingManifest="error" type="Maven">
+      <dependencies>
+        <dependency>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-core</artifactId>
+          <version>3.7.7</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>
+    </location>
+  </locations>
 </target>

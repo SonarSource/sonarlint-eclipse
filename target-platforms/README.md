@@ -1,2 +1,2 @@
-* build.target is used during the command line build, since Tycho will consider pom dependencies
-* dev.target should be used when developping SonarLint inside Eclipse
+* build.target is used during the command line build, to ensure minimal dependencies
+* dev.target should be the active target plartform used when developping SonarLint inside Eclipse, to be able to run ITs as well
