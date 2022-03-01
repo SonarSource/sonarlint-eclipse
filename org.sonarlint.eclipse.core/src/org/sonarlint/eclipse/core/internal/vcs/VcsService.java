@@ -25,13 +25,17 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jgit.util.StringUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class VcsService {
+
+  private static final SonarLintLogger LOG = SonarLintLogger.get();
 
   public static final boolean IS_EGIT_5_12_BUNDLE_AVAILABLE;
   static {
@@ -76,17 +80,18 @@ public class VcsService {
   }
 
   private static Optional<String> electBestMatchingBranch(ISonarLintProject project) {
+    LOG.debug("Elect best matching branch for project " + project.getName() + "...");
     Optional<ResolvedBinding> bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
     if (bindingOpt.isEmpty()) {
+      LOG.debug("Project not bound");
       return Optional.empty();
     }
-    var serverBranches = bindingOpt.get().getEngineFacade().getServerBranches(bindingOpt.get().getProjectBinding().projectKey());
 
     Object previousCommitRef = previousCommitRefCache.get(project);
     VcsFacade facade = getFacade();
     Object newCommitRef = facade.getCurrentCommitRef(project);
     if (!Objects.equals(previousCommitRef, newCommitRef)) {
-      // Current commit has changed, recompute the best elected branch
+      LOG.debug("HEAD has changed since last election, evict cached branch...");
       electedServerBranchCache.remove(project);
       if (newCommitRef == null) {
         previousCommitRefCache.remove(project);
@@ -95,8 +100,14 @@ public class VcsService {
       }
     }
 
-    return electedServerBranchCache.computeIfAbsent(project,
-      p -> facade.electBestMatchingBranch(p, serverBranches.getBranchNames(), serverBranches.getMainBranchName().orElse(null)));
+    var branch = electedServerBranchCache.computeIfAbsent(project,
+      p -> {
+        var serverBranches = bindingOpt.get().getEngineFacade().getServerBranches(bindingOpt.get().getProjectBinding().projectKey());
+        LOG.debug("Find best matching branch among: " + StringUtils.join(serverBranches.getBranchNames(), ","));
+        return facade.electBestMatchingBranch(p, serverBranches.getBranchNames(), serverBranches.getMainBranchName().orElse(null));
+      });
+    LOG.debug("Best matching branch is " + branch.orElse("<main>"));
+    return branch;
   }
 
   public static void projectClosed(ISonarLintProject project) {

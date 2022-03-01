@@ -55,7 +55,6 @@ public class EGit5dot12VcsFacade implements VcsFacade {
 
   @Override
   public Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, @Nullable String serverMainBranch) {
-    LOG.debug("Compute best matching server branch for project " + project.getName());
     return withRepo(project.getResource(), repo -> GitUtils.electBestMatchingServerBranchForCurrentHead(repo, serverCandidateNames, serverMainBranch));
   }
 
