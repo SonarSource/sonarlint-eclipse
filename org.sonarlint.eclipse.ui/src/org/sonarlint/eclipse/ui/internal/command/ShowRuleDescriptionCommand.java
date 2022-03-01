@@ -32,7 +32,7 @@ public class ShowRuleDescriptionCommand extends AbstractIssueCommand {
       var view = (RuleDescriptionWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RuleDescriptionWebView.ID);
       view.setInput(selectedMarker);
     } catch (Exception e) {
-      SonarLintLogger.get().error("Unable to open RuleConfig Description Web View", e);
+      SonarLintLogger.get().error("Unable to open Rule Description Web View", e);
     }
   }
 
