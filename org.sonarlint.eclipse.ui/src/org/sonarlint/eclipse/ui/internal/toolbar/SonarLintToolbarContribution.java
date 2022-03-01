@@ -27,19 +27,24 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
 
 import static org.sonarlint.eclipse.ui.internal.util.PlatformUtils.doIfSonarLintFileInEditor;
 
@@ -58,6 +63,18 @@ public class SonarLintToolbarContribution extends WorkbenchWindowControlContribu
 
     label = new Label(page, SWT.NONE);
     label.setImage(SonarLintImages.SONARLINT_ICON_IMG);
+    label.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseDown(MouseEvent event) {
+        if (event.button == 1) {
+          try {
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(OnTheFlyIssuesView.ID);
+          } catch (PartInitException e) {
+            SonarLintLogger.get().error("Unable to open On-The-Fly View", e);
+          }
+        }
+      }
+    });
 
     label.addMouseTrackListener(new MouseTrackAdapter() {
       @Override
@@ -81,7 +98,7 @@ public class SonarLintToolbarContribution extends WorkbenchWindowControlContribu
     if (f != null) {
       new UpdateSonarLintToolbarJob(f).schedule();
     } else {
-      updateLabelTooltipInUIThread("");
+      updateLabelTooltipInUIThread("Open a file to analyze it");
     }
   }
 
@@ -101,24 +118,18 @@ public class SonarLintToolbarContribution extends WorkbenchWindowControlContribu
       ISonarLintProject project = slFile.getProject();
       Optional<ResolvedBinding> binding = SonarLintCorePlugin.getServersManager().resolveBinding(project);
       if (binding.isEmpty()) {
-        updateLabelTooltipInUIThread("");
-        return Status.OK_STATUS;
-      }
-      var serverBranch = VcsService.getServerBranch(project);
-      String toolTipText;
-      if (serverBranch != null) {
-        toolTipText = slFile.getResource().getName() + " - Branch: " + serverBranch;
+        updateLabelTooltipInUIThread(slFile.getResource().getName());
       } else {
-        toolTipText = "Can not get server branch.";
+        var serverBranch = VcsService.getServerBranch(project);
+        updateLabelTooltipInUIThread(slFile.getResource().getName() + " - Branch: " + Optional.ofNullable(serverBranch).orElse("<main>"));
       }
-      updateLabelTooltipInUIThread(toolTipText);
       return Status.OK_STATUS;
     }
 
   }
 
   private void updateLabelTooltipInUIThread(String text) {
-    getWorkbenchWindow().getShell().getDisplay().syncExec(() -> label.setToolTipText(text));
+    getWorkbenchWindow().getShell().getDisplay().syncExec(() -> label.setToolTipText("SonarLint - " + text));
   }
 
 }
