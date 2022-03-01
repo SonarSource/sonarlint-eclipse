@@ -36,8 +36,9 @@ import org.sonarsource.sonarlint.core.vcs.GitUtils;
 
 /**
  * Uses internal EGit
- *
+ * @deprecated Remove when we want to stop support of Eclipse with EGit < 5.12 (= Eclipse 2021-06)
  */
+@Deprecated(forRemoval = true)
 public class OldEGitVcsFacade implements VcsFacade {
 
   private static final SonarLintLogger LOG = SonarLintLogger.get();
@@ -61,7 +62,6 @@ public class OldEGitVcsFacade implements VcsFacade {
 
   @Override
   public Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, @Nullable String serverMainBranch) {
-    LOG.debug("Compute best matching server branch for project " + project.getName());
     return withRepo(project.getResource(), repo -> GitUtils.electBestMatchingServerBranchForCurrentHead(repo, serverCandidateNames, serverMainBranch));
   }
 
