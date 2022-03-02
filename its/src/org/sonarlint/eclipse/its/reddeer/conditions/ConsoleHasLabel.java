@@ -25,10 +25,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.core.IsEqual;
 
 /**
- * Returns true if the console label matches a given String matcher
- * or given text
- *
- * @author vlado pakan
+ * Workaround for https://github.com/eclipse/reddeer/issues/2162
  *
  */
 public class ConsoleHasLabel extends AbstractWaitCondition {

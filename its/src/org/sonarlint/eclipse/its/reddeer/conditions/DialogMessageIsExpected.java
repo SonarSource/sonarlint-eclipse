@@ -34,7 +34,14 @@ public class DialogMessageIsExpected extends AbstractWaitCondition {
 
   @Override
   public boolean test() {
-    return dialog.getMessage().equals(expectedMessage);
+    String message;
+    try {
+      message = dialog.getMessage();
+    } catch (StringIndexOutOfBoundsException e) {
+      // Workaround for https://github.com/eclipse/reddeer/issues/2165
+      message = "";
+    }
+    return message.equals(expectedMessage);
   }
 
 }
