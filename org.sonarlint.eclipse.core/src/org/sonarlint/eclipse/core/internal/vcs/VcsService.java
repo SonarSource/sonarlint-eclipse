@@ -25,13 +25,14 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jgit.util.StringUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+
+import static java.util.stream.Collectors.joining;
 
 public class VcsService {
 
@@ -103,7 +104,7 @@ public class VcsService {
     var branch = electedServerBranchCache.computeIfAbsent(project,
       p -> {
         var serverBranches = bindingOpt.get().getEngineFacade().getServerBranches(bindingOpt.get().getProjectBinding().projectKey());
-        LOG.debug("Find best matching branch among: " + StringUtils.join(serverBranches.getBranchNames(), ","));
+        LOG.debug("Find best matching branch among: " + serverBranches.getBranchNames().stream().collect(joining(",")));
         return facade.electBestMatchingBranch(p, serverBranches.getBranchNames(), serverBranches.getMainBranchName().orElse(null));
       });
     LOG.debug("Best matching branch is " + branch.orElse("<main>"));
