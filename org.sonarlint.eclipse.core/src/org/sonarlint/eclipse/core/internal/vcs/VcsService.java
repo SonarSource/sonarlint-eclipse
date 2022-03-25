@@ -40,9 +40,9 @@ public class VcsService {
 
   public static final boolean IS_EGIT_5_12_BUNDLE_AVAILABLE;
   static {
-    boolean result = false;
+    var result = false;
     try {
-      Bundle egitBundle = Platform.getBundle("org.eclipse.egit.core");
+      var egitBundle = Platform.getBundle("org.eclipse.egit.core");
       result = egitBundle != null && (egitBundle.getState() & (Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED)) != 0
         && egitBundle.getVersion().compareTo(new Version(5, 12, 0)) >= 0;
     } catch (Throwable exception) {
@@ -53,9 +53,9 @@ public class VcsService {
 
   public static final boolean IS_EGIT_UI_BUNDLE_AVAILABLE;
   static {
-    boolean result = false;
+    var result = false;
     try {
-      Bundle egitUiBundle = Platform.getBundle("org.eclipse.egit.ui");
+      var egitUiBundle = Platform.getBundle("org.eclipse.egit.ui");
       result = egitUiBundle != null && (egitUiBundle.getState() & (Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED)) != 0;
     } catch (Throwable exception) {
       // Assume that it's not available.
