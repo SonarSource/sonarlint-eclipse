@@ -51,6 +51,7 @@ import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.hamcrest.core.StringContains;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.sonarlint.eclipse.its.reddeer.conditions.OnTheFlyViewIsEmpty;
@@ -217,6 +218,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   // Need PyDev
   @Test
   @Category(RequiresExtraDependency.class)
+  @Ignore("PyDev preventing Java files to be opened using double click: https://bugs.eclipse.org/bugs/show_bug.cgi?id=579282")
   public void shouldAnalysePython() {
     new PydevPerspective().open();
     importExistingProjectIntoWorkspace("python");
