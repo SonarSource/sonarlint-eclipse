@@ -20,12 +20,12 @@
 package org.sonarlint.eclipse.its.reddeer.views;
 
 import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.eclipse.condition.ConsoleHasLabel;
 import org.eclipse.reddeer.eclipse.ui.console.ConsoleView;
 import org.eclipse.reddeer.swt.impl.menu.ToolItemMenuItem;
 import org.eclipse.reddeer.swt.impl.toolbar.DefaultToolItem;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.StringEndsWith;
-import org.sonarlint.eclipse.its.reddeer.conditions.ConsoleHasLabel;
 
 public class SonarLintConsole {
 
@@ -46,7 +46,7 @@ public class SonarLintConsole {
     consoleView.open();
     var menu = new ToolItemMenuItem(new DefaultToolItem(consoleView.getCTabItem().getFolder(), "Open Console"), textMatcher);
     menu.select();
-    new WaitUntil(new ConsoleHasLabel(consoleView, textMatcher));
+    new WaitUntil(new ConsoleHasLabel(textMatcher));
   }
 
   public void enableVerboseOutput() {
