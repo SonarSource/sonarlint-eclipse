@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -30,6 +31,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import org.sonarsource.sonarlint.core.commons.http.HttpClient;
+import org.sonarsource.sonarlint.core.commons.http.HttpConnectionListener;
 
 public class SonarLintHttpClientOkHttpImpl implements HttpClient {
   private final OkHttpClient okClient;
@@ -141,5 +143,10 @@ public class SonarLintHttpClientOkHttpImpl implements HttpClient {
         return wrapped.toString();
       }
     };
+  }
+
+  @Override
+  public AsyncRequest getEventStream(String url, HttpConnectionListener connectionListener, Consumer<String> messageConsumer) {
+    throw new UnsupportedOperationException("getEventStream");
   }
 }
