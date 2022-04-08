@@ -48,6 +48,10 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
         new SubscribeToNotificationsJob(projectToSubscribeToNotifications).schedule();
       }
       projectToUnsubscribeFromNotifications.forEach(p -> SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(p));
+      if (!projectToSubscribeToNotifications.isEmpty() || !projectToUnsubscribeFromNotifications.isEmpty()) {
+        SonarLintCorePlugin.getServersManager()
+          .subscribeForEvents(projectToSubscribeToNotifications.isEmpty() ? projectToUnsubscribeFromNotifications.get(0) : projectToSubscribeToNotifications.get(0));
+      }
     }
   }
 

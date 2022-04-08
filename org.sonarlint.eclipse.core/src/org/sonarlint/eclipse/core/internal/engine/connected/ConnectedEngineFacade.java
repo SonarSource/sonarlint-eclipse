@@ -37,6 +37,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -90,7 +92,6 @@ import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
@@ -142,6 +143,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
         this.wrappedEngine = new ConnectedSonarLintEngineImpl(globalConfig);
         reloadProjects(wrappedEngine);
         SkippedPluginsNotifier.notifyForSkippedPlugins(wrappedEngine.getPluginDetails(), id);
+        subscribeForEventsForBoundProjects();
       } catch (Throwable e) {
         SonarLintLogger.get().error("Unable to start connected SonarLint engine", e);
         wrappedEngine = null;
@@ -364,10 +366,24 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     });
   }
 
+  private Stream<ISonarLintProject> getOpenedProjects() {
+    return ProjectsProviderUtils.allProjects().stream()
+      .filter(ISonarLintProject::isOpen);
+  }
+
+  @Override
+  public Set<String> getBoundProjectKeys() {
+    return getOpenedProjects()
+      .map(project -> SonarLintCorePlugin.loadConfig(project).getProjectBinding())
+      .filter(binding -> binding.filter(b -> id.equals(b.connectionId())).isPresent())
+      .map(Optional::get)
+      .map(ProjectBinding::projectKey)
+      .collect(Collectors.toSet());
+  }
+
   @Override
   public List<ISonarLintProject> getBoundProjects() {
-    return ProjectsProviderUtils.allProjects().stream()
-      .filter(ISonarLintProject::isOpen)
+    return getOpenedProjects()
       .filter(p -> {
         var config = SonarLintCorePlugin.loadConfig(p);
         return config.getProjectBinding().filter(b -> id.equals(b.connectionId())).isPresent();
@@ -625,9 +641,13 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
   @Override
   public void syncAllProjects(IProgressMonitor monitor) {
-    var projectKeysToUpdate = getBoundProjects().stream().map(p -> {
-      return SonarLintCorePlugin.loadConfig(p).getProjectBinding().get().projectKey();
-    }).collect(toSet());
-    sync(projectKeysToUpdate, monitor);
+    sync(getBoundProjectKeys(), monitor);
+  }
+
+  @Override
+  public void subscribeForEventsForBoundProjects() {
+    if (wrappedEngine != null) {
+      wrappedEngine.subscribeForEvents(createEndpointParams(), buildClientWithProxyAndCredentials(), getBoundProjectKeys(), null);
+    }
   }
 }

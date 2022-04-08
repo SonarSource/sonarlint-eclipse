@@ -22,45 +22,72 @@ package org.sonarlint.eclipse.its;
 import com.google.gson.Gson;
 import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.container.Server;
+import com.sonar.orchestrator.locator.URLLocation;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.core.condition.WidgetIsFound;
 import org.eclipse.reddeer.core.matcher.WithTextMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
+import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.swt.widgets.Label;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
+import org.sonarqube.ws.QualityProfiles.SearchWsResponse.QualityProfile;
+import org.sonarqube.ws.client.PostRequest;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.project.CreateRequest;
+import org.sonarqube.ws.client.qualityprofile.SearchWsRequest;
 import org.sonarqube.ws.client.setting.SetRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
   @ClassRule
-  public static Orchestrator orchestrator = Orchestrator.builderEnv()
-    .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[8.9]"))
-    .build();
+  public static Orchestrator orchestrator;
+
+  static {
+    try {
+      orchestrator = Orchestrator.builderEnv()
+        .keepBundledPlugins()
+        .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[8.9]"))
+        .restoreProfileAtStartup(
+          URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint.xml"), null))))
+        .build();
+    } catch (IOException e) {
+      fail("Cannot start orchestrator: " + e.getMessage());
+    }
+  }
 
   private static WsClient adminWsClient;
 
   private static final String PROJECT_NAME = "secret-java";
+  private static final String JAVA_SIMPLE_PROJECT_KEY = "java-simple";
 
   @BeforeClass
   public static void prepare() {
@@ -70,6 +97,11 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
       .create(CreateRequest.builder()
         .setName(PROJECT_NAME)
         .setKey(PROJECT_NAME).build());
+    adminWsClient.projects()
+      .create(CreateRequest.builder()
+        .setName(JAVA_SIMPLE_PROJECT_KEY)
+        .setKey(JAVA_SIMPLE_PROJECT_KEY).build());
+    orchestrator.getServer().associateProjectToQualityProfile(JAVA_SIMPLE_PROJECT_KEY, "java", "SonarLint IT Java");
   }
 
   @Before
@@ -175,10 +207,55 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void shouldFindSecretsInConnectedMode() throws Exception {
+  public void shouldFindSecretsInConnectedMode() {
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", PROJECT_NAME);
 
+    createConnectionAndBindProject(PROJECT_NAME);
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
+
+    var defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(
+        tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
+
+    var preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
+    new DefaultLink(preferencesShell, "Dismiss").click();
+  }
+
+  @Test
+  public void shouldAutomaticallyUpdateRuleSetWhenChangedOnServer() throws Exception {
+    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(9, 4));
+
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("java/java-simple", JAVA_SIMPLE_PROJECT_KEY);
+
+    createConnectionAndBindProject(JAVA_SIMPLE_PROJECT_KEY);
+
+    var file = rootProject.getResource("src", "hello", "Hello.java");
+    openFileAndWaitForAnalysisCompletion(file);
+
+    var defaultEditor = new TextEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(
+        tuple("Replace this use of System.out or System.err by a logger.", 9));
+
+    var qualityProfile = getQualityProfile(JAVA_SIMPLE_PROJECT_KEY, "SonarLint IT Java");
+    deactivateRule(qualityProfile, "S106");
+    Thread.sleep(5000);
+
+    doAndWaitForSonarLintAnalysisJob(() -> {
+      defaultEditor.insertText(0, " ");
+      defaultEditor.save();
+    });
+
+    assertThat(defaultEditor.getMarkers()).isEmpty();
+  }
+
+  private static void createConnectionAndBindProject(String projectKey) {
     var wizard = new ServerConnectionWizard();
     wizard.open();
     new ServerConnectionWizard.ServerTypePage(wizard).selectSonarQube();
@@ -208,7 +285,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
       // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
       wizard.next();
     }
-
     wizard.finish();
 
     var projectBindingWizard = new ProjectBindingWizard();
@@ -216,29 +292,49 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     projectsToBindPage.clickAdd();
 
     var projectSelectionDialog = new ProjectSelectionDialog();
-    projectSelectionDialog.setProjectName(PROJECT_NAME);
+    projectSelectionDialog.setProjectName(projectKey);
     projectSelectionDialog.ok();
 
     projectBindingWizard.next();
     var serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
     serverProjectSelectionPage.waitForProjectsToBeFetched();
-    serverProjectSelectionPage.setProjectKey(PROJECT_NAME);
+    serverProjectSelectionPage.setProjectKey(projectKey);
     projectBindingWizard.finish();
 
     var bindingsView = new BindingsView();
     bindingsView.open();
+    bindingsView.updateAllProjectBindings();
     bindingsView.waitForServerUpdate("test", orchestrator.getServer().version().toString());
+    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
+  }
 
-    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
+  private QualityProfile getQualityProfile(String projectKey, String qualityProfileName) {
+    var searchReq = new SearchWsRequest();
+    searchReq.setQualityProfile(qualityProfileName);
+    searchReq.setProjectKey(projectKey);
+    searchReq.setDefaults(false);
+    var search = adminWsClient.qualityProfiles().search(searchReq);
+    for (QualityProfile profile : search.getProfilesList()) {
+      if (profile.getName().equals(qualityProfileName)) {
+        return profile;
+      }
+    }
+    fail("Unable to get quality profile " + qualityProfileName);
+    throw new IllegalStateException("Should have failed");
+  }
 
-    var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
+  private void deactivateRule(QualityProfile qualityProfile, String ruleKey) {
+    var request = new PostRequest("/api/qualityprofiles/deactivate_rule")
+      .setParam("key", qualityProfile.getKey())
+      .setParam("rule", javaRuleKey(ruleKey));
+    try (var response = adminWsClient.wsConnector().call(request)) {
+      assertTrue("Unable to deactivate rule " + ruleKey, response.isSuccessful());
+    }
+  }
 
-    var preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
-    new DefaultLink(preferencesShell, "Dismiss").click();
+  private static String javaRuleKey(String key) {
+    // Starting from SonarJava 6.0 (embedded in SQ 8.2), rule repository has been changed
+    return orchestrator.getServer().version().isGreaterThanOrEquals(8, 2) ? ("java:" + key) : ("squid:" + key);
   }
 
 }

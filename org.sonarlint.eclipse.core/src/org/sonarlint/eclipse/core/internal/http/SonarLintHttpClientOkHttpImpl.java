@@ -30,6 +30,7 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okio.Buffer;
 import org.sonarsource.sonarlint.core.commons.http.HttpClient;
 import org.sonarsource.sonarlint.core.commons.http.HttpConnectionListener;
 
@@ -147,6 +148,51 @@ public class SonarLintHttpClientOkHttpImpl implements HttpClient {
 
   @Override
   public AsyncRequest getEventStream(String url, HttpConnectionListener connectionListener, Consumer<String> messageConsumer) {
-    throw new UnsupportedOperationException("getEventStream");
+    var request = new Request.Builder()
+      .url(url)
+      .header("Accept", "text/event-stream")
+      .build();
+    var call = okClient.newCall(request);
+    var asyncRequest = new OkHttpAsyncRequest(call);
+    call.enqueue(new Callback() {
+      @Override
+      public void onFailure(Call call, IOException e) {
+        connectionListener.onError(null);
+      }
+
+      @Override
+      public void onResponse(Call call, okhttp3.Response response) {
+        if (response.isSuccessful()) {
+          connectionListener.onConnected();
+          var source = response.body().source();
+          try (var buffer = new Buffer()) {
+            while (!source.exhausted()) {
+              long count = source.read(buffer, 8192);
+              messageConsumer.accept(buffer.readUtf8(count));
+            }
+          } catch (IOException e) {
+            if (!asyncRequest.call.isCanceled()) {
+              connectionListener.onClosed();
+            }
+          }
+        } else {
+          connectionListener.onError(response.code());
+        }
+      }
+    });
+    return asyncRequest;
+  }
+
+  private static class OkHttpAsyncRequest implements HttpClient.AsyncRequest {
+    private final Call call;
+
+    private OkHttpAsyncRequest(Call call) {
+      this.call = call;
+    }
+
+    @Override
+    public void cancel() {
+      call.cancel();
+    }
   }
 }
