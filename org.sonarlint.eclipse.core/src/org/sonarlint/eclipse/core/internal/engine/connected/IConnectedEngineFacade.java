@@ -110,6 +110,8 @@ public interface IConnectedEngineFacade {
 
   void updateProjectStorage(String projectKey, @Nullable String branchName, IProgressMonitor monitor);
 
+  Set<String> getBoundProjectKeys();
+
   List<ISonarLintProject> getBoundProjects();
 
   List<ISonarLintProject> getBoundProjects(String projectKey);
@@ -133,4 +135,6 @@ public interface IConnectedEngineFacade {
   void sync(Set<String> projectKeysToUpdate, IProgressMonitor monitor);
 
   ProjectBranches getServerBranches(String projectKey);
+
+  void subscribeForEventsForBoundProjects();
 }

@@ -41,6 +41,10 @@ public class BindingsView extends WorkbenchView {
     super("SonarLint Bindings");
   }
 
+  public void updateAllProjectBindings() {
+    getBindings().forEach(Binding::updateAllProjectBindings);
+  }
+
   public void waitForServerUpdate(String connectionName, String version) {
     new WaitUntil(new ServerStorageIsUpToDate(this, connectionName, version), TimePeriod.LONG);
   }
@@ -89,6 +93,11 @@ public class BindingsView extends WorkbenchView {
     @Override
     public String toString() {
       return i.getText();
+    }
+
+    public void updateAllProjectBindings() {
+      i.select();
+      new ContextMenuItem("Update All Project Bindings").select();
     }
 
   }

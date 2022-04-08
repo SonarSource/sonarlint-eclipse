@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<profile>
+  <name>SonarLint IT Java</name>
+  <language>java</language>
+  <rules>
+    <rule>
+      <!-- System.out -->
+      <repositoryKey>java</repositoryKey>
+      <key>S106</key>
+      <priority>MAJOR</priority>
+    </rule>
+    <!-- Static private method -->
+    <rule>
+      <repositoryKey>java</repositoryKey>
+      <key>S2325</key>
+      <priority>MAJOR</priority>
+    </rule>
+
+    <!-- Keep for pre 6.0 sonar-java version -->
+    <rule>
+      <!-- System.out -->
+      <repositoryKey>squid</repositoryKey>
+      <key>S106</key>
+      <priority>MAJOR</priority>
+    </rule>
+    <!-- Static private method -->
+    <rule>
+      <repositoryKey>squid</repositoryKey>
+      <key>S2325</key>
+      <priority>MAJOR</priority>
+    </rule>
+  </rules>
+</profile>

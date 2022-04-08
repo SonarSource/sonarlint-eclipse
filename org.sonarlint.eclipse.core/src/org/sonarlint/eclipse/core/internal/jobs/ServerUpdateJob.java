@@ -29,8 +29,6 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarsource.sonarlint.core.commons.progress.CanceledException;
 
-import static java.util.stream.Collectors.toSet;
-
 public class ServerUpdateJob extends Job {
   private final IConnectedEngineFacade server;
 
@@ -41,8 +39,8 @@ public class ServerUpdateJob extends Job {
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
-    var projectsToUpdate = server.getBoundProjects();
-    monitor.beginTask("Update SonarLint binding data for all associated projects", projectsToUpdate.size() + 1);
+    var projectKeysToUpdate = server.getBoundProjectKeys();
+    monitor.beginTask("Update SonarLint binding data for all associated projects", projectKeysToUpdate.size() + 1);
     try {
       server.updateStorage(monitor);
     } catch (Exception e) {
@@ -52,10 +50,6 @@ public class ServerUpdateJob extends Job {
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding data from '" + server.getId() + "'", e);
     }
     monitor.worked(1);
-
-    var projectKeysToUpdate = projectsToUpdate.stream().map(p -> {
-      return SonarLintCorePlugin.loadConfig(p).getProjectBinding().get().projectKey();
-    }).collect(toSet());
 
     var failures = new ArrayList<IStatus>();
     for (var projectKeyToUpdate : projectKeysToUpdate) {
