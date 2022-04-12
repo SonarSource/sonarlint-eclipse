@@ -68,6 +68,7 @@ public class ServerUpdateJob extends Job {
     }
 
     server.sync(projectKeysToUpdate, monitor);
+    server.notifyAllListenersStateChanged();
 
     monitor.done();
     if (!failures.isEmpty()) {
