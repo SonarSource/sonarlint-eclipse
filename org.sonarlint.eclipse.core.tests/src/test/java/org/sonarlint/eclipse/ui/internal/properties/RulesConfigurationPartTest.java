@@ -46,7 +46,7 @@ public class RulesConfigurationPartTest {
       mockRuleDetails(INACTIVE_INCLUDED, false));
 
     var ruleConfig = List.of(new RuleConfig(ACTIVE_EXCLUDED.toString(), false), new RuleConfig(INACTIVE_INCLUDED.toString(), true));
-    return new RulesConfigurationPart(allRuleDetails, ruleConfig);
+    return new RulesConfigurationPart(() -> allRuleDetails, ruleConfig);
   }
 
   private static RuleKey mockRuleKey(String key) {
@@ -64,6 +64,8 @@ public class RulesConfigurationPartTest {
   @Test
   public void merges_exclusions_correctly() {
     var underTest = newSampleConfigurationPart();
+
+    underTest.loadRules();
 
     var rules = underTest.computeRulesConfig();
     assertThat(rules).extracting(RuleConfig::getKey, RuleConfig::isActive).containsOnly(tuple(ACTIVE_EXCLUDED.toString(), false), tuple(INACTIVE_INCLUDED.toString(), true));
