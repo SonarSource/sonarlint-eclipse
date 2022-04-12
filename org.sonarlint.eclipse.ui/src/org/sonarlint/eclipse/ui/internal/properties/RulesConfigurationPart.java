@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
@@ -47,6 +48,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -69,7 +71,11 @@ import org.sonarsource.sonarlint.core.commons.Language;
 // Inspired by: http://www.vogella.com/tutorials/EclipseJFaceTree/article.html
 public class RulesConfigurationPart {
 
-  private final Map<Language, List<RuleDetailsWrapper>> ruleDetailsWrappersByLanguage;
+  private final Supplier<Collection<StandaloneRuleDetails>> allRuleDetailsSupplier;
+  private final Map<String, RuleConfig> initialRuleConfigs;
+
+  // Lazy-loaded
+  private Map<Language, List<RuleDetailsWrapper>> ruleDetailsWrappersByLanguage = Map.of();
 
   private final RuleDetailsWrapperFilter filter;
   private SonarLintRuleBrowser ruleBrowser;
@@ -78,18 +84,16 @@ public class RulesConfigurationPart {
   private Composite paramPanel;
   SashForm horizontalSplitter;
 
-  public RulesConfigurationPart(Collection<StandaloneRuleDetails> allRuleDetails, Collection<RuleConfig> initialConfig) {
-    Map<String, RuleConfig> initialRuleConfigs = initialConfig.stream()
+  public RulesConfigurationPart(Supplier<Collection<StandaloneRuleDetails>> allRuleDetailsSupplier, Collection<RuleConfig> initialConfig) {
+    this.allRuleDetailsSupplier = allRuleDetailsSupplier;
+    initialRuleConfigs = initialConfig.stream()
       .collect(Collectors.toMap(RuleConfig::getKey, it -> it));
-    this.ruleDetailsWrappersByLanguage = allRuleDetails.stream()
-      .sorted(Comparator.comparing(RuleDetails::getKey))
-      .map(rd -> new RuleDetailsWrapper(rd, initialRuleConfigs.getOrDefault(rd.getKey(), new RuleConfig(rd.getKey(), rd.isActiveByDefault()))))
-      .collect(Collectors.groupingBy(w -> w.ruleDetails.getLanguage(), Collectors.toList()));
     filter = new RuleDetailsWrapperFilter();
     filter.setIncludeLeadingWildcard(true);
   }
 
   protected void createControls(Composite parent) {
+    BusyIndicator.showWhile(parent.getDisplay(), this::loadRules);
     final var verticalSplitter = new SashForm(parent, SWT.HORIZONTAL);
     var fillGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
     verticalSplitter.setLayoutData(fillGridData);
@@ -110,6 +114,14 @@ public class RulesConfigurationPart {
     paramPanelParent.setLayout(new GridLayout());
     paramPanel = emptyRuleParam();
     horizontalSplitter.setWeights(70, 30);
+  }
+
+  // Visible for testing
+  public void loadRules() {
+    ruleDetailsWrappersByLanguage = allRuleDetailsSupplier.get().stream()
+      .sorted(Comparator.comparing(RuleDetails::getKey))
+      .map(rd -> new RuleDetailsWrapper(rd, initialRuleConfigs.getOrDefault(rd.getKey(), new RuleConfig(rd.getKey(), rd.isActiveByDefault()))))
+      .collect(Collectors.groupingBy(w -> w.ruleDetails.getLanguage(), Collectors.toList()));
   }
 
   private void createFilterPart(Composite parent) {
@@ -173,7 +185,6 @@ public class RulesConfigurationPart {
     tree.setLayoutData(data);
 
     tree.getViewer().setContentProvider(new ViewContentProvider());
-    tree.getViewer().setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new Language[ruleDetailsWrappersByLanguage.size()]));
     tree.getViewer().setLabelProvider(new LanguageAndRuleLabelProvider());
     tree.getViewer().setComparator(new ViewerComparator() {
       @Override
@@ -194,6 +205,7 @@ public class RulesConfigurationPart {
       refreshUiForRuleSelection(selectedNode);
     };
     tree.getViewer().addSelectionChangedListener(selectionChangedListener);
+    tree.getViewer().setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new Language[ruleDetailsWrappersByLanguage.size()]));
   }
 
   private void refreshUiForRuleSelection(Object selectedNode) {

@@ -61,7 +61,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     pageComponent.setLayout(layout);
 
     initialRuleConfigs = SonarLintGlobalConfiguration.readRulesConfig();
-    rulesConfigurationPart = new RulesConfigurationPart(loadRuleDetails(), initialRuleConfigs);
+    rulesConfigurationPart = new RulesConfigurationPart(() -> loadRuleDetails(), initialRuleConfigs);
     rulesConfigurationPart.createControls(pageComponent);
     Dialog.applyDialogFont(pageComponent);
     return pageComponent;
