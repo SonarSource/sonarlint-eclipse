@@ -90,7 +90,6 @@ Running ITs
 
 To run ITs for the default target platform and SonarQube version you can use a helper script:
 
-    ./scripts/run-its.sh --init  # start X server for windows opened by the tests
     ./scripts/run-its.sh
 
 This assumes that the project was already `mvn` installed. You may want to run a specific test to avoid running everything:
