@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.hotspots;
 
-import com.eclipsesource.json.Json;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
@@ -78,6 +77,8 @@ import org.sonarlint.eclipse.ui.internal.popup.FailedToOpenHotspotPopup;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
+import org.sonarsource.sonarlint.shaded.com.google.gson.Gson;
+import org.sonarsource.sonarlint.shaded.com.google.gson.annotations.SerializedName;
 
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.defaultString;
 
@@ -170,7 +171,8 @@ public class SecurityHotspotsHandlerServer {
   private static boolean isTrustedServer(String serverOrigin) {
     // A server is trusted if the Origin HTTP header matches one of the already configured servers
     // The Origin header has the following format: <scheme>://<host>(:<port>)
-    // Since servers can have an optional "context path" after this, we consider a valid match when the server's configured URL begins with the passed Origin
+    // Since servers can have an optional "context path" after this, we consider a valid match when the server's configured URL begins with
+    // the passed Origin
     // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin
     return SonarLintCorePlugin.getServersManager().getServers().stream().anyMatch(s -> s.getHost().startsWith(serverOrigin));
   }
@@ -317,8 +319,7 @@ public class SecurityHotspotsHandlerServer {
     private static Optional<ISonarLintProject> bindProjectTo(FetchedHotspot fetchedHotspot, String projectKey) {
       var connection = fetchedHotspot.origin;
       var pickedProject = DisplayUtils.syncExec(
-        () -> ProjectSelectionDialog.pickProject(fetchedHotspot.hotspot.filePath, projectKey, connection.getId())
-      );
+        () -> ProjectSelectionDialog.pickProject(fetchedHotspot.hotspot.filePath, projectKey, connection.getId()));
       if (pickedProject.isEmpty()) {
         return Optional.empty();
       }
@@ -431,7 +432,9 @@ public class SecurityHotspotsHandlerServer {
   }
 
   private static class StatusResponse {
+    @SerializedName("ideName")
     private final String ideName;
+    @SerializedName("description")
     private final String description;
 
     public StatusResponse(String ideName, String description) {
@@ -440,7 +443,7 @@ public class SecurityHotspotsHandlerServer {
     }
 
     public String toJson() {
-      return Json.object().add("ideName", ideName).add("description", description).toString();
+      return new Gson().toJson(this);
     }
   }
 

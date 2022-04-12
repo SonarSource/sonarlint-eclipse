@@ -40,7 +40,6 @@
       <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.ui.forms"/>
       <import plugin="org.sonarsource.sonarlint.core.sonarlint-core-osgi" version="7.1.0" match="greaterOrEqual"/>
-      <import plugin="minimal-json" version="0.9.5" match="greaterOrEqual"/>
    </requires>
 
    <plugin
@@ -80,13 +79,6 @@
 
    <plugin
          id="org.sonarlint.eclipse.m2e"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="minimal-json"
          download-size="0"
          install-size="0"
          version="0.0.0"
