@@ -138,6 +138,9 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
         builder.addExtraPlugin(Language.SECRETS.getPluginKey(), secretsPluginUrl);
       }
 
+      useEmbeddedPluginIfFound(builder, findEmbeddedJsPlugin(), Language.JS);
+      useEmbeddedPluginIfFound(builder, findEmbeddedHtmlPlugin(), Language.HTML);
+
       var globalConfig = builder.build();
       try {
         this.wrappedEngine = new ConnectedSonarLintEngineImpl(globalConfig);
@@ -150,6 +153,12 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
       }
     }
     return wrappedEngine;
+  }
+
+  private static void useEmbeddedPluginIfFound(ConnectedGlobalConfiguration.Builder builder, @Nullable Path pluginUrl, Language language) {
+    if (pluginUrl != null) {
+      builder.useEmbeddedPlugin(language.getPluginKey(), pluginUrl);
+    }
   }
 
   @Nullable
@@ -170,6 +179,16 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   @Nullable
   private static Path findEmbeddedSecretsPlugin() {
     return findEmbeddedPlugin("sonar-secrets-plugin-*.jar", "Found Secrets detection plugin: ");
+  }
+
+  @Nullable
+  private static Path findEmbeddedJsPlugin() {
+    return findEmbeddedPlugin("sonar-javascript-plugin-*.jar", "Found JS/TS detection plugin: ");
+  }
+
+  @Nullable
+  private static Path findEmbeddedHtmlPlugin() {
+    return findEmbeddedPlugin("sonar-html-plugin-*.jar", "Found HTML detection plugin: ");
   }
 
   private <G> Optional<G> withEngine(Function<ConnectedSonarLintEngine, G> function) {
