@@ -19,12 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.preferences;
 
-import com.eclipsesource.json.Json;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
@@ -45,16 +46,16 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.shaded.com.google.gson.Gson;
+import org.sonarsource.sonarlint.shaded.com.google.gson.JsonParseException;
+import org.sonarsource.sonarlint.shaded.com.google.gson.annotations.SerializedName;
+import org.sonarsource.sonarlint.shaded.com.google.gson.reflect.TypeToken;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
 public class SonarLintGlobalConfiguration {
 
-  private static final String RULE_JSON_PARAMS = "parameters"; //$NON-NLS-1$
-  private static final String RULE_JSON_LEVEL = "level"; //$NON-NLS-1$
-  private static final String RULE_JSON_LEVEL_OFF = "off"; //$NON-NLS-1$
-  private static final String RULE_JSON_LEVEL_ON = "on"; //$NON-NLS-1$
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
   public static final int PREF_MARKER_SEVERITY_DEFAULT = IMarker.SEVERITY_INFO;
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
@@ -239,25 +240,37 @@ public class SonarLintGlobalConfiguration {
     return deserializeRulesJson(json);
   }
 
+  private static class RuleConfigGson {
+
+    enum Level {
+      @SerializedName("on")
+      ON,
+      @SerializedName("off")
+      OFF
+    }
+
+    Level level = Level.ON;
+    Map<String, String> parameters;
+
+  }
+
   private static Set<RuleConfig> deserializeRulesJson(String json) {
     if (StringUtils.isBlank(json)) {
       return Collections.emptySet();
     }
-    var value = Json.parse(json);
+    var mapType = new TypeToken<Map<String, RuleConfigGson>>() {
+    }.getType();
+    Map<String, RuleConfigGson> rulesByKey = new Gson().fromJson(json, mapType);
     var result = new HashSet<RuleConfig>();
     try {
-      var rulesJson = value.asObject();
-      rulesJson.forEach(ruleJson -> {
-        var ruleObject = ruleJson.getValue().asObject();
-        var rule = new RuleConfig(ruleJson.getName(), !RULE_JSON_LEVEL_OFF.equals(ruleObject.getString(RULE_JSON_LEVEL, RULE_JSON_LEVEL_ON)));
-        var ruleParamsValue = ruleObject.get(RULE_JSON_PARAMS);
-        if (ruleParamsValue != null) {
-          var paramsJson = ruleParamsValue.asObject();
-          paramsJson.forEach(p -> rule.getParams().put(p.getName(), p.getValue().asString()));
+      rulesByKey.forEach((key, config) -> {
+        var rule = new RuleConfig(key, RuleConfigGson.Level.OFF != config.level);
+        if (config.parameters != null) {
+          config.parameters.forEach((k, v) -> rule.getParams().put(k, v));
         }
         result.add(rule);
       });
-    } catch (UnsupportedOperationException e) {
+    } catch (JsonParseException e) {
       SonarLintLogger.get().error("Invalid JSON format for rules configuration", e);
     }
     return result;
@@ -269,24 +282,25 @@ public class SonarLintGlobalConfiguration {
   }
 
   private static String serializeRulesJson(Collection<RuleConfig> rules) {
-    var rulesJson = Json.object();
+    Map<String, RuleConfigGson> rulesByKey = new LinkedHashMap<>();
     rules.stream()
       // Sort by key to ensure consistent results
       .sorted(comparing(RuleConfig::getKey))
       .forEach(rule -> {
-        var ruleJson = Json.object()
-          .add(RULE_JSON_LEVEL, rule.isActive() ? RULE_JSON_LEVEL_ON : RULE_JSON_LEVEL_OFF);
+        var ruleJson = new RuleConfigGson();
+        ruleJson.level = rule.isActive() ? RuleConfigGson.Level.ON : RuleConfigGson.Level.OFF;
         if (!rule.getParams().isEmpty()) {
-          var paramsJson = Json.object();
+          ruleJson.parameters = new LinkedHashMap<>();
           rule.getParams().entrySet().stream()
             // Sort by key to ensure consistent results
             .sorted(comparing(Entry<String, String>::getKey))
-            .forEach(param -> paramsJson.add(param.getKey(), param.getValue()));
-          ruleJson.add(RULE_JSON_PARAMS, paramsJson);
+            .forEach(param -> ruleJson.parameters.put(param.getKey(), param.getValue()));
         }
-        rulesJson.add(rule.getKey(), ruleJson);
+        rulesByKey.put(rule.getKey(), ruleJson);
       });
-    return rulesJson.toString();
+    var mapType = new TypeToken<Map<String, RuleConfigGson>>() {
+    }.getType();
+    return new Gson().toJson(rulesByKey, mapType);
   }
 
   public static void setSkipConfirmAnalyzeMultipleFiles() {

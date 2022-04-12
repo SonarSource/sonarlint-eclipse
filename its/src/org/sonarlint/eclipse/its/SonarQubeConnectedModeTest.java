@@ -19,13 +19,13 @@
  */
 package org.sonarlint.eclipse.its;
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
+import com.google.gson.Gson;
 import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.container.Server;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.core.condition.WidgetIsFound;
 import org.eclipse.reddeer.core.matcher.WithTextMatcher;
@@ -153,6 +153,11 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     bindingsView.waitForServerUpdate("test", orchestrator.getServer().version().toString());
   }
 
+  private static class Status {
+    private String ideName;
+    private String description;
+  }
+
   @Test
   public void testLocalServerStatusRequest() throws Exception {
     assertThat(hotspotServerPort).isNotEqualTo(-1);
@@ -161,15 +166,11 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     statusConnection.connect();
     int code = statusConnection.getResponseCode();
     assertThat(code).isEqualTo(200);
-    try (var inputStream = statusConnection.getInputStream()) {
-      var response = Json.parse(new InputStreamReader(inputStream));
-
-      assertThat(response.asObject().iterator()).toIterable().extracting(JsonObject.Member::getName, m -> m.getValue().asString())
-        .hasSize(2)
-        .contains(
-          tuple("description", ""))
-        // When running tests locally the ideName is "Eclipse Platform" for some reason
-        .containsAnyOf(tuple("ideName", "Eclipse"), tuple("ideName", "Eclipse Platform"));
+    try (var inputStream = statusConnection.getInputStream(); var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+      var response = new Gson().fromJson(reader, Status.class);
+      assertThat(response.description).isEmpty();
+      // When running tests locally the ideName is "Eclipse Platform" for some reason
+      assertThat(response.ideName).isIn("Eclipse", "Eclipse Platform");
     }
   }
 
