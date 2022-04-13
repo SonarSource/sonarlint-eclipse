@@ -141,8 +141,6 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   private static void lowerCognitiveComplexityRuleParameter() {
     var ruleConfigurationPreferences = selectCognitiveComplexityRule();
     ruleConfigurationPreferences.setRuleParameter(10);
-    // Call apply before ok, else an analysis can be triggered before changed rules are saved
-    ruleConfigurationPreferences.apply();
     ruleConfigurationPreferences.ok();
   }
 
