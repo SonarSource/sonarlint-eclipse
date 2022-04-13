@@ -262,15 +262,21 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
   @Override
   public boolean performOk() {
     if (isGlobal()) {
+      var previousFileExclusions = SonarLintGlobalConfiguration.getGlobalExclusions();
       var serialized = SonarLintGlobalConfiguration.serializeFileExclusions(this.exclusions);
       getPreferenceStore().setValue(SonarLintGlobalConfiguration.PREF_FILE_EXCLUSIONS, serialized);
-      JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
+      if (!exclusions.equals(previousFileExclusions)) {
+        JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
+      }
     } else {
       var projectConfig = getProjectConfig();
+      var previousFileExclusions = new ArrayList<>(projectConfig.getFileExclusions());
       projectConfig.getFileExclusions().clear();
       projectConfig.getFileExclusions().addAll(exclusions);
       SonarLintCorePlugin.saveConfig(getProject(), projectConfig);
-      JobUtils.scheduleAnalysisOfOpenFiles(getProject(), TriggerType.STANDALONE_CONFIG_CHANGE);
+      if (!exclusions.equals(previousFileExclusions)) {
+        JobUtils.scheduleAnalysisOfOpenFiles(getProject(), TriggerType.STANDALONE_CONFIG_CHANGE);
+      }
     }
 
     return true;

@@ -64,7 +64,6 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
   @Override
   protected void createFieldEditors() {
-
     addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY,
       Messages.SonarPreferencePage_label_marker_severity,
       new String[][] {
@@ -130,10 +129,22 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
   @Override
   public boolean performOk() {
+    var previousTestFileRegexps = SonarLintGlobalConfiguration.getTestFileRegexps();
+    var previousNodeJsPath = SonarLintGlobalConfiguration.getNodejsPath();
     var result = super.performOk();
-    TestFileClassifier.get().reload();
-    SonarLintCorePlugin.getNodeJsManager().reload();
-    JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
+    var anyPreferenceChanged = false;
+    if (!previousTestFileRegexps.equals(SonarLintGlobalConfiguration.getTestFileRegexps())) {
+      TestFileClassifier.get().reload();
+      anyPreferenceChanged = true;
+    }
+    if (!previousNodeJsPath.equals(SonarLintGlobalConfiguration.getNodejsPath())) {
+      SonarLintCorePlugin.getNodeJsManager().reload();
+      anyPreferenceChanged = true;
+    }
+    if (anyPreferenceChanged) {
+      JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
+    }
+
     return result;
   }
 

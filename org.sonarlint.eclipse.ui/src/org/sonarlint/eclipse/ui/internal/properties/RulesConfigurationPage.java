@@ -30,9 +30,9 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
@@ -42,6 +42,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
   public static final String RULES_CONFIGURATION_ID = "org.sonarlint.eclipse.ui.properties.RulesConfigurationPage";
 
   private RulesConfigurationPart rulesConfigurationPart;
+  private Collection<RuleConfig> initialRuleConfigs;
 
   public RulesConfigurationPage() {
     setTitle("Rules Configuration");
@@ -50,7 +51,6 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
   @Override
   public void init(IWorkbench workbench) {
     setDescription("Configure rules used for SonarLint analysis. When a project is connected to a SonarQube/SonarCloud server, configuration from the server applies.");
-    setPreferenceStore(SonarLintUiPlugin.getDefault().getPreferenceStore());
   }
 
   @Override
@@ -60,7 +60,8 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     layout.marginWidth = 0;
     pageComponent.setLayout(layout);
 
-    rulesConfigurationPart = new RulesConfigurationPart(loadRuleDetails(), SonarLintGlobalConfiguration.readRulesConfig());
+    initialRuleConfigs = SonarLintGlobalConfiguration.readRulesConfig();
+    rulesConfigurationPart = new RulesConfigurationPart(loadRuleDetails(), initialRuleConfigs);
     rulesConfigurationPart.createControls(pageComponent);
     Dialog.applyDialogFont(pageComponent);
     return pageComponent;
@@ -72,8 +73,11 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
 
   @Override
   public boolean performOk() {
-    SonarLintGlobalConfiguration.saveRulesConfig(rulesConfigurationPart.computeRulesConfig());
-    JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
+    var newRuleConfigs = rulesConfigurationPart.computeRulesConfig();
+    SonarLintGlobalConfiguration.saveRulesConfig(newRuleConfigs);
+    if (!newRuleConfigs.equals(initialRuleConfigs)) {
+      JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
+    }
     return true;
   }
 

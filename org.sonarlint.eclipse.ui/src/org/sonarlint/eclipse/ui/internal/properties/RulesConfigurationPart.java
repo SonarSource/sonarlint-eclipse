@@ -19,11 +19,12 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.eclipse.jface.action.Action;
@@ -69,7 +70,6 @@ import org.sonarsource.sonarlint.core.commons.Language;
 public class RulesConfigurationPart {
 
   private final Map<Language, List<RuleDetailsWrapper>> ruleDetailsWrappersByLanguage;
-  private final Map<String, RuleConfig> initialRuleConfigs;
 
   private final RuleDetailsWrapperFilter filter;
   private SonarLintRuleBrowser ruleBrowser;
@@ -79,7 +79,7 @@ public class RulesConfigurationPart {
   SashForm horizontalSplitter;
 
   public RulesConfigurationPart(Collection<StandaloneRuleDetails> allRuleDetails, Collection<RuleConfig> initialConfig) {
-    this.initialRuleConfigs = initialConfig.stream()
+    Map<String, RuleConfig> initialRuleConfigs = initialConfig.stream()
       .collect(Collectors.toMap(RuleConfig::getKey, it -> it));
     this.ruleDetailsWrappersByLanguage = allRuleDetails.stream()
       .sorted(Comparator.comparing(RuleDetails::getKey))
@@ -394,8 +394,8 @@ public class RulesConfigurationPart {
   }
 
   // visible for testing
-  public Collection<RuleConfig> computeRulesConfig() {
-    var rules = new ArrayList<RuleConfig>();
+  public Set<RuleConfig> computeRulesConfig() {
+    var rules = new HashSet<RuleConfig>();
     ruleDetailsWrappersByLanguage.entrySet().stream()
       .flatMap(e -> e.getValue().stream())
       .filter(RuleDetailsWrapper::isNonDefault)
