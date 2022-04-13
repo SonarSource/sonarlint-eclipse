@@ -23,6 +23,7 @@ import com.eclipsesource.json.Json;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -213,7 +214,7 @@ public class SonarLintGlobalConfiguration {
       .collect(Collectors.toSet());
   }
 
-  public static Collection<RuleConfig> readRulesConfig() {
+  public static Set<RuleConfig> readRulesConfig() {
     var instancePreferenceNode = getInstancePreferenceNode();
     try {
       if (!instancePreferenceNode.nodeExists(PREF_RULES_CONFIG)) {
@@ -238,12 +239,12 @@ public class SonarLintGlobalConfiguration {
     return deserializeRulesJson(json);
   }
 
-  private static Collection<RuleConfig> deserializeRulesJson(String json) {
+  private static Set<RuleConfig> deserializeRulesJson(String json) {
     if (StringUtils.isBlank(json)) {
-      return Collections.emptyList();
+      return Collections.emptySet();
     }
     var value = Json.parse(json);
-    var result = new ArrayList<RuleConfig>();
+    var result = new HashSet<RuleConfig>();
     try {
       var rulesJson = value.asObject();
       rulesJson.forEach(ruleJson -> {
