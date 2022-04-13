@@ -174,6 +174,7 @@ public class ConnectedEngineFacadeManager {
       throw unableToLoadServerList(e);
     }
     connectionsListeners.clear();
+    facadesByConnectionId.values().forEach(c -> ((ConnectedEngineFacade) c).stop());
   }
 
   public void addServerLifecycleListener(IConnectedEngineFacadeLifecycleListener listener) {
