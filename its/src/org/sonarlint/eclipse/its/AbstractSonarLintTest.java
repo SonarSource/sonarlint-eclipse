@@ -268,6 +268,8 @@ public abstract class AbstractSonarLintTest {
     var ruleConfigurationPreferences = new RuleConfigurationPreferences(preferenceDialog);
     preferenceDialog.select(ruleConfigurationPreferences);
     ruleConfigurationPreferences.restoreDefaults();
+    // Call apply before ok, else an analysis can be triggered before changed rules are saved
+    ruleConfigurationPreferences.apply();
     preferenceDialog.ok();
   }
 
