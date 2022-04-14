@@ -138,8 +138,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
         builder.addExtraPlugin(Language.SECRETS.getPluginKey(), secretsPluginUrl);
       }
 
-      useEmbeddedPluginIfFound(builder, findEmbeddedJsPlugin(), Language.JS);
-      useEmbeddedPluginIfFound(builder, findEmbeddedHtmlPlugin(), Language.HTML);
+      useEmbeddedPluginOrFailIfNotFound(builder, findEmbeddedJsPlugin(), Language.JS);
+      useEmbeddedPluginOrFailIfNotFound(builder, findEmbeddedHtmlPlugin(), Language.HTML);
 
       var globalConfig = builder.build();
       try {
@@ -155,10 +155,12 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     return wrappedEngine;
   }
 
-  private static void useEmbeddedPluginIfFound(ConnectedGlobalConfiguration.Builder builder, @Nullable Path pluginUrl, Language language) {
-    if (pluginUrl != null) {
-      builder.useEmbeddedPlugin(language.getPluginKey(), pluginUrl);
+  private static void useEmbeddedPluginOrFailIfNotFound(ConnectedGlobalConfiguration.Builder builder, @Nullable Path pluginUrl,
+    Language language) {
+    if (pluginUrl == null) {
+      throw new IllegalStateException("Embedded plugin not found: " + language.getLabel());
     }
+    builder.useEmbeddedPlugin(language.getPluginKey(), pluginUrl);
   }
 
   @Nullable
