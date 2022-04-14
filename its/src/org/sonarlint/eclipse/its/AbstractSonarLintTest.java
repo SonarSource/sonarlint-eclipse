@@ -99,6 +99,9 @@ public abstract class AbstractSonarLintTest {
 
   @After
   public final void cleanup() {
+    // first wait for previous analyzes to finish properly
+    // this prevents trying to clear the console in the middle of a job
+    waitSonarLintAnalysisJobs();
 
     SonarLintConsole consoleView = new SonarLintConsole();
     System.out.println(consoleView.getConsoleView().getConsoleText());
@@ -111,11 +114,25 @@ public abstract class AbstractSonarLintTest {
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SECRETS_EVER_DETECTED);
   }
 
+  private void waitSonarLintAnalysisJobs() {
+    sonarlintJobFamilies.forEach(jobFamily -> {
+      try {
+        Job.getJobManager().join(jobFamily, null);
+      } catch (Exception e) {
+        System.out.println("Error while waiting jobs to finish");
+        e.printStackTrace();
+      }
+    });
+  }
+
   protected static int hotspotServerPort = -1;
   private static IJobChangeListener sonarlintItJobListener;
   protected static final AtomicInteger scheduledAnalysisJobCount = new AtomicInteger();
   private static final List<CountDownLatch> analysisJobCountDownLatch = new CopyOnWriteArrayList<>();
   private static File projectsFolder;
+  private static final List<String> sonarlintJobFamilies = List.of(
+    "org.sonarlint.eclipse.projectJob",
+    "org.sonarlint.eclipse.projectsJob");
 
   @BeforeClass
   public static final void beforeClass() throws BackingStoreException {
@@ -145,7 +162,7 @@ public abstract class AbstractSonarLintTest {
         }
 
         private boolean isSonarLintAnalysisJob(IJobChangeEvent event) {
-          return event.getJob().belongsTo("org.sonarlint.eclipse.projectJob") || event.getJob().belongsTo("org.sonarlint.eclipse.projectsJob");
+          return sonarlintJobFamilies.stream().anyMatch(family -> event.getJob().belongsTo(family));
         }
       };
       Job.getJobManager().addJobChangeListener(sonarlintItJobListener);
