@@ -203,7 +203,7 @@
     </profile>
     <!-- fix protobuf generation on apple silicon https://github.com/grpc/grpc-java/issues/7690 -->
     <profile>
-      <id>macARM64</id>
+      <id>apple-silicon</id>
       <activation>
         <os>
           <family>mac</family>
