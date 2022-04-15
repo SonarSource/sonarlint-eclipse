@@ -22,7 +22,7 @@
         <dependency>
           <groupId>org.sonarsource.sonarlint.core</groupId>
           <artifactId>sonarlint-core-osgi</artifactId>
-          <version>8.5.0.46122</version>
+          <version>8.5.0.46449</version>
           <type>jar</type>
         </dependency>
       </dependencies>
