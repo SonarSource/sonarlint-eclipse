@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -40,7 +41,10 @@ public class ProjectStorageUpdateJob extends Job {
   protected IStatus run(IProgressMonitor monitor) {
     try {
       var server = SonarLintCorePlugin.getServersManager().findById(connectionId);
-      server.ifPresent(s -> s.updateProjectStorage(projectKey, null, monitor));
+      server.ifPresent(s -> {
+        s.updateProjectStorage(projectKey, null, monitor);
+        s.sync(Set.of(projectKey), monitor);
+      });
       return Status.OK_STATUS;
     } catch (Exception e) {
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update SonarLint binding data for project '" + projectKey + "' on '" + connectionId + "'", e);
