@@ -514,14 +514,12 @@ public class IssueTrackerTest {
     var serverIssueKey = "dummy serverIssueKey";
     var resolved = true;
     var assignee = "dummy assignee";
-    var base = builder().ruleKey("dummy ruleKey").severity("CRITICAL").rawSeverity("CRITICAL");
-
-    var start = System.currentTimeMillis();
+    var base = builder().ruleKey("dummy ruleKey").lineHash(123).severity("CRITICAL").rawSeverity("CRITICAL");
 
     // First analysis
     cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(base.build())));
     cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackServerIssues(file1,
-      List.of(base.copy().serverIssueKey(serverIssueKey).resolved(true).assignee(assignee).severity("BLOCKER").build())));
+      List.of(base.copy().serverIssueKey(serverIssueKey).creationDate(456789L).resolved(true).assignee(assignee).severity("BLOCKER").build())));
 
     // Second analysis with no more issue on server side
     cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(base.build())));
@@ -529,9 +527,9 @@ public class IssueTrackerTest {
 
     var trackables = cache.getCurrentTrackables(DUMMY_FILE1_PATH);
     assertThat(trackables)
-      .extracting("serverIssueKey", "resolved", "assignee", "severity")
-      .containsExactly(tuple(null, !resolved, "", "CRITICAL"));
-    assertThat(trackables.iterator().next().getCreationDate()).isGreaterThanOrEqualTo(start);
+      .extracting("serverIssueKey", "resolved", "assignee", "severity", "creationDate")
+      // Resolution and severity are reset, but creationDate stay the same
+      .containsExactly(tuple(null, !resolved, "", "CRITICAL", 456789L));
   }
 
   @Test

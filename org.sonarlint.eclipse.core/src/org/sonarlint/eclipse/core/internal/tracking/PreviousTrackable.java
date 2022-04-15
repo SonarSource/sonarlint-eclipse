@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-
 /**
  * Combine a new Trackable ("raw") with a previous state ("base")
  */
@@ -43,9 +41,13 @@ public class PreviousTrackable extends WrappedTrackable {
     this.resolved = base.isResolved();
     this.assignee = base.getAssignee();
     this.markerId = base.getMarkerId();
-    // Migration: severity & type were initially not stored in protobuf file
-    this.severity = StringUtils.isBlank(base.getSeverity()) ? raw.getSeverity() : base.getSeverity();
-    this.type = StringUtils.isBlank(base.getType()) ? raw.getType() : base.getType();
+    if (base.getServerIssueKey() != null) {
+      this.severity = base.getSeverity();
+      this.type = base.getType();
+    } else {
+      this.severity = raw.getSeverity();
+      this.type = raw.getType();
+    }
   }
 
   @Override
