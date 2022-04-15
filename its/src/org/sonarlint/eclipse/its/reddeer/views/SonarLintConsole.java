@@ -41,6 +41,11 @@ public class SonarLintConsole {
     return consoleView;
   }
 
+  public void clear() {
+    consoleView.activate();
+    new DefaultToolItem(consoleView.getCTabItem().getFolder(), "Clear Console").click();
+  }
+
   @SuppressWarnings("unchecked")
   private void openConsole(Matcher<String> textMatcher) {
     consoleView.open();

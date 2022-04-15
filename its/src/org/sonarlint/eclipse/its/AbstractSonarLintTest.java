@@ -105,7 +105,7 @@ public abstract class AbstractSonarLintTest {
 
     SonarLintConsole consoleView = new SonarLintConsole();
     System.out.println(consoleView.getConsoleView().getConsoleText());
-    consoleView.getConsoleView().clearConsole();
+    consoleView.clear();
 
     new CleanWorkspaceRequirement().fulfill();
 
