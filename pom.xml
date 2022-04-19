@@ -73,7 +73,7 @@
     <jarsigner.skip>true</jarsigner.skip>
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
-    <artifactsToPublish>${project.groupId}:org.sonarlint.eclipse.site:zip</artifactsToPublish>
+    <artifactsToPublish>${project.groupId}:org.sonarlint.eclipse.site:zip,${project.groupId}:${project.artifactId}:json:cyclonedx</artifactsToPublish>
   </properties>
 
   <build>
@@ -256,6 +256,19 @@
           <defaultP2Metadata>false</defaultP2Metadata>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>makeAggregateBom</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <profiles>
@@ -285,7 +298,7 @@
                 </goals>
               </execution>
             </executions>
-          </plugin>
+          </plugin>          
         </plugins>
       </build>
     </profile>
