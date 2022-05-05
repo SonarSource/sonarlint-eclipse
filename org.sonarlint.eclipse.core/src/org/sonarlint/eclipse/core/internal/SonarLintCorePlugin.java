@@ -19,7 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal;
 
+import java.util.List;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -89,6 +91,7 @@ public class SonarLintCorePlugin extends Plugin {
     proxyTracker = new ServiceTracker<>(FrameworkUtil.getBundle(this.getClass()).getBundleContext(), IProxyService.class, null);
     proxyTracker.open();
     okhttpClient = new OkHttpClient.Builder()
+      .protocols(List.of(Protocol.HTTP_1_1))
       .addNetworkInterceptor(new UserAgentInterceptor("SonarLint Eclipse " + SonarLintUtils.getPluginVersion()))
       .build();
   }
