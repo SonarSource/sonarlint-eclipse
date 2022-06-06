@@ -167,7 +167,7 @@
             <excludeDefaultDirectories>true</excludeDefaultDirectories>
             <filesets>
               <fileset>
-                <directory>target</directory>
+                <directory>${project.build.directory}</directory>
                 <includes>
                   <include>**</include>
                 </includes>
