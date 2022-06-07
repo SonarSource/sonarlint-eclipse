@@ -74,6 +74,7 @@
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
     <artifactsToPublish>${project.groupId}:org.sonarlint.eclipse.site:zip,${project.groupId}:${project.artifactId}:json:cyclonedx</artifactsToPublish>
+    <version.cyclonedx.plugin>2.7.0</version.cyclonedx.plugin>
   </properties>
 
   <build>
@@ -158,6 +159,25 @@
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>${jacoco.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${version.clean.plugin}</version>
+          <configuration>
+            <excludeDefaultDirectories>true</excludeDefaultDirectories>
+            <filesets>
+              <fileset>
+                <directory>${project.build.directory}</directory>
+                <includes>
+                  <include>**</include>
+                </includes>
+                <excludes>
+                  <exclude>bom.json</exclude>
+                </excludes>
+              </fileset>
+            </filesets>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -239,7 +259,6 @@
           </execution>
         </executions>
       </plugin>
-
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-p2-plugin</artifactId>
@@ -259,7 +278,6 @@
       <plugin>
         <groupId>org.cyclonedx</groupId>
         <artifactId>cyclonedx-maven-plugin</artifactId>
-        <version>2.7.0</version>
         <inherited>false</inherited>
         <executions>
           <execution>
@@ -304,11 +322,11 @@
       </build>
     </profile>
     <profile>
-      <id>skip-cyclonedx-on-windows</id>
+      <id>skip-cyclonedx-on-local-build</id>
       <activation>
-        <os>
-          <family>windows</family>
-        </os>
+        <property>
+          <name>!env.BUILD_BUILDNUMBER</name>
+        </property>
       </activation>
       <properties>
         <cyclonedx.skip>true</cyclonedx.skip>
