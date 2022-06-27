@@ -11,7 +11,7 @@ resources:
     - repository: commonTemplates
       type: git
       name: pipelines-yaml-templates
-      ref:  refs/tags/v1.0.16
+      ref:  refs/tags/v1.0.17
 
 stages:
 - template: stage-with-burgr-notifications.yml@commonTemplates
@@ -100,6 +100,7 @@ stages:
       - bash: git checkout .
         name: revertPomChanges
         displayName: Revert changes made to pom.xml to not break cache feature
+
 - template: stage-with-burgr-notifications.yml@commonTemplates
   parameters:
     burgrName: 'validate'
@@ -292,11 +293,11 @@ stages:
     burgrName: 'sonarqube'
     burgrType: 'sonarqube'
     stageName: 'sonarqube'
-    stageDisplayName: Run SonarQube analysis
+    stageDisplayName: Run SonarQube and WhiteSource analysis
     stageDependencies: qa
     jobs:
-    - job: sonarqube
-      displayName: SonarQube analysis on Next
+    - job: sonarqubeAndWhiteSource
+      displayName: SonarQube analysis on Next, WhiteSource scan
       variables:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
@@ -373,6 +374,12 @@ stages:
           mavenOptions: $(MAVEN_OPTS)
           sonarQubeRunAnalysis: true
           sqMavenPluginVersionChoice: 'latest'
+      - template: whitesource-with-maven-repox.yml@commonTemplates
+        parameters:
+          productName : 'SonarLint/Eclipse'
+          mavenRepositoryPath: '$(Pipeline.Workspace)/.m2/repository'
+          mavenSettingsFilePath: '$(mavenSettings.secureFilePath)'
+
 - template: promote-stage.yml@commonTemplates
   parameters:
     stageDependencies:
