@@ -90,6 +90,7 @@ public class StandaloneEngineFacade {
   public static Path toPath(URL bundleEntry) {
     try {
       URL localURL = FileLocator.toFileURL(bundleEntry);
+      SonarLintLogger.get().debug("Plugin extracted to " + localURL);
       return new File(localURL.getFile()).toPath();
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to load plugin " + bundleEntry, e);
