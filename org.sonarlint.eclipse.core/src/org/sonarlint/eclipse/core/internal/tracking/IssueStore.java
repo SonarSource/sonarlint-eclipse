@@ -27,10 +27,10 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.connected.objectstore.HashingPathMapper;
-import org.sonarsource.sonarlint.core.client.api.connected.objectstore.Reader;
-import org.sonarsource.sonarlint.core.client.api.connected.objectstore.Writer;
-import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
+import org.sonarsource.sonarlint.core.commons.objectstore.HashingPathMapper;
+import org.sonarsource.sonarlint.core.commons.objectstore.Reader;
+import org.sonarsource.sonarlint.core.commons.objectstore.Writer;
+import org.sonarsource.sonarlint.core.serverconnection.FileUtils;
 
 public class IssueStore {
   private Path basePath;
@@ -110,12 +110,9 @@ public class IssueStore {
       .setRuleKey(localIssue.getRuleKey())
       .setMessage(localIssue.getMessage())
       .setResolved(localIssue.isResolved())
-      .setSeverity(localIssue.getSeverity())
-      .setType(localIssue.getType());
+      .setSeverity(localIssue.getSeverity().name())
+      .setType(localIssue.getType().name());
 
-    if (localIssue.getAssignee() != null) {
-      builder.setAssignee(localIssue.getAssignee());
-    }
     if (localIssue.getCreationDate() != null) {
       builder.setCreationDate(localIssue.getCreationDate());
     }

@@ -21,10 +21,12 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.TextRange;
 
 import static org.sonarlint.eclipse.core.internal.tracking.DigestUtils.digest;
 
@@ -89,22 +91,22 @@ public class RawIssueTrackable implements Trackable {
   }
 
   @Override
-  public String getSeverity() {
+  public IssueSeverity getSeverity() {
     return issue.getSeverity();
   }
 
   @Override
-  public String getRawSeverity() {
+  public IssueSeverity getRawSeverity() {
     return issue.getSeverity();
   }
 
   @Override
-  public String getType() {
+  public RuleType getType() {
     return issue.getType();
   }
 
   @Override
-  public String getRawType() {
+  public RuleType getRawType() {
     return issue.getType();
   }
 
@@ -128,11 +130,6 @@ public class RawIssueTrackable implements Trackable {
   @Override
   public boolean isResolved() {
     return false;
-  }
-
-  @Override
-  public String getAssignee() {
-    return "";
   }
 
   @Override

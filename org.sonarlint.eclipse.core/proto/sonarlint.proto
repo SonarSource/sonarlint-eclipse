@@ -19,7 +19,7 @@ message Issues {
         int32 checksum = 5;
 
         // values carried forward
-        string assignee = 6;
+        string assignee = 6 [deprecated=true];
         int64 creationDate = 7;
         bool resolved = 8;
         int64 markerId = 9;

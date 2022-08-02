@@ -37,10 +37,10 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.common.NotificationConfiguration;
-import org.sonarsource.sonarlint.core.client.api.notifications.LastNotificationTime;
-import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
-import org.sonarsource.sonarlint.core.notifications.ServerNotificationsRegistry;
+import org.sonarsource.sonarlint.core.serverconnection.smartnotifications.LastNotificationTime;
+import org.sonarsource.sonarlint.core.serverconnection.smartnotifications.NotificationConfiguration;
+import org.sonarsource.sonarlint.core.serverconnection.smartnotifications.ServerNotificationListener;
+import org.sonarsource.sonarlint.core.serverconnection.smartnotifications.ServerNotificationsRegistry;
 
 public class NotificationsManager {
 
@@ -92,8 +92,7 @@ public class NotificationsManager {
         if (!binding.getEngineFacade().areNotificationsDisabled()) {
           projectsPerConnection.computeIfAbsent(binding.getEngineFacade(), k -> new ArrayList<>()).add(p);
         }
-      })
-    );
+      }));
     return projectsPerConnection;
   }
 

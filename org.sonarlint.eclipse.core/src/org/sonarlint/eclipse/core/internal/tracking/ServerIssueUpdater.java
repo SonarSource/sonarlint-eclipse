@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -42,9 +41,9 @@ import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
-import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
-import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
+import org.sonarsource.sonarlint.core.serverconnection.DownloadException;
+import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
+import org.sonarsource.sonarlint.core.serverconnection.issues.ServerIssue;
 
 public class ServerIssueUpdater {
 
@@ -95,12 +94,15 @@ public class ServerIssueUpdater {
           if (issuable instanceof ISonarLintFile) {
             var file = ((ISonarLintFile) issuable);
             var issueTracker = issueTrackerRegistry.getOrCreate(project);
-            var serverIssues = fetchServerIssues(engineFacade, projectBinding, VcsService.getServerBranch(project), (ISonarLintFile) issuable, monitor);
+            String branchName = VcsService.getServerBranch(project);
+            var serverIssues = fetchServerIssues(engineFacade, projectBinding, branchName, (ISonarLintFile) issuable, monitor);
             Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
             Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(file, serverIssuesTrackable);
             issueTracker.updateCache(file, tracked);
             trackedIssues.put(issuable, tracked);
-            SonarLintMarkerUpdater.refreshMarkersForTaint(file, engineFacade);
+            // FIXME should be moved to a separate job
+            fetchServerTaintIssues(engineFacade, projectBinding, branchName, file, monitor);
+            SonarLintMarkerUpdater.refreshMarkersForTaint(file, branchName, engineFacade);
           }
         }
         if (!trackedIssues.isEmpty()) {
@@ -118,7 +120,7 @@ public class ServerIssueUpdater {
 
   public static List<ServerIssue> fetchServerIssues(ConnectedEngineFacade engineFacade,
     ProjectBinding projectBinding,
-    @Nullable String branchName,
+    String branchName,
     ISonarLintFile file, IProgressMonitor monitor) {
     var filePath = file.getProjectRelativePath();
 
@@ -127,7 +129,21 @@ public class ServerIssueUpdater {
       return engineFacade.downloadServerIssues(projectBinding, branchName, filePath, monitor);
     } catch (DownloadException e) {
       SonarLintLogger.get().info(e.getMessage());
-      return engineFacade.getServerIssues(projectBinding, filePath);
+      return engineFacade.getServerIssues(projectBinding, branchName, filePath);
+    }
+  }
+
+  public static void fetchServerTaintIssues(ConnectedEngineFacade engineFacade,
+    ProjectBinding projectBinding,
+    String branchName,
+    ISonarLintFile file, IProgressMonitor monitor) {
+    var filePath = file.getProjectRelativePath();
+
+    try {
+      SonarLintLogger.get().debug("Download server issues for " + file.getName());
+      engineFacade.downloadServerTaintIssues(projectBinding, branchName, filePath, monitor);
+    } catch (DownloadException e) {
+      SonarLintLogger.get().info(e.getMessage());
     }
   }
 

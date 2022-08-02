@@ -35,8 +35,8 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.ProjectNotificationTime;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
-import org.sonarsource.sonarlint.core.notifications.ServerNotificationsRegistry;
+import org.sonarsource.sonarlint.core.serverconnection.smartnotifications.ServerNotificationListener;
+import org.sonarsource.sonarlint.core.serverconnection.smartnotifications.ServerNotificationsRegistry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

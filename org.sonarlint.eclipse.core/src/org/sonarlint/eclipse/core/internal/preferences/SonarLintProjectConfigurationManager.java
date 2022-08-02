@@ -95,7 +95,7 @@ public class SonarLintProjectConfigurationManager {
       binding -> {
         projectNode.put(P_PROJECT_KEY, binding.projectKey());
         projectNode.put(P_SERVER_ID, binding.connectionId());
-        projectNode.put(P_SQ_PREFIX_KEY, binding.sqPathPrefix());
+        projectNode.put(P_SQ_PREFIX_KEY, binding.serverPathPrefix());
         projectNode.put(P_IDE_PREFIX_KEY, binding.idePathPrefix());
       },
       () -> {
@@ -103,8 +103,7 @@ public class SonarLintProjectConfigurationManager {
         projectNode.remove(P_SERVER_ID);
         projectNode.remove(P_SQ_PREFIX_KEY);
         projectNode.remove(P_IDE_PREFIX_KEY);
-      }
-    );
+      });
 
     projectNode.putBoolean(P_AUTO_ENABLED_KEY, configuration.isAutoEnabled());
     try {

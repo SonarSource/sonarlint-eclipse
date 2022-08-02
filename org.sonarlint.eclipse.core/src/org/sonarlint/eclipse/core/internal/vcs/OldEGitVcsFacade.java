@@ -61,7 +61,7 @@ public class OldEGitVcsFacade implements VcsFacade {
   }
 
   @Override
-  public Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, @Nullable String serverMainBranch) {
+  public Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, String serverMainBranch) {
     return withRepo(project.getResource(), repo -> GitUtils.electBestMatchingServerBranchForCurrentHead(repo, serverCandidateNames, serverMainBranch));
   }
 

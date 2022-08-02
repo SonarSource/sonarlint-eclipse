@@ -53,7 +53,6 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacad
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
@@ -67,9 +66,10 @@ import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.AbstractAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
-import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
 import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.commons.TextRange;
 import org.sonarsource.sonarlint.core.commons.progress.CanceledException;
+import org.sonarsource.sonarlint.core.serverconnection.FileUtils;
 
 import static java.text.MessageFormat.format;
 
@@ -331,14 +331,14 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     if (startLine == null) {
       return new RawIssueTrackable(issue);
     }
-    var textRange = TextRange.get(startLine, issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
+    var textRange = issue.getTextRange();
     var textRangeContent = readTextRangeContent(resource, document, textRange);
     var lineContent = readLineContent(resource, document, startLine);
     return new RawIssueTrackable(issue, textRange, textRangeContent, lineContent);
   }
 
   @Nullable
-  private static String readTextRangeContent(ISonarLintFile resource, IDocument document, TextRange textRange) {
+  private static String readTextRangeContent(ISonarLintFile resource, IDocument document, @Nullable TextRange textRange) {
     var position = MarkerUtils.getPosition(document, textRange);
     if (position != null) {
       try {

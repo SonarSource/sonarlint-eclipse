@@ -41,15 +41,6 @@ public class ServerUpdateJob extends Job {
   protected IStatus run(IProgressMonitor monitor) {
     var projectKeysToUpdate = server.getBoundProjectKeys();
     monitor.beginTask("Update SonarLint binding data for all associated projects", projectKeysToUpdate.size() + 1);
-    try {
-      server.updateStorage(monitor);
-    } catch (Exception e) {
-      if (e instanceof CanceledException && monitor.isCanceled()) {
-        return Status.CANCEL_STATUS;
-      }
-      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding data from '" + server.getId() + "'", e);
-    }
-    monitor.worked(1);
 
     var failures = new ArrayList<IStatus>();
     for (var projectKeyToUpdate : projectKeysToUpdate) {
@@ -57,7 +48,7 @@ public class ServerUpdateJob extends Job {
         return Status.CANCEL_STATUS;
       }
       try {
-        server.updateProjectStorage(projectKeyToUpdate, null, monitor);
+        server.updateProjectStorage(projectKeyToUpdate, monitor);
       } catch (Exception e) {
         if (e instanceof CanceledException && monitor.isCanceled()) {
           return Status.CANCEL_STATUS;

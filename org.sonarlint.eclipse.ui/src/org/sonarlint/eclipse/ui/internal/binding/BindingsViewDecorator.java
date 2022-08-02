@@ -23,7 +23,6 @@ import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.RemoteSonarProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -34,14 +33,11 @@ public class BindingsViewDecorator extends LabelProvider implements ILightweight
 
   @Override
   public void decorate(Object element, IDecoration decoration) {
-    if (element instanceof IConnectedEngineFacade) {
-      var server = (IConnectedEngineFacade) element;
-      addSuffix(decoration, server.getSonarLintStorageStateLabel());
-    } else if (element instanceof RemoteSonarProject) {
+    if (element instanceof RemoteSonarProject) {
       addSuffix(decoration, ((RemoteSonarProject) element).getProjectKey());
     } else if (element instanceof ISonarLintProject) {
       var projectConfig = SonarLintCorePlugin.loadConfig(((ISonarLintProject) element));
-      projectConfig.getProjectBinding().ifPresent(b -> decoration.addSuffix(" /" + b.sqPathPrefix()));
+      projectConfig.getProjectBinding().ifPresent(b -> decoration.addSuffix(" /" + b.serverPathPrefix()));
     }
   }
 

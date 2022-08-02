@@ -26,7 +26,7 @@ import java.time.temporal.ChronoUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
+import org.sonarsource.sonarlint.core.serverconnection.FileUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -22,9 +22,9 @@ package org.sonarlint.eclipse.ui.internal.properties;
 import java.util.List;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;

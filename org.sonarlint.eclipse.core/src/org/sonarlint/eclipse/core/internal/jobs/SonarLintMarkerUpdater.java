@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,23 +44,22 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
-import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
+import org.sonarlint.eclipse.core.internal.tracking.DigestUtils;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.listener.TaintVulnerabilitiesListener;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
-import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
-import org.sonarsource.sonarlint.core.client.api.connected.ServerIssueLocation;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.serverconnection.issues.ServerTaintIssue;
+import org.sonarsource.sonarlint.core.serverconnection.issues.ServerTaintIssue.ServerIssueLocation;
 
 public class SonarLintMarkerUpdater {
 
@@ -93,16 +91,14 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  public static void refreshMarkersForTaint(ISonarLintFile currentFile, ConnectedEngineFacade facade) {
+  public static void refreshMarkersForTaint(ISonarLintFile currentFile, String branchName, ConnectedEngineFacade facade) {
     deleteTaintMarkers(currentFile);
 
     var project = currentFile.getProject();
     var config = SonarLintCorePlugin.loadConfig(project);
     config.getProjectBinding().ifPresent(binding -> {
-      var taintVulnerabilities = facade.getServerIssues(binding, currentFile.getProjectRelativePath())
+      var taintVulnerabilities = facade.getServerTaintIssues(binding, branchName, currentFile.getProjectRelativePath())
         .stream()
-        .filter(i -> i.ruleKey().contains("security"))
-        .filter(i -> StringUtils.isEmpty(i.resolution()))
         .collect(Collectors.toList());
 
       var boundSiblingProjects = facade.getBoundProjects(binding.projectKey());
@@ -239,14 +235,35 @@ public class SonarLintMarkerUpdater {
     return triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID : SonarLintCorePlugin.MARKER_REPORT_FLOW_ID;
   }
 
-  private static void createTaintMarker(IDocument document, ISonarLintIssuable issuable, ServerIssue taintIssue,
+  private static void createTaintMarker(IDocument document, ISonarLintIssuable issuable, ServerTaintIssue taintIssue,
     Map<ISonarLintProject, EclipseProjectBinding> bindingsPerProjects) {
     try {
       var marker = issuable.getResource().createMarker(SonarLintCorePlugin.MARKER_TAINT_ID);
 
       setMarkerViewUtilsAttributes(issuable, marker);
 
-      updateMarkerAttributes(document, new ServerIssueTrackable(taintIssue), marker);
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, taintIssue.getRuleKey());
+      marker.setAttribute(IMarker.SEVERITY, SonarLintGlobalConfiguration.getMarkerSeverity());
+
+      marker.setAttribute(IMarker.MESSAGE, taintIssue.getMessage());
+
+      // File level issues (line == null) are displayed on line 1
+      marker.setAttribute(IMarker.LINE_NUMBER, taintIssue.getTextRange() != null ? taintIssue.getTextRange().getStartLine() : 1);
+
+      var position = MarkerUtils.getPosition(document, taintIssue.getTextRange());
+      if (position != null) {
+        marker.setAttribute(IMarker.CHAR_START, position.getOffset());
+        marker.setAttribute(IMarker.CHAR_END, position.getOffset() + position.getLength());
+      }
+
+      marker.setAttribute(IMarker.PRIORITY, getPriority(taintIssue.getSeverity()));
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, taintIssue.getSeverity().name());
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, taintIssue.getType().name());
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, taintIssue.getKey());
+
+      var creationDate = taintIssue.getCreationDate().toEpochMilli();
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationDate));
+
       createFlowMarkersForTaint(taintIssue, marker, bindingsPerProjects);
     } catch (CoreException e) {
       SonarLintLogger.get().error("Unable to create marker", e);
@@ -338,7 +355,7 @@ public class SonarLintMarkerUpdater {
   }
 
   private static Optional<IMarker> createMarkerForTextRange(IDocument document, IResource resource, String markerId, @Nullable String message,
-    org.sonarsource.sonarlint.core.analysis.api.@Nullable TextRange textRange) {
+    org.sonarsource.sonarlint.core.commons.@Nullable TextRange textRange) {
     try {
       var marker = resource.createMarker(markerId);
       if (message != null) {
@@ -349,8 +366,7 @@ public class SonarLintMarkerUpdater {
         marker.setAttribute(IMarker.LINE_NUMBER, 1);
       } else {
         marker.setAttribute(IMarker.LINE_NUMBER, textRange.getStartLine());
-        var position = MarkerUtils.getPosition(document,
-          TextRange.get(textRange.getStartLine(), textRange.getStartLineOffset(), textRange.getEndLine(), textRange.getEndLineOffset()));
+        var position = MarkerUtils.getPosition(document, textRange);
         if (position != null) {
           marker.setAttribute(IMarker.CHAR_START, position.getOffset());
           marker.setAttribute(IMarker.CHAR_END, position.getOffset() + position.getLength());
@@ -363,7 +379,7 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void createFlowMarkersForTaint(ServerIssue taintIssue, IMarker primaryLocationMarker, Map<ISonarLintProject, EclipseProjectBinding> bindingsPerProjects)
+  private static void createFlowMarkersForTaint(ServerTaintIssue taintIssue, IMarker primaryLocationMarker, Map<ISonarLintProject, EclipseProjectBinding> bindingsPerProjects)
     throws CoreException {
     var flows = new ArrayList<MarkerFlow>();
     var i = 1;
@@ -399,15 +415,15 @@ public class SonarLintMarkerUpdater {
   @Nullable
   private static IMarker createMarkerIfCodeMatches(ISonarLintFile file, ServerIssueLocation location) throws BadLocationException, CoreException {
     var document = file.getDocument();
-    var startOffset = document.getLineOffset(location.getStartLine() - 1) + location.getStartLineOffset();
-    var endOffset = document.getLineOffset(location.getEndLine() - 1) + location.getEndLineOffset();
+    var startOffset = document.getLineOffset(location.getTextRange().getStartLine() - 1) + location.getTextRange().getStartLineOffset();
+    var endOffset = document.getLineOffset(location.getTextRange().getEndLine() - 1) + location.getTextRange().getEndLineOffset();
     var inEditorCode = document.get(startOffset, endOffset - startOffset);
-    if (inEditorCode.equals(location.getCodeSnippet())) {
+    var inEditorDigest = DigestUtils.digest(inEditorCode);
+    if (inEditorDigest.equals(location.getTextRange().getHash())) {
       var marker = file.getResource().createMarker(SonarLintCorePlugin.MARKER_TAINT_FLOW_ID);
       marker.setAttribute(IMarker.MESSAGE, location.getMessage());
-      marker.setAttribute(IMarker.LINE_NUMBER, location.getStartLine() != null ? location.getStartLine() : 1);
-      var flowPosition = MarkerUtils.getPosition(document,
-        TextRange.get(location.getStartLine(), location.getStartLineOffset(), location.getEndLine(), location.getEndLineOffset()));
+      marker.setAttribute(IMarker.LINE_NUMBER, location.getTextRange() != null ? location.getTextRange().getStartLine() : 1);
+      var flowPosition = MarkerUtils.getPosition(document, location.getTextRange());
       if (flowPosition != null) {
         marker.setAttribute(IMarker.CHAR_START, flowPosition.getOffset());
         marker.setAttribute(IMarker.CHAR_END, flowPosition.getOffset() + flowPosition.getLength());
@@ -449,15 +465,15 @@ public class SonarLintMarkerUpdater {
    * @see IMarker.PRIORITY_NORMAL
    * @see IMarker.PRIORITY_LOW
    */
-  private static int getPriority(final String severity) {
-    switch (severity.toLowerCase(Locale.ENGLISH)) {
-      case "blocker":
-      case "critical":
+  private static int getPriority(final IssueSeverity severity) {
+    switch (severity) {
+      case BLOCKER:
+      case CRITICAL:
         return IMarker.PRIORITY_HIGH;
-      case "major":
+      case MAJOR:
         return IMarker.PRIORITY_NORMAL;
-      case "minor":
-      case "info":
+      case MINOR:
+      case INFO:
       default:
         return IMarker.PRIORITY_LOW;
     }

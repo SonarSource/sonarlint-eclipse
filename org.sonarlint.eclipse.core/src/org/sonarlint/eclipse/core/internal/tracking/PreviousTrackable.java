@@ -19,6 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
+
 /**
  * Combine a new Trackable ("raw") with a previous state ("base")
  */
@@ -27,9 +30,8 @@ public class PreviousTrackable extends WrappedTrackable {
   private final String serverIssueKey;
   private final Long creationDate;
   private final boolean resolved;
-  private final String assignee;
-  private final String severity;
-  private final String type;
+  private final IssueSeverity severity;
+  private final RuleType type;
   private Long markerId;
 
   public PreviousTrackable(Trackable base, Trackable raw) {
@@ -38,15 +40,15 @@ public class PreviousTrackable extends WrappedTrackable {
     // Warning: do not store a reference to base, as it might never get garbage collected
     this.serverIssueKey = base.getServerIssueKey();
     this.creationDate = base.getCreationDate();
-    this.resolved = base.isResolved();
-    this.assignee = base.getAssignee();
     this.markerId = base.getMarkerId();
     if (base.getServerIssueKey() != null) {
+      this.resolved = base.isResolved();
       this.severity = base.getSeverity();
       this.type = base.getType();
     } else {
-      this.severity = raw.getSeverity();
-      this.type = raw.getType();
+      this.resolved = false;
+      this.severity = raw.getRawSeverity();
+      this.type = raw.getRawType();
     }
   }
 
@@ -66,11 +68,6 @@ public class PreviousTrackable extends WrappedTrackable {
   }
 
   @Override
-  public String getAssignee() {
-    return assignee;
-  }
-
-  @Override
   public Long getMarkerId() {
     return markerId;
   }
@@ -81,12 +78,12 @@ public class PreviousTrackable extends WrappedTrackable {
   }
 
   @Override
-  public String getSeverity() {
+  public IssueSeverity getSeverity() {
     return severity;
   }
 
   @Override
-  public String getType() {
+  public RuleType getType() {
     return type;
   }
 }

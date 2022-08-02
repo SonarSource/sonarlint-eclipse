@@ -51,6 +51,7 @@ import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
+import org.sonarlint.eclipse.its.reddeer.views.BindingsView.Binding;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
@@ -82,6 +83,10 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
         .setServerProperty("sonar.pushevents.polling.last.timestamp", "1")
         .restoreProfileAtStartup(
           URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint.xml"), null))))
+        // Ensure SSE are processed correctly just after SQ startup
+        .setServerProperty("sonar.pushevents.polling.initial.delay", "2")
+        .setServerProperty("sonar.pushevents.polling.period", "1")
+        .setServerProperty("sonar.pushevents.polling.last.timestamp", "1")
         .build();
     } catch (IOException e) {
       fail("Cannot start orchestrator: " + e.getMessage());
@@ -186,7 +191,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     new ProjectBindingWizard().cancel();
 
     var bindingsView = new BindingsView();
-    bindingsView.waitForServerUpdate("test", orchestrator.getServer().version().toString());
+    assertThat(bindingsView.getBindings()).extracting(Binding::getLabel).contains("test");
+    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
 
   private static class Status {
@@ -308,7 +314,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     var bindingsView = new BindingsView();
     bindingsView.open();
     bindingsView.updateAllProjectBindings();
-    bindingsView.waitForServerUpdate("test", orchestrator.getServer().version().toString());
     new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
 

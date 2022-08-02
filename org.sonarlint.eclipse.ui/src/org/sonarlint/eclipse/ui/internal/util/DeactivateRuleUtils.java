@@ -37,7 +37,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 public class DeactivateRuleUtils {
 
