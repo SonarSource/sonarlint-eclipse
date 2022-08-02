@@ -67,22 +67,21 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
         ruleDetailsMarkup = "<div>" + renderRuleParams((StandaloneRuleDetails) ruleDetails) + "</div>";
       }
       var type = ruleDetails.getType();
-      var typeImg64 = type != null ? getAsBase64(SonarLintImages.getTypeImage(type)) : "";
-      var severity = ruleDetails.getSeverity();
+      var typeImg64 = getAsBase64(SonarLintImages.getTypeImage(type));
+      var severity = ruleDetails.getDefaultSeverity();
       var severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
       return "<h1><span class=\"rulename\">"
         + escapeHTML(ruleName) + "</span><span class=\"rulekey\"> (" + ruleKey + ")</span></h1>"
         + "<div class=\"typeseverity\">"
         + "<img class=\"typeicon\" alt=\"" + type + "\" src=\"data:image/gif;base64," + typeImg64 + "\">"
-        + "<span>" + clean(type) + "</span>"
+        + "<span>" + clean(type.name()) + "</span>"
         + "<img class=\"severityicon\" alt=\"" + severity + "\" src=\"data:image/gif;base64," + severityImg64 + "\">"
-        + "<span>" + clean(severity) + "</span>"
+        + "<span>" + clean(severity.name()) + "</span>"
         + "</div>"
         + htmlDescription
         + ruleDetailsMarkup;
     }
   }
-
 
   private static String renderRuleParams(StandaloneRuleDetails ruleDetails) {
     if (!ruleDetails.paramDetails().isEmpty()) {
@@ -118,7 +117,7 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
     var ruleConfig = rulesConfig.stream()
       .filter(r -> r.getKey().equals(ruleKey))
       .filter(RuleConfig::isActive)
-      .filter(r -> r.getParams().keySet().contains(paramName))
+      .filter(r -> r.getParams().containsKey(paramName))
       .findFirst();
     if (ruleConfig.isEmpty()) {
       return Optional.empty();

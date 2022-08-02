@@ -29,7 +29,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,8 +46,7 @@ public class SonarLintGlobalConfigurationTest {
   public void should_serialize_file_exclusions() {
     var list = List.of(
       new ExclusionItem(Type.FILE, "file"),
-      new ExclusionItem(Type.DIRECTORY, "dir")
-    );
+      new ExclusionItem(Type.DIRECTORY, "dir"));
 
     var serialized = SonarLintGlobalConfiguration.serializeFileExclusions(list);
     var desList = SonarLintGlobalConfiguration.deserializeFileExclusions(serialized);
@@ -59,8 +58,7 @@ public class SonarLintGlobalConfigurationTest {
   public void should_serialize_extra_properties() {
     var list = List.of(
       new SonarLintProperty("key1", "value1"),
-      new SonarLintProperty("key2", "value2")
-    );
+      new SonarLintProperty("key2", "value2"));
 
     var serialized = SonarLintGlobalConfiguration.serializeExtraProperties(list);
     var desList = SonarLintGlobalConfiguration.deserializeExtraProperties(serialized);
@@ -73,8 +71,7 @@ public class SonarLintGlobalConfigurationTest {
   public void should_serialize_extra_properties_empty_value() {
     var list = List.of(
       new SonarLintProperty("key1", ""),
-      new SonarLintProperty("key2", "value2")
-    );
+      new SonarLintProperty("key2", "value2"));
 
     var serialized = SonarLintGlobalConfiguration.serializeExtraProperties(list);
     var desList = SonarLintGlobalConfiguration.deserializeExtraProperties(serialized);
@@ -164,7 +161,7 @@ public class SonarLintGlobalConfigurationTest {
       "{\"active\":{\"level\":\"on\"},\"inactive\":{\"level\":\"off\"},\"ruleWithParams\":{\"level\":\"on\",\"parameters\":{\"param1\":\"value1\",\"param2\":\"value2\"}}}");
 
     rules = SonarLintGlobalConfiguration.readRulesConfig();
-    var expectedParams = new HashMap<Object, Object>();
+    var expectedParams = new HashMap<>();
     expectedParams.put("param1", "value1");
     expectedParams.put("param2", "value2");
     assertThat(rules)

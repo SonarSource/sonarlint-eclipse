@@ -64,7 +64,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -76,6 +75,7 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingPr
 import org.sonarlint.eclipse.ui.internal.popup.FailedToOpenHotspotPopup;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
+import org.sonarsource.sonarlint.core.commons.TextRange;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
 import org.sonarsource.sonarlint.shaded.com.google.gson.Gson;
 import org.sonarsource.sonarlint.shaded.com.google.gson.annotations.SerializedName;
@@ -396,7 +396,8 @@ public class SecurityHotspotsHandlerServer {
         marker.setAttribute(IMarker.MESSAGE, hotspot.message);
         marker.setAttribute(IMarker.LINE_NUMBER, hotspot.textRange.getStartLine() != null ? hotspot.textRange.getStartLine() : 1);
         var position = MarkerUtils.getPosition(doc,
-          TextRange.get(hotspot.textRange.getStartLine(), hotspot.textRange.getStartLineOffset(), hotspot.textRange.getEndLine(), hotspot.textRange.getEndLineOffset()));
+          new TextRange(hotspot.textRange.getStartLine(), hotspot.textRange.getStartLineOffset(), hotspot.textRange.getEndLine(),
+            hotspot.textRange.getEndLineOffset()));
         if (position != null && Objects.equals(hotspot.codeSnippet, doc.get(position.getOffset(), position.getLength()))) {
           marker.setAttribute(IMarker.CHAR_START, position.getOffset());
           marker.setAttribute(IMarker.CHAR_END, position.getOffset() + position.getLength());

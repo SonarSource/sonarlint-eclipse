@@ -26,7 +26,7 @@ import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
+import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
 
 public class SonarLintProjectConfiguration {
 

@@ -45,7 +45,7 @@ import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
 import org.sonarsource.sonarlint.shaded.com.google.gson.Gson;
 import org.sonarsource.sonarlint.shaded.com.google.gson.JsonParseException;
 import org.sonarsource.sonarlint.shaded.com.google.gson.annotations.SerializedName;

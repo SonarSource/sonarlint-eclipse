@@ -20,14 +20,16 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
 
 /**
  * A trackable that used to match a server issue but it no longer does.
  */
 public class DisconnectedTrackable extends WrappedTrackable {
 
-  private final String severity;
-  private final String type;
+  private final IssueSeverity severity;
+  private final RuleType type;
 
   public DisconnectedTrackable(Trackable trackable) {
     super(trackable);
@@ -47,17 +49,12 @@ public class DisconnectedTrackable extends WrappedTrackable {
   }
 
   @Override
-  public String getAssignee() {
-    return "";
-  }
-
-  @Override
-  public String getSeverity() {
+  public IssueSeverity getSeverity() {
     return severity;
   }
 
   @Override
-  public String getType() {
+  public RuleType getType() {
     return type;
   }
 }

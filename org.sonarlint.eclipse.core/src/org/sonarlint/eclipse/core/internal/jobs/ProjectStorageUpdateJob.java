@@ -42,7 +42,7 @@ public class ProjectStorageUpdateJob extends Job {
     try {
       var server = SonarLintCorePlugin.getServersManager().findById(connectionId);
       server.ifPresent(s -> {
-        s.updateProjectStorage(projectKey, null, monitor);
+        s.updateProjectStorage(projectKey, monitor);
         s.sync(Set.of(projectKey), monitor);
       });
       return Status.OK_STATUS;

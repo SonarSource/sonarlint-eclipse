@@ -26,6 +26,8 @@ import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
 
 public final class SonarLintImages {
 
@@ -102,13 +104,13 @@ public final class SonarLintImages {
   }
 
   @Nullable
-  public static Image getSeverityImage(String severity) {
-    return createImage("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
+  public static Image getSeverityImage(IssueSeverity severity) {
+    return createImage("severity/" + severity.name().toLowerCase(Locale.ENGLISH) + ".png");
   }
 
   @Nullable
-  public static Image getTypeImage(String type) {
-    return createImage("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
+  public static Image getTypeImage(RuleType type) {
+    return createImage("type/" + type.name().toLowerCase(Locale.ENGLISH) + ".png");
   }
 
   private static class CompositeSeverityTypeImage extends CompositeImageDescriptor {

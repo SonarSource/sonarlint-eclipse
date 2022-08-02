@@ -29,7 +29,7 @@ public interface VcsFacade {
 
   boolean isIgnored(ISonarLintFile file);
 
-  Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, @Nullable String serverMainBranch);
+  Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, String serverMainBranch);
 
   @Nullable
   Object getCurrentCommitRef(ISonarLintProject project);

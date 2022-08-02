@@ -21,11 +21,13 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint.Issues.Issue;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public class ProtobufIssueTrackable implements Trackable {
 
@@ -91,27 +93,22 @@ public class ProtobufIssueTrackable implements Trackable {
   }
 
   @Override
-  public String getAssignee() {
-    return issue.getAssignee();
+  public IssueSeverity getSeverity() {
+    return IssueSeverity.valueOf(issue.getSeverity());
   }
 
   @Override
-  public String getSeverity() {
-    return issue.getSeverity();
-  }
-
-  @Override
-  public String getRawSeverity() {
+  public IssueSeverity getRawSeverity() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public String getType() {
-    return issue.getType();
+  public RuleType getType() {
+    return RuleType.valueOf(issue.getType());
   }
 
   @Override
-  public String getRawType() {
+  public RuleType getRawType() {
     throw new UnsupportedOperationException();
   }
 

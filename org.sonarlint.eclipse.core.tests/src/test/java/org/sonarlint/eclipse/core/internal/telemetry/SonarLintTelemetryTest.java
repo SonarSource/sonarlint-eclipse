@@ -39,7 +39,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry.EclipseTelemetryAttributesProvider;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 import org.sonarsource.sonarlint.core.commons.Language;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryHttpClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
 
@@ -81,6 +81,7 @@ public class SonarLintTelemetryTest extends SonarTestCase {
     when(engine.isEnabled()).thenReturn(true);
 
     var telemetry = new SonarLintTelemetry() {
+      @Override
       public TelemetryManager newTelemetryManager(Path path, TelemetryHttpClient client) {
         return engine;
       }

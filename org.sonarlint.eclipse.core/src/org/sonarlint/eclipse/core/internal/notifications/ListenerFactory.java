@@ -20,7 +20,7 @@
 package org.sonarlint.eclipse.core.internal.notifications;
 
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
+import org.sonarsource.sonarlint.core.serverconnection.smartnotifications.ServerNotificationListener;
 
 public interface ListenerFactory {
 

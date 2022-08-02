@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
@@ -38,7 +37,7 @@ public class BindingsViewContentProvider extends BaseContentProvider implements 
   public Object[] getChildren(Object element) {
     if (element instanceof IConnectedEngineFacade) {
       var server = (ConnectedEngineFacade) element;
-      return server.getBoundRemoteProjects(new NullProgressMonitor()).toArray();
+      return server.getBoundRemoteProjects().toArray();
     }
     if (element instanceof RemoteSonarProject) {
       var project = (RemoteSonarProject) element;
@@ -52,7 +51,7 @@ public class BindingsViewContentProvider extends BaseContentProvider implements 
     if (element instanceof ISonarLintProject) {
       return SonarLintCorePlugin.getServersManager()
         .resolveBinding((ISonarLintProject) element)
-        .flatMap(b -> b.getEngineFacade().getRemoteProject(b.getProjectBinding().projectKey(), new NullProgressMonitor()))
+        .flatMap(b -> b.getEngineFacade().getCachedRemoteProject(b.getProjectBinding().projectKey()))
         .orElse(null);
     }
     if (element instanceof RemoteSonarProject) {

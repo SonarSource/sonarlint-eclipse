@@ -34,14 +34,14 @@ import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.common.FileExclusions;
+import org.sonarsource.sonarlint.core.client.api.common.ClientFileExclusions;
 import org.sonarsource.sonarlint.core.commons.SonarLintException;
 
 import static java.util.stream.Collectors.toCollection;
 
 public class FileExclusionsChecker {
-  private final FileExclusions projectExclusions;
-  private final FileExclusions globalExclusions;
+  private final ClientFileExclusions projectExclusions;
+  private final ClientFileExclusions globalExclusions;
 
   public FileExclusionsChecker(ISonarLintProject project) {
     var projectConfiguration = SonarLintCorePlugin.loadConfig(project);
@@ -53,8 +53,8 @@ public class FileExclusionsChecker {
     var projectGlobExclusions = getExclusionsOfType(projectExclusionItems, Type.GLOB);
     var globalGlobExclusions = getExclusionsOfType(globalExclusionItems, Type.GLOB);
 
-    projectExclusions = new FileExclusions(projectFileExclusions, projectDirectoryExclusions, projectGlobExclusions);
-    globalExclusions = new FileExclusions(Collections.emptySet(), Collections.emptySet(), globalGlobExclusions);
+    projectExclusions = new ClientFileExclusions(projectFileExclusions, projectDirectoryExclusions, projectGlobExclusions);
+    globalExclusions = new ClientFileExclusions(Collections.emptySet(), Collections.emptySet(), globalGlobExclusions);
   }
 
   public Collection<ISonarLintFile> filterExcludedFiles(ISonarLintProject project, Collection<ISonarLintFile> files) {

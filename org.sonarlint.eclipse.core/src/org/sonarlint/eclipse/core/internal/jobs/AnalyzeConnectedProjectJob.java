@@ -42,7 +42,7 @@ import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
+import org.sonarsource.sonarlint.core.serverconnection.issues.ServerIssue;
 
 public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<ConnectedAnalysisConfiguration> {
 
@@ -106,10 +106,11 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
   private Collection<Trackable> trackServerIssuesSync(ConnectedEngineFacade engineFacade, ISonarLintFile file, Collection<Trackable> tracked, boolean updateServerIssues,
     IProgressMonitor monitor) {
     List<ServerIssue> serverIssues;
+    String serverBranch = VcsService.getServerBranch(getProject());
     if (updateServerIssues) {
-      serverIssues = ServerIssueUpdater.fetchServerIssues(engineFacade, binding, VcsService.getServerBranch(getProject()), file, monitor);
+      serverIssues = ServerIssueUpdater.fetchServerIssues(engineFacade, binding, serverBranch, file, monitor);
     } else {
-      serverIssues = engineFacade.getServerIssues(binding, file.getProjectRelativePath());
+      serverIssues = engineFacade.getServerIssues(binding, serverBranch, file.getProjectRelativePath());
     }
     Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
     return IssueTracker.matchAndTrackServerIssues(serverIssuesTrackable, tracked);

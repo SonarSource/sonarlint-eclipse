@@ -20,9 +20,12 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import org.eclipse.jgit.annotations.Nullable;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public class WrappedTrackable implements Trackable {
 
@@ -67,31 +70,34 @@ public class WrappedTrackable implements Trackable {
     return trackable.getRuleKey();
   }
 
+  @Nullable
   @Override
-  public String getSeverity() {
+  public IssueSeverity getSeverity() {
     return trackable.getSeverity();
   }
 
   @Override
-  public String getRawSeverity() {
+  public IssueSeverity getRawSeverity() {
     return trackable.getRawSeverity();
   }
 
   @Override
-  public String getType() {
+  public RuleType getType() {
     return trackable.getType();
   }
 
   @Override
-  public String getRawType() {
+  public RuleType getRawType() {
     return trackable.getRawType();
   }
 
+  @Nullable
   @Override
   public TextRange getTextRange() {
     return trackable.getTextRange();
   }
 
+  @Nullable
   @Override
   public String getServerIssueKey() {
     return trackable.getServerIssueKey();
@@ -105,11 +111,6 @@ public class WrappedTrackable implements Trackable {
   @Override
   public boolean isResolved() {
     return trackable.isResolved();
-  }
-
-  @Override
-  public String getAssignee() {
-    return trackable.getAssignee();
   }
 
   @Override

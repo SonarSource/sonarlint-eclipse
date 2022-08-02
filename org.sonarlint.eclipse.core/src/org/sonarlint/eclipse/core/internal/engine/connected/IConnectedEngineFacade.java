@@ -33,11 +33,11 @@ import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBranches;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
+import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
 
 public interface IConnectedEngineFacade {
 
@@ -67,14 +67,6 @@ public interface IConnectedEngineFacade {
 
   void delete();
 
-  String getUpdateDate();
-
-  String getServerVersion();
-
-  String getSonarLintStorageStateLabel();
-
-  void updateStorage(IProgressMonitor monitor);
-
   /**
    * Adds the given state listener to this engine.
    * Once registered, a listener starts receiving notification of
@@ -100,7 +92,7 @@ public interface IConnectedEngineFacade {
 
   Map<String, ServerProject> getCachedRemoteProjects();
 
-  Optional<ServerProject> getRemoteProject(String projectKey, IProgressMonitor monitor);
+  Optional<ServerProject> getCachedRemoteProject(String projectKey);
 
   @Nullable
   AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor);
@@ -108,7 +100,7 @@ public interface IConnectedEngineFacade {
   @Nullable
   RuleDetails getRuleDescription(String ruleKey, @Nullable String projectKey);
 
-  void updateProjectStorage(String projectKey, @Nullable String branchName, IProgressMonitor monitor);
+  void updateProjectStorage(String projectKey, IProgressMonitor monitor);
 
   Set<String> getBoundProjectKeys();
 

@@ -19,6 +19,10 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import org.eclipse.jdt.annotation.Nullable;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
+
 /**
  * Combine a server Trackable ("serverIssue") with existing issue ("currentIssue")
  */
@@ -27,9 +31,8 @@ public class CombinedTrackable extends WrappedTrackable {
   private final String serverIssueKey;
   private final Long creationDate;
   private final boolean resolved;
-  private final String assignee;
-  private final String severity;
-  private final String type;
+  private final @Nullable IssueSeverity severity;
+  private final RuleType type;
 
   public CombinedTrackable(Trackable serverIssue, Trackable currentIssue) {
     super(currentIssue);
@@ -38,8 +41,7 @@ public class CombinedTrackable extends WrappedTrackable {
     this.serverIssueKey = serverIssue.getServerIssueKey();
     this.creationDate = serverIssue.getCreationDate();
     this.resolved = serverIssue.isResolved();
-    this.assignee = serverIssue.getAssignee();
-    this.severity = serverIssue.getSeverity();
+    this.severity = serverIssue.getSeverity() != null ? serverIssue.getSeverity() : currentIssue.getRawSeverity();
     this.type = serverIssue.getType();
   }
 
@@ -59,17 +61,12 @@ public class CombinedTrackable extends WrappedTrackable {
   }
 
   @Override
-  public String getAssignee() {
-    return assignee;
-  }
-
-  @Override
-  public String getSeverity() {
+  public IssueSeverity getSeverity() {
     return severity;
   }
 
   @Override
-  public String getType() {
+  public RuleType getType() {
     return type;
   }
 }

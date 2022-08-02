@@ -21,9 +21,11 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public interface Trackable {
 
@@ -58,28 +60,26 @@ public interface Trackable {
 
   boolean isResolved();
 
-  // empty if none
-  String getAssignee();
-
   /**
    * Can be overriden by server side issue in connected mode
    */
-  String getSeverity();
+  @Nullable
+  IssueSeverity getSeverity();
 
   /**
    * Original severity reported by the analyzer
    */
-  String getRawSeverity();
+  IssueSeverity getRawSeverity();
 
   /**
    * Can be overriden by server side issue in connected mode
    */
-  String getType();
+  RuleType getType();
 
   /**
    * Original type reported by the analyzer
    */
-  String getRawType();
+  RuleType getRawType();
 
   @Nullable
   TextRange getTextRange();

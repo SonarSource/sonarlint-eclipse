@@ -24,7 +24,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -105,7 +104,7 @@ public class VcsService {
       p -> {
         var serverBranches = bindingOpt.get().getEngineFacade().getServerBranches(bindingOpt.get().getProjectBinding().projectKey());
         LOG.debug("Find best matching branch among: " + serverBranches.getBranchNames().stream().collect(joining(",")));
-        return facade.electBestMatchingBranch(p, serverBranches.getBranchNames(), serverBranches.getMainBranchName().orElse(null));
+        return facade.electBestMatchingBranch(p, serverBranches.getBranchNames(), serverBranches.getMainBranchName());
       });
     LOG.debug("Best matching branch is " + branch.orElse("<main>"));
     return branch;
@@ -121,9 +120,8 @@ public class VcsService {
     electedServerBranchCache.clear();
   }
 
-  @Nullable
   public static String getServerBranch(ISonarLintProject project) {
-    return VcsService.electBestMatchingBranch(project).orElse(null);
+    return VcsService.electBestMatchingBranch(project).orElse("master");
   }
 
 }

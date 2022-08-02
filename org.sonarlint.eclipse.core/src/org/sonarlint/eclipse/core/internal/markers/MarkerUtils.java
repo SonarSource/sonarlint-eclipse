@@ -34,10 +34,10 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.markers.TextRange.FullTextRange;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
+import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public final class MarkerUtils {
 
@@ -68,13 +68,15 @@ public final class MarkerUtils {
 
   @Nullable
   public static Position getPosition(final IDocument document, @Nullable TextRange textRange) {
-    if (textRange == null || !textRange.isValid()) {
+    if (textRange == null) {
       return null;
     }
-    if (textRange.isLineOnly()) {
-      return getPosition(document, textRange.getStartLine());
+    try {
+      return convertToGlobalOffset(document, textRange, Position::new);
+    } catch (BadLocationException e) {
+      SonarLintLogger.get().error("failed to compute line offsets for start, end = " + textRange.getStartLine() + ", " + textRange.getEndLine(), e);
+      return null;
     }
-    return getPosition(document, (FullTextRange) textRange);
   }
 
   @Nullable
@@ -96,17 +98,7 @@ public final class MarkerUtils {
     return new Position(startLineStartOffset, length - lineDelimiterLength);
   }
 
-  @Nullable
-  public static Position getPosition(final IDocument document, FullTextRange textRange) {
-    try {
-      return convertToGlobalOffset(document, textRange, Position::new);
-    } catch (BadLocationException e) {
-      SonarLintLogger.get().error("failed to compute line offsets for start, end = " + textRange.getStartLine() + ", " + textRange.getEndLine(), e);
-      return null;
-    }
-  }
-
-  private static <G> G convertToGlobalOffset(final IDocument document, FullTextRange textRange, BiFunction<Integer, Integer, G> function)
+  private static <G> G convertToGlobalOffset(final IDocument document, TextRange textRange, BiFunction<Integer, Integer, G> function)
     throws BadLocationException {
     var startLineStartOffset = document.getLineOffset(textRange.getStartLine() - 1);
     var endLineStartOffset = textRange.getEndLine() != textRange.getStartLine() ? document.getLineOffset(textRange.getEndLine() - 1) : startLineStartOffset;

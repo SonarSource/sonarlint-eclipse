@@ -448,9 +448,8 @@ public class ConnectedEngineFacadeManager {
 
     try {
       // Validate connection ID format
-      ConnectedGlobalConfiguration.builder()
-        .setConnectionId(connectionId)
-        .build();
+      ConnectedGlobalConfiguration.sonarQubeBuilder()
+        .setConnectionId(connectionId);
     } catch (Exception e) {
       return e.getMessage();
     }

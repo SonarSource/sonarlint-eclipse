@@ -22,12 +22,15 @@ package org.sonarlint.eclipse.its;
 import java.time.Instant;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
+import org.sonarlint.eclipse.its.reddeer.views.BindingsView.Binding;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
@@ -149,7 +152,8 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     var bindingsView = new BindingsView();
     bindingsView.open();
-    bindingsView.waitForServerUpdate(CONNECTION_NAME, null);
+    assertThat(bindingsView.getBindings()).extracting(Binding::getLabel).contains(CONNECTION_NAME);
+    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
 
 }
