@@ -55,15 +55,15 @@
     <license.title>SonarLint for Eclipse</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>2.7.1</tycho.version>
+    <tycho.version>2.7.4</tycho.version>
     <jdk.min.version>11</jdk.min.version>
     <!-- Same protobuf version than the one in SonarLint Core-->
     <protobuf.version>3.20.0</protobuf.version>
-    <jacoco.version>0.8.5</jacoco.version>
+    <jacoco.version>0.8.8</jacoco.version>
     <okhttp.version>3.14.9</okhttp.version>
     <okio.version>1.17.2</okio.version>
     <apache.http.version>5.0.3</apache.http.version>
-    <version.enforcer.plugin>3.0.0-M3</version.enforcer.plugin>
+    <version.enforcer.plugin>3.1.0</version.enforcer.plugin>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
@@ -137,6 +137,11 @@
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-p2-repository-plugin</artifactId>
+          <version>${tycho.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-ds-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
         <plugin>

@@ -21,7 +21,6 @@ Require-Bundle: org.eclipse.jdt.core,
  org.eclipse.search,
  org.eclipse.ui.editors,
  org.junit;bundle-version="4.11.0",
- org.apache.commons.io;bundle-version="2.5.0",
  org.sonarsource.orchestrator.sonar-orchestrator-osgi,
  org.eclipse.equinox.security,
  org.eclipse.ui.console,
@@ -35,7 +34,8 @@ Require-Bundle: org.eclipse.jdt.core,
  org.eclipse.reddeer.workbench,
  org.eclipse.reddeer.jface,
  org.eclipse.reddeer.core,
- com.google.gson;bundle-version="2.9.0"
+ com.google.gson;bundle-version="2.9.1",
+ org.apache.commons.commons-io;bundle-version="2.11.0"
 Import-Package: org.sonarlint.eclipse.ui.internal.views.issues
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
