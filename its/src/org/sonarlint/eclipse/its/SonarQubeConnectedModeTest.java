@@ -76,6 +76,10 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
       orchestrator = Orchestrator.builderEnv()
         .keepBundledPlugins()
         .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[8.9]"))
+        // Ensure SSE are processed correctly just after SQ startup
+        .setServerProperty("sonar.pushevents.polling.initial.delay", "2")
+        .setServerProperty("sonar.pushevents.polling.period", "1")
+        .setServerProperty("sonar.pushevents.polling.last.timestamp", "1")
         .restoreProfileAtStartup(
           URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint.xml"), null))))
         .build();
