@@ -82,7 +82,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     // Change content
     var textEditor = new TextEditor("hello.js");
-    textEditor.insertText(2, 17, "\nvar i;");
+    textEditor.insertText(2, 17, "\nlet i;");
     doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 
     sonarlintIssues = issuesView.getIssues();
@@ -93,7 +93,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     // Insert content that should crash analyzer
     var beforeCrash = textEditor.getText();
-    textEditor.insertText(3, 8, "\nvar");
+    textEditor.insertText(3, 8, "\nbl ah");
     doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 
     // Issues are still there
