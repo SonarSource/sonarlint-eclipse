@@ -140,6 +140,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
       useEmbeddedPluginOrFailIfNotFound(builder, findEmbeddedJsPlugin(), Language.JS);
       useEmbeddedPluginOrFailIfNotFound(builder, findEmbeddedHtmlPlugin(), Language.HTML);
+      useEmbeddedPluginOrFailIfNotFound(builder, findEmbeddedXmlPlugin(), Language.XML);
 
       var globalConfig = builder.build();
       try {
@@ -185,12 +186,17 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
   @Nullable
   private static Path findEmbeddedJsPlugin() {
-    return findEmbeddedPlugin("sonar-javascript-plugin-*.jar", "Found JS/TS detection plugin: ");
+    return findEmbeddedPlugin("sonar-javascript-plugin-*.jar", "Found JS/TS plugin: ");
   }
 
   @Nullable
   private static Path findEmbeddedHtmlPlugin() {
-    return findEmbeddedPlugin("sonar-html-plugin-*.jar", "Found HTML detection plugin: ");
+    return findEmbeddedPlugin("sonar-html-plugin-*.jar", "Found HTML plugin: ");
+  }
+
+  @Nullable
+  private static Path findEmbeddedXmlPlugin() {
+    return findEmbeddedPlugin("sonar-xml-plugin-*.jar", "Found XML plugin: ");
   }
 
   private <G> Optional<G> withEngine(Function<ConnectedSonarLintEngine, G> function) {
