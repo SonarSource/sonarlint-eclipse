@@ -79,7 +79,7 @@ stages:
           GIT_SHA1: $(Build.SourceVersion)
           GITHUB_BRANCH: $(fixedBranch)
         inputs:
-          goals: 'deploy'
+          goals: 'cyclonedx:makeAggregateBom deploy'
           ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
             options: >-
               $(commonMavenArguments)
