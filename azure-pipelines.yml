@@ -95,6 +95,7 @@ stages:
               $(commonMavenArguments)
               --settings $(mavenSettings.secureFilePath)
               -Psonarsource-private-repo
+              -X
           publishJUnitResults: false
           mavenOptions: $(MAVEN_OPTS)
       - bash: git checkout .
