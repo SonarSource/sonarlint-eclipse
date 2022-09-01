@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
-<target name="sonarlint-eclipse-its-latest" sequenceNumber="1">
+<target name="sonarlint-eclipse-its-latest" sequenceNumber="2">
   <locations>
     <location type="Target" uri="file:${project_loc:/org.sonarlint.eclipse.its}/target-platforms/commons.target" />
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
