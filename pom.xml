@@ -164,25 +164,6 @@
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>${jacoco.version}</version>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-clean-plugin</artifactId>
-          <version>${version.clean.plugin}</version>
-          <configuration>
-            <excludeDefaultDirectories>true</excludeDefaultDirectories>
-            <filesets>
-              <fileset>
-                <directory>${project.build.directory}</directory>
-                <includes>
-                  <include>**</include>
-                </includes>
-                <excludes>
-                  <exclude>bom.json</exclude>
-                </excludes>
-              </fileset>
-            </filesets>
-          </configuration>
-        </plugin>
       </plugins>
     </pluginManagement>
 
