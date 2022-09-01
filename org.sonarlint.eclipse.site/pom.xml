@@ -22,20 +22,20 @@
         <artifactId>maven-jarsigner-plugin</artifactId>
         <version>3.0.0</version>
         <executions>
-					<execution>
-						<id>sign</id>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-						<phase>prepare-package</phase>
-					</execution>
-					<execution>
-						<id>verify</id>
-						<goals>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
+          <execution>
+            <id>sign</id>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <phase>prepare-package</phase>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
           <certs>true</certs>
           <verbose>false</verbose>
@@ -71,6 +71,26 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <!-- Workaround for https://github.com/eclipse-tycho/tycho/blob/d6756a47f88ca06cf8967104ffc22fc8afb06db4/tycho-maven-plugin/src/main/resources/META-INF/plexus/components.xml#L182 -->
+          <excludeDefaultDirectories>true</excludeDefaultDirectories>
+          <filesets>
+            <fileset>
+              <directory>${project.build.directory}</directory>
+              <includes>
+                <include>**</include>
+              </includes>
+              <excludes>
+                <exclude>bom.json</exclude>
+              </excludes>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
 
