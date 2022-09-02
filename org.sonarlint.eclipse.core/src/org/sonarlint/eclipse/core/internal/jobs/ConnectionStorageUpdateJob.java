@@ -29,10 +29,10 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarsource.sonarlint.core.commons.progress.CanceledException;
 
-public class ServerUpdateJob extends Job {
+public class ConnectionStorageUpdateJob extends Job {
   private final IConnectedEngineFacade server;
 
-  public ServerUpdateJob(IConnectedEngineFacade server) {
+  public ConnectionStorageUpdateJob(IConnectedEngineFacade server) {
     super("Update SonarLint local storage for connection '" + server.getId() + "'");
     this.server = server;
   }
