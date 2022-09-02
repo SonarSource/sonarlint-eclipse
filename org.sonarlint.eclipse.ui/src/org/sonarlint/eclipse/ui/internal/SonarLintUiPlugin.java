@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
+import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -274,7 +275,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       SonarLintLogger.get().info("Starting SonarLint for Eclipse " + SonarLintUtils.getPluginVersion());
 
       // Schedule auto-sync
-      new QualityProfilesSynchronizerJob().schedule(1_000);
+      new StorageSynchronizerJob().schedule(Duration.ofSeconds(1).toMillis());
 
       JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
 
