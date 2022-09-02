@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -614,9 +615,29 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     doWithEngine(engine -> {
       engine.sync(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKeysToUpdate,
         new WrappedProgressMonitor(monitor, "Synchronize projects storage for connection '" + getId() + "'"));
+      // Force recompute of best server branch
+      VcsService.clearVcsCache();
+
+      updateAllProjectIssuesForCurrentBranch(engine, projectKeysToUpdate, monitor);
     });
-    // Force recompute of best server branch
-    VcsService.clearVcsCache();
+  }
+
+  private void updateAllProjectIssuesForCurrentBranch(ConnectedSonarLintEngine engine, Set<String> projectKeys, IProgressMonitor monitor) {
+    for (var projectKey : projectKeys) {
+      var boundProjects = getBoundProjects(projectKey);
+
+      Set<String> activeBranches = new HashSet<>();
+      for (var project : boundProjects) {
+        activeBranches.add(VcsService.getServerBranch(project));
+      }
+
+      activeBranches.forEach(b -> {
+        engine.downloadAllServerIssues(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKey, b,
+          new WrappedProgressMonitor(monitor, "Synchronize issues for connection '" + getId() + "'"));
+      });
+
+      // TODO refresh taint of opened files?
+    }
   }
 
   @Override

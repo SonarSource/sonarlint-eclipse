@@ -34,12 +34,12 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 
-public class QualityProfilesSynchronizerJob extends Job {
+public class StorageSynchronizerJob extends Job {
 
   private final long syncPeriod;
 
-  public QualityProfilesSynchronizerJob() {
-    super("Synchronize quality profiles with SonarQube/SonarCloud");
+  public StorageSynchronizerJob() {
+    super("Synchronize local storage with SonarQube/SonarCloud");
     setPriority(DECORATE);
     setSystem(true);
     syncPeriod = Long.parseLong(StringUtils.defaultIfBlank(System.getenv("SONARLINT_INTERNAL_SYNC_PERIOD"), "3600"));

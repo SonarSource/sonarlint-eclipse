@@ -33,14 +33,14 @@ public class ServerUpdateJob extends Job {
   private final IConnectedEngineFacade server;
 
   public ServerUpdateJob(IConnectedEngineFacade server) {
-    super("Update SonarLint binding data from '" + server.getId() + "'");
+    super("Update SonarLint local storage for connection '" + server.getId() + "'");
     this.server = server;
   }
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     var projectKeysToUpdate = server.getBoundProjectKeys();
-    monitor.beginTask("Update SonarLint binding data for all associated projects", projectKeysToUpdate.size() + 1);
+    monitor.beginTask("Update SonarLint local storage for all associated projects", projectKeysToUpdate.size() + 1);
 
     var failures = new ArrayList<IStatus>();
     for (var projectKeyToUpdate : projectKeysToUpdate) {
@@ -63,14 +63,14 @@ public class ServerUpdateJob extends Job {
 
     monitor.done();
     if (!failures.isEmpty()) {
-      var message = String.format("Failed to update binding data for %d project(s)", failures.size());
+      var message = String.format("Failed to update local storage for %d project(s)", failures.size());
       return new MultiStatus(SonarLintCorePlugin.PLUGIN_ID, IStatus.ERROR, failures.toArray(new IStatus[0]), message, null);
     }
     return Status.OK_STATUS;
   }
 
   private Status newUpdateFailedStatus(String projectKeyToUpdate, Exception e) {
-    var message = String.format("Unable to update binding data for project '%s'", projectKeyToUpdate);
+    var message = String.format("Unable to update local storage for project '%s'", projectKeyToUpdate);
     return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, message, e);
   }
 
