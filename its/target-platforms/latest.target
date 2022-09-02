@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
-<target name="sonarlint-eclipse-its-latest" sequenceNumber="2">
+<target name="sonarlint-eclipse-its-latest" sequenceNumber="3">
   <locations>
     <location type="Target" uri="file:${project_loc:/org.sonarlint.eclipse.its}/target-platforms/commons.target" />
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
@@ -17,6 +17,7 @@
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <repository location="https://download.eclipse.org/reddeer/releases/latest/" />
       <unit id="org.eclipse.reddeer.eclipse.feature.feature.group" version="0.0.0" />
+      <unit id="org.eclipse.reddeer.ui.feature.feature.group" version="0.0.0" />
     </location>
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0" />
