@@ -56,7 +56,7 @@ import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
 import org.sonarlint.eclipse.ui.internal.hotspots.SecurityHotspotsHandlerServer;
-import org.sonarlint.eclipse.ui.internal.job.QualityProfilesSynchronizerJob;
+import org.sonarlint.eclipse.ui.internal.job.StorageSynchronizerJob;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
