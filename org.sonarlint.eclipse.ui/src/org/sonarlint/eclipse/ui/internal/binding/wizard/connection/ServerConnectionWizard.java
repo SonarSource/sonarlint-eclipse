@@ -46,7 +46,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
+import org.sonarlint.eclipse.core.internal.jobs.ConnectionStorageUpdateJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -259,7 +259,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   }
 
   private void updateConnectionStorage() {
-    var job = new ServerUpdateJob(resultServer);
+    var job = new ConnectionStorageUpdateJob(resultServer);
 
     var boundProjects = resultServer.getBoundProjects();
     if (model.getNotificationsSupported() && !model.getNotificationsDisabled() && !boundProjects.isEmpty()) {

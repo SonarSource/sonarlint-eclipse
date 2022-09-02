@@ -27,7 +27,7 @@ import org.eclipse.ui.actions.SelectionProviderAction;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
+import org.sonarlint.eclipse.core.internal.jobs.ConnectionStorageUpdateJob;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -82,7 +82,7 @@ public class ConnectionUpdateAction extends SelectionProviderAction {
 
     if (servers != null) {
       for (final var server : servers) {
-        var job = new ServerUpdateJob(server);
+        var job = new ConnectionStorageUpdateJob(server);
         // note: this is only necessary for projects bound before SQ 6.6
         JobUtils.scheduleAfterSuccess(job,
           () -> SonarLintCorePlugin.getInstance().notificationsManager().subscribeToNotifications(server.getBoundProjects(), SonarLintUiPlugin.getDefault().listenerFactory()));
