@@ -92,9 +92,13 @@ public class ProtobufIssueTrackable implements Trackable {
     return issue.getResolved();
   }
 
+  @Nullable
   @Override
   public IssueSeverity getSeverity() {
-    return IssueSeverity.valueOf(issue.getSeverity());
+    if (!StringUtils.isEmpty(issue.getSeverity())) {
+      return IssueSeverity.valueOf(issue.getSeverity());
+    }
+    return null;
   }
 
   @Override
