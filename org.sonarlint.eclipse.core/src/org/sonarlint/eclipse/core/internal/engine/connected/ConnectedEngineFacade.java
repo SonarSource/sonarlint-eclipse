@@ -201,20 +201,16 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
   private <G> Optional<G> withEngine(Function<ConnectedSonarLintEngine, G> function) {
     getOrCreateEngine();
-    synchronized (this) {
-      if (wrappedEngine != null) {
-        return Optional.ofNullable(function.apply(wrappedEngine));
-      }
+    if (wrappedEngine != null) {
+      return Optional.ofNullable(function.apply(wrappedEngine));
     }
     return Optional.empty();
   }
 
   private void doWithEngine(Consumer<ConnectedSonarLintEngine> consumer) {
     getOrCreateEngine();
-    synchronized (this) {
-      if (wrappedEngine != null) {
-        consumer.accept(wrappedEngine);
-      }
+    if (wrappedEngine != null) {
+      consumer.accept(wrappedEngine);
     }
   }
 
