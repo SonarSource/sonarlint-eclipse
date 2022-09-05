@@ -188,7 +188,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   public void pageChanged(PageChangedEvent event) {
     if (event.getSelectedPage() == remoteProjectSelectionWizardPage) {
       Display.getDefault().asyncExec(() -> {
-        var success = tryLoadProjectList(remoteProjectSelectionWizardPage, true);
+        var success = tryLoadProjectList(remoteProjectSelectionWizardPage);
         if (success && isEmpty(model.getRemoteProjectKey())) {
           tryAutoBind();
         }
@@ -225,7 +225,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
 
   }
 
-  private boolean tryLoadProjectList(WizardPage currentPage, boolean fetchProjectList) {
+  private boolean tryLoadProjectList(WizardPage currentPage) {
     var server = model.getServer();
     if (server == null) {
       return false;
@@ -237,9 +237,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
           try {
-            if (fetchProjectList) {
-              server.updateProjectList(monitor);
-            }
+            server.updateProjectList(monitor);
             model.setProjectIndex(server.computeProjectIndex());
           } finally {
             monitor.done();

@@ -90,7 +90,6 @@ import org.sonarsource.sonarlint.core.serverconnection.issues.ServerTaintIssue;
 import org.sonarsource.sonarlint.core.serverconnection.smartnotifications.ServerNotificationsRegistry;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toList;
 
 public class ConnectedEngineFacade implements IConnectedEngineFacade {
@@ -102,6 +101,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   @Nullable
   private String organization;
   private boolean hasAuth;
+  @Nullable
   private ConnectedSonarLintEngine wrappedEngine;
   private final List<IConnectedEngineFacadeListener> facadeListeners = new ArrayList<>();
   private boolean notificationsDisabled;
@@ -144,7 +144,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
       var globalConfig = builder.build();
       try {
         this.wrappedEngine = new ConnectedSonarLintEngineImpl(globalConfig);
-        reloadProjects(wrappedEngine);
         SkippedPluginsNotifier.notifyForSkippedPlugins(wrappedEngine.getPluginDetails(), id);
         subscribeForEventsForBoundProjects();
       } catch (Throwable e) {
@@ -217,9 +216,12 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     }
   }
 
-  private void reloadProjects(ConnectedSonarLintEngine engine) {
+  private void reloadProjects(ConnectedSonarLintEngine engine, IProgressMonitor monitor) {
     this.allProjectsByKey.clear();
-    this.allProjectsByKey.putAll(engine.downloadAllProjects(createEndpointParams(), buildClientWithProxyAndCredentials(), null));
+    this.allProjectsByKey.putAll(engine.downloadAllProjects(createEndpointParams(), buildClientWithProxyAndCredentials(),
+      new WrappedProgressMonitor(monitor, "Download project list from server '" + getId() + "'")));
+    // Some project names might have been changed
+    notifyAllListenersStateChanged();
   }
 
   @Override
@@ -333,13 +335,11 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   @Override
   public void updateProjectList(IProgressMonitor monitor) {
     doWithEngine(engine -> {
-      engine.downloadAllProjects(createEndpointParams(), buildClientWithProxyAndCredentials(),
-        new WrappedProgressMonitor(monitor, "Download project list from server '" + getId() + "'"));
-      reloadProjects(engine);
+      reloadProjects(engine, monitor);
     });
   }
 
-  private Stream<ISonarLintProject> getOpenedProjects() {
+  private static Stream<ISonarLintProject> getOpenedProjects() {
     return ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen);
   }
@@ -509,11 +509,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   }
 
   @Override
-  public Map<String, ServerProject> getCachedRemoteProjects() {
-    return unmodifiableMap(allProjectsByKey);
-  }
-
-  @Override
   public Optional<ServerProject> getCachedRemoteProject(String projectKey) {
     return Optional.ofNullable(allProjectsByKey.get(projectKey));
   }
@@ -617,6 +612,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
         new WrappedProgressMonitor(monitor, "Synchronize projects storage for connection '" + getId() + "'"));
       // Force recompute of best server branch
       VcsService.clearVcsCache();
+
+      updateProjectList(monitor);
 
       updateAllProjectIssuesForCurrentBranch(engine, projectKeysToUpdate, monitor);
     });
