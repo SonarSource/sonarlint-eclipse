@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.engine.connected;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -89,8 +88,6 @@ public interface IConnectedEngineFacade {
   void removeConnectedEngineListener(IConnectedEngineFacadeListener listener);
 
   TextSearchIndex<ServerProject> computeProjectIndex();
-
-  Map<String, ServerProject> getCachedRemoteProjects();
 
   Optional<ServerProject> getCachedRemoteProject(String projectKey);
 

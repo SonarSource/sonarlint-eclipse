@@ -59,7 +59,7 @@ public class RemoteSonarProject {
 
   @Override
   public int hashCode() {
-    return Objects.hash(projectKey, serverId);
+    return Objects.hash(projectKey, serverId, name);
   }
 
   @Override
@@ -74,7 +74,7 @@ public class RemoteSonarProject {
       return false;
     }
     var other = (RemoteSonarProject) obj;
-    return Objects.equals(projectKey, other.projectKey) && Objects.equals(serverId, other.serverId);
+    return Objects.equals(projectKey, other.projectKey) && Objects.equals(serverId, other.serverId) && Objects.equals(name, other.name);
   }
 
 }
