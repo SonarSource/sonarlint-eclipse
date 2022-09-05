@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.objectstore.HashingPathMapper;
 import org.sonarsource.sonarlint.core.commons.objectstore.Reader;
 import org.sonarsource.sonarlint.core.commons.objectstore.Writer;
@@ -110,9 +111,13 @@ public class IssueStore {
       .setRuleKey(localIssue.getRuleKey())
       .setMessage(localIssue.getMessage())
       .setResolved(localIssue.isResolved())
-      .setSeverity(localIssue.getSeverity().name())
       .setType(localIssue.getType().name());
 
+    @Nullable
+    IssueSeverity severity = localIssue.getSeverity();
+    if (severity != null) {
+      builder.setSeverity(severity.name());
+    }
     if (localIssue.getCreationDate() != null) {
       builder.setCreationDate(localIssue.getCreationDate());
     }

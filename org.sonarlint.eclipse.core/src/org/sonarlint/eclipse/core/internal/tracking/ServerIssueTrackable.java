@@ -75,6 +75,7 @@ public class ServerIssueTrackable implements Trackable {
     return null;
   }
 
+  @Nullable
   @Override
   public Integer getLineHash() {
     if (serverIssue instanceof LineLevelServerIssue) {
