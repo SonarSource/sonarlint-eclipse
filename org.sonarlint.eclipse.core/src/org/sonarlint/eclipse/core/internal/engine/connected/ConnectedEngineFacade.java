@@ -606,20 +606,23 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   }
 
   @Override
-  public void sync(Set<String> projectKeysToUpdate, IProgressMonitor monitor) {
+  public void manualSync(Set<String> projectKeysToUpdate, IProgressMonitor monitor) {
     doWithEngine(engine -> {
-      engine.sync(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKeysToUpdate,
-        new WrappedProgressMonitor(monitor, "Synchronize projects storage for connection '" + getId() + "'"));
-      // Force recompute of best server branch
-      VcsService.clearVcsCache();
-
-      updateProjectList(monitor);
-
-      updateAllProjectIssuesForCurrentBranch(engine, projectKeysToUpdate, monitor);
+      sync(projectKeysToUpdate, monitor, engine);
+      updateAllProjectIssuesForCurrentBranch(projectKeysToUpdate, monitor, engine);
     });
   }
 
-  private void updateAllProjectIssuesForCurrentBranch(ConnectedSonarLintEngine engine, Set<String> projectKeys, IProgressMonitor monitor) {
+  private void sync(Set<String> projectKeysToUpdate, IProgressMonitor monitor, ConnectedSonarLintEngine engine) {
+    engine.sync(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKeysToUpdate,
+      new WrappedProgressMonitor(monitor, "Synchronize projects storage for connection '" + getId() + "'"));
+    // Force recompute of best server branch
+    VcsService.clearVcsCache();
+
+    updateProjectList(monitor);
+  }
+
+  private void updateAllProjectIssuesForCurrentBranch(Set<String> projectKeys, IProgressMonitor monitor, ConnectedSonarLintEngine engine) {
     for (var projectKey : projectKeys) {
       var boundProjects = getBoundProjects(projectKey);
 
@@ -633,13 +636,35 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
           new WrappedProgressMonitor(monitor, "Synchronize issues for connection '" + getId() + "'"));
       });
 
-      // TODO refresh taint of opened files?
     }
   }
 
   @Override
-  public void syncAllProjects(IProgressMonitor monitor) {
-    sync(getBoundProjectKeys(), monitor);
+  public void autoSyncAll(IProgressMonitor monitor) {
+    Set<String> boundProjectKeys = getBoundProjectKeys();
+    doWithEngine(engine -> {
+      sync(boundProjectKeys, monitor, engine);
+      syncProjectIssuesForCurrentBranch(boundProjectKeys, monitor, engine);
+    });
+  }
+
+  private void syncProjectIssuesForCurrentBranch(Set<String> projectKeys, IProgressMonitor monitor, ConnectedSonarLintEngine engine) {
+    for (var projectKey : projectKeys) {
+      var boundProjects = getBoundProjects(projectKey);
+
+      Set<String> activeBranches = new HashSet<>();
+      for (var project : boundProjects) {
+        activeBranches.add(VcsService.getServerBranch(project));
+      }
+
+      activeBranches.forEach(b -> {
+        engine.syncServerIssues(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKey, b,
+          new WrappedProgressMonitor(monitor, "Synchronize issues for connection '" + getId() + "'"));
+        engine.syncServerTaintIssues(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKey, b,
+          new WrappedProgressMonitor(monitor, "Synchronize taint issues for connection '" + getId() + "'"));
+      });
+
+    }
   }
 
   @Override

@@ -58,7 +58,7 @@ public class ConnectionStorageUpdateJob extends Job {
       monitor.worked(1);
     }
 
-    server.sync(projectKeysToUpdate, monitor);
+    server.manualSync(projectKeysToUpdate, monitor);
     server.notifyAllListenersStateChanged();
 
     monitor.done();
