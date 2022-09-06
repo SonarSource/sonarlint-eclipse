@@ -119,9 +119,9 @@ public interface IConnectedEngineFacade {
 
   Optional<ServerHotspot> getServerHotspot(String hotspotKey, String projectKey);
 
-  void syncAllProjects(IProgressMonitor monitor);
+  void autoSyncAll(IProgressMonitor monitor);
 
-  void sync(Set<String> projectKeysToUpdate, IProgressMonitor monitor);
+  void manualSync(Set<String> projectKeysToUpdate, IProgressMonitor monitor);
 
   ProjectBranches getServerBranches(String projectKey);
 

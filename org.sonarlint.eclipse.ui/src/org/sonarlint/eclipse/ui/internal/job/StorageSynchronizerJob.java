@@ -55,7 +55,7 @@ public class StorageSynchronizerJob extends Job {
         var serverMonitor = subMonitor.newChild(1);
 
         try {
-          connection.syncAllProjects(serverMonitor);
+          connection.autoSyncAll(serverMonitor);
           JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.BINDING_CHANGE, f -> isBoundToConnection(f, connection));
         } catch (Exception e) {
           SonarLintLogger.get().error("Unable to synchronize quality profiles for connection '" + connection.getId() + "'", e);
