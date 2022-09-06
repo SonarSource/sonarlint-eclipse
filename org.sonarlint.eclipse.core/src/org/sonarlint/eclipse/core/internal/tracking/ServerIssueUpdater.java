@@ -36,7 +36,6 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.AsyncServerMarkerUpdaterJob;
-import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
@@ -100,9 +99,6 @@ public class ServerIssueUpdater {
             Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(file, serverIssuesTrackable);
             issueTracker.updateCache(file, tracked);
             trackedIssues.put(issuable, tracked);
-            // FIXME should be moved to a separate job
-            fetchServerTaintIssues(engineFacade, projectBinding, branchName, file, monitor);
-            SonarLintMarkerUpdater.refreshMarkersForTaint(file, branchName, engineFacade);
           }
         }
         if (!trackedIssues.isEmpty()) {
@@ -126,24 +122,10 @@ public class ServerIssueUpdater {
 
     try {
       SonarLintLogger.get().debug("Download server issues for " + file.getName());
-      return engineFacade.downloadServerIssues(projectBinding, branchName, filePath, monitor);
+      return engineFacade.downloadAllServerIssuesForFile(projectBinding, branchName, filePath, monitor);
     } catch (DownloadException e) {
       SonarLintLogger.get().info(e.getMessage());
       return engineFacade.getServerIssues(projectBinding, branchName, filePath);
-    }
-  }
-
-  public static void fetchServerTaintIssues(ConnectedEngineFacade engineFacade,
-    ProjectBinding projectBinding,
-    String branchName,
-    ISonarLintFile file, IProgressMonitor monitor) {
-    var filePath = file.getProjectRelativePath();
-
-    try {
-      SonarLintLogger.get().debug("Download server issues for " + file.getName());
-      engineFacade.downloadServerTaintIssues(projectBinding, branchName, filePath, monitor);
-    } catch (DownloadException e) {
-      SonarLintLogger.get().info(e.getMessage());
     }
   }
 

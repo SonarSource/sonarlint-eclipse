@@ -558,7 +558,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
         new WrappedProgressMonitor(monitor, "Fetch issues")));
   }
 
-  public List<ServerIssue> downloadServerIssues(ProjectBinding projectBinding, String branchName, String filePath, IProgressMonitor monitor) {
+  public List<ServerIssue> downloadAllServerIssuesForFile(ProjectBinding projectBinding, String branchName, String filePath, IProgressMonitor monitor) {
     return withEngine(
       engine -> {
         engine.downloadAllServerIssuesForFile(createEndpointParams(), buildClientWithProxyAndCredentials(), projectBinding, filePath,
@@ -568,14 +568,10 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
         .orElse(emptyList());
   }
 
-  public List<ServerTaintIssue> downloadServerTaintIssues(ProjectBinding projectBinding, String branchName, String filePath, IProgressMonitor monitor) {
-    return withEngine(
-      engine -> {
-        engine.downloadAllServerTaintIssuesForFile(createEndpointParams(), buildClientWithProxyAndCredentials(), projectBinding, filePath,
-          branchName, new WrappedProgressMonitor(monitor, "Fetch issues"));
-        return engine.getServerTaintIssues(projectBinding, branchName, filePath);
-      })
-        .orElse(emptyList());
+  public void downloadAllServerTaintIssuesForFile(ProjectBinding projectBinding, String branchName, String filePath, IProgressMonitor monitor) {
+    doWithEngine(
+      engine -> engine.downloadAllServerTaintIssuesForFile(createEndpointParams(), buildClientWithProxyAndCredentials(), projectBinding, filePath,
+        branchName, new WrappedProgressMonitor(monitor, "Fetch taint issues")));
   }
 
   public List<ServerIssue> getServerIssues(ProjectBinding projectBinding, String branchName, String filePath) {
