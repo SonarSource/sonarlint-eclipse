@@ -40,7 +40,7 @@ public class ConnectionStorageUpdateJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     var projectKeysToUpdate = server.getBoundProjectKeys();
-    monitor.beginTask("Update SonarLint local storage for all associated projects", projectKeysToUpdate.size() + 1);
+    monitor.beginTask("Update SonarLint local storage for all associated projects", projectKeysToUpdate.size());
 
     var failures = new ArrayList<IStatus>();
     for (var projectKeyToUpdate : projectKeysToUpdate) {
@@ -69,7 +69,7 @@ public class ConnectionStorageUpdateJob extends Job {
     return Status.OK_STATUS;
   }
 
-  private Status newUpdateFailedStatus(String projectKeyToUpdate, Exception e) {
+  private static Status newUpdateFailedStatus(String projectKeyToUpdate, Exception e) {
     var message = String.format("Unable to update local storage for project '%s'", projectKeyToUpdate);
     return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, message, e);
   }
