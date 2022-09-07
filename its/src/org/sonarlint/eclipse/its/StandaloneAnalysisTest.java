@@ -194,6 +194,20 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
         tuple("Refactor the code so this stream pipeline is used.", 13)); // Test that sonar.java.source is set
   }
 
+  @Test
+  public void shouldAnalyseJsInYamlFile() {
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("js/js-simple", "js-simple");
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("lambda.yaml"));
+
+    var defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(
+        tuple("Remove the declaration of the unused 'x' variable.", 8));
+  }
+
   // SONARIDE-349
   // SONARIDE-350
   // SONARIDE-353
