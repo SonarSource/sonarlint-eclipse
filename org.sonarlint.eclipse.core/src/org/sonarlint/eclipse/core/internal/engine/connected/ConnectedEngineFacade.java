@@ -31,9 +31,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -66,10 +63,10 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectionValidator;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBranches;
@@ -303,18 +300,10 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     }).orElse(null);
   }
 
-  @Nullable
   @Override
-  public RuleDetails getRuleDescription(String ruleKey, @Nullable String projectKey) {
-    return withEngine(engine -> {
-      try {
-        return engine.getActiveRuleDetails(createEndpointParams(), buildClientWithProxyAndCredentials(), ruleKey, projectKey).get(1, TimeUnit.MINUTES);
-      } catch (InterruptedException | ExecutionException | TimeoutException e) {
-        SonarLintLogger.get().error("Unable to get rule description for rule " + ruleKey, e);
-        return null;
-      }
-    })
-      .orElse(null);
+  public CompletableFuture<ConnectedRuleDetails> getRuleDescription(String ruleKey, @Nullable String projectKey) {
+    return withEngine(engine -> engine.getActiveRuleDetails(createEndpointParams(), buildClientWithProxyAndCredentials(), ruleKey, projectKey))
+      .orElse(CompletableFuture.completedFuture(null));
   }
 
   public synchronized void stop() {
