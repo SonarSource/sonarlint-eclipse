@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.vcs;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,6 +32,7 @@ import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
+import org.sonarlint.eclipse.core.internal.jobs.StorageSynchronizerJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 import static java.util.stream.Collectors.joining;
@@ -133,22 +136,27 @@ public class VcsService {
   }
 
   public static void installBranchChangeListener() {
-    getFacade().addHeadRefsChangeListener(project -> {
-      Optional<ResolvedBinding> bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
-      if (bindingOpt.isEmpty()) {
-        return;
-      }
-      VcsFacade facade = getFacade();
-      Object newCommitRef = facade.getCurrentCommitRef(project);
-      if (shouldRecomputeMatchingBranch(project, newCommitRef)) {
-        saveCurrentCommitRef(project, facade);
-        var previousElectedBranch = electedServerBranchCache.get(project);
-        var newElectedBranch = electBestMatchingBranch(facade, project);
-        if (!newElectedBranch.equals(previousElectedBranch)) {
-          electedServerBranchCache.put(project, newElectedBranch);
-          // Trigger sync
+    getFacade().addHeadRefsChangeListener(projects -> {
+      List<ISonarLintProject> projectsToSync = new ArrayList<>();
+      projects.forEach(project -> {
+        Optional<ResolvedBinding> bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+        if (bindingOpt.isEmpty()) {
+          return;
         }
-
+        VcsFacade facade = getFacade();
+        Object newCommitRef = facade.getCurrentCommitRef(project);
+        if (shouldRecomputeMatchingBranch(project, newCommitRef)) {
+          saveCurrentCommitRef(project, facade);
+          var previousElectedBranch = electedServerBranchCache.get(project);
+          var newElectedBranch = electBestMatchingBranch(facade, project);
+          if (!newElectedBranch.equals(previousElectedBranch)) {
+            electedServerBranchCache.put(project, newElectedBranch);
+            projectsToSync.add(project);
+          }
+        }
+      });
+      if (!projectsToSync.isEmpty()) {
+        new StorageSynchronizerJob(projectsToSync).schedule();
       }
     });
   }

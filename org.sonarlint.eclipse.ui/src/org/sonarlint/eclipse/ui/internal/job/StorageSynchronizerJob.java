@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.job;
 
+import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -55,10 +56,12 @@ public class StorageSynchronizerJob extends Job {
         var serverMonitor = subMonitor.newChild(1);
 
         try {
-          connection.autoSyncAll(serverMonitor);
+          Set<String> boundProjectKeys = connection.getBoundProjectKeys();
+          connection.autoSync(boundProjectKeys, serverMonitor);
           JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.BINDING_CHANGE, f -> isBoundToConnection(f, connection));
+          // TODO Refresh taints
         } catch (Exception e) {
-          SonarLintLogger.get().error("Unable to synchronize quality profiles for connection '" + connection.getId() + "'", e);
+          SonarLintLogger.get().error("Unable to synchronize local storage for connection '" + connection.getId() + "'", e);
         }
 
         serverMonitor.done();

@@ -21,6 +21,8 @@ package org.sonarlint.eclipse.core.internal.vcs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -62,13 +64,19 @@ abstract class AbstractEGitVcsFacade implements VcsFacade {
   }
 
   @Override
-  public void addHeadRefsChangeListener(Consumer<ISonarLintProject> listener) {
-    Repository.getGlobalListenerList().addRefsChangedListener(event -> ProjectsProviderUtils.allProjects().forEach(p -> getRepo(p.getResource()).ifPresent(repo -> {
-      File repoDir = repo.getDirectory();
-      if (repoDir != null && repoDir.equals(event.getRepository().getDirectory())) {
-        listener.accept(p);
+  public void addHeadRefsChangeListener(Consumer<List<ISonarLintProject>> listener) {
+    Repository.getGlobalListenerList().addRefsChangedListener(event -> {
+      List<ISonarLintProject> affectedProjects = new ArrayList<>();
+      ProjectsProviderUtils.allProjects().forEach(p -> getRepo(p.getResource()).ifPresent(repo -> {
+        File repoDir = repo.getDirectory();
+        if (repoDir != null && repoDir.equals(event.getRepository().getDirectory())) {
+          affectedProjects.add(p);
+        }
+      }));
+      if (!affectedProjects.isEmpty()) {
+        listener.accept(affectedProjects);
       }
-    })));
+    });
   }
 
 }

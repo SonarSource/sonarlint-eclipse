@@ -119,7 +119,7 @@ public interface IConnectedEngineFacade {
 
   Optional<ServerHotspot> getServerHotspot(String hotspotKey, String projectKey);
 
-  void autoSyncAll(IProgressMonitor monitor);
+  void autoSync(Set<String> projectKeys, IProgressMonitor monitor);
 
   void manualSync(Set<String> projectKeysToUpdate, IProgressMonitor monitor);
 

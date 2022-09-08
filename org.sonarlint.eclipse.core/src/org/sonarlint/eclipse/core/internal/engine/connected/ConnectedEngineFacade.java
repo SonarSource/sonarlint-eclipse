@@ -632,11 +632,10 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   }
 
   @Override
-  public void autoSyncAll(IProgressMonitor monitor) {
-    Set<String> boundProjectKeys = getBoundProjectKeys();
+  public void autoSync(Set<String> projectKeys, IProgressMonitor monitor) {
     doWithEngine(engine -> {
-      sync(boundProjectKeys, monitor, engine);
-      syncProjectIssuesForCurrentBranch(boundProjectKeys, monitor, engine);
+      sync(projectKeys, monitor, engine);
+      syncProjectIssuesForCurrentBranch(projectKeys, monitor, engine);
     });
   }
 

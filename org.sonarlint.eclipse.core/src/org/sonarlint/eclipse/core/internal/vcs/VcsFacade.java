@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.vcs;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import org.eclipse.jdt.annotation.Nullable;
@@ -34,7 +35,7 @@ public interface VcsFacade {
   @Nullable
   Object getCurrentCommitRef(ISonarLintProject project);
 
-  default void addHeadRefsChangeListener(Consumer<ISonarLintProject> listener) {
+  default void addHeadRefsChangeListener(Consumer<List<ISonarLintProject>> listener) {
 
   }
 
