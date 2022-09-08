@@ -27,6 +27,7 @@
     <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext -Dsonarlint.telemetry.disabled=true</tycho.testArgLine>
     <sonar.runtimeVersion>LATEST_RELEASE</sonar.runtimeVersion>
     <jdk.min.version>11</jdk.min.version>
+    <version.jacoco.plugin>0.8.8</version.jacoco.plugin>
   </properties>
 
   <build>
