@@ -94,7 +94,7 @@ public class SonarLintTelemetry {
   public void init() {
     try {
       var clientWithProxy = SonarLintUtils.withProxy(TelemetryHttpClient.TELEMETRY_ENDPOINT, SonarLintCorePlugin.getOkHttpClient());
-      var client = new TelemetryHttpClient(PRODUCT, SonarLintUtils.getPluginVersion(), ideVersionForTelemetry(), null, null,
+      var client = new TelemetryHttpClient(PRODUCT, SonarLintUtils.getPluginVersion(), ideVersionForTelemetry(), System.getProperty("osgi.os"), System.getProperty("osgi.arch"),
         new SonarLintHttpClientOkHttpImpl(clientWithProxy.build()));
       this.telemetry = newTelemetryManager(getStorageFilePath(), client);
       this.scheduledJob = new TelemetryJob();
