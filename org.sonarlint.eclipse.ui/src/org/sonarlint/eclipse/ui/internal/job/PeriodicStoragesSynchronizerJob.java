@@ -35,11 +35,11 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 
-public class StorageSynchronizerJob extends Job {
+public class PeriodicStoragesSynchronizerJob extends Job {
 
   private final long syncPeriod;
 
-  public StorageSynchronizerJob() {
+  public PeriodicStoragesSynchronizerJob() {
     super("Synchronize local storage with SonarQube/SonarCloud");
     setPriority(DECORATE);
     setSystem(true);

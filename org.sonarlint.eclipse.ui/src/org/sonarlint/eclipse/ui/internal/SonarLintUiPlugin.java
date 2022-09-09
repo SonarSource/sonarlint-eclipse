@@ -57,7 +57,7 @@ import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
 import org.sonarlint.eclipse.ui.internal.hotspots.SecurityHotspotsHandlerServer;
-import org.sonarlint.eclipse.ui.internal.job.StorageSynchronizerJob;
+import org.sonarlint.eclipse.ui.internal.job.PeriodicStoragesSynchronizerJob;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
@@ -275,7 +275,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       SonarLintLogger.get().info("Starting SonarLint for Eclipse " + SonarLintUtils.getPluginVersion());
 
       // Schedule auto-sync
-      new StorageSynchronizerJob().schedule(Duration.ofSeconds(1).toMillis());
+      new PeriodicStoragesSynchronizerJob().schedule(Duration.ofSeconds(1).toMillis());
 
       JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
 
