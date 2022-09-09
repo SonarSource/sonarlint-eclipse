@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.job;
 
+import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -34,11 +35,11 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 
-public class StorageSynchronizerJob extends Job {
+public class PeriodicStoragesSynchronizerJob extends Job {
 
   private final long syncPeriod;
 
-  public StorageSynchronizerJob() {
+  public PeriodicStoragesSynchronizerJob() {
     super("Synchronize local storage with SonarQube/SonarCloud");
     setPriority(DECORATE);
     setSystem(true);
@@ -55,10 +56,12 @@ public class StorageSynchronizerJob extends Job {
         var serverMonitor = subMonitor.newChild(1);
 
         try {
-          connection.autoSyncAll(serverMonitor);
+          Set<String> boundProjectKeys = connection.getBoundProjectKeys();
+          connection.autoSync(boundProjectKeys, serverMonitor);
           JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.BINDING_CHANGE, f -> isBoundToConnection(f, connection));
+          // TODO Refresh taints
         } catch (Exception e) {
-          SonarLintLogger.get().error("Unable to synchronize quality profiles for connection '" + connection.getId() + "'", e);
+          SonarLintLogger.get().error("Unable to synchronize local storage for connection '" + connection.getId() + "'", e);
         }
 
         serverMonitor.done();

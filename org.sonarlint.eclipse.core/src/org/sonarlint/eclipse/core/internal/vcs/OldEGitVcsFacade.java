@@ -19,27 +19,20 @@
  */
 package org.sonarlint.eclipse.core.internal.vcs;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.egit.core.project.RepositoryMapping;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.vcs.GitUtils;
 
 /**
  * Uses internal EGit
  * @deprecated Remove when we want to stop support of Eclipse with EGit < 5.12 (= Eclipse 2021-06)
  */
 @Deprecated(forRemoval = true)
-public class OldEGitVcsFacade implements VcsFacade {
+public class OldEGitVcsFacade extends AbstractEGitVcsFacade {
 
   private static final SonarLintLogger LOG = SonarLintLogger.get();
 
@@ -60,33 +53,9 @@ public class OldEGitVcsFacade implements VcsFacade {
     }
   }
 
-  @Override
-  public Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, String serverMainBranch) {
-    return withRepo(project.getResource(), repo -> GitUtils.electBestMatchingServerBranchForCurrentHead(repo, serverCandidateNames, serverMainBranch));
-  }
-
-  static <G> Optional<G> withRepo(IResource resource, Function<Repository, G> repoFunction) {
-    RepositoryMapping mapping = RepositoryMapping.getMapping(resource);
-    if (mapping != null) {
-      Repository repository = mapping.getRepository();
-      if (repository != null) {
-        return Optional.ofNullable(repoFunction.apply(repository));
-      }
-    }
-    return Optional.empty();
-  }
-
-  @Override
-  @Nullable
-  public String getCurrentCommitRef(ISonarLintProject project) {
-    return OldEGitVcsFacade.<String>withRepo(project.getResource(), repo -> {
-      try {
-        return Optional.ofNullable(repo.exactRef(Constants.HEAD)).map(Object::toString).orElse(null);
-      } catch (IOException e) {
-        LOG.debug("Unable to get current commit", e);
-        return null;
-      }
-    }).orElse(null);
+  Optional<Repository> getRepo(IResource resource) {
+    var mapping = RepositoryMapping.getMapping(resource);
+    return Optional.ofNullable(mapping).map(RepositoryMapping::getRepository);
   }
 
 }

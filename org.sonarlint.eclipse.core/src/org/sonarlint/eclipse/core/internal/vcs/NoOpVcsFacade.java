@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.vcs;
 
-import java.util.Optional;
 import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -33,8 +32,8 @@ public class NoOpVcsFacade implements VcsFacade {
   }
 
   @Override
-  public Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, String serverMainBranch) {
-    return Optional.empty();
+  public String electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, String serverMainBranch) {
+    return serverMainBranch;
   }
 
   @Override

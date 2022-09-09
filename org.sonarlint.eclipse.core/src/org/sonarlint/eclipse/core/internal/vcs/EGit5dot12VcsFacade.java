@@ -19,30 +19,19 @@
  */
 package org.sonarlint.eclipse.core.internal.vcs;
 
-import java.io.IOException;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.egit.core.info.GitInfo;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.vcs.GitUtils;
 
 /**
  * Uses the new EGit API
  * https://wiki.eclipse.org/EGit/New_and_Noteworthy/5.12#API
  *
  */
-public class EGit5dot12VcsFacade implements VcsFacade {
-
-  private static final SonarLintLogger LOG = SonarLintLogger.get();
+public class EGit5dot12VcsFacade extends AbstractEGitVcsFacade {
 
   @Override
   public boolean isIgnored(ISonarLintFile file) {
@@ -53,33 +42,9 @@ public class EGit5dot12VcsFacade implements VcsFacade {
     return gitInfo.getGitState().isIgnored();
   }
 
-  @Override
-  public Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, String serverMainBranch) {
-    return withRepo(project.getResource(), repo -> GitUtils.electBestMatchingServerBranchForCurrentHead(repo, serverCandidateNames, serverMainBranch));
-  }
-
-  static <G> Optional<G> withRepo(IResource resource, Function<Repository, G> repoFunction) {
+  Optional<Repository> getRepo(IResource resource) {
     GitInfo gitInfo = Adapters.adapt(resource, GitInfo.class);
-    if (gitInfo != null) {
-      Repository repository = gitInfo.getRepository();
-      if (repository != null) {
-        return Optional.ofNullable(repoFunction.apply(repository));
-      }
-    }
-    return Optional.empty();
-  }
-
-  @Override
-  @Nullable
-  public String getCurrentCommitRef(ISonarLintProject project) {
-    return EGit5dot12VcsFacade.<String>withRepo(project.getResource(), repo -> {
-      try {
-        return Optional.ofNullable(repo.exactRef(Constants.HEAD)).map(Ref::toString).orElse(null);
-      } catch (IOException e) {
-        LOG.debug("Unable to get current commit", e);
-        return null;
-      }
-    }).orElse(null);
+    return Optional.ofNullable(gitInfo).map(GitInfo::getRepository);
   }
 
 }

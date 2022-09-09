@@ -19,8 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal.vcs;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -29,9 +30,13 @@ public interface VcsFacade {
 
   boolean isIgnored(ISonarLintFile file);
 
-  Optional<String> electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, String serverMainBranch);
+  String electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, String serverMainBranch);
 
   @Nullable
   Object getCurrentCommitRef(ISonarLintProject project);
+
+  default void addHeadRefsChangeListener(Consumer<List<ISonarLintProject>> listener) {
+
+  }
 
 }

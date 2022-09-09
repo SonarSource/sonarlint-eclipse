@@ -52,6 +52,7 @@ import org.sonarlint.eclipse.core.internal.tracking.PersistentIssueTrackerCache;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
 import org.sonarlint.eclipse.core.internal.utils.NodeJsManager;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class SonarLintCorePlugin extends Plugin {
@@ -130,6 +131,8 @@ public class SonarLintCorePlugin extends Plugin {
     notificationsTrackerRegistry = new NotificationsTrackerRegistry();
 
     nodeJsManager = new NodeJsManager();
+
+    VcsService.installBranchChangeListener();
 
     startupAsync();
   }
