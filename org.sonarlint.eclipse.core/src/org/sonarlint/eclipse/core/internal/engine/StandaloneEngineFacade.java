@@ -100,10 +100,8 @@ public class StandaloneEngineFacade {
 
   private <G> Optional<G> withEngine(Function<StandaloneSonarLintEngine, G> function) {
     getOrCreateEngine();
-    synchronized (this) {
-      if (wrappedEngine != null) {
-        return Optional.ofNullable(function.apply(wrappedEngine));
-      }
+    if (wrappedEngine != null) {
+      return Optional.ofNullable(function.apply(wrappedEngine));
     }
     return Optional.empty();
   }
