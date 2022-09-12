@@ -59,7 +59,7 @@ public class NotificationsTrackerTest {
     var pivot = ZonedDateTime.now().minus(1, ChronoUnit.HOURS);
     tracker.setLastEventPolling(pivot);
 
-    assertThat(basedir.toFile().isDirectory()).isTrue();
+    assertThat(basedir).isDirectory();
   }
 
   @Test

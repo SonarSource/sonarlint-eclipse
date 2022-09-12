@@ -83,10 +83,7 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
     var baseSearch = new HashMap<SearchKey, List<BASE>>();
     for (var base : tracking.getUnmatchedBases()) {
       var searchKey = factory.apply(base);
-      if (!baseSearch.containsKey(searchKey)) {
-        baseSearch.put(searchKey, new ArrayList<>());
-      }
-      baseSearch.get(searchKey).add(base);
+      baseSearch.computeIfAbsent(searchKey, k -> new ArrayList<>()).add(base);
     }
 
     for (var raw : tracking.getUnmatchedRaws()) {
@@ -113,7 +110,9 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
 
   private static class LineAndTextRangeHashKey implements SearchKey {
     private final String ruleKey;
+    @Nullable
     private final Integer textRangeHash;
+    @Nullable
     private final Integer line;
 
     LineAndTextRangeHashKey(Trackable trackable) {
@@ -160,7 +159,9 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
 
   private static class LineAndLineHashKey implements SearchKey {
     private final String ruleKey;
+    @Nullable
     private final Integer line;
+    @Nullable
     private final Integer lineHash;
 
     LineAndLineHashKey(Trackable trackable) {
@@ -207,6 +208,7 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
 
   private static class LineHashKey implements SearchKey {
     private final String ruleKey;
+    @Nullable
     private final Integer lineHash;
 
     LineHashKey(Trackable trackable) {
@@ -250,7 +252,9 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
 
   private static class TextRangeHashAndMessageKey implements SearchKey {
     private final String ruleKey;
+    @Nullable
     private final String message;
+    @Nullable
     private final Integer textRangeHash;
 
     TextRangeHashAndMessageKey(Trackable trackable) {
@@ -297,7 +301,9 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
 
   private static class LineAndMessageKey implements SearchKey {
     private final String ruleKey;
+    @Nullable
     private final String message;
+    @Nullable
     private final Integer line;
 
     LineAndMessageKey(Trackable trackable) {
@@ -344,6 +350,7 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
 
   private static class TextRangeHashKey implements SearchKey {
     private final String ruleKey;
+    @Nullable
     private final Integer textRangeHash;
 
     TextRangeHashKey(Trackable trackable) {
@@ -386,6 +393,7 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
   }
 
   private static class ServerIssueSearchKey implements SearchKey {
+    @Nullable
     private final String serverIssueKey;
 
     ServerIssueSearchKey(Trackable trackable) {

@@ -46,9 +46,12 @@ import org.sonarsource.sonarlint.core.commons.Language;
 class EclipseInputFile implements ClientInputFile {
   private final boolean isTestFile;
   private final ISonarLintFile file;
+  @Nullable
   private final Language language;
+  @Nullable
   private final IDocument editorDocument;
   private final Path tempDirectory;
+  @Nullable
   private Path filePath;
   private final long documentModificationStamp;
 

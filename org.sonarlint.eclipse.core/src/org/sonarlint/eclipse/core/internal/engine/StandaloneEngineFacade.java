@@ -52,6 +52,7 @@ import static java.util.stream.Collectors.toSet;
 
 public class StandaloneEngineFacade {
 
+  @Nullable
   private StandaloneSonarLintEngine wrappedEngine;
 
   @Nullable
@@ -89,7 +90,7 @@ public class StandaloneEngineFacade {
   @Nullable
   public static Path toPath(URL bundleEntry) {
     try {
-      URL localURL = FileLocator.toFileURL(bundleEntry);
+      var localURL = FileLocator.toFileURL(bundleEntry);
       SonarLintLogger.get().debug("Plugin extracted to " + localURL);
       return new File(localURL.getFile()).toPath();
     } catch (Exception e) {
@@ -114,7 +115,7 @@ public class StandaloneEngineFacade {
       var analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
       AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, engine.getPluginDetails());
       return analysisResults;
-    }).orElse(null);
+    }).orElseThrow(() -> new IllegalStateException("SonarLint Engine not available"));
   }
 
   @Nullable

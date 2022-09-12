@@ -33,9 +33,13 @@ import static org.sonarlint.eclipse.core.internal.tracking.DigestUtils.digest;
 public class RawIssueTrackable implements Trackable {
 
   private final Issue issue;
+  @Nullable
   private final TextRange textRange;
+  @Nullable
   private final Integer textRangeHash;
+  @Nullable
   private final Integer lineHash;
+  @Nullable
   private Long markerId;
 
   public RawIssueTrackable(Issue issue) {
@@ -55,7 +59,7 @@ public class RawIssueTrackable implements Trackable {
   }
 
   @Override
-  public void setMarkerId(Long id) {
+  public void setMarkerId(@Nullable Long id) {
     this.markerId = id;
   }
 
