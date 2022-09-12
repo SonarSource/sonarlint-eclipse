@@ -42,6 +42,7 @@ import org.sonarsource.sonarlint.core.commons.Language;
  */
 public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFileLanguageProvider {
 
+  @Nullable
   private final CdtUtils cdtUtils;
 
   public CProjectConfiguratorExtension() {

@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 
@@ -27,11 +28,15 @@ import org.sonarsource.sonarlint.core.commons.RuleType;
  */
 public class PreviousTrackable extends WrappedTrackable {
 
+  @Nullable
   private final String serverIssueKey;
+  @Nullable
   private final Long creationDate;
   private final boolean resolved;
+  @Nullable
   private final IssueSeverity severity;
   private final RuleType type;
+  @Nullable
   private Long markerId;
 
   public PreviousTrackable(Trackable base, Trackable raw) {

@@ -30,8 +30,8 @@ public class RuleConfig {
   Map<String, String> params = new HashMap<>();
 
   public RuleConfig(String key, boolean isActive) {
-    setKey(key);
-    setActive(isActive);
+    this.key = key;
+    this.isActive = isActive;
   }
 
   public boolean isActive() {
@@ -65,26 +65,17 @@ public class RuleConfig {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     RuleConfig other = (RuleConfig) obj;
-    if (isActive != other.isActive)
-      return false;
-    if (key == null) {
-      if (other.key != null)
-        return false;
-    } else if (!key.equals(other.key))
-      return false;
-    if (params == null) {
-      if (other.params != null)
-        return false;
-    } else if (!params.equals(other.params))
-      return false;
-    return true;
+    return isActive == other.isActive && Objects.equals(key, other.key) && Objects.equals(params, other.params);
   }
 
 }

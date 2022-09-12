@@ -33,8 +33,10 @@ import org.sonarsource.sonarlint.core.commons.Version;
 public class NodeJsManager {
 
   private boolean nodeInit = false;
-  private Path nodeJsPath = null;
-  private Version nodeJsVersion = null;
+  @Nullable
+  private Path nodeJsPath;
+  @Nullable
+  private Version nodeJsVersion;
 
   /**
    * Reload path from global preferences.

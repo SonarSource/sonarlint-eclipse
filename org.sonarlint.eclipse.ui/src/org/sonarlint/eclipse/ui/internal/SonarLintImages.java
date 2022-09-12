@@ -88,16 +88,13 @@ public final class SonarLintImages {
   }
 
   @Nullable
-  public static Image getIssueImage(String severity, @Nullable String type) {
+  public static Image getIssueImage(String severity, String type) {
     var key = severity + "/" + type;
     var imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
     var image = imageRegistry.get(key);
     if (image == null) {
       var severityImage = createImageDescriptor("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
-      ImageDescriptor typeImage = null;
-      if (type != null) {
-        typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
-      }
+      var typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
       imageRegistry.put(key, new CompositeSeverityTypeImage(severityImage, typeImage));
     }
     return imageRegistry.get(key);
@@ -118,7 +115,7 @@ public final class SonarLintImages {
     private final ImageDescriptor severity;
     private final ImageDescriptor type;
 
-    public CompositeSeverityTypeImage(ImageDescriptor severity, @Nullable ImageDescriptor type) {
+    public CompositeSeverityTypeImage(ImageDescriptor severity, ImageDescriptor type) {
       this.severity = severity;
       this.type = type;
     }
@@ -126,13 +123,9 @@ public final class SonarLintImages {
     @Override
     protected void drawCompositeImage(int width, int height) {
       var severityDataProvider = createCachedImageDataProvider(severity);
-      if (type != null) {
-        var typeDataProvider = createCachedImageDataProvider(type);
-        drawImage(typeDataProvider, 0, 0);
-        drawImage(severityDataProvider, 16, 0);
-      } else {
-        drawImage(severityDataProvider, 0, 0);
-      }
+      var typeDataProvider = createCachedImageDataProvider(type);
+      drawImage(typeDataProvider, 0, 0);
+      drawImage(severityDataProvider, 16, 0);
     }
 
     @Override
@@ -153,7 +146,6 @@ public final class SonarLintImages {
     return imageRegistry.get(key);
   }
 
-  @Nullable
   private static ImageDescriptor createImageDescriptor(String key) {
     var imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
     var imageDescriptor = imageRegistry.getDescriptor(key);

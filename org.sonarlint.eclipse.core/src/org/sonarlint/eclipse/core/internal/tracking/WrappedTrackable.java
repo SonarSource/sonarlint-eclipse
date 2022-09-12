@@ -35,6 +35,7 @@ public class WrappedTrackable implements Trackable {
     this.trackable = trackable;
   }
 
+  @Nullable
   @Override
   public Long getMarkerId() {
     return trackable.getMarkerId();
@@ -45,21 +46,25 @@ public class WrappedTrackable implements Trackable {
     trackable.setMarkerId(id);
   }
 
+  @Nullable
   @Override
   public Integer getLine() {
     return trackable.getLine();
   }
 
+  @Nullable
   @Override
   public String getMessage() {
     return trackable.getMessage();
   }
 
+  @Nullable
   @Override
   public Integer getTextRangeHash() {
     return trackable.getTextRangeHash();
   }
 
+  @Nullable
   @Override
   public Integer getLineHash() {
     return trackable.getLineHash();
@@ -103,6 +108,7 @@ public class WrappedTrackable implements Trackable {
     return trackable.getServerIssueKey();
   }
 
+  @Nullable
   @Override
   public Long getCreationDate() {
     return trackable.getCreationDate();

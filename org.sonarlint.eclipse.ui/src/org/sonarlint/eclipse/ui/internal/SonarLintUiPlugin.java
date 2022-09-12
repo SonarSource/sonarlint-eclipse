@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -75,6 +76,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private SonarLintConsoleLogger logListener;
   private PopupNotification notifListener;
 
+  @Nullable
   private SonarLintConsole console;
 
   private ListenerFactory listenerFactory;

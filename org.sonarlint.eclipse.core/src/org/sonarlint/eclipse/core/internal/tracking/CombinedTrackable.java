@@ -28,7 +28,9 @@ import org.sonarsource.sonarlint.core.commons.RuleType;
  */
 public class CombinedTrackable extends WrappedTrackable {
 
+  @Nullable
   private final String serverIssueKey;
+  @Nullable
   private final Long creationDate;
   private final boolean resolved;
   private final @Nullable IssueSeverity severity;

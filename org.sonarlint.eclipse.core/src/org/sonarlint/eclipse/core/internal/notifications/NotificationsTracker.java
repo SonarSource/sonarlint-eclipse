@@ -33,6 +33,7 @@ public class NotificationsTracker {
   // visible for testing
   public static final String FILENAME = "lastEventPolling.data";
 
+  @Nullable
   private ZonedDateTime lastEventPolling;
 
   private final Path lastEventPollingPath;
