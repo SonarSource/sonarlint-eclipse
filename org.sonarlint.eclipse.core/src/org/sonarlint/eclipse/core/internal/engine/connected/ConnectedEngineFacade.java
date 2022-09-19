@@ -583,7 +583,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
   @Override
   public ProjectBranches getServerBranches(String projectKey) {
-    return withEngine(engine -> engine.getServerBranches(projectKey)).orElse(new ProjectBranches(Set.of("master"), "master"));
+    return withEngine(engine -> engine.getServerBranches(projectKey))
+      .orElseThrow(() -> new IllegalStateException("The connected engine could not be started"));
   }
 
   @Override

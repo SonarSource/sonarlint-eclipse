@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
-<target name="sonarlint-eclipse-build" sequenceNumber="4">
+<target name="sonarlint-eclipse-build" sequenceNumber="5">
   <locations>
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
@@ -19,7 +19,7 @@
         <dependency>
           <groupId>org.sonarsource.sonarlint.core</groupId>
           <artifactId>sonarlint-core-osgi</artifactId>
-          <version>8.8.0.53224</version>
+          <version>8.8.1.54103</version>
           <type>jar</type>
         </dependency>
         <dependency>
