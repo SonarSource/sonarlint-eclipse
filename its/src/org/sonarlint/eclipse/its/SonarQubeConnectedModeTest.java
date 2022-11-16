@@ -75,6 +75,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   static {
     try {
       orchestrator = Orchestrator.builderEnv()
+        .defaultForceAuthentication()
+        .useDefaultAdminCredentialsForBuilds(true)
         .keepBundledPlugins()
         .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[8.9]"))
         // Ensure SSE are processed correctly just after SQ startup
