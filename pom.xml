@@ -55,7 +55,7 @@
     <license.title>SonarLint for Eclipse</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>2.7.4</tycho.version>
+    <tycho.version>3.0.0</tycho.version>
     <jdk.min.version>11</jdk.min.version>
     <!-- Same protobuf version than the one in SonarLint Core-->
     <protobuf.version>3.20.0</protobuf.version>
