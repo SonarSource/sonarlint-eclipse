@@ -77,6 +77,11 @@
           <artifactId>tycho-p2-repository-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-ds-plugin</artifactId>
+          <version>${tycho.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
