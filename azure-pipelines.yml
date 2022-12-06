@@ -34,8 +34,18 @@ stages:
           versionSpec: '11'
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '17'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
       - checkout: self
         fetchDepth: 1
+      - bash: |
+          set -e
+          mkdir -p ~/.m2
+          cp .azure-pipelines/toolchains.xml ~/.m2/toolchains.xml
+        displayName: Setup Maven Toolchains
       - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
@@ -121,8 +131,18 @@ stages:
           versionSpec: '11'
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '17'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
       - checkout: self
         fetchDepth: 1
+      - bash: |
+          set -e
+          mkdir -p ~/.m2
+          cp .azure-pipelines/toolchains.xml ~/.m2/toolchains.xml
+        displayName: Setup Maven Toolchains
       - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
@@ -180,15 +200,12 @@ stages:
           Oldest:
             TARGET_PLATFORM: 'oldest'
             SQ_VERSION: 'LATEST_RELEASE[7.9]'
-            JAVA_VERSION: '11'
           Latest:
             TARGET_PLATFORM: 'latest'
             SQ_VERSION: 'LATEST_RELEASE[8.9]'
-            JAVA_VERSION: '17'
           IBuilds:
             TARGET_PLATFORM: 'ibuilds'
             SQ_VERSION: 'DEV'
-            JAVA_VERSION: '17'
       variables:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
@@ -196,11 +213,21 @@ stages:
       steps:
       - task: JavaToolInstaller@0
         inputs:
-          versionSpec: $(JAVA_VERSION)
+          versionSpec: '11'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '17'
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
       - checkout: self
         fetchDepth: 1
+      - bash: |
+          set -e
+          mkdir -p ~/.m2
+          cp .azure-pipelines/toolchains.xml ~/.m2/toolchains.xml
+        displayName: Setup Maven Toolchains
       - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
@@ -305,7 +332,17 @@ stages:
           versionSpec: '11'
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '17'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
       - checkout: self
+      - bash: |
+          set -e
+          mkdir -p ~/.m2
+          cp .azure-pipelines/toolchains.xml ~/.m2/toolchains.xml
+        displayName: Setup Maven Toolchains
       - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
