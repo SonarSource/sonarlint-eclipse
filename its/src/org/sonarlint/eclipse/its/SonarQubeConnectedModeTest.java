@@ -89,6 +89,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
         .setServerProperty("sonar.pushevents.polling.initial.delay", "2")
         .setServerProperty("sonar.pushevents.polling.period", "1")
         .setServerProperty("sonar.pushevents.polling.last.timestamp", "1")
+        .setOrchestratorProperty("java.home", System.getProperty("sonar.java.home", null))
         .build();
     } catch (IOException e) {
       fail("Cannot start orchestrator: " + e.getMessage());
