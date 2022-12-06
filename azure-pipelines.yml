@@ -180,24 +180,19 @@ stages:
           Oldest:
             TARGET_PLATFORM: 'oldest'
             SQ_VERSION: 'LATEST_RELEASE[7.9]'
-            imageName: 'ubuntu-18.04'
             JAVA_VERSION: '11'
           Latest:
             TARGET_PLATFORM: 'latest'
             SQ_VERSION: 'LATEST_RELEASE[8.9]'
-            imageName: 'ubuntu-18.04'
             JAVA_VERSION: '17'
           IBuilds:
             TARGET_PLATFORM: 'ibuilds'
             SQ_VERSION: 'DEV'
-            imageName: 'ubuntu-18.04'
             JAVA_VERSION: '17'
       variables:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
         stagedP2Url: 'file://$(Agent.BuildDirectory)/staged-repository'
-      pool:
-        vmImage: $(imageName)
       steps:
       - task: JavaToolInstaller@0
         inputs:
