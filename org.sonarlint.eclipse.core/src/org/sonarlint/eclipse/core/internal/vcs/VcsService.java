@@ -25,14 +25,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.annotation.Nullable;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.StorageSynchronizerJob;
+import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 import static java.util.stream.Collectors.joining;
@@ -41,30 +39,8 @@ public class VcsService {
 
   private static final SonarLintLogger LOG = SonarLintLogger.get();
 
-  public static final boolean IS_EGIT_5_12_BUNDLE_AVAILABLE;
-  static {
-    var result = false;
-    try {
-      var egitBundle = Platform.getBundle("org.eclipse.egit.core");
-      result = egitBundle != null && (egitBundle.getState() & (Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED)) != 0
-        && egitBundle.getVersion().compareTo(new Version(5, 12, 0)) >= 0;
-    } catch (Throwable exception) {
-      // Assume that it's not available.
-    }
-    IS_EGIT_5_12_BUNDLE_AVAILABLE = result;
-  }
-
-  public static final boolean IS_EGIT_UI_BUNDLE_AVAILABLE;
-  static {
-    var result = false;
-    try {
-      var egitUiBundle = Platform.getBundle("org.eclipse.egit.ui");
-      result = egitUiBundle != null && (egitUiBundle.getState() & (Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED)) != 0;
-    } catch (Throwable exception) {
-      // Assume that it's not available.
-    }
-    IS_EGIT_UI_BUNDLE_AVAILABLE = result;
-  }
+  public static final boolean IS_EGIT_5_12_BUNDLE_AVAILABLE = BundleUtils.isBundleInstalledWithMinVersion("org.eclipse.egit.core", 5, 12);
+  public static final boolean IS_EGIT_UI_BUNDLE_AVAILABLE = BundleUtils.isBundleInstalled("org.eclipse.egit.ui");
 
   private static final Map<ISonarLintProject, Object> previousCommitRefCache = new ConcurrentHashMap<>();
   private static final Map<ISonarLintProject, String> electedServerBranchCache = new ConcurrentHashMap<>();

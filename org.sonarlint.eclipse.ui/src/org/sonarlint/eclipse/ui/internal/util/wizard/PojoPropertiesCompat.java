@@ -17,16 +17,20 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.utils;
+package org.sonarlint.eclipse.ui.internal.util.wizard;
 
-public class CompatibilityUtils {
+import org.eclipse.core.databinding.beans.IBeanValueProperty;
+import org.eclipse.core.databinding.beans.typed.PojoProperties;
 
-  private CompatibilityUtils() {
-    // utility class, forbidden constructor
+public class PojoPropertiesCompat {
+  public static <S, T> IBeanValueProperty<S, T> value(String propertyName) {
+    if (JFaceUtils.IS_TYPED_API_SUPPORTED) {
+      return PojoProperties.value(propertyName);
+    }
+    return org.eclipse.core.databinding.beans.PojoProperties.value(propertyName);
   }
 
-  public static boolean supportMarkerResolutionRelevance() {
-    return BundleUtils.isBundleInstalledWithMinVersion("org.eclipse.ui.ide", 3, 14);
+  private PojoPropertiesCompat() {
+    // utility class
   }
-
 }

@@ -24,9 +24,7 @@ import java.net.URL;
 import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
-import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -41,6 +39,8 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
+import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
+import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
 public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 
@@ -61,8 +61,8 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 
     var dataBindingContext = new DataBindingContext();
     tokenTextBinding = dataBindingContext.bindValue(
-      WidgetProperties.text(SWT.Modify).observe(serverTokenText),
-      BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_USERNAME)
+      WidgetPropertiesCompat.text(SWT.Modify).observe(serverTokenText),
+      BeanPropertiesCompat.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_USERNAME)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(
         new MandatoryStringValidator("You must provide an authentication token")),

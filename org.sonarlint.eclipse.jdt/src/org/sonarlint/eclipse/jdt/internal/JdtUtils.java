@@ -38,10 +38,10 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider.ISonarLintFileType;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
+import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class JdtUtils {
@@ -340,7 +340,7 @@ public class JdtUtils {
       return ISonarLintFileType.TEST;
     }
     // Support of test classpath was added in JDT 3.14, before that we can't guess
-    if (Platform.getBundle(JavaCore.PLUGIN_ID).getVersion().compareTo(new Version("3.14")) >= 0) {
+    if (BundleUtils.isBundleInstalledWithMinVersion(JavaCore.PLUGIN_ID, 3, 14)) {
       return ISonarLintFileType.MAIN;
     }
     return ISonarLintFileType.UNKNOWN;

@@ -27,7 +27,6 @@ import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
-import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -46,6 +45,8 @@ import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.ide.IDE.SharedImages;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
+import org.sonarlint.eclipse.ui.internal.util.wizard.ViewersObservablesCompat;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
@@ -85,10 +86,10 @@ public class ProjectsSelectionWizardPage extends AbstractProjectBindingWizardPag
     projectsViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
 
     var dataBindingContext = new DataBindingContext();
-    observableInput = ViewersObservables.observeInput(projectsViewer);
+    observableInput = ViewersObservablesCompat.observeInput(projectsViewer);
     projectsBinding = dataBindingContext.bindValue(
       observableInput,
-      BeanProperties.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_PROJECTS)
+      BeanPropertiesCompat.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_PROJECTS)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(new MandatoryProjectsValidator("You must select at least one project")), null);
     ControlDecorationSupport.create(projectsBinding, SWT.LEFT | SWT.TOP);
