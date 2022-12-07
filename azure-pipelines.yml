@@ -11,7 +11,7 @@ resources:
     - repository: commonTemplates
       type: git
       name: pipelines-yaml-templates
-      ref:  refs/tags/v1.0.17
+      ref:  refs/tags/v2.0.0
 
 stages:
 - template: stage-with-burgr-notifications.yml@commonTemplates
@@ -296,11 +296,11 @@ stages:
     burgrName: 'sonarqube'
     burgrType: 'sonarqube'
     stageName: 'sonarqube'
-    stageDisplayName: Run SonarQube and WhiteSource analysis
+    stageDisplayName: Run SonarQube and Mend analysis
     stageDependencies: qa
     jobs:
-    - job: sonarqubeAndWhiteSource
-      displayName: SonarQube analysis on Next, WhiteSource scan
+    - job: sonarqubeAndMend
+      displayName: SonarQube analysis on Next, Mend scan
       variables:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
@@ -377,7 +377,7 @@ stages:
           mavenOptions: $(MAVEN_OPTS)
           sonarQubeRunAnalysis: true
           sqMavenPluginVersionChoice: 'latest'
-      - template: whitesource-with-maven-repox.yml@commonTemplates
+      - template: mend-with-maven-repox.yml@commonTemplates
         parameters:
           productName : 'SonarLint/Eclipse'
           mavenRepositoryPath: '$(Pipeline.Workspace)/.m2/repository'
