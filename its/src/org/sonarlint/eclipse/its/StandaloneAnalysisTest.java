@@ -222,6 +222,20 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
         tuple("Unexpected double-slash CSS comment", 1));
   }
 
+  @Test
+  public void shouldAnalyseTypeScript() {
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("ts/ts-simple", "ts-simple");
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("file.ts"));
+
+    var defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(
+        tuple("This loop's stop condition tests \"i\" but the incrementer updates \"j\".", 2));
+  }
+
   // SONARIDE-349
   // SONARIDE-350
   // SONARIDE-353
