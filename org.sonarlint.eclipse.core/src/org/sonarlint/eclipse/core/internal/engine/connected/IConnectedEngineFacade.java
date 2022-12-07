@@ -36,7 +36,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBranches;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
-import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
+import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspotDetails;
 import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
 
 public interface IConnectedEngineFacade {
@@ -117,7 +117,7 @@ public interface IConnectedEngineFacade {
 
   List<ISonarLintFile> getServerFileExclusions(ProjectBinding binding, Collection<ISonarLintFile> files, Predicate<ISonarLintFile> testFilePredicate);
 
-  Optional<ServerHotspot> getServerHotspot(String hotspotKey, String projectKey);
+  Optional<ServerHotspotDetails> getServerHotspot(String hotspotKey, String projectKey);
 
   void autoSync(Set<String> projectKeys, IProgressMonitor monitor);
 

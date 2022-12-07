@@ -56,7 +56,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintWebView;
-import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
+import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspotDetails;
 
 public class HotspotsView extends ViewPart {
 
@@ -190,7 +190,7 @@ public class HotspotsView extends ViewPart {
   }
 
   @Nullable
-  private ServerHotspot getSelectedHotspot() {
+  private ServerHotspotDetails getSelectedHotspot() {
     var firstElement = hotspotViewer.getStructuredSelection().getFirstElement();
     return firstElement != null ? ((HotspotAndMarker) firstElement).hotspot : null;
   }
@@ -330,7 +330,7 @@ public class HotspotsView extends ViewPart {
     hotspotViewer.setContentProvider(ArrayContentProvider.getInstance());
   }
 
-  public void openHotspot(ServerHotspot hotspot, @Nullable IMarker marker) {
+  public void openHotspot(ServerHotspotDetails hotspot, @Nullable IMarker marker) {
     clearMarkers();
 
     var hotspotAndMarker = new HotspotAndMarker(hotspot, marker);
@@ -376,11 +376,11 @@ public class HotspotsView extends ViewPart {
   }
 
   private static class HotspotAndMarker {
-    private final ServerHotspot hotspot;
+    private final ServerHotspotDetails hotspot;
     @Nullable
     private final IMarker marker;
 
-    public HotspotAndMarker(ServerHotspot hotspot, @Nullable IMarker marker) {
+    public HotspotAndMarker(ServerHotspotDetails hotspot, @Nullable IMarker marker) {
       this.hotspot = hotspot;
       this.marker = marker;
     }

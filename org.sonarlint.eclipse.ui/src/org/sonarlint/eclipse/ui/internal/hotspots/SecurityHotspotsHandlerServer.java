@@ -76,7 +76,7 @@ import org.sonarlint.eclipse.ui.internal.popup.FailedToOpenHotspotPopup;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.commons.TextRange;
-import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
+import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspotDetails;
 import org.sonarsource.sonarlint.shaded.com.google.gson.Gson;
 import org.sonarsource.sonarlint.shaded.com.google.gson.annotations.SerializedName;
 
@@ -353,9 +353,9 @@ public class SecurityHotspotsHandlerServer {
 
     private static class FetchedHotspot {
       public final IConnectedEngineFacade origin;
-      public final ServerHotspot hotspot;
+      public final ServerHotspotDetails hotspot;
 
-      public FetchedHotspot(IConnectedEngineFacade origin, ServerHotspot hotspot) {
+      public FetchedHotspot(IConnectedEngineFacade origin, ServerHotspotDetails hotspot) {
         this.origin = origin;
         this.hotspot = hotspot;
       }
@@ -375,7 +375,7 @@ public class SecurityHotspotsHandlerServer {
       return Optional.empty();
     }
 
-    private static void show(ISonarLintFile file, ServerHotspot hotspot) {
+    private static void show(ISonarLintFile file, ServerHotspotDetails hotspot) {
       Display.getDefault().syncExec(() -> {
         var doc = getDocumentFromEditorOrFile(file);
         var marker = createMarker(file, hotspot, doc);
@@ -389,12 +389,12 @@ public class SecurityHotspotsHandlerServer {
     }
 
     @Nullable
-    private static IMarker createMarker(ISonarLintFile file, ServerHotspot hotspot, IDocument doc) {
+    private static IMarker createMarker(ISonarLintFile file, ServerHotspotDetails hotspot, IDocument doc) {
       IMarker marker = null;
       try {
         marker = file.getResource().createMarker(SonarLintCorePlugin.MARKER_HOTSPOT_ID);
         marker.setAttribute(IMarker.MESSAGE, hotspot.message);
-        marker.setAttribute(IMarker.LINE_NUMBER, hotspot.textRange.getStartLine() != null ? hotspot.textRange.getStartLine() : 1);
+        marker.setAttribute(IMarker.LINE_NUMBER, hotspot.textRange.getStartLine());
         var position = MarkerUtils.getPosition(doc,
           new TextRange(hotspot.textRange.getStartLine(), hotspot.textRange.getStartLineOffset(), hotspot.textRange.getEndLine(),
             hotspot.textRange.getEndLineOffset()));

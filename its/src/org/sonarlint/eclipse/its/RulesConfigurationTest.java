@@ -112,13 +112,13 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   public void open_rules_configuration() {
     var ruleConfigurationPreferences = openRuleConfigurationPreferences();
 
-    assertThat(ruleConfigurationPreferences.getItems()).hasSize(7 /* HTML, Java, JavaScript, PHP, Python, Secrets, XML - no TypeScript */);
-    var htmlNode = ruleConfigurationPreferences.getItems().get(0);
+    assertThat(ruleConfigurationPreferences.getItems()).hasSize(8 /* CSS, HTML, Java, JavaScript, PHP, Python, Secrets, XML - no TypeScript */);
+    var cssNode = ruleConfigurationPreferences.getItems().get(0);
 
-    assertThat(htmlNode.getText()).isEqualTo("HTML");
+    assertThat(cssNode.getText()).isEqualTo("CSS");
 
-    htmlNode.expand();
-    assertThat(htmlNode.getItems().get(0).getText()).isEqualTo("\"<!DOCTYPE>\" declarations should appear before \"<html>\" tags");
+    cssNode.expand();
+    assertThat(cssNode.getItems().get(0).getText()).isEqualTo("\"!important\" should not be used on \"keyframes\"");
   }
 
   private static RuleConfigurationPreferences openRuleConfigurationPreferences() {

@@ -208,6 +208,20 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
         tuple("Remove the declaration of the unused 'x' variable.", 9));
   }
 
+  @Test
+  public void shouldAnalyseCSS() {
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("css/css-simple", "css-simple");
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("file.css"));
+
+    var defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(
+        tuple("Unexpected double-slash CSS comment", 1));
+  }
+
   // SONARIDE-349
   // SONARIDE-350
   // SONARIDE-353
