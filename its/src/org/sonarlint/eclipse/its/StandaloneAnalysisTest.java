@@ -205,7 +205,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
-        tuple("Remove the declaration of the unused 'x' variable.", 8));
+        tuple("Remove the declaration of the unused 'x' variable.", 9));
   }
 
   // SONARIDE-349
