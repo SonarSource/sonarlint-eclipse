@@ -20,9 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
 import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.beans.PojoProperties;
 import org.eclipse.core.databinding.observable.value.SelectObservableValue;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -30,6 +28,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.util.wizard.PojoPropertiesCompat;
+import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
 /**
  * Choose between token and login/password authentication mode
@@ -55,13 +55,13 @@ public class AuthMethodWizardPage extends WizardPage {
     var loginPasswordButton = new Button(radioButtonGroupContainer, SWT.RADIO);
     loginPasswordButton.setText("Username + Password");
 
-    var sonarCloudSelection = WidgetProperties.selection().observe(loginPasswordButton);
-    var onPremSelection = WidgetProperties.selection().observe(tokenButton);
+    var sonarCloudSelection = WidgetPropertiesCompat.buttonSelection().observe(loginPasswordButton);
+    var onPremSelection = WidgetPropertiesCompat.buttonSelection().observe(tokenButton);
     var selectObservable = new SelectObservableValue<>(ServerConnectionModel.AuthMethod.class);
     selectObservable.addOption(ServerConnectionModel.AuthMethod.PASSWORD, sonarCloudSelection);
     selectObservable.addOption(ServerConnectionModel.AuthMethod.TOKEN, onPremSelection);
     var dataBindingContext = new DataBindingContext();
-    dataBindingContext.bindValue(selectObservable, PojoProperties.value(ServerConnectionModel.PROPERTY_AUTH_METHOD).observe(model));
+    dataBindingContext.bindValue(selectObservable, PojoPropertiesCompat.value(ServerConnectionModel.PROPERTY_AUTH_METHOD).observe(model));
 
     WizardPageSupport.create(this, dataBindingContext);
 

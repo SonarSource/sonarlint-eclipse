@@ -32,6 +32,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.ui.internal.Messages;
+import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
+import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
 public class UrlWizardPage extends AbstractServerConnectionWizardPage {
 
@@ -55,8 +57,8 @@ public class UrlWizardPage extends AbstractServerConnectionWizardPage {
 
     var dataBindingContext = new DataBindingContext();
     serverUrlTextBinding = dataBindingContext.bindValue(
-      WidgetProperties.text(SWT.Modify).observe(serverUrlText),
-      BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_SERVER_URL)
+      WidgetPropertiesCompat.text(SWT.Modify).observe(serverUrlText),
+      BeanPropertiesCompat.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_SERVER_URL)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(new MandatoryURLValidator()),
       null);

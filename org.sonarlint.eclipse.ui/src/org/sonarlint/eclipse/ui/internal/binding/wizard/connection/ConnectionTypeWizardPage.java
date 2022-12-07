@@ -22,9 +22,7 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.beans.PojoProperties;
 import org.eclipse.core.databinding.observable.value.SelectObservableValue;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -39,6 +37,8 @@ import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.util.wizard.PojoPropertiesCompat;
+import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
 /**
  * Choose between SonarCloud and SonarQube on premise
@@ -83,13 +83,13 @@ public class ConnectionTypeWizardPage extends WizardPage {
     onPremiseLabel.setText("Connect to a server");
     onPremiseLabel.setLayoutData(gd);
 
-    var sonarCloudSelection = WidgetProperties.selection().observe(sonarCloudButton);
-    var onPremSelection = WidgetProperties.selection().observe(onPremiseButton);
+    var sonarCloudSelection = WidgetPropertiesCompat.buttonSelection().observe(sonarCloudButton);
+    var onPremSelection = WidgetPropertiesCompat.buttonSelection().observe(onPremiseButton);
     var selectObservable = new SelectObservableValue<>(ServerConnectionModel.ConnectionType.class);
     selectObservable.addOption(ServerConnectionModel.ConnectionType.SONARCLOUD, sonarCloudSelection);
     selectObservable.addOption(ServerConnectionModel.ConnectionType.ONPREMISE, onPremSelection);
     var dataBindingContext = new DataBindingContext();
-    dataBindingContext.bindValue(selectObservable, PojoProperties.value(ServerConnectionModel.PROPERTY_CONNECTION_TYPE).observe(model));
+    dataBindingContext.bindValue(selectObservable, PojoPropertiesCompat.value(ServerConnectionModel.PROPERTY_CONNECTION_TYPE).observe(model));
 
     WizardPageSupport.create(this, dataBindingContext);
 

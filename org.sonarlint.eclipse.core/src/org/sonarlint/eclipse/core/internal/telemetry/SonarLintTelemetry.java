@@ -40,6 +40,7 @@ import org.sonarlint.eclipse.core.internal.http.SonarLintHttpClientOkHttpImpl;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.commons.Language;
@@ -114,11 +115,11 @@ public class SonarLintTelemetry {
     } else {
       sb.append("Unknown");
     }
-    var platformBundle = Platform.getBundle("org.eclipse.platform");
-    if (platformBundle != null) {
-      sb.append(" ");
-      sb.append(platformBundle.getVersion());
-    }
+    BundleUtils.getInstalledBundle("org.eclipse.platform")
+      .ifPresent(platformBundle -> {
+        sb.append(" ");
+        sb.append(platformBundle.getVersion());
+      });
     return sb.toString();
   }
 

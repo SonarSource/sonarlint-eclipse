@@ -22,9 +22,7 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
-import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -33,6 +31,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
+import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
+import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
 public class ConnectionIdWizardPage extends AbstractServerConnectionWizardPage {
 
@@ -54,8 +54,8 @@ public class ConnectionIdWizardPage extends AbstractServerConnectionWizardPage {
 
     var dataBindingContext = new DataBindingContext();
     serverIdTextBinding = dataBindingContext.bindValue(
-      WidgetProperties.text(SWT.Modify).observe(serverIdText),
-      BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_CONNECTION_ID)
+      WidgetPropertiesCompat.text(SWT.Modify).observe(serverIdText),
+      BeanPropertiesCompat.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_CONNECTION_ID)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(
         new MandatoryAndUniqueServerIdValidator(model.isEdit())),

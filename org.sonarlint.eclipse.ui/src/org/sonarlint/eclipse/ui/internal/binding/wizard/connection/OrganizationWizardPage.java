@@ -22,8 +22,6 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
-import org.eclipse.core.databinding.beans.BeanProperties;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
@@ -34,6 +32,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.fieldassist.ContentAssistCommandAdapter;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
+import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
 public class OrganizationWizardPage extends AbstractServerConnectionWizardPage {
 
@@ -57,8 +57,8 @@ public class OrganizationWizardPage extends AbstractServerConnectionWizardPage {
 
     var dataBindingContext = new DataBindingContext();
     orgaTextBinding = dataBindingContext.bindValue(
-      WidgetProperties.text(SWT.Modify).observe(organizationText),
-      BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_ORGANIZATION)
+      WidgetPropertiesCompat.text(SWT.Modify).observe(organizationText),
+      BeanPropertiesCompat.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_ORGANIZATION)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(new MandatoryStringValidator("You must enter a valid organization key")),
       null);

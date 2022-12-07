@@ -22,9 +22,7 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
-import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -32,6 +30,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.ui.internal.Messages;
+import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
+import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
 public class UsernamePasswordWizardPage extends AbstractServerConnectionWizardPage {
 
@@ -54,16 +54,16 @@ public class UsernamePasswordWizardPage extends AbstractServerConnectionWizardPa
 
     var dataBindingContext = new DataBindingContext();
     usernameTextBinding = dataBindingContext.bindValue(
-      WidgetProperties.text(SWT.Modify).observe(serverUsernameText),
-      BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_USERNAME)
+      WidgetPropertiesCompat.text(SWT.Modify).observe(serverUsernameText),
+      BeanPropertiesCompat.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_USERNAME)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(
         new MandatoryStringValidator("You must provide a login")),
       null);
     ControlDecorationSupport.create(usernameTextBinding, SWT.LEFT | SWT.TOP);
     passwordTextBinding = dataBindingContext.bindValue(
-      WidgetProperties.text(SWT.Modify).observe(serverPasswordText),
-      BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_PASSWORD)
+      WidgetPropertiesCompat.text(SWT.Modify).observe(serverPasswordText),
+      BeanPropertiesCompat.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_PASSWORD)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(
         new MandatoryStringValidator("You must provide a password")),

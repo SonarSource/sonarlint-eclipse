@@ -22,9 +22,7 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.project;
 import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
-import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
-import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -41,6 +39,8 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
+import org.sonarlint.eclipse.ui.internal.util.wizard.ViewersObservablesCompat;
 
 public class ConnectionSelectionWizardPage extends AbstractProjectBindingWizardPage {
 
@@ -79,8 +79,8 @@ public class ConnectionSelectionWizardPage extends AbstractProjectBindingWizardP
 
     var dataBindingContext = new DataBindingContext();
     serverBinding = dataBindingContext.bindValue(
-      ViewersObservables.observeSingleSelection(serverCombo),
-      BeanProperties.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_SERVER)
+      ViewersObservablesCompat.observeSingleSelection(serverCombo),
+      BeanPropertiesCompat.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_SERVER)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(new MandatoryServerValidator("You must select a server connection")), null);
     ControlDecorationSupport.create(serverBinding, SWT.LEFT | SWT.TOP);

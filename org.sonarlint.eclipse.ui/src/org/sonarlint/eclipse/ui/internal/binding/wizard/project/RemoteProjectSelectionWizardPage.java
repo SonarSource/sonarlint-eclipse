@@ -22,9 +22,7 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.project;
 import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
-import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
@@ -35,6 +33,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.fieldassist.ContentAssistCommandAdapter;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.MandatoryStringValidator;
+import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
+import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
 public class RemoteProjectSelectionWizardPage extends AbstractProjectBindingWizardPage {
 
@@ -54,8 +54,8 @@ public class RemoteProjectSelectionWizardPage extends AbstractProjectBindingWiza
 
     var dataBindingContext = new DataBindingContext();
     projectTextBinding = dataBindingContext.bindValue(
-      WidgetProperties.text(SWT.Modify).observe(projectKeyText),
-      BeanProperties.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_REMOTE_PROJECT_KEY)
+      WidgetPropertiesCompat.text(SWT.Modify).observe(projectKeyText),
+      BeanPropertiesCompat.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_REMOTE_PROJECT_KEY)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(new MandatoryStringValidator("You must select a project key")),
       null);
