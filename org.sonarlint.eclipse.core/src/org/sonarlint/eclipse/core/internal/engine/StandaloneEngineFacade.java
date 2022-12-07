@@ -48,7 +48,6 @@ import org.sonarsource.sonarlint.core.commons.Language;
 
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 public class StandaloneEngineFacade {
 
@@ -122,11 +121,8 @@ public class StandaloneEngineFacade {
   }
 
   public Collection<StandaloneRuleDetails> getAllRuleDetails() {
-    return withEngine(engine -> engine.getAllRuleDetails()
-      .stream()
-      .filter(r -> r.getLanguage() != Language.TS)
-      .collect(toSet()))
-        .orElse(emptySet());
+    return withEngine(StandaloneSonarLintEngine::getAllRuleDetails)
+      .orElse(emptySet());
   }
 
   public synchronized void stop() {
