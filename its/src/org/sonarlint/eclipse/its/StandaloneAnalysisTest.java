@@ -269,14 +269,14 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     onTheFlyView.open();
     assertThat(onTheFlyView.getIssues())
       .extracting(SonarLintIssue::getDescription, SonarLintIssue::getResource)
-      .containsOnly(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.php"));
+      .contains(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.php"));
 
     // SLE-342
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("foo.inc"));
 
     assertThat(onTheFlyView.getIssues())
       .extracting(SonarLintIssue::getDescription, SonarLintIssue::getResource)
-      .containsOnly(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.inc"));
+      .contains(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.inc"));
   }
 
   @Test
