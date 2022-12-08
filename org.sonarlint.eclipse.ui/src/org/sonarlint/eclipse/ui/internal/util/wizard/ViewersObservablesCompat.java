@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.util.wizard;
 
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.jface.databinding.viewers.IViewerObservableValue;
-import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.databinding.viewers.typed.ViewerProperties;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredViewer;
@@ -32,14 +31,26 @@ public class ViewersObservablesCompat {
     if (JFaceUtils.IS_TYPED_API_SUPPORTED) {
       return ViewerProperties.<S, E>singleSelection().observe(viewer);
     }
-    return ViewersObservables.observeSingleSelection(viewer);
+    try {
+      var viewersObservablesClass = Class.forName("org.eclipse.jface.databinding.viewers.ViewersObservables");
+      var observeSingleSelectionMethod = viewersObservablesClass.getMethod("observeSingleSelection", Viewer.class);
+      return (IViewerObservableValue<E>) observeSingleSelectionMethod.invoke(null, viewer);
+    } catch (Exception e) {
+      throw new IllegalStateException("Unable to call deprecated method", e);
+    }
   }
 
   public static IObservableValue<Object> observeInput(Viewer viewer) {
     if (JFaceUtils.IS_TYPED_API_SUPPORTED) {
       return ViewerProperties.<StructuredViewer, Object>input().observe(viewer);
     }
-    return ViewersObservables.observeInput(viewer);
+    try {
+      var viewersObservablesClass = Class.forName("org.eclipse.jface.databinding.viewers.ViewersObservables");
+      var observeInputMethod = viewersObservablesClass.getMethod("observeInput", Viewer.class);
+      return (IObservableValue<Object>) observeInputMethod.invoke(null, viewer);
+    } catch (Exception e) {
+      throw new IllegalStateException("Unable to call deprecated method", e);
+    }
   }
 
   private ViewersObservablesCompat() {

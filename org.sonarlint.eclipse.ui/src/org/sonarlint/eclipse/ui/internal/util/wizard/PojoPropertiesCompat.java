@@ -27,7 +27,13 @@ public class PojoPropertiesCompat {
     if (JFaceUtils.IS_TYPED_API_SUPPORTED) {
       return PojoProperties.value(propertyName);
     }
-    return org.eclipse.core.databinding.beans.PojoProperties.value(propertyName);
+    try {
+      var pojoPropertiesClass = Class.forName("org.eclipse.core.databinding.beans.PojoProperties");
+      var valueMethod = pojoPropertiesClass.getMethod("value", String.class);
+      return (IBeanValueProperty<S, T>) valueMethod.invoke(null, propertyName);
+    } catch (Exception e) {
+      throw new IllegalStateException("Unable to call deprecated method", e);
+    }
   }
 
   private PojoPropertiesCompat() {

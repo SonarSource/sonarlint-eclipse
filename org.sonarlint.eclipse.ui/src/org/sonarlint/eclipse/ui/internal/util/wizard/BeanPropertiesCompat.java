@@ -27,7 +27,13 @@ public class BeanPropertiesCompat {
     if (JFaceUtils.IS_TYPED_API_SUPPORTED) {
       return BeanProperties.value(beanClass, propertyName);
     }
-    return org.eclipse.core.databinding.beans.BeanProperties.value(beanClass, propertyName);
+    try {
+      var beanPropertiesClass = Class.forName("org.eclipse.core.databinding.beans.BeanProperties");
+      var valueMethod = beanPropertiesClass.getMethod("value", Class.class, String.class);
+      return (IBeanValueProperty<S, T>) valueMethod.invoke(null, beanClass, propertyName);
+    } catch (Exception e) {
+      throw new IllegalStateException("Unable to call deprecated method", e);
+    }
   }
 
   private BeanPropertiesCompat() {

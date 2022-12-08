@@ -29,14 +29,26 @@ public class WidgetPropertiesCompat {
     if (JFaceUtils.IS_TYPED_API_SUPPORTED) {
       return WidgetProperties.buttonSelection();
     }
-    return org.eclipse.jface.databinding.swt.WidgetProperties.selection();
+    try {
+      var widgetPropertiesClass = Class.forName("org.eclipse.jface.databinding.swt.WidgetProperties");
+      var selectionMethod = widgetPropertiesClass.getMethod("selection");
+      return (IWidgetValueProperty<Button, Boolean>) selectionMethod.invoke(null);
+    } catch (Exception e) {
+      throw new IllegalStateException("Unable to call deprecated method", e);
+    }
   }
 
   public static <S extends Widget> IWidgetValueProperty<S, String> text(final int event) {
     if (JFaceUtils.IS_TYPED_API_SUPPORTED) {
       return WidgetProperties.text(event);
     }
-    return org.eclipse.jface.databinding.swt.WidgetProperties.text(event);
+    try {
+      var widgetPropertiesClass = Class.forName("org.eclipse.jface.databinding.swt.WidgetProperties");
+      var textMethod = widgetPropertiesClass.getMethod("text", int.class);
+      return (IWidgetValueProperty<S, String>) textMethod.invoke(null, event);
+    } catch (Exception e) {
+      throw new IllegalStateException("Unable to call deprecated method", e);
+    }
   }
 
   private WidgetPropertiesCompat() {
