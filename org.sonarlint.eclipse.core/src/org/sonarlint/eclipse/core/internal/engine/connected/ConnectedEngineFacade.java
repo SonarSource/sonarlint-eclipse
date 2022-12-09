@@ -20,10 +20,8 @@
 package org.sonarlint.eclipse.core.internal.engine.connected;
 
 import java.net.UnknownHostException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,9 +44,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
+import org.sonarlint.eclipse.core.internal.backend.PluginPathHelper;
 import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
 import org.sonarlint.eclipse.core.internal.engine.SkippedPluginsNotifier;
-import org.sonarlint.eclipse.core.internal.engine.StandaloneEngineFacade;
 import org.sonarlint.eclipse.core.internal.http.PreemptiveAuthenticatorInterceptor;
 import org.sonarlint.eclipse.core.internal.http.SonarLintHttpClientOkHttpImpl;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
@@ -129,14 +127,14 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
         .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
         .setClientPid(SonarLintUtils.getPlatformPid());
 
-      var secretsPluginUrl = findEmbeddedSecretsPlugin();
+      var secretsPluginUrl = PluginPathHelper.findEmbeddedSecretsPlugin();
       if (secretsPluginUrl != null) {
         builder.addExtraPlugin(Language.SECRETS.getPluginKey(), secretsPluginUrl);
       }
 
-      useEmbeddedPluginOrFailIfNotFound(builder, findEmbeddedJsPlugin(), Language.JS);
-      useEmbeddedPluginOrFailIfNotFound(builder, findEmbeddedHtmlPlugin(), Language.HTML);
-      useEmbeddedPluginOrFailIfNotFound(builder, findEmbeddedXmlPlugin(), Language.XML);
+      builder.useEmbeddedPlugin(Language.JS.getPluginKey(), PluginPathHelper.findEmbeddedJsPlugin());
+      builder.useEmbeddedPlugin(Language.HTML.getPluginKey(), PluginPathHelper.findEmbeddedHtmlPlugin());
+      builder.useEmbeddedPlugin(Language.XML.getPluginKey(), PluginPathHelper.findEmbeddedXmlPlugin());
 
       var globalConfig = builder.build();
       try {
@@ -149,49 +147,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
       }
     }
     return wrappedEngine;
-  }
-
-  private static void useEmbeddedPluginOrFailIfNotFound(ConnectedGlobalConfiguration.Builder builder, @Nullable Path pluginUrl,
-    Language language) {
-    if (pluginUrl == null) {
-      throw new IllegalStateException("Embedded plugin not found: " + language.getLabel());
-    }
-    builder.useEmbeddedPlugin(language.getPluginKey(), pluginUrl);
-  }
-
-  @Nullable
-  private static Path findEmbeddedPlugin(String pluginNamePattern, String logPrefix) {
-    var pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle()
-      .findEntries("/plugins", pluginNamePattern, false);
-    if (pluginEntriesEnum == null) {
-      return null;
-    }
-    var pluginUrls = Collections.list(pluginEntriesEnum);
-    pluginUrls.forEach(pluginUrl -> SonarLintLogger.get().debug(logPrefix + pluginUrl));
-    if (pluginUrls.size() > 1) {
-      throw new IllegalStateException("Multiple plugins found");
-    }
-    return pluginUrls.size() == 1 ? StandaloneEngineFacade.toPath(pluginUrls.get(0)) : null;
-  }
-
-  @Nullable
-  private static Path findEmbeddedSecretsPlugin() {
-    return findEmbeddedPlugin("sonar-secrets-plugin-*.jar", "Found Secrets detection plugin: ");
-  }
-
-  @Nullable
-  private static Path findEmbeddedJsPlugin() {
-    return findEmbeddedPlugin("sonar-javascript-plugin-*.jar", "Found JS/TS plugin: ");
-  }
-
-  @Nullable
-  private static Path findEmbeddedHtmlPlugin() {
-    return findEmbeddedPlugin("sonar-html-plugin-*.jar", "Found HTML plugin: ");
-  }
-
-  @Nullable
-  private static Path findEmbeddedXmlPlugin() {
-    return findEmbeddedPlugin("sonar-xml-plugin-*.jar", "Found XML plugin: ");
   }
 
   private <G> Optional<G> withEngine(Function<ConnectedSonarLintEngine, G> function) {

@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.internal.NotificationListener;
+import org.sonarlint.eclipse.core.internal.engine.SkippedPluginsNotifier;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.plugin.commons.SkipReason;
 

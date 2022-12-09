@@ -17,22 +17,5 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.engine;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Path;
-import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-public class StandaloneEngineFacadeTest {
-
-  @Test
-  public void supportSpacesInAnalyzerLocation() throws MalformedURLException {
-    Path path = StandaloneEngineFacade
-      .toPath(new URL("file:/C:/Program Files/Eclipse/2021-12/plugins/org.sonarlint.eclipse.core_7.2.1.42550/plugins/sonar-secrets-plugin-1.1.0.36766.jar"));
-    assertThat(path).isNotNull();
-  }
-
-}
+@org.eclipse.jdt.annotation.NonNullByDefault
+package org.sonarlint.eclipse.core.internal.backend;
