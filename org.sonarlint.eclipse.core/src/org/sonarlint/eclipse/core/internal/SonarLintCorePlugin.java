@@ -32,6 +32,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.StandaloneEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
@@ -170,6 +171,7 @@ public class SonarLintCorePlugin extends Plugin {
     if (sonarlint != null) {
       sonarlint.stop();
     }
+    SonarLintBackendService.get().stop();
     proxyTracker.close();
 
     issueTrackerRegistry.shutdown();
@@ -243,4 +245,5 @@ public class SonarLintCorePlugin extends Plugin {
   public static void saveConfig(ISonarLintProject project, SonarLintProjectConfiguration config) {
     getInstance().getProjectConfigManager().save(project.getScopeContext(), config);
   }
+
 }
