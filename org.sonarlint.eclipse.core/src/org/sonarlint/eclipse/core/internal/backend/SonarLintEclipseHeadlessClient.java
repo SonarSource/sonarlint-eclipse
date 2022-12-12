@@ -20,6 +20,9 @@
 package org.sonarlint.eclipse.core.internal.backend;
 
 import java.util.concurrent.CompletableFuture;
+import org.eclipse.jdt.annotation.Nullable;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
 import org.sonarsource.sonarlint.core.clientapi.client.SuggestBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.client.fs.FindFileByNamesInScopeParams;
@@ -44,10 +47,14 @@ public abstract class SonarLintEclipseHeadlessClient implements SonarLintClient 
     return null;
   }
 
+  @Nullable
   @Override
   public HttpClient getHttpClient(String connectionId) {
-    // TODO Auto-generated method stub
-    return null;
+    var connectionOpt = SonarLintCorePlugin.getServersManager().findById(connectionId);
+    if (connectionOpt.isEmpty()) {
+      return null;
+    }
+    return ((ConnectedEngineFacade) connectionOpt.get()).buildClientWithProxyAndCredentials();
   }
 
 }
