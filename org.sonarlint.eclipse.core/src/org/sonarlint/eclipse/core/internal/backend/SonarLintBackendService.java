@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -50,6 +51,8 @@ import static java.util.stream.Collectors.toList;
 public class SonarLintBackendService {
 
   private static final SonarLintBackendService INSTANCE = new SonarLintBackendService();
+
+  private static final ConfigScopeChangeListener CONFIG_SCOPE_CHANGE_LISTENER = new ConfigScopeChangeListener();
 
   @Nullable
   private SonarLintBackend backend;
@@ -117,6 +120,10 @@ public class SonarLintBackendService {
       }
 
     });
+
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(CONFIG_SCOPE_CHANGE_LISTENER);
+
+    CONFIG_SCOPE_CHANGE_LISTENER.init();
   }
 
   private static List<SonarQubeConnectionConfigurationDto> buildSqConnectionDtos() {
@@ -138,6 +145,7 @@ public class SonarLintBackendService {
   }
 
   public void stop() {
+    ResourcesPlugin.getWorkspace().removeResourceChangeListener(CONFIG_SCOPE_CHANGE_LISTENER);
     if (backend != null) {
       try {
         backend.shutdown().get(10, TimeUnit.SECONDS);

@@ -266,7 +266,7 @@ public class ConnectedEngineFacadeManager {
   private static void storeCredentials(IConnectedEngineFacade server, String username, String password) {
     try {
       var secureConnectionsNode = getSecureConnectionsNode();
-      var secureConnectionNode = secureConnectionsNode.node(getConnectionNodeName(server));
+      var secureConnectionNode = secureConnectionsNode.node(getConnectionNodeName(server.getId()));
       secureConnectionNode.put(USERNAME_ATTRIBUTE, username, true);
       secureConnectionNode.put(PASSWORD_ATTRIBUTE, password, true);
       secureConnectionsNode.flush();
@@ -276,7 +276,7 @@ public class ConnectedEngineFacadeManager {
   }
 
   public void removeServer(IConnectedEngineFacade server) {
-    var serverNodeName = getConnectionNodeName(server);
+    var serverNodeName = getConnectionNodeName(server.getId());
     try {
       var rootNode = getSonarLintPreferenceNode();
       var serversNode = rootNode.node(PREF_SERVERS);
@@ -385,7 +385,7 @@ public class ConnectedEngineFacadeManager {
   private void addOrUpdateProperties(IConnectedEngineFacade facade) {
     var rootNode = getSonarLintPreferenceNode();
     var serversNode = rootNode.node(PREF_SERVERS);
-    var serverNode = (IEclipsePreferences) serversNode.node(getConnectionNodeName(facade));
+    var serverNode = (IEclipsePreferences) serversNode.node(getConnectionNodeName(facade.getId()));
     try {
       serverNode.removePreferenceChangeListener(connectedEngineChangeListener);
       serverNode.put(URL_ATTRIBUTE, facade.getHost());
@@ -420,11 +420,12 @@ public class ConnectedEngineFacadeManager {
 
   @Nullable
   private static String getFromSecure(IConnectedEngineFacade facade, String attribute) throws StorageException {
+    var connectionNodeName = getConnectionNodeName(facade.getId());
     var secureConnectionsNode = getSecureConnectionsNode();
-    if (!secureConnectionsNode.nodeExists(getConnectionNodeName(facade))) {
+    if (!secureConnectionsNode.nodeExists(connectionNodeName)) {
       return null;
     }
-    var secureConnectionNode = secureConnectionsNode.node(getConnectionNodeName(facade));
+    var secureConnectionNode = secureConnectionsNode.node(connectionNodeName);
     return secureConnectionNode.get(attribute, null);
   }
 
@@ -432,9 +433,9 @@ public class ConnectedEngineFacadeManager {
     return SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID).node(ConnectedEngineFacadeManager.PREF_SERVERS);
   }
 
-  private static String getConnectionNodeName(IConnectedEngineFacade facade) {
+  private static String getConnectionNodeName(String connectionId) {
     // Should not contain any "/"
-    return StringUtils.urlEncode(facade.getId());
+    return StringUtils.urlEncode(connectionId);
   }
 
   @Nullable
