@@ -19,8 +19,10 @@
  */
 package org.sonarlint.eclipse.core.internal.backend;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.eclipse.jdt.annotation.Nullable;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
@@ -37,14 +39,13 @@ public abstract class SonarLintEclipseHeadlessClient implements SonarLintClient 
 
   @Override
   public void suggestBinding(SuggestBindingParams params) {
-    // TODO Auto-generated method stub
-
+    SonarLintLogger.get().info("suggestBinding: " + params.getSuggestions().size());
   }
 
   @Override
   public CompletableFuture<FindFileByNamesInScopeResponse> findFileByNamesInScope(FindFileByNamesInScopeParams params) {
-    // TODO Auto-generated method stub
-    return null;
+    SonarLintLogger.get().info("findFileByNamesInScope: " + params.getConfigScopeId());
+    return CompletableFuture.completedFuture(new FindFileByNamesInScopeResponse(List.of()));
   }
 
   @Nullable

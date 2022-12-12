@@ -166,8 +166,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     logListener = new SonarLintConsoleLogger();
     SonarLintLogger.get().addLogListener(logListener);
 
-    SonarLintBackendService.get().init(new SonarLintEclipseClient());
-
     addPostBuildListener();
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_FLOW_LOCATION_SERVICE);
@@ -279,6 +277,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     @Override
     public IStatus run(IProgressMonitor monitor) {
       SonarLintLogger.get().info("Starting SonarLint for Eclipse " + SonarLintUtils.getPluginVersion());
+
+      SonarLintBackendService.get().init(new SonarLintEclipseClient());
 
       // Schedule auto-sync
       new PeriodicStoragesSynchronizerJob().schedule(Duration.ofSeconds(1).toMillis());
