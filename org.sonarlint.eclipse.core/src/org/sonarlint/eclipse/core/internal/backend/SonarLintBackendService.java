@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.backend;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,16 +32,20 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeLifecycleListener;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.SonarLintBackendImpl;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
 import org.sonarsource.sonarlint.core.clientapi.backend.InitializeParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.DidUpdateConnectionsParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarCloudConnectionConfigurationDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarQubeConnectionConfigurationDto;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 public class SonarLintBackendService {
 
@@ -75,16 +78,8 @@ public class SonarLintBackendService {
     embeddedPlugins.put(Language.HTML.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedHtmlPlugin(), "HTML plugin not found"));
     embeddedPlugins.put(Language.XML.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedXmlPlugin(), "XML plugin not found"));
 
-    var connections = SonarLintCorePlugin.getServersManager().getServers();
-    List<SonarQubeConnectionConfigurationDto> sqConnections = new ArrayList<>();
-    List<SonarCloudConnectionConfigurationDto> scConnections = new ArrayList<>();
-    connections.forEach(c -> {
-      if (c.isSonarCloud()) {
-        scConnections.add(new SonarCloudConnectionConfigurationDto(c.getId(), c.getOrganization()));
-      } else {
-        sqConnections.add(new SonarQubeConnectionConfigurationDto(c.getId(), c.getHost()));
-      }
-    });
+    var sqConnections = buildSqConnectionDtos();
+    var scConnections = buildScConnectionDtos();
 
     backend.initialize(new InitializeParams("eclipse", StoragePathManager.getServerStorageRoot(),
       Set.copyOf(embeddedPluginPaths),
@@ -97,6 +92,45 @@ public class SonarLintBackendService {
       sqConnections,
       scConnections,
       null));
+
+    SonarLintCorePlugin.getServersManager().addServerLifecycleListener(new IConnectedEngineFacadeLifecycleListener() {
+
+      @Override
+      public void connectionRemoved(IConnectedEngineFacade facade) {
+        didUpdateConnections();
+      }
+
+      @Override
+      public void connectionChanged(IConnectedEngineFacade facade) {
+        didUpdateConnections();
+      }
+
+      @Override
+      public void connectionAdded(IConnectedEngineFacade facade) {
+        didUpdateConnections();
+      }
+
+      private void didUpdateConnections() {
+        var sqConnections = buildSqConnectionDtos();
+        var scConnections = buildScConnectionDtos();
+        backend.getConnectionService().didUpdateConnections(new DidUpdateConnectionsParams(sqConnections, scConnections));
+      }
+
+    });
+  }
+
+  private static List<SonarQubeConnectionConfigurationDto> buildSqConnectionDtos() {
+    return SonarLintCorePlugin.getServersManager().getServers().stream()
+      .filter(c -> !c.isSonarCloud())
+      .map(c -> new SonarQubeConnectionConfigurationDto(c.getId(), c.getHost()))
+      .collect(toList());
+  }
+
+  private static List<SonarCloudConnectionConfigurationDto> buildScConnectionDtos() {
+    return SonarLintCorePlugin.getServersManager().getServers().stream()
+      .filter(IConnectedEngineFacade::isSonarCloud)
+      .map(c -> new SonarCloudConnectionConfigurationDto(c.getId(), c.getOrganization()))
+      .collect(toList());
   }
 
   public SonarLintBackend getBackend() {
