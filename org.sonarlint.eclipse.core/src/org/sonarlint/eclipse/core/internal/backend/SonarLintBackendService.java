@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.backend;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,8 @@ import org.sonarsource.sonarlint.core.SonarLintBackendImpl;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
 import org.sonarsource.sonarlint.core.clientapi.backend.InitializeParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarCloudConnectionConfigurationDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarQubeConnectionConfigurationDto;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 import static java.util.Objects.requireNonNull;
@@ -72,8 +75,28 @@ public class SonarLintBackendService {
     embeddedPlugins.put(Language.HTML.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedHtmlPlugin(), "HTML plugin not found"));
     embeddedPlugins.put(Language.XML.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedXmlPlugin(), "XML plugin not found"));
 
-    backend.initialize(new InitializeParams("eclipse", StoragePathManager.getServerStorageRoot(), Set.copyOf(embeddedPluginPaths), extraPlugins, embeddedPlugins,
-      SonarLintUtils.getEnabledLanguages(), SonarLintUtils.getEnabledLanguages(), nodeJsManager.getNodeJsVersion(), false, List.of(), List.of(), null));
+    var connections = SonarLintCorePlugin.getServersManager().getServers();
+    List<SonarQubeConnectionConfigurationDto> sqConnections = new ArrayList<>();
+    List<SonarCloudConnectionConfigurationDto> scConnections = new ArrayList<>();
+    connections.forEach(c -> {
+      if (c.isSonarCloud()) {
+        scConnections.add(new SonarCloudConnectionConfigurationDto(c.getId(), c.getOrganization()));
+      } else {
+        sqConnections.add(new SonarQubeConnectionConfigurationDto(c.getId(), c.getHost()));
+      }
+    });
+
+    backend.initialize(new InitializeParams("eclipse", StoragePathManager.getServerStorageRoot(),
+      Set.copyOf(embeddedPluginPaths),
+      extraPlugins,
+      embeddedPlugins,
+      SonarLintUtils.getEnabledLanguages(),
+      SonarLintUtils.getEnabledLanguages(),
+      nodeJsManager.getNodeJsVersion(),
+      false,
+      sqConnections,
+      scConnections,
+      null));
   }
 
   public SonarLintBackend getBackend() {
