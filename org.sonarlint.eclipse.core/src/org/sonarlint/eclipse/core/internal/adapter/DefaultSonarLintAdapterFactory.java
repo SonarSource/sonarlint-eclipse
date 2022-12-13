@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.adapter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jdt.annotation.Nullable;
@@ -64,6 +65,9 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
 
   @Nullable
   private static <T> T getProjectAdapter(Class<T> adapterType, IProject project) {
+    if (isRseTempProject(project)) {
+      return null;
+    }
     for (var projectAdapterParticipant : SonarLintExtensionTracker.getInstance().getProjectAdapterParticipants()) {
       if (projectAdapterParticipant.exclude(project)) {
         SonarLintLogger.get().debug("Project '" + project.getName() + "' excluded by '" + projectAdapterParticipant.getClass().getSimpleName() + "'");
@@ -71,6 +75,14 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
       }
     }
     return adaptProject(adapterType, project);
+  }
+
+  private static boolean isRseTempProject(IProject project) {
+    try {
+      return project.hasNature("org.eclipse.rse.ui.remoteSystemsTempNature");
+    } catch (CoreException e) {
+      return false;
+    }
   }
 
   private static <T> T adaptProject(Class<T> adapterType, IProject project) {
