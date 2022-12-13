@@ -32,8 +32,8 @@ public class SonarLintProjectConfigurationManager {
 
   private static final String P_EXTRA_PROPS = "extraProperties";
   private static final String P_FILE_EXCLUSIONS = "fileExclusions";
-  private static final String P_SERVER_ID = "serverId";
-  private static final String P_PROJECT_KEY = "projectKey";
+  public static final String P_SERVER_ID = "serverId";
+  public static final String P_PROJECT_KEY = "projectKey";
   private static final String P_SQ_PREFIX_KEY = "sqPrefixKey";
   private static final String P_IDE_PREFIX_KEY = "idePrefixKey";
   /**
