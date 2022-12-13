@@ -26,16 +26,20 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.BindingConfigurationDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.DidUpdateBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.ConfigurationScopeDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.DidAddConfigurationScopesParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.DidRemoveConfigurationScopeParams;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 public class ConfigScopeChangeListener implements IResourceChangeListener {
@@ -53,6 +57,7 @@ public class ConfigScopeChangeListener implements IResourceChangeListener {
         .map(ConfigScopeChangeListener::toConfigScopeDto)
         .collect(toList());
       SonarLintBackendService.get().getBackend().getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(addedScopes));
+      projectsToAdd.forEach(ConfigScopeChangeListener::registerPreferenceChangeListener);
     } else if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
       var project = Adapters.adapt(event.getResource(), ISonarLintProject.class);
       if (project != null) {
@@ -83,11 +88,27 @@ public class ConfigScopeChangeListener implements IResourceChangeListener {
   }
 
   public void init() {
-    var initialConfigScopes = ProjectsProviderUtils.allProjects().stream()
+    var allProjects = ProjectsProviderUtils.allProjects();
+    var initialConfigScopes = allProjects.stream()
       .filter(ISonarLintProject::isOpen)
       .map(ConfigScopeChangeListener::toConfigScopeDto)
       .collect(toList());
     SonarLintBackendService.get().getBackend().getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(initialConfigScopes));
+    allProjects.forEach(ConfigScopeChangeListener::registerPreferenceChangeListener);
+  }
+
+  private static void registerPreferenceChangeListener(ISonarLintProject project) {
+    ofNullable(project.getScopeContext().getNode(SonarLintCorePlugin.PLUGIN_ID))
+      .ifPresent(node -> node.addPreferenceChangeListener(event -> projectPreferencesChanged(event, project)));
+  }
+
+  private static void projectPreferencesChanged(PreferenceChangeEvent event, ISonarLintProject project) {
+    if (SonarLintProjectConfigurationManager.P_PROJECT_KEY.equals(event.getKey())
+      || SonarLintProjectConfigurationManager.P_SERVER_ID.equals(event.getKey())) {
+      SonarLintLogger.get().debug("Project binding preferences changed: " + project.getName());
+      SonarLintBackendService.get().getBackend().getConfigurationService()
+        .didUpdateBinding(new DidUpdateBindingParams(getConfigScopeId(project), toBindingDto(project)));
+    }
   }
 
   private static ConfigurationScopeDto toConfigScopeDto(ISonarLintProject p) {
