@@ -52,7 +52,7 @@ public class SonarLintBackendService {
 
   private static final SonarLintBackendService INSTANCE = new SonarLintBackendService();
 
-  private static final ConfigScopeChangeListener CONFIG_SCOPE_CHANGE_LISTENER = new ConfigScopeChangeListener();
+  private static final ConfigScopeSynchronizer CONFIG_SCOPE_CHANGE_LISTENER = new ConfigScopeSynchronizer();
 
   @Nullable
   private SonarLintBackend backend;
