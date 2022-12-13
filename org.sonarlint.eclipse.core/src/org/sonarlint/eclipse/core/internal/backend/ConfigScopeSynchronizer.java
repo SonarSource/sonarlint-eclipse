@@ -42,7 +42,7 @@ import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.DidRemoveCo
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
-public class ConfigScopeChangeListener implements IResourceChangeListener {
+public class ConfigScopeSynchronizer implements IResourceChangeListener {
 
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
@@ -54,10 +54,10 @@ public class ConfigScopeChangeListener implements IResourceChangeListener {
         SonarLintLogger.get().error(e.getMessage(), e);
       }
       var addedScopes = projectsToAdd.stream()
-        .map(ConfigScopeChangeListener::toConfigScopeDto)
+        .map(ConfigScopeSynchronizer::toConfigScopeDto)
         .collect(toList());
       SonarLintBackendService.get().getBackend().getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(addedScopes));
-      projectsToAdd.forEach(ConfigScopeChangeListener::registerPreferenceChangeListener);
+      projectsToAdd.forEach(ConfigScopeSynchronizer::registerPreferenceChangeListener);
     } else if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
       var project = Adapters.adapt(event.getResource(), ISonarLintProject.class);
       if (project != null) {
@@ -91,10 +91,10 @@ public class ConfigScopeChangeListener implements IResourceChangeListener {
     var allProjects = ProjectsProviderUtils.allProjects();
     var initialConfigScopes = allProjects.stream()
       .filter(ISonarLintProject::isOpen)
-      .map(ConfigScopeChangeListener::toConfigScopeDto)
+      .map(ConfigScopeSynchronizer::toConfigScopeDto)
       .collect(toList());
     SonarLintBackendService.get().getBackend().getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(initialConfigScopes));
-    allProjects.forEach(ConfigScopeChangeListener::registerPreferenceChangeListener);
+    allProjects.forEach(ConfigScopeSynchronizer::registerPreferenceChangeListener);
   }
 
   private static void registerPreferenceChangeListener(ISonarLintProject project) {
@@ -115,7 +115,7 @@ public class ConfigScopeChangeListener implements IResourceChangeListener {
     return new ConfigurationScopeDto(getConfigScopeId(p), null, true, p.getName(), toBindingDto(p));
   }
 
-  private static String getConfigScopeId(ISonarLintProject p) {
+  static String getConfigScopeId(ISonarLintProject p) {
     return p.getResource().getLocationURI().toString();
   }
 
