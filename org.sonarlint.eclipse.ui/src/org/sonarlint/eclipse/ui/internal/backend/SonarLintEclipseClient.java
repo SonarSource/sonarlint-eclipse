@@ -21,11 +21,21 @@ package org.sonarlint.eclipse.ui.internal.backend;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessClient;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
+import org.sonarlint.eclipse.ui.internal.popup.SingleBindingSuggestionPopup;
+import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.BindingSuggestionDto;
 import org.sonarsource.sonarlint.core.clientapi.client.OpenUrlInBrowserParams;
+import org.sonarsource.sonarlint.core.clientapi.client.SuggestBindingParams;
 
 public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
@@ -36,6 +46,44 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
     } catch (PartInitException | MalformedURLException e) {
       SonarLintLogger.get().error("Unable to open external browser", e);
     }
+  }
+
+  @Override
+  public void suggestBinding(SuggestBindingParams params) {
+    Map<ISonarLintProject, List<BindingSuggestionDto>> suggestionsByProject = new HashMap<>();
+    params.getSuggestions().forEach((configScopeId, suggestions) -> {
+      var projectOpt = resolveProject(configScopeId);
+      if (projectOpt.isPresent() && projectOpt.get().isOpen()) {
+        suggestionsByProject.put(projectOpt.get(), suggestions);
+      }
+    });
+
+    if (!suggestionsByProject.isEmpty()) {
+      var firstProjectSuggestions = suggestionsByProject.values().iterator().next();
+      if (suggestionsByProject.values().stream().allMatch(s -> areAllSameSuggestion(s, firstProjectSuggestions))) {
+        // Suggest binding all projects to the suggestion
+        Display.getDefault().asyncExec(() -> {
+          var popup = new SingleBindingSuggestionPopup(List.copyOf(suggestionsByProject.keySet()), firstProjectSuggestions.get(0));
+          popup.open();
+        });
+      } else {
+        // Suggest binding all projects but let the user choose
+        Display.getDefault().asyncExec(() -> {
+          var popup = new BindingSuggestionPopup(List.copyOf(suggestionsByProject.keySet()));
+          popup.open();
+        });
+      }
+    }
+  }
+
+  private static boolean areAllSameSuggestion(List<BindingSuggestionDto> otherSuggestions, List<BindingSuggestionDto> firstProjectSuggestions) {
+    if (otherSuggestions.size() != 1 || firstProjectSuggestions.size() != 1) {
+      return false;
+    }
+    var suggestionDto = otherSuggestions.get(0);
+    var firstSuggestion = firstProjectSuggestions.get(0);
+    return Objects.equals(suggestionDto.getConnectionId(), firstSuggestion.getConnectionId())
+      && Objects.equals(suggestionDto.getSonarProjectKey(), firstSuggestion.getSonarProjectKey());
   }
 
 }

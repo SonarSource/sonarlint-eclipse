@@ -38,7 +38,6 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
-import org.sonarsource.sonarlint.core.clientapi.client.SuggestBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.client.fs.FindFileByNamesInScopeParams;
 import org.sonarsource.sonarlint.core.clientapi.client.fs.FindFileByNamesInScopeResponse;
 import org.sonarsource.sonarlint.core.clientapi.client.fs.FoundFileDto;
@@ -49,11 +48,6 @@ import org.sonarsource.sonarlint.core.commons.http.HttpClient;
  *
  */
 public abstract class SonarLintEclipseHeadlessClient implements SonarLintClient {
-
-  @Override
-  public void suggestBinding(SuggestBindingParams params) {
-    SonarLintLogger.get().info("suggestBinding: " + params.getSuggestions().size());
-  }
 
   @Override
   public CompletableFuture<FindFileByNamesInScopeResponse> findFileByNamesInScope(FindFileByNamesInScopeParams params) {
@@ -81,7 +75,7 @@ public abstract class SonarLintEclipseHeadlessClient implements SonarLintClient 
     return CompletableFuture.completedFuture(new FindFileByNamesInScopeResponse(results));
   }
 
-  private Optional<ISonarLintProject> resolveProject(String configScopeId) {
+  protected Optional<ISonarLintProject> resolveProject(String configScopeId) {
     var projectUri = URI.create(configScopeId);
     var projectOpt = Stream.of(ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(projectUri))
       .map(c -> Adapters.adapt(c, ISonarLintProject.class))
