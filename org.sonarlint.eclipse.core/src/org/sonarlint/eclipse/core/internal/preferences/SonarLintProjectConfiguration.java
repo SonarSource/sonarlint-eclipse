@@ -35,6 +35,7 @@ public class SonarLintProjectConfiguration {
   @Nullable
   private EclipseProjectBinding projectBinding;
   private boolean autoEnabled = true;
+  private boolean bindingSuggestionsDisabled = false;
 
   public List<ExclusionItem> getFileExclusions() {
     return fileExclusions;
@@ -100,6 +101,14 @@ public class SonarLintProjectConfiguration {
       return Objects.equals(connectionId, other.connectionId);
     }
 
+  }
+
+  public boolean isBindingSuggestionsDisabled() {
+    return this.bindingSuggestionsDisabled;
+  }
+
+  public void setBindingSuggestionsDisabled(boolean bindingSuggestionsDisabled) {
+    this.bindingSuggestionsDisabled = bindingSuggestionsDisabled;
   }
 
 }

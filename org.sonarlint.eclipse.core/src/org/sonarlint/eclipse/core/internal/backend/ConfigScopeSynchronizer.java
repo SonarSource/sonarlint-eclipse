@@ -26,7 +26,6 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
@@ -39,7 +38,6 @@ import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.Configurati
 import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.DidAddConfigurationScopesParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.DidRemoveConfigurationScopeParams;
 
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 public class ConfigScopeSynchronizer implements IResourceChangeListener {
@@ -57,7 +55,7 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
         .map(ConfigScopeSynchronizer::toConfigScopeDto)
         .collect(toList());
       SonarLintBackendService.get().getBackend().getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(addedScopes));
-      projectsToAdd.forEach(ConfigScopeSynchronizer::registerPreferenceChangeListener);
+      projectsToAdd.forEach(p -> SonarLintProjectConfigurationManager.registerPreferenceChangeListenerForBindingProperties(p, ConfigScopeSynchronizer::projectPreferencesChanged));
     } else if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
       var project = Adapters.adapt(event.getResource(), ISonarLintProject.class);
       if (project != null) {
@@ -94,21 +92,13 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
       .map(ConfigScopeSynchronizer::toConfigScopeDto)
       .collect(toList());
     SonarLintBackendService.get().getBackend().getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(initialConfigScopes));
-    allProjects.forEach(ConfigScopeSynchronizer::registerPreferenceChangeListener);
+    allProjects.forEach(p -> SonarLintProjectConfigurationManager.registerPreferenceChangeListenerForBindingProperties(p, ConfigScopeSynchronizer::projectPreferencesChanged));
   }
 
-  private static void registerPreferenceChangeListener(ISonarLintProject project) {
-    ofNullable(project.getScopeContext().getNode(SonarLintCorePlugin.PLUGIN_ID))
-      .ifPresent(node -> node.addPreferenceChangeListener(event -> projectPreferencesChanged(event, project)));
-  }
-
-  private static void projectPreferencesChanged(PreferenceChangeEvent event, ISonarLintProject project) {
-    if (SonarLintProjectConfigurationManager.P_PROJECT_KEY.equals(event.getKey())
-      || SonarLintProjectConfigurationManager.P_SERVER_ID.equals(event.getKey())) {
-      SonarLintLogger.get().debug("Project binding preferences changed: " + project.getName());
-      SonarLintBackendService.get().getBackend().getConfigurationService()
-        .didUpdateBinding(new DidUpdateBindingParams(getConfigScopeId(project), toBindingDto(project)));
-    }
+  private static void projectPreferencesChanged(ISonarLintProject project) {
+    SonarLintLogger.get().debug("Project binding preferences changed: " + project.getName());
+    SonarLintBackendService.get().getBackend().getConfigurationService()
+      .didUpdateBinding(new DidUpdateBindingParams(getConfigScopeId(project), toBindingDto(project)));
   }
 
   private static ConfigurationScopeDto toConfigScopeDto(ISonarLintProject p) {
@@ -123,6 +113,6 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
     var config = SonarLintCorePlugin.loadConfig(p);
     var projectBinding = config.getProjectBinding();
     return new BindingConfigurationDto(projectBinding.map(EclipseProjectBinding::connectionId).orElse(null), projectBinding.map(EclipseProjectBinding::projectKey).orElse(null),
-      false);
+      config.isBindingSuggestionsDisabled());
   }
 }

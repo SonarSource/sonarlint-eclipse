@@ -19,24 +19,15 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 
-public class BindingSuggestionPopup extends AbstractSonarLintPopup {
-
-  private final List<ISonarLintProject> projectsToBind;
+public class BindingSuggestionPopup extends AbstractBindingSuggestionPopup {
 
   public BindingSuggestionPopup(List<ISonarLintProject> projectsToBind) {
-    this.projectsToBind = projectsToBind;
+    super(projectsToBind);
   }
 
   @Override
@@ -58,27 +49,8 @@ public class BindingSuggestionPopup extends AbstractSonarLintPopup {
       dialog.open();
     });
 
-    addLink("Learn more", e -> {
-      try {
-        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL("https://github.com/SonarSource/sonarlint-eclipse/wiki/Connected-Mode"));
-      } catch (PartInitException | MalformedURLException ex) {
-        SonarLintLogger.get().error("Unable to open the browser", ex);
-      }
-      close();
-    });
+    addLearnMoreLink();
 
-    addLink("Don't ask again", e -> {
-      close();
-    });
-  }
-
-  @Override
-  protected String getPopupShellTitle() {
-    return "SonarLint Binding Suggestion";
-  }
-
-  @Override
-  protected Image getPopupShellImage(int maximumHeight) {
-    return SonarLintImages.BALLOON_IMG;
+    addDontAskAgainLink();
   }
 }
