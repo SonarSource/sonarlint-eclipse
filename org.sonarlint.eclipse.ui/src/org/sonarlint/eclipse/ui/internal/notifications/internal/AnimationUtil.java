@@ -61,7 +61,7 @@ public class AnimationUtil {
     private final IFadeListener fadeListener;
 
     public FadeJob(Shell shell, int increment, long delay, IFadeListener fadeListener) {
-      super("Fade Job");
+      super(Messages.AnimationUtil_FadeJobTitle);
       if (increment < -255 || increment == 0 || increment > 255) {
         throw new IllegalArgumentException("-255 <= increment <= 255 && increment != 0"); //$NON-NLS-1$
       }
@@ -95,12 +95,9 @@ public class AnimationUtil {
         return;
       }
       cancel();
-      Display.getDefault().syncExec(new Runnable() {
-        @Override
-        public void run() {
-          if (setAlpha) {
-            FadeJob.this.shell.setAlpha(getLastAlpha());
-          }
+      Display.getDefault().syncExec(() -> {
+        if (setAlpha) {
+          FadeJob.this.shell.setAlpha(getLastAlpha());
         }
       });
     }
@@ -118,23 +115,20 @@ public class AnimationUtil {
         this.currentAlpha = 255;
       }
 
-      Display.getDefault().syncExec(new Runnable() {
-        @Override
-        public void run() {
-          if (FadeJob.this.stopped) {
-            return;
-          }
+      Display.getDefault().syncExec(() -> {
+        if (FadeJob.this.stopped) {
+          return;
+        }
 
-          if (FadeJob.this.shell.isDisposed()) {
-            FadeJob.this.stopped = true;
-            return;
-          }
+        if (FadeJob.this.shell.isDisposed()) {
+          FadeJob.this.stopped = true;
+          return;
+        }
 
-          FadeJob.this.shell.setAlpha(FadeJob.this.currentAlpha);
+        FadeJob.this.shell.setAlpha(FadeJob.this.currentAlpha);
 
-          if (FadeJob.this.fadeListener != null) {
-            FadeJob.this.fadeListener.faded(FadeJob.this.shell, FadeJob.this.currentAlpha);
-          }
+        if (FadeJob.this.fadeListener != null) {
+          FadeJob.this.fadeListener.faded(FadeJob.this.shell, FadeJob.this.currentAlpha);
         }
       });
 
@@ -152,9 +146,9 @@ public class AnimationUtil {
 
   }
 
-  public interface IFadeListener {
+  public static interface IFadeListener {
 
-    void faded(Shell shell, int alpha);
+    public void faded(Shell shell, int alpha);
 
   }
 
