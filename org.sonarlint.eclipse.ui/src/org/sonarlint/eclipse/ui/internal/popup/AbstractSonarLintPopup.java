@@ -26,15 +26,15 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.ui.internal.notifications.AbstractNotificationPopup;
 
 public abstract class AbstractSonarLintPopup extends AbstractNotificationPopup {
 
   protected AbstractSonarLintPopup() {
-    super(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+    super(Display.getDefault());
     setDelayClose(0);
   }
 
