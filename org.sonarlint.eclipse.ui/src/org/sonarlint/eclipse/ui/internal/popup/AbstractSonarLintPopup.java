@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.util.function.Consumer;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,6 +30,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.ui.internal.notifications.AbstractNotificationPopup;
 
 public abstract class AbstractSonarLintPopup extends AbstractNotificationPopup {
@@ -36,19 +39,37 @@ public abstract class AbstractSonarLintPopup extends AbstractNotificationPopup {
   protected AbstractSonarLintPopup() {
     super(Display.getDefault());
     setDelayClose(0);
+    var parentShell = findParentShell();
+    if (parentShell != null) {
+      setParentShell(parentShell);
+    }
+  }
+
+  @Nullable
+  private static Shell findParentShell() {
+    var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+    if (window == null) {
+      var windows = PlatformUI.getWorkbench().getWorkbenchWindows();
+      if (windows.length > 0) {
+        return windows[0].getShell();
+      }
+    } else {
+      return window.getShell();
+    }
+    return null;
   }
 
   private Composite linksContainer;
 
   @Override
-  protected void createContentArea(Composite composite) {
-    var messageLabel = new Label(composite, SWT.WRAP);
+  protected void createContentArea(Composite parent) {
+    var messageLabel = new Label(parent, SWT.WRAP);
     var messageLayoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
     messageLabel.setLayoutData(messageLayoutData);
 
     messageLabel.setText(getMessage());
 
-    linksContainer = new Composite(composite, SWT.NONE);
+    linksContainer = new Composite(parent, SWT.NONE);
     var linksLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     linksLayoutData.horizontalAlignment = SWT.END;
     linksLayoutData.verticalAlignment = SWT.BOTTOM;
@@ -62,8 +83,15 @@ public abstract class AbstractSonarLintPopup extends AbstractNotificationPopup {
   protected abstract String getMessage();
 
   protected void addLink(String text, Consumer<SelectionEvent> selectionHandler) {
+    addLinkWithTooltip(text, null, selectionHandler);
+  }
+
+  protected void addLinkWithTooltip(String text, @Nullable String tooltipText, Consumer<SelectionEvent> selectionHandler) {
     var detailsLink = new Link(linksContainer, SWT.NONE);
     detailsLink.setText("<a>" + text + "</a>");
+    if (tooltipText != null) {
+      detailsLink.setToolTipText(tooltipText);
+    }
     detailsLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
