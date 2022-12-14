@@ -233,8 +233,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
       .containsOnly(
         tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
 
-    var preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
-    new DefaultLink(preferencesShell, "Dismiss").click();
+    var notificationShell = new DefaultShell("SonarLint - Secret(s) detected");
+    new DefaultLink(notificationShell, "Dismiss").click();
   }
 
   @Test
