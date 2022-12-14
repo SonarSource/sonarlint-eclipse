@@ -19,12 +19,16 @@
  */
 package org.sonarlint.eclipse.core.internal.preferences;
 
+import java.util.Set;
+import java.util.function.Consumer;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
+import static java.util.Optional.ofNullable;
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isBlank;
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isNotBlank;
 
@@ -42,6 +46,18 @@ public class SonarLintProjectConfigurationManager {
   @Deprecated
   private static final String P_MODULE_KEY = "moduleKey";
   private static final String P_AUTO_ENABLED_KEY = "autoEnabled";
+  public static final String P_BINDING_SUGGESTIONS_DISABLED_KEY = "bindingSuggestionsDisabled";
+
+  private static final Set<String> BINDING_RELATED_PROPERTIES = Set.of(P_PROJECT_KEY, P_SERVER_ID, P_BINDING_SUGGESTIONS_DISABLED_KEY);
+
+  public static void registerPreferenceChangeListenerForBindingProperties(ISonarLintProject project, Consumer<ISonarLintProject> listener) {
+    ofNullable(project.getScopeContext().getNode(SonarLintCorePlugin.PLUGIN_ID))
+      .ifPresent(node -> node.addPreferenceChangeListener(event -> {
+        if (BINDING_RELATED_PROPERTIES.contains(event.getKey())) {
+          listener.accept(project);
+        }
+      }));
+  }
 
   public SonarLintProjectConfiguration load(IScopeContext projectScope, String projectName) {
     var projectNode = projectScope.getNode(SonarLintCorePlugin.PLUGIN_ID);
@@ -68,6 +84,7 @@ public class SonarLintProjectConfigurationManager {
       projectConfig.setProjectBinding(new EclipseProjectBinding(serverId, projectKey, projectNode.get(P_SQ_PREFIX_KEY, ""), projectNode.get(P_IDE_PREFIX_KEY, "")));
     }
     projectConfig.setAutoEnabled(projectNode.getBoolean(P_AUTO_ENABLED_KEY, true));
+    projectConfig.setBindingSuggestionsDisabled(projectNode.getBoolean(P_BINDING_SUGGESTIONS_DISABLED_KEY, false));
     return projectConfig;
   }
 
@@ -106,6 +123,7 @@ public class SonarLintProjectConfigurationManager {
       });
 
     projectNode.putBoolean(P_AUTO_ENABLED_KEY, configuration.isAutoEnabled());
+    projectNode.putBoolean(P_BINDING_SUGGESTIONS_DISABLED_KEY, configuration.isBindingSuggestionsDisabled());
     try {
       projectNode.flush();
     } catch (BackingStoreException e) {
