@@ -20,6 +20,9 @@
 package org.sonarlint.eclipse.ui.internal.notifications;
 
 import java.time.Duration;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
@@ -43,7 +46,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.notifications.internal.AnimationUtil;
@@ -70,6 +75,7 @@ public abstract class AbstractNotificationPopup extends Window {
   private static final long DEFAULT_DELAY_CLOSE = Duration.ofSeconds(8).toMillis();
 
   private static final int PADDING_EDGE = 5;
+  private static final int PADDING_TOP = 30;
 
   private static final String LABEL_SDK = "SDK"; //$NON-NLS-1$
 
@@ -81,6 +87,8 @@ public abstract class AbstractNotificationPopup extends Window {
 
   @Nullable
   private Shell shell;
+
+  private static final LinkedList<AbstractNotificationPopup> popupStack = new LinkedList<>();
 
   private final Job closeJob = new Job(LABEL_JOB_CLOSE) {
 
@@ -113,6 +121,18 @@ public abstract class AbstractNotificationPopup extends Window {
   private FadeJob fadeJob;
 
   private boolean fadingEnabled;
+  
+  private static Listener resizeListener = new Listener() {
+    @Override
+    public void handleEvent(Event e) {
+      var resized = (Shell) e.widget;
+      inSameParentShell(resized).forEach(AbstractNotificationPopup::initializeBounds);
+    }
+  };
+
+  private static List<AbstractNotificationPopup> inSameParentShell(Shell parent) {
+    return popupStack.stream().filter(p -> p.getParentShell().equals(parent)).collect(Collectors.toList());
+  }
 
   @Nullable
   private MouseListener windowActivationHelper;
@@ -141,6 +161,11 @@ public abstract class AbstractNotificationPopup extends Window {
   protected void setParentShell(Shell newParentShell) {
     super.setParentShell(newParentShell);
     windowActivationHelper = createWindowActivationHelper(newParentShell);
+    
+    if (!List.of(newParentShell.getListeners(SWT.Resize)).contains(resizeListener)) {
+      newParentShell.addListener(SWT.Resize, resizeListener);
+      newParentShell.addListener(SWT.Move, resizeListener);
+    }
   }
 
   /**
@@ -178,6 +203,7 @@ public abstract class AbstractNotificationPopup extends Window {
 
   @Override
   public int open() {
+    popupStack.add(this);
     if (this.shell == null || this.shell.isDisposed()) {
       this.shell = null;
       create();
@@ -205,6 +231,8 @@ public abstract class AbstractNotificationPopup extends Window {
   @Override
   public boolean close() {
     this.resources.dispose();
+    popupStack.remove(this);
+    inSameParentShell(this.getParentShell()).forEach(AbstractNotificationPopup::initializeBounds);
     return super.close();
   }
 
@@ -325,6 +353,8 @@ public abstract class AbstractNotificationPopup extends Window {
   protected void configureShell(Shell newShell) {
     super.configureShell(newShell);
     this.shell = newShell;
+    this.shell.setBackgroundMode(SWT.INHERIT_FORCE);
+    this.shell.setText(getPopupShellTitle());
   }
 
   protected void scheduleAutoClose() {
@@ -379,7 +409,7 @@ public abstract class AbstractNotificationPopup extends Window {
     /* Create Title Area */
     createTitleArea(titleCircle);
 
-    /* Outer composite to hold content controlls */
+    /* Outer composite to hold content controls */
     var outerContentCircle = new Composite(outerCircle, SWT.NONE);
 
     layout = new GridLayout(1, false);
@@ -426,10 +456,18 @@ public abstract class AbstractNotificationPopup extends Window {
     var initialSize = this.shell.computeSize(MAX_WIDTH, SWT.DEFAULT);
     var height = Math.max(initialSize.y, MIN_HEIGHT);
     var width = Math.min(initialSize.x, MAX_WIDTH);
+    
+    var startY = clArea.height + clArea.y - PADDING_EDGE;
+
+    var inSameParentShell = inSameParentShell(this.getParentShell());
+    var myIndex = inSameParentShell.indexOf(this);
+    if (myIndex > 0) {
+      var popupBelow = inSameParentShell.get(myIndex - 1).getShell();
+      startY = popupBelow.getLocation().y;
+    }
 
     var size = new Point(width, height);
-    this.shell.setLocation(clArea.width + clArea.x - size.x - PADDING_EDGE, clArea.height + clArea.y - size.y
-      - PADDING_EDGE);
+    this.shell.setLocation(clArea.width + clArea.x - size.x - PADDING_EDGE, Math.max(clArea.y + PADDING_TOP, startY - size.y));
     this.shell.setSize(size);
   }
 
