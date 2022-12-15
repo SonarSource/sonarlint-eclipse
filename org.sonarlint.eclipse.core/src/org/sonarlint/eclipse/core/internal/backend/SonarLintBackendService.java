@@ -67,7 +67,7 @@ public class SonarLintBackendService {
     this.backend = new SonarLintBackendImpl(client);
     var nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
 
-    List<Path> embeddedPluginPaths = PluginPathHelper.getEmbeddedPluginPaths();
+    var embeddedPluginPaths = PluginPathHelper.getEmbeddedPluginPaths();
     embeddedPluginPaths.stream().forEach(p -> SonarLintLogger.get().debug("  - " + p));
 
     Map<String, Path> extraPlugins = new HashMap<>();
@@ -90,7 +90,6 @@ public class SonarLintBackendService {
       embeddedPlugins,
       SonarLintUtils.getEnabledLanguages(),
       SonarLintUtils.getEnabledLanguages(),
-      nodeJsManager.getNodeJsVersion(),
       false,
       sqConnections,
       scConnections,
