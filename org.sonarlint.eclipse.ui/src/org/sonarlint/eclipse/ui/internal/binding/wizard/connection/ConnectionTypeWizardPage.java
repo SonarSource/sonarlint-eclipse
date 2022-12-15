@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.observable.value.SelectObservableValue;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
@@ -32,11 +30,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.wizard.PojoPropertiesCompat;
 import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
@@ -72,13 +68,7 @@ public class ConnectionTypeWizardPage extends WizardPage {
     var sonarCloudLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
     sonarCloudLabel.setText("Connect to <a>the online service</a>");
     sonarCloudLabel.setLayoutData(gd);
-    sonarCloudLabel.addListener(SWT.Selection, e -> {
-      try {
-        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(ConnectedEngineFacade.getSonarCloudUrl()));
-      } catch (PartInitException | MalformedURLException ex) {
-        SonarLintLogger.get().error("Unable to open the browser", ex);
-      }
-    });
+    sonarCloudLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowser(ConnectedEngineFacade.getSonarCloudUrl()));
     var onPremiseLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
     onPremiseLabel.setText("Connect to a server");
     onPremiseLabel.setLayoutData(gd);

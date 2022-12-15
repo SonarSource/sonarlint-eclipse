@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.wizard.WizardPage;
@@ -33,11 +31,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
 import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
@@ -84,11 +80,7 @@ public class NotificationsWizardPage extends WizardPage {
     notificationsLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        try {
-          PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(e.text));
-        } catch (PartInitException | MalformedURLException ex) {
-          SonarLintLogger.get().error("Unable to open the browser", ex);
-        }
+        BrowserUtils.openExternalBrowser(e.text);
       }
     });
 
@@ -109,7 +101,7 @@ public class NotificationsWizardPage extends WizardPage {
       notificationsLink.setText("You will receive <a href=\"" + docUrl + "\">notifications</a> from " + sqOrSc + " in situations like:");
       notificationsDetails.setText(
         "  - the Quality Gate status of a bound project changes\n" +
-        "  - the latest analysis of a bound project on " + sqOrSc + " raises new issues assigned to you");
+          "  - the latest analysis of a bound project on " + sqOrSc + " raises new issues assigned to you");
       container.requestLayout();
     }
     super.setVisible(visible);

@@ -19,26 +19,21 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
 import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
@@ -95,12 +90,7 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
     var url = new StringBuilder(256);
     url.append(model.getServerUrl());
     url.append("/account/security");
-    try {
-      PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(url.toString()));
-    } catch (PartInitException | MalformedURLException e) {
-      SonarLintLogger.get().error("Unable to open external browser", e);
-      MessageDialog.openError(this.getShell(), "Error", "Unable to open external browser: " + e.getMessage());
-    }
+    BrowserUtils.openExternalBrowser(url.toString());
   }
 
   @Override

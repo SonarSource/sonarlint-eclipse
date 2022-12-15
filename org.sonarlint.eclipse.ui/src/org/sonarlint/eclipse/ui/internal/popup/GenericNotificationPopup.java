@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -32,12 +30,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencePage;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 public class GenericNotificationPopup extends AbstractSonarLintPopup {
 
@@ -106,12 +103,7 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
               pref.open();
             }
           } else {
-            try {
-              // Open default external browser
-              PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(e.text));
-            } catch (PartInitException | MalformedURLException ex) {
-              SonarLintLogger.get().error("Unable to open link", ex);
-            }
+            BrowserUtils.openExternalBrowser(e.text);
           }
         }
       });

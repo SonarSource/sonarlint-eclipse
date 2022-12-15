@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.hotspots;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -54,6 +52,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintWebView;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspotDetails;
@@ -96,11 +95,7 @@ public class HotspotsView extends ViewPart {
     emptyMsg.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        try {
-          PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL("https://github.com/SonarSource/sonarlint-eclipse/wiki/Security-Hotspots"));
-        } catch (PartInitException | MalformedURLException e1) {
-          // ignore
-        }
+        BrowserUtils.openExternalBrowser("https://github.com/SonarSource/sonarlint-eclipse/wiki/Security-Hotspots");
       }
     });
     return form;
@@ -211,7 +206,7 @@ public class HotspotsView extends ViewPart {
     // Deselect line when clicking on a blank space in the table
     table.addListener(SWT.MouseDown, event -> {
 
-      TableItem item = table.getItem(new Point(event.x, event.y));
+      var item = table.getItem(new Point(event.x, event.y));
 
       if (item == null) {
         // No table item at the click location?
