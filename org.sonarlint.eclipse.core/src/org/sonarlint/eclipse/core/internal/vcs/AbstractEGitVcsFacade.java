@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.vcs;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +67,7 @@ abstract class AbstractEGitVcsFacade implements VcsFacade {
     Repository.getGlobalListenerList().addRefsChangedListener(event -> {
       List<ISonarLintProject> affectedProjects = new ArrayList<>();
       ProjectsProviderUtils.allProjects().forEach(p -> getRepo(p.getResource()).ifPresent(repo -> {
-        File repoDir = repo.getDirectory();
+        var repoDir = repo.getDirectory();
         if (repoDir != null && repoDir.equals(event.getRepository().getDirectory())) {
           affectedProjects.add(p);
         }
