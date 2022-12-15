@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.util;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.JFaceColors;
@@ -43,10 +41,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
 
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_BACKGROUND_COLOR;
@@ -168,7 +163,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
     browser.addLocationListener(new LocationAdapter() {
       @Override
       public void changing(LocationEvent event) {
-        String loc = event.location;
+        var loc = event.location;
 
         if ("about:blank".equals(loc)) { //$NON-NLS-1$
           /*
@@ -184,11 +179,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
         if (RulesConfigurationPage.RULES_CONFIGURATION_LINK.equals(loc)) {
           openSonarLintPreferences();
         } else {
-          try {
-            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(loc));
-          } catch (PartInitException | MalformedURLException e) {
-            SonarLintLogger.get().error("Unable to open URL: " + loc, e);
-          }
+          BrowserUtils.openExternalBrowser(loc);
         }
       }
     });

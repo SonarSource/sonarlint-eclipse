@@ -19,20 +19,16 @@
  */
 package org.sonarlint.eclipse.ui.internal.backend;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessClient;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.SingleBindingSuggestionPopup;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.BindingSuggestionDto;
 import org.sonarsource.sonarlint.core.clientapi.client.OpenUrlInBrowserParams;
 import org.sonarsource.sonarlint.core.clientapi.client.SuggestBindingParams;
@@ -41,11 +37,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
   @Override
   public void openUrlInBrowser(OpenUrlInBrowserParams params) {
-    try {
-      PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(params.getUrl()));
-    } catch (PartInitException | MalformedURLException e) {
-      SonarLintLogger.get().error("Unable to open external browser", e);
-    }
+    BrowserUtils.openExternalBrowser(params.getUrl());
   }
 
   @Override

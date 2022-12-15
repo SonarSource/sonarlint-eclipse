@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
-import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
@@ -35,6 +34,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 public class OpenInBrowserCommand extends AbstractIssueCommand implements IElementUpdater {
 
@@ -61,7 +61,7 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
       SonarLintCorePlugin.getTelemetry().taintVulnerabilitiesInvestigatedRemotely();
       var issueKey = (String) selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR);
       var serverIssueLink = buildLink(binding.get().getEngineFacade().getHost(), binding.get().getProjectBinding().projectKey(), issueKey);
-      PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(serverIssueLink));
+      BrowserUtils.openExternalBrowser(serverIssueLink);
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to open issue in browser", e);
     }

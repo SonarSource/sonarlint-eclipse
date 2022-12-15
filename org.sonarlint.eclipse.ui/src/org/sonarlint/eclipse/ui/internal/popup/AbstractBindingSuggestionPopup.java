@@ -19,16 +19,12 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 public abstract class AbstractBindingSuggestionPopup extends AbstractSonarLintPopup {
 
@@ -40,11 +36,7 @@ public abstract class AbstractBindingSuggestionPopup extends AbstractSonarLintPo
 
   protected void addLearnMoreLink() {
     addLink("Learn more", e -> {
-      try {
-        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL("https://github.com/SonarSource/sonarlint-eclipse/wiki/Connected-Mode"));
-      } catch (PartInitException | MalformedURLException ex) {
-        SonarLintLogger.get().error("Unable to open the browser", ex);
-      }
+      BrowserUtils.openExternalBrowser("https://github.com/SonarSource/sonarlint-eclipse/wiki/Connected-Mode");
       close();
     });
   }

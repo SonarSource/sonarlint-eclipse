@@ -19,17 +19,14 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.EditNotificationsWizard;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarsource.sonarlint.core.serverconnection.smartnotifications.ServerNotification;
 
 public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
@@ -58,16 +55,12 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
     addLink("Open in " + sqOrSc, e -> {
       var telemetry = SonarLintCorePlugin.getTelemetry();
       telemetry.devNotificationsClicked(notification.category());
-      try {
-        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(notification.link()));
-      } catch (PartInitException | MalformedURLException e1) {
-        // ignore
-      }
+      BrowserUtils.openExternalBrowser(notification.link());
       close();
     });
 
     addLink("Configure", e -> {
-      WizardDialog wd = EditNotificationsWizard.createDialog(getParentShell(), server);
+      var wd = EditNotificationsWizard.createDialog(getParentShell(), server);
       wd.open();
     });
   }
