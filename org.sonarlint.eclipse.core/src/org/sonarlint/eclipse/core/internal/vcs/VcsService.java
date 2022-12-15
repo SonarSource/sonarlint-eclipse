@@ -23,12 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.StorageSynchronizerJob;
 import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -61,7 +63,7 @@ public class VcsService {
 
   private static String electBestMatchingBranch(VcsFacade facade, ISonarLintProject project) {
     LOG.debug("Elect best matching branch for project " + project.getName() + "...");
-    Optional<ResolvedBinding> bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+    var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
     if (bindingOpt.isEmpty()) {
       electedServerBranchCache.remove(project);
       previousCommitRefCache.remove(project);
@@ -84,15 +86,6 @@ public class VcsService {
     }
   }
 
-  private static boolean shouldRecomputeMatchingBranch(ISonarLintProject project, @Nullable Object newCommitRef) {
-    Object previousCommitRef = previousCommitRefCache.get(project);
-    if (!Objects.equals(previousCommitRef, newCommitRef)) {
-      LOG.debug("HEAD has changed since last election, evict cached branch...");
-      return true;
-    }
-    return false;
-  }
-
   public static void projectClosed(ISonarLintProject project) {
     previousCommitRefCache.remove(project);
     electedServerBranchCache.remove(project);
@@ -105,21 +98,36 @@ public class VcsService {
 
   public static String getServerBranch(ISonarLintProject project) {
     return electedServerBranchCache.computeIfAbsent(project, p -> {
-      VcsFacade facade = getFacade();
+      var facade = getFacade();
       saveCurrentCommitRef(project, facade);
       return electBestMatchingBranch(facade, p);
     });
   }
 
   public static void installBranchChangeListener() {
-    getFacade().addHeadRefsChangeListener(projects -> {
+    getFacade().addHeadRefsChangeListener(projects -> new BranchChangeJob(projects).schedule());
+  }
+
+  private static class BranchChangeJob extends Job {
+
+    private final List<ISonarLintProject> affectedProjects;
+
+    public BranchChangeJob(List<ISonarLintProject> affectedProjects) {
+      super("Refresh SonarLint matching branches");
+      this.affectedProjects = affectedProjects;
+      setPriority(LONG);
+      setSystem(true);
+    }
+
+    @Override
+    protected IStatus run(IProgressMonitor monitor) {
       List<ISonarLintProject> projectsToSync = new ArrayList<>();
-      projects.forEach(project -> {
-        Optional<ResolvedBinding> bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+      affectedProjects.forEach(project -> {
+        var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
         if (bindingOpt.isEmpty()) {
           return;
         }
-        VcsFacade facade = getFacade();
+        var facade = getFacade();
         Object newCommitRef = facade.getCurrentCommitRef(project);
         if (shouldRecomputeMatchingBranch(project, newCommitRef)) {
           saveCurrentCommitRef(project, facade);
@@ -134,7 +142,18 @@ public class VcsService {
       if (!projectsToSync.isEmpty()) {
         new StorageSynchronizerJob(projectsToSync).schedule();
       }
-    });
+      return Status.OK_STATUS;
+    }
+
+    private static boolean shouldRecomputeMatchingBranch(ISonarLintProject project, @Nullable Object newCommitRef) {
+      var previousCommitRef = previousCommitRefCache.get(project);
+      if (!Objects.equals(previousCommitRef, newCommitRef)) {
+        LOG.debug("HEAD has changed since last election, evict cached branch...");
+        return true;
+      }
+      return false;
+    }
+
   }
 
 }
