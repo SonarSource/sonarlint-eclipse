@@ -57,7 +57,6 @@ public class ConnectedEngineFacadeManager {
   static final String PASSWORD_ATTRIBUTE = "password";
   static final String NOTIFICATIONS_DISABLED_ATTRIBUTE = "notificationsDisabled";
 
-  private static final byte EVENT_ADDED = 0;
   private static final byte EVENT_CHANGED = 1;
   private static final byte EVENT_REMOVED = 2;
 
@@ -84,7 +83,7 @@ public class ConnectedEngineFacadeManager {
       var newFacade = new ConnectedEngineFacade(connectionId);
       loadConnection(event.getNode(), newFacade);
       facadesByConnectionId.put(newFacade.getId(), newFacade);
-      fireServerEvent(newFacade, EVENT_ADDED);
+      fireConnectionAddedEvent(newFacade);
     }
   };
 
@@ -119,7 +118,7 @@ public class ConnectedEngineFacadeManager {
         // Reload default values
         facadesByConnectionId.putAll(loadServersList(DefaultScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID).node(PREF_SERVERS)));
         for (var server : facadesByConnectionId.values()) {
-          fireServerEvent(server, EVENT_ADDED);
+          fireConnectionAddedEvent(server);
         }
       }
     }
@@ -190,22 +189,25 @@ public class ConnectedEngineFacadeManager {
   }
 
   private void fireServerEvent(final IConnectedEngineFacade server, byte b) {
-
-    if (connectionsListeners.isEmpty()) {
-      return;
-    }
-
-    var clone = new ArrayList<IConnectedEngineFacadeLifecycleListener>();
-    clone.addAll(connectionsListeners);
-    for (IConnectedEngineFacadeLifecycleListener srl : clone) {
-      if (b == EVENT_ADDED) {
-        srl.connectionAdded(server);
-      } else if (b == EVENT_CHANGED) {
+    for (IConnectedEngineFacadeLifecycleListener srl : getListeners()) {
+      if (b == EVENT_CHANGED) {
         srl.connectionChanged(server);
       } else {
         srl.connectionRemoved(server);
       }
     }
+  }
+
+  private void fireConnectionAddedEvent(IConnectedEngineFacade connection) {
+    for (IConnectedEngineFacadeLifecycleListener srl : getListeners()) {
+      srl.connectionAdded(connection);
+    }
+  }
+
+  private Iterable<IConnectedEngineFacadeLifecycleListener> getListeners() {
+    var clone = new ArrayList<IConnectedEngineFacadeLifecycleListener>();
+    clone.addAll(connectionsListeners);
+    return clone;
   }
 
   private static IEclipsePreferences getSonarLintPreferenceNode() {
@@ -260,7 +262,7 @@ public class ConnectedEngineFacadeManager {
     }
     addOrUpdateProperties(facade);
     facadesByConnectionId.put(facade.getId(), facade);
-    fireServerEvent(facade, EVENT_ADDED);
+    fireConnectionAddedEvent(facade);
   }
 
   private static void storeCredentials(IConnectedEngineFacade server, String username, String password) {

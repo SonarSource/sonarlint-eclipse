@@ -35,10 +35,12 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeLifecycleListener;
+import org.sonarlint.eclipse.core.internal.jobs.GlobalLogOutput;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.SonarLintBackendImpl;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
+import org.sonarsource.sonarlint.core.clientapi.backend.HostInfoDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.InitializeParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.DidUpdateConnectionsParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarCloudConnectionConfigurationDto;
@@ -47,6 +49,7 @@ import org.sonarsource.sonarlint.core.commons.Language;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
+import static org.sonarlint.eclipse.core.internal.utils.StringUtils.defaultString;
 
 public class SonarLintBackendService {
 
@@ -63,9 +66,10 @@ public class SonarLintBackendService {
 
   public void init(SonarLintClient client) {
     SonarLintLogger.get().debug("Initializing SonarLint backend...");
+    // prepare the log output early to get traces from the backend
+    org.sonarsource.sonarlint.core.commons.log.SonarLintLogger.setTarget(new GlobalLogOutput());
 
     this.backend = new SonarLintBackendImpl(client);
-    var nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
 
     var embeddedPluginPaths = PluginPathHelper.getEmbeddedPluginPaths();
     embeddedPluginPaths.stream().forEach(p -> SonarLintLogger.get().debug("  - " + p));
@@ -84,7 +88,9 @@ public class SonarLintBackendService {
     var sqConnections = buildSqConnectionDtos();
     var scConnections = buildScConnectionDtos();
 
-    backend.initialize(new InitializeParams("eclipse", StoragePathManager.getServerStorageRoot(),
+    backend.initialize(new InitializeParams(
+      new HostInfoDto(getIdeName()),
+      "eclipse", StoragePathManager.getServerStorageRoot(),
       Set.copyOf(embeddedPluginPaths),
       extraPlugins,
       embeddedPlugins,
@@ -93,7 +99,8 @@ public class SonarLintBackendService {
       false,
       sqConnections,
       scConnections,
-      null));
+      null,
+      true));
 
     SonarLintCorePlugin.getServersManager().addServerLifecycleListener(new IConnectedEngineFacadeLifecycleListener() {
 
@@ -141,6 +148,15 @@ public class SonarLintBackendService {
 
   public SonarLintBackend getBackend() {
     return requireNonNull(backend, "SonarLintBackendService has not been initialized");
+  }
+
+  private static String getIdeName() {
+    var ideName = "Eclipse";
+    var product = Platform.getProduct();
+    if (product != null) {
+      ideName = defaultString(product.getName(), "Eclipse");
+    }
+    return ideName;
   }
 
   public void stop() {

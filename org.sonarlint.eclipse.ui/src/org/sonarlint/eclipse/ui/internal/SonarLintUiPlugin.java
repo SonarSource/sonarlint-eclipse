@@ -59,7 +59,6 @@ import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
-import org.sonarlint.eclipse.ui.internal.hotspots.SecurityHotspotsHandlerServer;
 import org.sonarlint.eclipse.ui.internal.job.PeriodicStoragesSynchronizerJob;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
@@ -82,8 +81,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private SonarLintConsole console;
 
   private ListenerFactory listenerFactory;
-
-  private final SecurityHotspotsHandlerServer hotspotsHandlerServer = new SecurityHotspotsHandlerServer();
 
   private static final WindowOpenCloseListener WINDOW_OPEN_CLOSE_LISTENER = new WindowOpenCloseListener();
   private static final SonarLintPostBuildListener SONARLINT_POST_BUILD_LISTENER = new SonarLintPostBuildListener();
@@ -203,7 +200,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   @Override
   public void stop(final BundleContext context) throws Exception {
-    hotspotsHandlerServer.shutdown();
     removePostBuildListener();
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_FLOW_LOCATION_SERVICE);
@@ -295,8 +291,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       }
 
       SonarLintCorePlugin.getInstance().notificationsManager().subscribeAllNeedingProjectsToNotifications(SonarLintUiPlugin.getDefault().listenerFactory());
-
-      hotspotsHandlerServer.init();
 
       return Status.OK_STATUS;
     }

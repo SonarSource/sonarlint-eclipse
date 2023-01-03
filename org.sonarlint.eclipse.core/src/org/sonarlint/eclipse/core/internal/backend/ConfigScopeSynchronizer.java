@@ -105,7 +105,7 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
     return new ConfigurationScopeDto(getConfigScopeId(p), null, true, p.getName(), toBindingDto(p));
   }
 
-  static String getConfigScopeId(ISonarLintProject p) {
+  public static String getConfigScopeId(ISonarLintProject p) {
     return p.getResource().getLocationURI().toString();
   }
 

@@ -173,10 +173,10 @@ public abstract class AbstractSonarLintTest {
     consoleView.enableAnalysisLogs();
     consoleView.showConsole(ShowConsoleOption.NEVER);
     if (hotspotServerPort == -1) {
-      ConsoleHasText consoleHasText = new ConsoleHasText(consoleView.getConsoleView(), "Started security hotspot handler on port");
+      ConsoleHasText consoleHasText = new ConsoleHasText(consoleView.getConsoleView(), "Started embedded server on port");
       new WaitUntil(consoleHasText);
       var consoleText = consoleHasText.getResult();
-      var pattern = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
+      var pattern = Pattern.compile(".*Started embedded server on port (\\d+).*");
       var matcher = pattern.matcher(consoleText);
       assertThat(matcher.find()).isTrue();
       hotspotServerPort = Integer.parseInt(matcher.group(1));
