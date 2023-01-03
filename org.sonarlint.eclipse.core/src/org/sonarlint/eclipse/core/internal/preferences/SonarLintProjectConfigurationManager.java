@@ -52,11 +52,13 @@ public class SonarLintProjectConfigurationManager {
 
   public static void registerPreferenceChangeListenerForBindingProperties(ISonarLintProject project, Consumer<ISonarLintProject> listener) {
     ofNullable(project.getScopeContext().getNode(SonarLintCorePlugin.PLUGIN_ID))
-      .ifPresent(node -> node.addPreferenceChangeListener(event -> {
-        if (BINDING_RELATED_PROPERTIES.contains(event.getKey())) {
-          listener.accept(project);
-        }
-      }));
+      .ifPresent(node -> {
+        node.addPreferenceChangeListener(event -> {
+          if (BINDING_RELATED_PROPERTIES.contains(event.getKey())) {
+            listener.accept(project);
+          }
+        });
+      });
   }
 
   public SonarLintProjectConfiguration load(IScopeContext projectScope, String projectName) {
