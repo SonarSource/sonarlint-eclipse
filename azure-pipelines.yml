@@ -180,17 +180,17 @@ stages:
           Oldest:
             TARGET_PLATFORM: 'oldest'
             SQ_VERSION: 'LATEST_RELEASE[7.9]'
-            imageName: 'ubuntu-18.04'
+            imageName: 'ubuntu-latest'
             JAVA_VERSION: '11'
           Latest:
             TARGET_PLATFORM: 'latest'
             SQ_VERSION: 'LATEST_RELEASE[8.9]'
-            imageName: 'ubuntu-18.04'
+            imageName: 'ubuntu-latest'
             JAVA_VERSION: '17'
           IBuilds:
             TARGET_PLATFORM: 'ibuilds'
             SQ_VERSION: 'DEV'
-            imageName: 'ubuntu-18.04'
+            imageName: 'ubuntu-latest'
             JAVA_VERSION: '17'
       variables:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
