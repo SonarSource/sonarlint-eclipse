@@ -30,7 +30,7 @@
       <plugin>
         <groupId>kr.motd.maven</groupId>
         <artifactId>os-maven-plugin</artifactId>
-        <version>1.7.0</version>
+        <version>1.7.1</version>
         <executions>
           <execution>
             <phase>initialize</phase>
@@ -43,7 +43,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-clean-plugin</artifactId>
-        <version>3.2.0</version>
         <configuration>
           <filesets>
             <fileset>
