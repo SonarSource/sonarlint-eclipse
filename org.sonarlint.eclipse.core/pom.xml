@@ -105,7 +105,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.xml</groupId>
                   <artifactId>sonar-xml-plugin</artifactId>
-                  <version>2.6.1.3686</version>
+                  <version>2.7.0.3820</version>
                   <type>jar</type>
                 </artifactItem>
               </artifactItems>
