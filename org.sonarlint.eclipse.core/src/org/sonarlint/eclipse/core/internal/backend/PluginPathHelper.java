@@ -60,7 +60,7 @@ public class PluginPathHelper {
 
   @Nullable
   public static Path findEmbeddedSecretsPlugin() {
-    return findEmbeddedPlugin("sonar-secrets-plugin-*.jar", "Found Secrets detection plugin: ");
+    return findEmbeddedPlugin("sonar-text-plugin-*.jar", "Found Secrets detection plugin: ");
   }
 
   @Nullable

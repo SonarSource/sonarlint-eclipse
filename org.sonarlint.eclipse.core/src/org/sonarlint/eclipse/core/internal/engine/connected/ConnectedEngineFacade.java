@@ -127,14 +127,10 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
         .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
         .setClientPid(SonarLintUtils.getPlatformPid());
 
-      var secretsPluginUrl = PluginPathHelper.findEmbeddedSecretsPlugin();
-      if (secretsPluginUrl != null) {
-        builder.addExtraPlugin(Language.SECRETS.getPluginKey(), secretsPluginUrl);
-      }
-
       builder.useEmbeddedPlugin(Language.JS.getPluginKey(), PluginPathHelper.findEmbeddedJsPlugin());
       builder.useEmbeddedPlugin(Language.HTML.getPluginKey(), PluginPathHelper.findEmbeddedHtmlPlugin());
       builder.useEmbeddedPlugin(Language.XML.getPluginKey(), PluginPathHelper.findEmbeddedXmlPlugin());
+      builder.useEmbeddedPlugin(Language.SECRETS.getPluginKey(), PluginPathHelper.findEmbeddedSecretsPlugin());
 
       var globalConfig = builder.build();
       try {
