@@ -53,7 +53,7 @@ public class SonarLintNotifications {
   }
 
   public void showNotificationIfFirstSecretDetected(Issue issue) {
-    if (issue.getRuleKey().startsWith(Language.SECRETS.getPluginKey()) && SonarLintGlobalConfiguration.secretsNeverDetected()) {
+    if (issue.getRuleKey().startsWith(Language.SECRETS.getLanguageKey()) && SonarLintGlobalConfiguration.secretsNeverDetected()) {
       SonarLintNotifications.get().showNotification(new SonarLintNotifications.Notification(
         "Secret(s) detected", "SonarLint detected some secrets in one of the open files.",
         "SonarLint detected some secrets in one of the open files. " +

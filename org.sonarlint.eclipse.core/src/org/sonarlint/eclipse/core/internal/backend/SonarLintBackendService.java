@@ -74,16 +74,11 @@ public class SonarLintBackendService {
     var embeddedPluginPaths = PluginPathHelper.getEmbeddedPluginPaths();
     embeddedPluginPaths.stream().forEach(p -> SonarLintLogger.get().debug("  - " + p));
 
-    Map<String, Path> extraPlugins = new HashMap<>();
-    var secretsPluginUrl = PluginPathHelper.findEmbeddedSecretsPlugin();
-    if (secretsPluginUrl != null) {
-      extraPlugins.put(Language.SECRETS.getPluginKey(), secretsPluginUrl);
-    }
-
     Map<String, Path> embeddedPlugins = new HashMap<>();
     embeddedPlugins.put(Language.JS.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedJsPlugin(), "JS/TS plugin not found"));
     embeddedPlugins.put(Language.HTML.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedHtmlPlugin(), "HTML plugin not found"));
     embeddedPlugins.put(Language.XML.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedXmlPlugin(), "XML plugin not found"));
+    embeddedPlugins.put(Language.SECRETS.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedSecretsPlugin(), "Secrets plugin not found"));
 
     var sqConnections = buildSqConnectionDtos();
     var scConnections = buildScConnectionDtos();
@@ -92,7 +87,6 @@ public class SonarLintBackendService {
       new HostInfoDto(getIdeName()),
       "eclipse", StoragePathManager.getServerStorageRoot(),
       Set.copyOf(embeddedPluginPaths),
-      extraPlugins,
       embeddedPlugins,
       SonarLintUtils.getEnabledLanguages(),
       SonarLintUtils.getEnabledLanguages(),

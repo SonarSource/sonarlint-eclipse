@@ -108,6 +108,12 @@
                   <version>2.7.0.3820</version>
                   <type>jar</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>org.sonarsource.text</groupId>
+                  <artifactId>sonar-text-plugin</artifactId>
+                  <version>2.0.1.611</version>
+                  <type>jar</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>${project.basedir}/plugins</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
@@ -161,45 +167,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>private-repo-access</id>
-      <activation>
-        <property>
-          <name>env.ARTIFACTORY_PRIVATE_READER_USERNAME</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-private-analyzers</id>
-                <phase>generate-resources</phase>
-                <goals>
-                  <goal>copy</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>com.sonarsource.secrets</groupId>
-                      <artifactId>sonar-secrets-plugin</artifactId>
-                      <version>1.2.0.53269</version>
-                      <type>jar</type>
-                    </artifactItem>
-                  </artifactItems>
-                  <outputDirectory>${project.basedir}/plugins</outputDirectory>
-                  <overWriteReleases>false</overWriteReleases>
-                  <overWriteSnapshots>true</overWriteSnapshots>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
