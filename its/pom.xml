@@ -153,6 +153,7 @@
             <org.eclipse.swt.browser.UseWebKitGTK>true</org.eclipse.swt.browser.UseWebKitGTK>
             <org.eclipse.swt.browser.DefaultType>webkit</org.eclipse.swt.browser.DefaultType>
           </systemProperties>
+          <useJDK>BREE</useJDK>
         </configuration>
       </plugin>
     </plugins>

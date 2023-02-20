@@ -179,19 +179,16 @@ stages:
         matrix:
           Oldest:
             TARGET_PLATFORM: 'oldest'
-            SQ_VERSION: 'LATEST_RELEASE[7.9]'
-            imageName: 'ubuntu-latest'
-            JAVA_VERSION: '11'
-          Latest:
-            TARGET_PLATFORM: 'latest'
             SQ_VERSION: 'LATEST_RELEASE[8.9]'
             imageName: 'ubuntu-latest'
-            JAVA_VERSION: '17'
+          Latest:
+            TARGET_PLATFORM: 'latest'
+            SQ_VERSION: 'LATEST_RELEASE[9.9]'
+            imageName: 'ubuntu-latest'
           IBuilds:
             TARGET_PLATFORM: 'ibuilds'
             SQ_VERSION: 'DEV'
             imageName: 'ubuntu-latest'
-            JAVA_VERSION: '17'
       variables:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
@@ -201,7 +198,12 @@ stages:
       steps:
       - task: JavaToolInstaller@0
         inputs:
-          versionSpec: $(JAVA_VERSION)
+          versionSpec: '11'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '17'
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
       - checkout: self
@@ -269,6 +271,7 @@ stages:
           options: >-
             -B -e
             --settings $(mavenSettings.secureFilePath)
+            --toolchains .azure-pipelines/toolchains.xml
             -Pcoverage
             -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url=$(stagedP2Url) -Dsonar.runtimeVersion=$(SQ_VERSION)
             -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/it-coverage.exec
