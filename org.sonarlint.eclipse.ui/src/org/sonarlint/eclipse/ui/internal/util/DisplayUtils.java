@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 public class DisplayUtils {
 
@@ -43,6 +44,21 @@ public class DisplayUtils {
     var r = new FutureRunnableResult(runnable);
     Display.getDefault().asyncExec(r);
     return r.getFuture();
+  }
+
+  public static CompletableFuture<Void> bringToFrontAsync() {
+    return asyncExec(DisplayUtils::bringToFront);
+  }
+
+  public static void bringToFront() {
+    var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+    var shell = window.getShell();
+    if (shell != null) {
+      if (shell.getMinimized()) {
+        shell.setMinimized(false);
+      }
+      shell.forceActive();
+    }
   }
 
   private static class RunnableWithResult<T> implements Runnable {

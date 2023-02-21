@@ -293,7 +293,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   @Override
   public void handlePageChanging(PageChangingEvent event) {
     var currentPage = (WizardPage) event.getCurrentPage();
-    boolean advance = getNextPage(currentPage) == event.getTargetPage();
+    var advance = getNextPage(currentPage) == event.getTargetPage();
     if (advance && !redirectedAfterNotificationCheck && (currentPage == credentialsPage || currentPage == tokenPage)) {
       if (!testConnection(null)) {
         event.doit = false;

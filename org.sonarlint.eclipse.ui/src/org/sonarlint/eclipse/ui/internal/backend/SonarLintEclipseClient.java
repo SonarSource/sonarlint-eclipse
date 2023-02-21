@@ -128,7 +128,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
       return;
     }
     var project = projectOpt.get();
-    String hotspotFilePath = params.getHotspotDetails().getFilePath();
+    var hotspotFilePath = params.getHotspotDetails().getFilePath();
     var hotspotFile = findHotspotFile(hotspotFilePath, project);
     if (hotspotFile.isEmpty()) {
       showPopup("ERROR", "Unable to find file '" + hotspotFilePath + "' in '" + project.getName() + "'");
@@ -139,7 +139,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
   @Override
   public CompletableFuture<AssistCreatingConnectionResponse> assistCreatingConnection(AssistCreatingConnectionParams params) {
-    return bringToFrontAsync()
+    return DisplayUtils.bringToFrontAsync()
       .thenComposeAsync(unused -> createConnection(params.getServerUrl()))
       .thenApplyAsync(connection -> new AssistCreatingConnectionResponse(connection.getId()));
   }
@@ -148,7 +148,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
   public CompletableFuture<AssistBindingResponse> assistBinding(AssistBindingParams params) {
     var connectionId = params.getConnectionId();
     var projectKey = params.getProjectKey();
-    return bringToFrontAsync()
+    return DisplayUtils.bringToFrontAsync()
       .thenComposeAsync(unused -> bindProjectTo(connectionId, projectKey))
       .thenApplyAsync(project -> new AssistBindingResponse(ConfigScopeSynchronizer.getConfigScopeId(project)));
   }
@@ -160,8 +160,8 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
   }
 
   private static void show(ISonarLintFile file, HotspotDetailsDto hotspot) {
-    Display.getDefault().syncExec(() -> {
-      bringToFront();
+    Display.getDefault().asyncExec(() -> {
+      DisplayUtils.bringToFront();
       var doc = getDocumentFromEditorOrFile(file);
       var marker = createMarker(file, hotspot, doc);
       try {
@@ -238,21 +238,6 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
         }
         return CompletableFuture.completedFuture(pickedProject);
       });
-  }
-
-  private static CompletableFuture<Void> bringToFrontAsync() {
-    return DisplayUtils.asyncExec(SonarLintEclipseClient::bringToFront);
-  }
-
-  private static void bringToFront() {
-    var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-    var shell = window.getShell();
-    if (shell != null) {
-      if (shell.getMinimized()) {
-        shell.setMinimized(false);
-      }
-      shell.forceActive();
-    }
   }
 
 }
