@@ -19,23 +19,31 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
+import java.lang.reflect.InvocationTargetException;
 import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
+import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
-import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
+import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
 import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
+import org.sonarsource.sonarlint.core.clientapi.backend.authentication.HelpGenerateUserTokenParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.authentication.HelpGenerateUserTokenResponse;
 
 public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 
@@ -70,7 +78,7 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
   private void createTokenField(final Composite container) {
     var labelUsername = new Label(container, SWT.NULL);
     labelUsername.setText("Token:");
-    serverTokenText = new Text(container, SWT.BORDER | SWT.SINGLE);
+    serverTokenText = new Text(container, SWT.BORDER | SWT.SINGLE | SWT.PASSWORD);
     var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
     serverTokenText.setLayoutData(gd);
@@ -83,14 +91,59 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
     button.setToolTipText(Messages.ServerLocationWizardPage_action_token_tooltip);
     button.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
 
-    button.addListener(SWT.Selection, e -> openSecurityPage());
+    button.addListener(SWT.Selection, e -> openTokenCreationPage());
   }
 
-  private void openSecurityPage() {
-    var url = new StringBuilder(256);
-    url.append(model.getServerUrl());
-    url.append("/account/security");
-    BrowserUtils.openExternalBrowser(url.toString());
+  private void openTokenCreationPage() {
+    try {
+      var job = new GenerateTokenJob(model.getServerUrl(), model.getConnectionType() == ConnectionType.SONARCLOUD);
+      getContainer().run(true, true, job);
+      var response = job.getResponse();
+      var token = response.getToken();
+      if (token != null) {
+        handleReceivedToken(token);
+      }
+    } catch (InterruptedException canceled) {
+      // Cancelled
+    } catch (InvocationTargetException e) {
+      SonarLintLogger.get().error("Unable to generate token", e);
+    }
+  }
+
+  private void handleReceivedToken(String token) {
+    DisplayUtils.asyncExec(() -> {
+      serverTokenText.setText(token);
+      DisplayUtils.bringToFront();
+    });
+  }
+
+  static final class GenerateTokenJob implements IRunnableWithProgress {
+
+    private final String serverUrl;
+    private final boolean isSonarCloud;
+    private HelpGenerateUserTokenResponse response;
+
+    public GenerateTokenJob(String serverUrl, boolean isSonarCloud) {
+      this.serverUrl = serverUrl;
+      this.isSonarCloud = isSonarCloud;
+    }
+
+    @Override
+    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+      monitor.beginTask("Token generation", IProgressMonitor.UNKNOWN);
+      try {
+        var params = new HelpGenerateUserTokenParams(serverUrl, isSonarCloud);
+        var future = SonarLintBackendService.get().getBackend().getAuthenticationHelperService().helpGenerateUserToken(params);
+        this.response = JobUtils.waitForFuture(monitor, future);
+      } finally {
+        monitor.done();
+      }
+    }
+
+    public HelpGenerateUserTokenResponse getResponse() {
+      return response;
+    }
+
   }
 
   @Override
