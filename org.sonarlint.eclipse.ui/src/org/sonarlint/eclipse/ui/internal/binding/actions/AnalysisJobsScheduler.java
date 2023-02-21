@@ -45,9 +45,9 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
 
-public class JobUtils {
+public class AnalysisJobsScheduler {
 
-  private JobUtils() {
+  private AnalysisJobsScheduler() {
     // utility class, forbidden constructor
   }
 

@@ -51,7 +51,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.BindingsView;
-import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
@@ -264,13 +264,13 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     var boundProjects = resultServer.getBoundProjects();
     if (model.getNotificationsSupported() && !model.getNotificationsDisabled() && !boundProjects.isEmpty()) {
       var subscribeToNotificationsJob = new SubscribeToNotificationsJob(boundProjects);
-      JobUtils.scheduleAfterSuccess(job, subscribeToNotificationsJob::schedule);
+      AnalysisJobsScheduler.scheduleAfterSuccess(job, subscribeToNotificationsJob::schedule);
       subscribeToNotificationsJob.schedule();
     } else {
       boundProjects.forEach(SonarLintUiPlugin::unsubscribeToNotifications);
     }
 
-    JobUtils.scheduleAfterSuccess(job, () -> JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(resultServer, TriggerType.BINDING_CHANGE));
+    AnalysisJobsScheduler.scheduleAfterSuccess(job, () -> AnalysisJobsScheduler.scheduleAnalysisOfOpenFilesInBoundProjects(resultServer, TriggerType.BINDING_CHANGE));
     job.schedule();
     var selectedProjects = model.getSelectedProjects();
     if (!skipBindingWizard) {

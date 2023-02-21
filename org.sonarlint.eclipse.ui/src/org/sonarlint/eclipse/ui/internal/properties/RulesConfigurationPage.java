@@ -33,7 +33,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
@@ -76,7 +76,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     var newRuleConfigs = rulesConfigurationPart.computeRulesConfig();
     SonarLintGlobalConfiguration.saveRulesConfig(newRuleConfigs);
     if (!newRuleConfigs.equals(initialRuleConfigs)) {
-      JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
+      AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
     }
     return true;
   }

@@ -29,7 +29,7 @@ import org.sonarlint.eclipse.core.internal.jobs.ProjectStorageUpdateJob;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 
 public class ProjectBindingProcess {
@@ -53,14 +53,14 @@ public class ProjectBindingProcess {
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
         SonarLintCorePlugin.clearIssueTracker(p);
-        JobUtils.notifyServerViewAfterBindingChange(p, oldServerId);
+        AnalysisJobsScheduler.notifyServerViewAfterBindingChange(p, oldServerId);
         projectToSubscribeToNotifications.add(p);
       }
     });
     if (!projectToSubscribeToNotifications.isEmpty()) {
       new SubscribeToNotificationsJob(projectToSubscribeToNotifications).schedule();
     }
-    JobUtils.scheduleAnalysisOfOpenFiles(job, projects, TriggerType.BINDING_CHANGE);
+    AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(job, projects, TriggerType.BINDING_CHANGE);
     job.schedule();
     return job;
   }
