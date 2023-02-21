@@ -17,7 +17,7 @@
   <name>SonarLint for Eclipse Integration Tests</name>
 
   <properties>
-    <tycho.version>2.7.4</tycho.version>
+    <tycho.version>3.0.2</tycho.version>
     <license.title>SonarLint for Eclipse ITs</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,6 +45,8 @@
           <configuration>
             <source>${jdk.min.version}</source>
             <target>${jdk.min.version}</target>
+            <release>${jdk.min.version}</release>
+            <useJDK>BREE</useJDK>
           </configuration>
         </plugin>
         <plugin>
@@ -77,6 +79,11 @@
           <artifactId>tycho-p2-repository-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-ds-plugin</artifactId>
+          <version>${tycho.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -85,13 +92,6 @@
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-maven-plugin</artifactId>
         <extensions>true</extensions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <compilerVersion>${jdk.min.version}</compilerVersion>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>com.mycila</groupId>

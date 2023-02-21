@@ -26,12 +26,17 @@ stages:
       variables:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-        commonMavenArguments: -B -e -Pdeploy-sonarsource -Dmaven.test.skip=true
+        commonMavenArguments: -B -e -Pdeploy-sonarsource -Dmaven.test.skip=true --toolchains .azure-pipelines/toolchains.xml
         fixedBranch: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
       steps:
       - task: JavaToolInstaller@0
         inputs:
           versionSpec: '11'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '17'
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
       - checkout: self
@@ -121,6 +126,11 @@ stages:
           versionSpec: '11'
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '17'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
       - checkout: self
         fetchDepth: 1
       - task: Cache@2
@@ -160,6 +170,7 @@ stages:
           options: >-
             -B -e
             --settings $(mavenSettings.secureFilePath)
+            --toolchains .azure-pipelines/toolchains.xml
             -Psonarsource-private-repo
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
@@ -313,6 +324,11 @@ stages:
           versionSpec: '11'
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '17'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
       - checkout: self
       - task: Cache@2
         displayName: Cache Maven local repo
@@ -373,6 +389,7 @@ stages:
           options: >-
             -B -e
             --settings $(mavenSettings.secureFilePath)
+            --toolchains .azure-pipelines/toolchains.xml
             -Pcoverage
             -Psonarsource-private-repo
             -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=$(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
