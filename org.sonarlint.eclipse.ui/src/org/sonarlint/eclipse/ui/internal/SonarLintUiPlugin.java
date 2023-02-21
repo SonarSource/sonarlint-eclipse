@@ -55,7 +55,7 @@ import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.backend.SonarLintEclipseClient;
-import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
@@ -279,7 +279,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       // Schedule auto-sync
       new PeriodicStoragesSynchronizerJob().schedule(Duration.ofSeconds(1).toMillis());
 
-      JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
+      AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
 
       if (PlatformUI.isWorkbenchRunning()) {
         // Handle future opened/closed windows

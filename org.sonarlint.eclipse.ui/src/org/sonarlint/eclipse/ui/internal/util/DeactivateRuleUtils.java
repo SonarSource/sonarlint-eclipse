@@ -36,7 +36,7 @@ import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 public class DeactivateRuleUtils {
@@ -74,7 +74,7 @@ public class DeactivateRuleUtils {
     }
 
     Predicate<ISonarLintFile> filter = f -> !SonarLintCorePlugin.loadConfig(f.getProject()).isBound();
-    JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE, filter);
+    AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE, filter);
   }
 
   private static void removeAnnotations(IMarker marker) {

@@ -33,7 +33,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 
 public class PeriodicStoragesSynchronizerJob extends Job {
 
@@ -58,7 +58,7 @@ public class PeriodicStoragesSynchronizerJob extends Job {
         try {
           Set<String> boundProjectKeys = connection.getBoundProjectKeys();
           connection.autoSync(boundProjectKeys, serverMonitor);
-          JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.BINDING_CHANGE, f -> isBoundToConnection(f, connection));
+          AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.BINDING_CHANGE, f -> isBoundToConnection(f, connection));
           // TODO Refresh taints
         } catch (Exception e) {
           SonarLintLogger.get().error("Unable to synchronize local storage for connection '" + connection.getId() + "'", e);

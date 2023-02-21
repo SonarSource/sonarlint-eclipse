@@ -29,7 +29,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 
 import static org.sonarlint.eclipse.ui.internal.util.PlatformUtils.doIfSonarLintFileInEditor;
 
@@ -57,7 +57,7 @@ public class OpenEditorAnalysisTrigger implements IPartListener2 {
       return;
     }
     var request = new AnalyzeProjectRequest(file.getProject(), List.of(fileWithDoc), TriggerType.EDITOR_OPEN);
-    JobUtils.scheduleAutoAnalysisIfEnabled(request);
+    AnalysisJobsScheduler.scheduleAutoAnalysisIfEnabled(request);
   }
 
   @Override

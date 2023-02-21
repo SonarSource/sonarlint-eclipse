@@ -43,7 +43,7 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDo
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 /**
@@ -67,7 +67,7 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
 
         SonarLintUiPlugin.removePostBuildListener();
         var job = new AnalyzeOpenedFiles(filesPerProject);
-        JobUtils.scheduleAfter(job, SonarLintUiPlugin::addPostBuildListener);
+        AnalysisJobsScheduler.scheduleAfter(job, SonarLintUiPlugin::addPostBuildListener);
         job.schedule();
       }
     }
@@ -105,7 +105,7 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
           .collect(Collectors.toList());
         if (!filesToAnalyze.isEmpty()) {
           var request = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.EDITOR_CHANGE);
-          JobUtils.scheduleAutoAnalysisIfEnabled(request);
+          AnalysisJobsScheduler.scheduleAutoAnalysisIfEnabled(request);
         }
       }
       return Status.OK_STATUS;

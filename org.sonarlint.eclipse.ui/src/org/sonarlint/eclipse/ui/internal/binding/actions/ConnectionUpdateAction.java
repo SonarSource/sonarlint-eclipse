@@ -84,9 +84,9 @@ public class ConnectionUpdateAction extends SelectionProviderAction {
       for (final var server : servers) {
         var job = new ConnectionStorageUpdateJob(server);
         // note: this is only necessary for projects bound before SQ 6.6
-        JobUtils.scheduleAfterSuccess(job,
+        AnalysisJobsScheduler.scheduleAfterSuccess(job,
           () -> SonarLintCorePlugin.getInstance().notificationsManager().subscribeToNotifications(server.getBoundProjects(), SonarLintUiPlugin.getDefault().listenerFactory()));
-        JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
+        AnalysisJobsScheduler.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
         job.schedule();
       }
     }

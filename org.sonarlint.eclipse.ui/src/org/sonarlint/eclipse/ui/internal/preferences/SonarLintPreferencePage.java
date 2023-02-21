@@ -41,7 +41,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 
 /**
  * Preference page for the workspace.
@@ -142,7 +142,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
       anyPreferenceChanged = true;
     }
     if (anyPreferenceChanged) {
-      JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
+      AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
     }
 
     return result;

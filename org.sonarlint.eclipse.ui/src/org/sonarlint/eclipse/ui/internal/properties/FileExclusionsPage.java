@@ -60,7 +60,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 
 public class FileExclusionsPage extends AbstractListPropertyPage implements IWorkbenchPreferencePage {
   private static final String PREFERENCE_ID = "org.sonarlint.eclipse.ui.properties.FileExclusionsPage";
@@ -266,7 +266,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
       var serialized = SonarLintGlobalConfiguration.serializeFileExclusions(this.exclusions);
       getPreferenceStore().setValue(SonarLintGlobalConfiguration.PREF_FILE_EXCLUSIONS, serialized);
       if (!exclusions.equals(previousFileExclusions)) {
-        JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
+        AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
       }
     } else {
       var projectConfig = getProjectConfig();
@@ -275,7 +275,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
       projectConfig.getFileExclusions().addAll(exclusions);
       SonarLintCorePlugin.saveConfig(getProject(), projectConfig);
       if (!exclusions.equals(previousFileExclusions)) {
-        JobUtils.scheduleAnalysisOfOpenFiles(getProject(), TriggerType.STANDALONE_CONFIG_CHANGE);
+        AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(getProject(), TriggerType.STANDALONE_CONFIG_CHANGE);
       }
     }
 
