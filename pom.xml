@@ -62,7 +62,6 @@
     <jacoco.version>0.8.8</jacoco.version>
     <okhttp.version>3.14.9</okhttp.version>
     <okio.version>1.17.2</okio.version>
-    <apache.http.version>5.0.3</apache.http.version>
     <version.enforcer.plugin>3.1.0</version.enforcer.plugin>
 
     <!-- ================== -->
