@@ -120,31 +120,6 @@
               <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
-          <execution>
-            <id>copy-libraries</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>com.squareup.okhttp3</groupId>
-                  <artifactId>okhttp</artifactId>
-                  <version>${okhttp.version}</version>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>com.squareup.okio</groupId>
-                  <artifactId>okio</artifactId>
-                  <version>${okio.version}</version>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>lib</outputDirectory>
-              <stripVersion>true</stripVersion>
-              <overWriteReleases>true</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
       <plugin>
