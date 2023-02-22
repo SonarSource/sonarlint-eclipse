@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
-<target name="sonarlint-its-commons" sequenceNumber="1">
+<target name="sonarlint-its-commons" sequenceNumber="2">
   <locations>
     <location includeSource="true" missingManifest="error" type="Maven">
       <dependencies>
@@ -19,7 +19,7 @@
         <dependency>
           <groupId>com.google.code.gson</groupId>
           <artifactId>gson</artifactId>
-          <version>2.9.1</version>
+          <version>2.10.1</version>
         </dependency>
       </dependencies>
     </location>
@@ -28,7 +28,7 @@
         <dependency>
           <groupId>org.assertj</groupId>
           <artifactId>assertj-core</artifactId>
-          <version>3.23.1</version>
+          <version>3.24.2</version>
           <type>jar</type>
         </dependency>
       </dependencies>

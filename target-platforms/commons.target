@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
-<target name="sonarlint-eclipse-build-commons" sequenceNumber="1">
+<target name="sonarlint-eclipse-build-commons" sequenceNumber="2">
   <locations>
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.slf4j.api" version="0.0.0"/>
@@ -11,7 +11,7 @@
         <dependency>
           <groupId>org.sonarsource.sonarlint.core</groupId>
           <artifactId>sonarlint-core-osgi</artifactId>
-          <version>8.14.0.61585</version>
+          <version>8.14.0.62738</version>
           <type>jar</type>
         </dependency>
         <dependency>
@@ -27,13 +27,13 @@
         <dependency>
           <groupId>org.assertj</groupId>
           <artifactId>assertj-core</artifactId>
-          <version>3.23.1</version>
+          <version>3.24.2</version>
           <type>jar</type>
         </dependency>
         <dependency>
           <groupId>org.mockito</groupId>
           <artifactId>mockito-core</artifactId>
-          <version>4.6.1</version>
+          <version>5.1.1</version>
           <type>jar</type>
         </dependency>
       </dependencies>
