@@ -1,42 +1,70 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
-<target name="sonarlint-eclipse-build-commons" sequenceNumber="2">
+<target name="sonarlint-eclipse-build-commons" sequenceNumber="3">
   <locations>
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.slf4j.api" version="0.0.0"/>
       <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20220531185310/repository/"/>
     </location>
-    <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
-      <dependencies>
-        <dependency>
-          <groupId>org.sonarsource.sonarlint.core</groupId>
-          <artifactId>sonarlint-core-osgi</artifactId>
-          <version>8.14.0.62738</version>
-          <type>jar</type>
-        </dependency>
-        <dependency>
-          <groupId>org.jetbrains.kotlin</groupId>
-          <artifactId>kotlin-osgi-bundle</artifactId>
-          <version>1.6.21</version>
-          <type>jar</type>
-        </dependency>
-      </dependencies>
-    </location>
-    <location includeDependencyDepth="infinite" includeDependencyScopes="compile,runtime" includeSource="true" missingManifest="error" type="Maven">
-      <dependencies>
-        <dependency>
-          <groupId>org.assertj</groupId>
-          <artifactId>assertj-core</artifactId>
-          <version>3.24.2</version>
-          <type>jar</type>
-        </dependency>
-        <dependency>
-          <groupId>org.mockito</groupId>
-          <artifactId>mockito-core</artifactId>
-          <version>5.1.1</version>
-          <type>jar</type>
-        </dependency>
-      </dependencies>
-    </location>
+	  <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
+		  <dependencies>
+			  <dependency>
+				  <groupId>org.jetbrains.kotlin</groupId>
+				  <artifactId>kotlin-osgi-bundle</artifactId>
+				  <version>1.6.21</version>
+				  <type>jar</type>
+			  </dependency>
+			  <dependency>
+				  <groupId>org.sonarsource.sonarlint.core</groupId>
+				  <artifactId>sonarlint-core-osgi</artifactId>
+				  <version>8.14.0.62738</version>
+				  <type>jar</type>
+			  </dependency>
+		  </dependencies>
+	  </location>
+	  <location includeDependencyDepth="infinite" includeDependencyScopes="compile,runtime" includeSource="true" missingManifest="error" type="Maven">
+		  <dependencies>
+			  <dependency>
+				  <groupId>org.assertj</groupId>
+				  <artifactId>assertj-core</artifactId>
+				  <version>3.24.2</version>
+				  <type>jar</type>
+			  </dependency>
+			  <dependency>
+				  <groupId>org.mockito</groupId>
+				  <artifactId>mockito-core</artifactId>
+				  <version>5.1.1</version>
+				  <type>jar</type>
+			  </dependency>
+		  </dependencies>
+	  </location>
+	  <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+		  <dependencies>
+			  <dependency>
+				  <groupId>com.squareup.okhttp3</groupId>
+				  <artifactId>okhttp</artifactId>
+				  <version>4.10.0</version>
+				  <type>jar</type>
+			  </dependency>
+		  </dependencies>
+		  <instructions><![CDATA[
+Bundle-Name:           OkHttp
+version:               ${version_cleanup;${mvnVersion}}
+Bundle-SymbolicName:   com.squareup.okhttp3
+Bundle-Version:        ${version}
+Export-Package:        okhttp3;version="${version}";-noimport:=true
+Import-Package:        okio;version="3.0.0",kotlin.*;version="1.6.20"
+]]></instructions>
+	  </location>
+	  <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
+		  <dependencies>
+			  <dependency>
+				  <groupId>com.squareup.okio</groupId>
+				  <artifactId>okio-jvm</artifactId>
+				  <version>3.0.0</version>
+				  <type>jar</type>
+			  </dependency>
+		  </dependencies>
+	  </location>
   </locations>
 </target>
