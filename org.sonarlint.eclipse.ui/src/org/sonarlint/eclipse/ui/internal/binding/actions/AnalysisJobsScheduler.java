@@ -56,9 +56,7 @@ public class AnalysisJobsScheduler {
    * Use null for project parameter to analyze open files in all projects.
    */
   public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType, Predicate<ISonarLintFile> filter) {
-    var filesByProject = new HashMap<ISonarLintProject, List<FileWithDocument>>();
-
-    collectOpenedFiles(project, filesByProject, filter);
+    var filesByProject = collectOpenedFiles(project, filter);
 
     for (var entry : filesByProject.entrySet()) {
       var aProject = entry.getKey();
@@ -82,12 +80,12 @@ public class AnalysisJobsScheduler {
     scheduleAnalysisOfOpenFiles(project, triggerType, f -> true);
   }
 
-  private static void collectOpenedFiles(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
-    Predicate<ISonarLintFile> filter) {
+  private static Map<ISonarLintProject, List<FileWithDocument>> collectOpenedFiles(@Nullable ISonarLintProject project, Predicate<ISonarLintFile> filter) {
     if (!PlatformUI.isWorkbenchRunning()) {
       // headless tests
-      return;
+      return Map.of();
     }
+    var filesByProject = new HashMap<ISonarLintProject, List<FileWithDocument>>();
     for (var win : PlatformUI.getWorkbench().getWorkbenchWindows()) {
       for (var page : win.getPages()) {
         for (var ref : page.getEditorReferences()) {
@@ -95,6 +93,7 @@ public class AnalysisJobsScheduler {
         }
       }
     }
+    return filesByProject;
   }
 
   private static void collectOpenedFile(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
