@@ -76,6 +76,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     var newRuleConfigs = rulesConfigurationPart.computeRulesConfig();
     SonarLintGlobalConfiguration.saveRulesConfig(newRuleConfigs);
     if (!newRuleConfigs.equals(initialRuleConfigs)) {
+      initialRuleConfigs = newRuleConfigs;
       AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
     }
     return true;
