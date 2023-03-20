@@ -128,7 +128,7 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
     }
 
     var sonarLintFile = Adapters.adapt(delta.getResource(), ISonarLintFile.class);
-    if (sonarLintFile != null && isChanged(delta)) {
+    if (sonarLintFile != null && (isChanged(delta) || isAdded(delta))) {
       changedFiles.add(sonarLintFile);
       return true;
     }
@@ -137,7 +137,11 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
   }
 
   private static boolean isChanged(IResourceDelta delta) {
-    return delta.getKind() == IResourceDelta.CHANGED && (delta.getFlags() & IResourceDelta.CONTENT) != 0;
+    return (delta.getKind() & IResourceDelta.CHANGED) != 0 && (delta.getFlags() & IResourceDelta.CONTENT) != 0;
+  }
+
+  private static boolean isAdded(IResourceDelta delta) {
+    return (delta.getKind() & IResourceDelta.ADDED) != 0;
   }
 
 }
