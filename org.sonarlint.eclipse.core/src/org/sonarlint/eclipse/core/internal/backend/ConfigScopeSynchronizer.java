@@ -39,6 +39,7 @@ import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.DidAddConfi
 import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.DidRemoveConfigurationScopeParams;
 
 import static java.util.stream.Collectors.toList;
+import static org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService.getConfigScopeId;
 
 public class ConfigScopeSynchronizer implements IResourceChangeListener {
 
@@ -103,10 +104,6 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
 
   private static ConfigurationScopeDto toConfigScopeDto(ISonarLintProject p) {
     return new ConfigurationScopeDto(getConfigScopeId(p), null, true, p.getName(), toBindingDto(p));
-  }
-
-  public static String getConfigScopeId(ISonarLintProject p) {
-    return p.getResource().getLocationURI().toString();
   }
 
   private static BindingConfigurationDto toBindingDto(ISonarLintProject p) {

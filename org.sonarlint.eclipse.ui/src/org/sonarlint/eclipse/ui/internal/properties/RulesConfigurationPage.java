@@ -28,13 +28,12 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
 
@@ -61,14 +60,10 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     pageComponent.setLayout(layout);
 
     initialRuleConfigs = SonarLintGlobalConfiguration.readRulesConfig();
-    rulesConfigurationPart = new RulesConfigurationPart(() -> loadRuleDetails(), initialRuleConfigs);
+    rulesConfigurationPart = new RulesConfigurationPart(SonarLintBackendService.get().listAllStandaloneRulesDefinitions(), initialRuleConfigs);
     rulesConfigurationPart.createControls(pageComponent);
     Dialog.applyDialogFont(pageComponent);
     return pageComponent;
-  }
-
-  private static Collection<StandaloneRuleDetails> loadRuleDetails() {
-    return SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getAllRuleDetails();
   }
 
   @Override

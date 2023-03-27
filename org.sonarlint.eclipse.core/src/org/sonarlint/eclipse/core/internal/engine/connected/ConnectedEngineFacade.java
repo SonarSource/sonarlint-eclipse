@@ -64,7 +64,6 @@ import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectionValidator;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBranches;
@@ -251,12 +250,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     }).orElse(null);
   }
 
-  @Override
-  public CompletableFuture<ConnectedRuleDetails> getRuleDescription(String ruleKey, @Nullable String projectKey) {
-    return withEngine(engine -> engine.getActiveRuleDetails(createEndpointParams(), buildClientWithProxyAndCredentials(), ruleKey, projectKey))
-      .orElse(CompletableFuture.completedFuture(null));
-  }
-
   public synchronized void stop() {
     doStop();
   }
@@ -340,7 +333,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
         var idePathPrefix = projectBinding.idePathPrefix();
         var sqPathPrefix = projectBinding.serverPathPrefix();
         SonarLintLogger.get().debug("Detected prefixes for " + p.getName() + ":\n  IDE prefix: " + idePathPrefix + "\n  Server side prefix: " + sqPathPrefix);
-        SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(p);
+        var config = SonarLintCorePlugin.loadConfig(p);
         config.setProjectBinding(new EclipseProjectBinding(getId(), projectKey, sqPathPrefix, idePathPrefix));
         SonarLintCorePlugin.saveConfig(p, config);
       });

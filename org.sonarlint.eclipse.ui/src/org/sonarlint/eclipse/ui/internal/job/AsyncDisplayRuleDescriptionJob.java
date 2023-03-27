@@ -26,19 +26,19 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.AbstractSonarProjectJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 
 public class AsyncDisplayRuleDescriptionJob extends AbstractSonarProjectJob {
-  private final ResolvedBinding binding;
   private final String ruleKey;
   private final SonarLintRuleBrowser browser;
+  private final ISonarLintProject project;
 
-  public AsyncDisplayRuleDescriptionJob(ISonarLintProject project, ResolvedBinding binding, String ruleKey, SonarLintRuleBrowser browser) {
+  public AsyncDisplayRuleDescriptionJob(ISonarLintProject project, String ruleKey, SonarLintRuleBrowser browser) {
     super("Fetching rule description for rule '" + ruleKey + "'...", project);
-    this.binding = binding;
+    this.project = project;
     this.ruleKey = ruleKey;
     this.browser = browser;
   }
@@ -46,12 +46,9 @@ public class AsyncDisplayRuleDescriptionJob extends AbstractSonarProjectJob {
   @Override
   protected IStatus doRun(IProgressMonitor monitor) throws CoreException {
     try {
-      var ruleDetails = binding.getEngineFacade().getRuleDescription(ruleKey, binding.getProjectBinding().projectKey()).get(1, TimeUnit.MINUTES);
-      if (ruleDetails != null) {
-        Display.getDefault().syncExec(() -> browser.updateRule(ruleDetails));
-      } else {
-        SonarLintLogger.get().error("Cannot fetch rule description for rule" + ruleKey);
-      }
+      var ruleDetails = SonarLintBackendService.get().getEffectiveRuleDetails(project, ruleKey, null)
+        .get(1, TimeUnit.MINUTES);
+      Display.getDefault().syncExec(() -> browser.displayEffectiveRule(ruleDetails.details()));
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to display rule description for rule " + ruleKey, e);
     }

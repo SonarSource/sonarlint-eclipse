@@ -20,45 +20,39 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.List;
+import java.util.Map;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
 import org.sonarsource.sonarlint.core.commons.Language;
-import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class RulesConfigurationPartTest {
 
-  private static final RuleKey ACTIVE = mockRuleKey("ACTIVE");
-  private static final RuleKey ACTIVE_EXCLUDED = mockRuleKey("ACTIVE_EXCLUDED");
-  private static final RuleKey INACTIVE = mockRuleKey("INACTIVE");
-  private static final RuleKey INACTIVE_INCLUDED = mockRuleKey("INACTIVE_INCLUDED");
+  private static final String ACTIVE = mockRuleKey("ACTIVE");
+  private static final String ACTIVE_EXCLUDED = mockRuleKey("ACTIVE_EXCLUDED");
+  private static final String INACTIVE = mockRuleKey("INACTIVE");
+  private static final String INACTIVE_INCLUDED = mockRuleKey("INACTIVE_INCLUDED");
 
   private RulesConfigurationPart newSampleConfigurationPart() {
-    var allRuleDetails = List.of(
-      mockRuleDetails(ACTIVE, true),
-      mockRuleDetails(ACTIVE_EXCLUDED, true),
-      mockRuleDetails(INACTIVE, false),
-      mockRuleDetails(INACTIVE_INCLUDED, false));
+    Map<String, RuleDefinitionDto> allRuleDefinitions = Map.of(
+      ACTIVE, mockRuleDetails(ACTIVE, true),
+      ACTIVE_EXCLUDED, mockRuleDetails(ACTIVE_EXCLUDED, true),
+      INACTIVE, mockRuleDetails(INACTIVE, false),
+      INACTIVE_INCLUDED, mockRuleDetails(INACTIVE_INCLUDED, false));
 
     var ruleConfig = List.of(new RuleConfig(ACTIVE_EXCLUDED.toString(), false), new RuleConfig(INACTIVE_INCLUDED.toString(), true));
-    return new RulesConfigurationPart(() -> allRuleDetails, ruleConfig);
+    return new RulesConfigurationPart(allRuleDefinitions, ruleConfig);
   }
 
-  private static RuleKey mockRuleKey(String key) {
-    return new RuleKey("squid", key);
+  private static String mockRuleKey(String key) {
+    return "java:" + key;
   }
 
-  private StandaloneRuleDetails mockRuleDetails(RuleKey ruleKey, boolean activeByDefault) {
-    var ruleDetails = mock(StandaloneRuleDetails.class);
-    when(ruleDetails.getKey()).thenReturn(ruleKey.toString());
-    when(ruleDetails.isActiveByDefault()).thenReturn(activeByDefault);
-    when(ruleDetails.getLanguage()).thenReturn(Language.JAVA);
-    return ruleDetails;
+  private RuleDefinitionDto mockRuleDetails(String ruleKey, boolean activeByDefault) {
+    return new RuleDefinitionDto(ruleKey, null, null, null, null, activeByDefault, Language.JAVA);
   }
 
   @Test

@@ -21,28 +21,40 @@ package org.sonarlint.eclipse.ui.internal.util;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.widgets.Composite;
-import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedRuleDetails;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.EffectiveRuleDetailsDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.EffectiveRuleParamDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleSplitDescriptionDto;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
 
 public class SonarLintRuleBrowser extends SonarLintWebView {
 
-  private RuleDetails ruleDetails;
+  @Nullable
+  private Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> ruleDescription;
+  @Nullable
+  private String ruleName;
+  @Nullable
+  private String ruleKey;
+  private Collection<EffectiveRuleParamDto> effectiveParams;
+  private IssueSeverity severity;
+  private RuleType type;
 
   public SonarLintRuleBrowser(Composite parent, boolean useEditorFontSize) {
     super(parent, useEditorFontSize);
@@ -50,25 +62,16 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
 
   @Override
   protected String body() {
-    if (ruleDetails == null) {
+    if (ruleDescription == null) {
       return "<small><em>(No rules selected)</em></small>";
     } else {
-      var ruleName = ruleDetails.getName();
-      var ruleKey = ruleDetails.getKey();
-      var htmlDescription = ruleDetails.getHtmlDescription();
-      if (ruleDetails instanceof ConnectedRuleDetails) {
-        var extendedDescription = ((ConnectedRuleDetails) ruleDetails).getExtendedDescription();
-        if (StringUtils.isNotBlank(extendedDescription)) {
-          htmlDescription += "<div class=\"rule-desc\">" + extendedDescription + "</div>";
-        }
+      var htmlDescription = renderDescription(ruleDescription);
+
+      var ruleParamsMarkup = "";
+      if (!effectiveParams.isEmpty()) {
+        ruleParamsMarkup = "<div>" + renderRuleParams(effectiveParams) + "</div>";
       }
-      var ruleDetailsMarkup = "";
-      if (ruleDetails instanceof StandaloneRuleDetails) {
-        ruleDetailsMarkup = "<div>" + renderRuleParams((StandaloneRuleDetails) ruleDetails) + "</div>";
-      }
-      var type = ruleDetails.getType();
       var typeImg64 = getAsBase64(SonarLintImages.getTypeImage(type));
-      var severity = ruleDetails.getDefaultSeverity();
       var severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
       return "<h1><span class=\"rulename\">"
         + escapeHTML(ruleName) + "</span><span class=\"rulekey\"> (" + ruleKey + ")</span></h1>"
@@ -79,31 +82,36 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
         + "<span>" + clean(severity.name()) + "</span>"
         + "</div>"
         + htmlDescription
-        + ruleDetailsMarkup;
+        + ruleParamsMarkup;
     }
   }
 
-  private static String renderRuleParams(StandaloneRuleDetails ruleDetails) {
-    if (!ruleDetails.paramDetails().isEmpty()) {
-      return "<h2>Parameters</h2>" +
-        "<p>" +
-        "Following parameter values can be set in <a href='" + RulesConfigurationPage.RULES_CONFIGURATION_LINK + "'>Rules Configuration</a>.\n" +
-        "</p>" +
-        "<table class=\"rule-params\">" +
-        ruleDetails.paramDetails().stream().map(param -> renderRuleParam(param, ruleDetails)).collect(Collectors.joining("\n")) +
-        "</table>";
-    } else {
-      return "";
+  private static String renderDescription(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> ruleDescription) {
+    if (ruleDescription.isLeft()) {
+      return ruleDescription.getLeft().getHtmlContent();
     }
+    var splittedDesc = ruleDescription.getRight();
+    // FIXME handle tabs
+    return splittedDesc.getIntroductionHtmlContent();
   }
 
-  private static String renderRuleParam(StandaloneRuleParam param, StandaloneRuleDetails ruleDetails) {
-    var paramDescription = param.description() != null ? param.description() : "";
-    var paramDefaultValue = param.defaultValue();
+  private static String renderRuleParams(Collection<EffectiveRuleParamDto> params) {
+    return "<h2>Parameters</h2>" +
+      "<p>" +
+      "Following parameter values can be set in <a href='" + RulesConfigurationPage.RULES_CONFIGURATION_LINK + "'>Rules Configuration</a>.\n" +
+      "</p>" +
+      "<table class=\"rule-params\">" +
+      params.stream().map(SonarLintRuleBrowser::renderRuleParam).collect(Collectors.joining("\n")) +
+      "</table>";
+  }
+
+  private static String renderRuleParam(EffectiveRuleParamDto param) {
+    var paramDescription = param.getDescription() != null ? param.getDescription() : "";
+    var paramDefaultValue = param.getDefaultValue();
     var defaultValue = paramDefaultValue != null ? paramDefaultValue : "(none)";
-    var currentValue = getRuleParamValue(ruleDetails.getKey(), param.name()).orElse(defaultValue);
+    var currentValue = Optional.ofNullable(param.getValue()).orElse(defaultValue);
     return "<tr>" +
-      "<th>" + param.name() + "</th>" +
+      "<th>" + param.getName() + "</th>" +
       "<td class='param-description'>" +
       paramDescription +
       "<p><small>Current value: <code>" + currentValue + "</code></small></p>" +
@@ -112,21 +120,33 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
       "</tr>";
   }
 
-  private static Optional<String> getRuleParamValue(String ruleKey, String paramName) {
-    var rulesConfig = SonarLintGlobalConfiguration.readRulesConfig();
-    var ruleConfig = rulesConfig.stream()
-      .filter(r -> r.getKey().equals(ruleKey))
-      .filter(RuleConfig::isActive)
-      .filter(r -> r.getParams().containsKey(paramName))
-      .findFirst();
-    if (ruleConfig.isEmpty()) {
-      return Optional.empty();
-    }
-    return Optional.of(ruleConfig.get().getParams().get(paramName));
+  public void clear() {
+    this.ruleDescription = null;
+    this.ruleName = null;
+    this.ruleKey = null;
+    this.effectiveParams = List.of();
+    this.severity = null;
+    this.type = null;
+    refresh();
   }
 
-  public void updateRule(@Nullable RuleDetails ruleDetails) {
-    this.ruleDetails = ruleDetails;
+  public void displayEffectiveRule(EffectiveRuleDetailsDto details) {
+    this.ruleName = details.getName();
+    this.ruleKey = details.getKey();
+    this.ruleDescription = details.getDescription();
+    this.effectiveParams = details.getParams();
+    this.severity = details.getSeverity();
+    this.type = details.getType();
+    refresh();
+  }
+
+  public void displayStandaloneRule(RuleDefinitionDto ruleDef, Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> ruleDescription) {
+    this.ruleName = ruleDef.getName();
+    this.ruleKey = ruleDef.getKey();
+    this.ruleDescription = ruleDescription;
+    this.effectiveParams = List.of();
+    this.severity = ruleDef.getDefaultSeverity();
+    this.type = ruleDef.getType();
     refresh();
   }
 

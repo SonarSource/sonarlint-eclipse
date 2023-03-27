@@ -35,7 +35,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -129,7 +128,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
   }
 
   private void clear() {
-    browser.updateRule(null);
+    browser.clear();
   }
 
   @Override
@@ -151,14 +150,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     var issuable = Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
     var project = issuable.getProject();
 
-    var resolvedBindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
-    if (resolvedBindingOpt.isPresent()) {
-      new AsyncDisplayRuleDescriptionJob(project, resolvedBindingOpt.get(), ruleKey, browser).schedule();
-    } else {
-      var ruleDetails = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getRuleDescription(ruleKey);
-      browser.updateRule(ruleDetails);
-    }
-
+    new AsyncDisplayRuleDescriptionJob(project, ruleKey, browser).schedule();
   }
 
   @Override

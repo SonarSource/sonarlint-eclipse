@@ -34,7 +34,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessClient;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
@@ -150,7 +150,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
     var projectKey = params.getProjectKey();
     return DisplayUtils.bringToFrontAsync()
       .thenComposeAsync(unused -> bindProjectTo(connectionId, projectKey))
-      .thenApplyAsync(project -> new AssistBindingResponse(ConfigScopeSynchronizer.getConfigScopeId(project)));
+      .thenApplyAsync(project -> new AssistBindingResponse(SonarLintBackendService.getConfigScopeId(project)));
   }
 
   private static Optional<ISonarLintFile> findHotspotFile(String hotspotFilePath, ISonarLintProject project) {

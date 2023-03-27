@@ -34,7 +34,6 @@ import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
@@ -87,11 +86,6 @@ public class StandaloneEngineFacade {
       AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, engine.getPluginDetails());
       return analysisResults;
     }).orElseThrow(() -> new IllegalStateException("SonarLint Engine not available"));
-  }
-
-  @Nullable
-  public RuleDetails getRuleDescription(String ruleKey) {
-    return withEngine(engine -> engine.getRuleDetails(ruleKey).orElse(null)).orElse(null);
   }
 
   public Collection<StandaloneRuleDetails> getAllRuleDetails() {

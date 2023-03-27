@@ -24,9 +24,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
@@ -61,17 +61,17 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 // Inspired by: http://www.vogella.com/tutorials/EclipseJFaceTree/article.html
 public class RulesConfigurationPart {
 
-  private final Supplier<Collection<StandaloneRuleDetails>> allRuleDetailsSupplier;
+  private final Map<String, RuleDefinitionDto> allRuleDefinitions;
   private final Map<String, RuleConfig> initialRuleConfigs;
 
   // Lazy-loaded
@@ -84,8 +84,8 @@ public class RulesConfigurationPart {
   private Composite paramPanel;
   SashForm horizontalSplitter;
 
-  public RulesConfigurationPart(Supplier<Collection<StandaloneRuleDetails>> allRuleDetailsSupplier, Collection<RuleConfig> initialConfig) {
-    this.allRuleDetailsSupplier = allRuleDetailsSupplier;
+  public RulesConfigurationPart(Map<String, RuleDefinitionDto> allRuleDefinitions, Collection<RuleConfig> initialConfig) {
+    this.allRuleDefinitions = allRuleDefinitions;
     initialRuleConfigs = initialConfig.stream()
       .collect(Collectors.toMap(RuleConfig::getKey, it -> it));
     filter = new RuleDetailsWrapperFilter();
@@ -118,10 +118,10 @@ public class RulesConfigurationPart {
 
   // Visible for testing
   public void loadRules() {
-    ruleDetailsWrappersByLanguage = allRuleDetailsSupplier.get().stream()
-      .sorted(Comparator.comparing(RuleDetails::getKey))
-      .map(rd -> new RuleDetailsWrapper(rd, initialRuleConfigs.getOrDefault(rd.getKey(), new RuleConfig(rd.getKey(), rd.isActiveByDefault()))))
-      .collect(Collectors.groupingBy(w -> w.ruleDetails.getLanguage(), Collectors.toList()));
+    ruleDetailsWrappersByLanguage = allRuleDefinitions.entrySet().stream()
+      .sorted(Comparator.comparing(Entry::getKey))
+      .map(entry -> new RuleDetailsWrapper(entry.getValue(), initialRuleConfigs.getOrDefault(entry.getKey(), new RuleConfig(entry.getKey(), entry.getValue().isActiveByDefault()))))
+      .collect(Collectors.groupingBy(w -> w.ruleDef.getLanguage(), Collectors.toList()));
   }
 
   private void createFilterPart(Composite parent) {
@@ -192,9 +192,9 @@ public class RulesConfigurationPart {
         if (!(e1 instanceof RuleDetailsWrapper && e2 instanceof RuleDetailsWrapper)) {
           return super.compare(viewer, e1, e2);
         }
-        RuleDetailsWrapper w1 = (RuleDetailsWrapper) e1;
-        RuleDetailsWrapper w2 = (RuleDetailsWrapper) e2;
-        return w1.ruleDetails.getName().compareTo(w2.ruleDetails.getName());
+        var w1 = (RuleDetailsWrapper) e1;
+        var w2 = (RuleDetailsWrapper) e2;
+        return w1.ruleDef.getName().compareTo(w2.ruleDef.getName());
       }
     });
     tree.getViewer().getTree().setSortDirection(SWT.DOWN);
@@ -212,15 +212,16 @@ public class RulesConfigurationPart {
     paramPanel.dispose();
     if (selectedNode instanceof RuleDetailsWrapper) {
       var wrapper = (RuleDetailsWrapper) selectedNode;
-      ruleBrowser.updateRule(wrapper.ruleDetails);
-      if (wrapper.ruleDetails.paramDetails().isEmpty()) {
+      var ruleDescription = SonarLintBackendService.get().getStandaloneRuleDescription(wrapper.ruleDef.getKey());
+      ruleBrowser.displayStandaloneRule(wrapper.ruleDef, ruleDescription);
+      if (wrapper.ruleDef.getParamsByKey().isEmpty()) {
         paramPanel = emptyRuleParam();
       } else {
-        paramPanel = new RuleParameterPanel(paramPanelParent, SWT.NONE, wrapper.ruleDetails, wrapper.ruleConfig);
+        paramPanel = new RuleParameterPanel(paramPanelParent, SWT.NONE, wrapper.ruleDef, wrapper.ruleConfig);
         paramPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
       }
     } else {
-      ruleBrowser.updateRule(null);
+      ruleBrowser.clear();
       paramPanel = emptyRuleParam();
     }
     paramPanel.requestLayout();
@@ -268,7 +269,7 @@ public class RulesConfigurationPart {
     }
 
     public boolean isRuleMatch(RuleDetailsWrapper element) {
-      return type.predicate.test(element) && (wordMatches(element.getName()) || wordMatches(element.ruleDetails.getKey()));
+      return type.predicate.test(element) && (wordMatches(element.getName()) || wordMatches(element.ruleDef.getKey()));
     }
 
   }
@@ -282,7 +283,7 @@ public class RulesConfigurationPart {
         wrapper.ruleConfig.setActive(event.getChecked());
         tree.getViewer().refresh(wrapper);
         // Refresh the parent to update the check state
-        tree.getViewer().refresh(wrapper.ruleDetails.getLanguage());
+        tree.getViewer().refresh(wrapper.ruleDef.getLanguage());
       } else if (element instanceof Language) {
         var language = (Language) element;
         tree.getViewer().setExpandedState(element, true);
@@ -362,7 +363,7 @@ public class RulesConfigurationPart {
     public Object getParent(Object element) {
       if (element instanceof RuleDetailsWrapper) {
         var wrapper = (RuleDetailsWrapper) element;
-        return wrapper.ruleDetails.getLanguage();
+        return wrapper.ruleDef.getLanguage();
       }
       return null;
     }
@@ -381,27 +382,27 @@ public class RulesConfigurationPart {
       }
       if (element instanceof RuleDetailsWrapper) {
         var wrapper = (RuleDetailsWrapper) element;
-        return wrapper.ruleDetails.getName();
+        return wrapper.ruleDef.getName();
       }
       return null;
     }
   }
 
   private static class RuleDetailsWrapper {
-    private final StandaloneRuleDetails ruleDetails;
+    private final RuleDefinitionDto ruleDef;
     private RuleConfig ruleConfig;
 
-    RuleDetailsWrapper(StandaloneRuleDetails ruleDetails, RuleConfig ruleConfig) {
-      this.ruleDetails = ruleDetails;
+    RuleDetailsWrapper(RuleDefinitionDto ruleDetails, RuleConfig ruleConfig) {
+      this.ruleDef = ruleDetails;
       this.ruleConfig = ruleConfig;
     }
 
     String getName() {
-      return ruleDetails.getName();
+      return ruleDef.getName();
     }
 
     boolean isNonDefault() {
-      return ruleDetails.isActiveByDefault() != ruleConfig.isActive() || (ruleConfig.isActive() && !ruleConfig.getParams().isEmpty());
+      return ruleDef.isActiveByDefault() != ruleConfig.isActive() || (ruleConfig.isActive() && !ruleConfig.getParams().isEmpty());
     }
   }
 
@@ -421,12 +422,12 @@ public class RulesConfigurationPart {
     ruleDetailsWrappersByLanguage.entrySet().stream()
       .flatMap(e -> e.getValue().stream())
       .forEach(w -> {
-        w.ruleConfig = new RuleConfig(w.ruleDetails.getKey(), w.ruleDetails.isActiveByDefault());
+        w.ruleConfig = new RuleConfig(w.ruleDef.getKey(), w.ruleDef.isActiveByDefault());
         w.ruleConfig.getParams().clear();
       });
     if (tree != null) {
       tree.getViewer().refresh();
-      Object currentSelection = tree.getViewer().getStructuredSelection().getFirstElement();
+      var currentSelection = tree.getViewer().getStructuredSelection().getFirstElement();
       refreshUiForRuleSelection(currentSelection);
     }
   }

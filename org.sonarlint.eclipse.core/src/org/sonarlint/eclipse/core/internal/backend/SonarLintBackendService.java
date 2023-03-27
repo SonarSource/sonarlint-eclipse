@@ -20,23 +20,30 @@
 package org.sonarlint.eclipse.core.internal.backend;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeLifecycleListener;
 import org.sonarlint.eclipse.core.internal.jobs.GlobalLogOutput;
+import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.SonarLintBackendImpl;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
@@ -45,6 +52,14 @@ import org.sonarsource.sonarlint.core.clientapi.backend.InitializeParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.DidUpdateConnectionsParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarCloudConnectionConfigurationDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarQubeConnectionConfigurationDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleSplitDescriptionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.StandaloneRuleConfigDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.UpdateStandaloneRulesConfigurationParams;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 import static java.util.Objects.requireNonNull;
@@ -94,7 +109,8 @@ public class SonarLintBackendService {
       sqConnections,
       scConnections,
       null,
-      true));
+      true,
+      toDto(SonarLintGlobalConfiguration.readRulesConfig())));
 
     SonarLintCorePlugin.getServersManager().addServerLifecycleListener(new IConnectedEngineFacadeLifecycleListener() {
 
@@ -153,6 +169,32 @@ public class SonarLintBackendService {
     return ideName;
   }
 
+  public CompletableFuture<GetEffectiveRuleDetailsResponse> getEffectiveRuleDetails(ISonarLintProject p, String ruleKey, @Nullable String contextKey) {
+    return backend.getRulesService().getEffectiveRuleDetails(new GetEffectiveRuleDetailsParams(getConfigScopeId(p), ruleKey, contextKey));
+  }
+
+  public Map<String, RuleDefinitionDto> listAllStandaloneRulesDefinitions() {
+    try {
+      return backend.getRulesService().listAllStandaloneRulesDefinitions().get(1, TimeUnit.MINUTES).getRulesByKey();
+    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+      SonarLintLogger.get().error("Unable to list standalone rules", e);
+      return Map.of();
+    }
+  }
+
+  public Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> getStandaloneRuleDescription(String ruleKey) {
+    try {
+      return backend.getRulesService().getStandaloneRuleDescription(new GetStandaloneRuleDescriptionParams(ruleKey)).get(1, TimeUnit.MINUTES).getDescription();
+    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+      SonarLintLogger.get().error("Unable to get rule description for rule " + ruleKey, e);
+      return Either.forLeft(new RuleMonolithicDescriptionDto(""));
+    }
+  }
+
+  public static String getConfigScopeId(ISonarLintProject p) {
+    return p.getResource().getLocationURI().toString();
+  }
+
   public void stop() {
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(CONFIG_SCOPE_CHANGE_LISTENER);
     if (backend != null) {
@@ -165,6 +207,15 @@ public class SonarLintBackendService {
       }
     }
     backend = null;
+  }
+
+  public void updateRules(Collection<RuleConfig> rules) {
+    backend.getRulesService().updateStandaloneRulesConfiguration(new UpdateStandaloneRulesConfigurationParams(toDto(rules)));
+  }
+
+  private Map<String, StandaloneRuleConfigDto> toDto(Collection<RuleConfig> rules) {
+    return rules.stream()
+      .collect(Collectors.toMap(RuleConfig::getKey, c -> new StandaloneRuleConfigDto(c.isActive(), c.getParams())));
   }
 
 }
