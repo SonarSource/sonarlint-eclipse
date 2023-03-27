@@ -12,4 +12,4 @@ jobs:
     uses: SonarSource/gh-action_release/.github/workflows/main.yaml@v5
     with:
       publishToBinaries: true
-      slack_channel: team-sonarlint-intelliclipse-notifs
+      slackChannel: team-sonarlint-intelliclipse-notifs
