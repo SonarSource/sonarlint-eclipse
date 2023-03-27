@@ -6,7 +6,7 @@ Installing and using
 
 See https://www.sonarlint.org and https://marketplace.eclipse.org/content/sonarlint  
 
-For offline installation and older versions see the update site archive at https://binaries.sonarsource.com/SonarLint-for-Eclipse/releases/
+For offline installation and older versions see the update site archive at https://binaries.sonarsource.com/?prefix=SonarLint-for-Eclipse/releases/
 
 Have Question or Feedback?
 --------------------------
