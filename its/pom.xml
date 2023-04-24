@@ -212,6 +212,55 @@
         </plugins>
       </build>
     </profile>
+    
+    <!--
+    	Due to the earliest version of Eclipse for macOS on ARM64 (aarch64) being 4.22 our tests on
+    	the oldest supported version cannot be run in this environment! Therefore this profile
+    	ensures the tests will only run the oldest version with every environment but the macOS on
+    	ARM64 one.
+    	This profile can be removed in the future, when the oldest supported Eclipse version is
+    	either 4.22 or higher!
+   	-->
+    <profile>
+      <id>macOS-arm64-fix-oldest</id>
+      <activation>
+        <property>
+          <name>target.platform</name>
+          <value>oldest</value>
+        </property>
+      </activation>
+      <build>
+		<plugins>
+		  <plugin>
+	        <groupId>org.eclipse.tycho</groupId>
+	        <artifactId>target-platform-configuration</artifactId>
+	        <configuration>
+	          <target>
+	            <file>target-platforms/${target.platform}.target</file>
+	          </target>
+	          <environments>
+	            <environment>
+	              <os>win32</os>
+	              <ws>win32</ws>
+	              <arch>x86_64</arch>
+	            </environment>
+	            <environment>
+	              <os>linux</os>
+	              <ws>gtk</ws>
+	              <arch>x86_64</arch>
+	            </environment>
+	            <environment>
+	              <os>macosx</os>
+	              <ws>cocoa</ws>
+	              <arch>x86_64</arch>
+	            </environment>
+	          </environments>
+	        </configuration>
+	      </plugin>
+		</plugins>
+      </build>
+    </profile>
+    
     <profile>
       <id>full</id>
       <activation>
