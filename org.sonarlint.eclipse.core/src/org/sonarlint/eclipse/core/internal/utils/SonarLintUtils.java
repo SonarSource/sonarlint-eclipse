@@ -97,8 +97,7 @@ public class SonarLintUtils {
   }
 
   public static Set<Language> getEnabledLanguages() {
-    var languagesDisabledByDefault = EnumSet.of(Language.JAVA, Language.CPP, Language.C, Language.OBJC, Language.SWIFT,
-    											Language.CS, Language.IPYTHON);
+    var languagesDisabledByDefault = EnumSet.of(Language.JAVA, Language.CPP, Language.C, Language.OBJC, Language.SWIFT, Language.CS, Language.IPYTHON);
     var enabledLanguages = EnumSet.complementOf(languagesDisabledByDefault);
     var configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
     for (var configurator : configurators) {
