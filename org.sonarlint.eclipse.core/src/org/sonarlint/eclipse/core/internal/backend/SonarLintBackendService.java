@@ -87,7 +87,7 @@ public class SonarLintBackendService {
       new HostInfoDto(getIdeName()),
       "eclipse",
       StoragePathManager.getServerStorageRoot(),
-      null,   // workDir set in SonarLintBackendImpl.initialize(...) if null!
+      StoragePathManager.getServerDefaultDir(),
       Set.copyOf(embeddedPluginPaths),
       embeddedPlugins,
       SonarLintUtils.getEnabledLanguages(),

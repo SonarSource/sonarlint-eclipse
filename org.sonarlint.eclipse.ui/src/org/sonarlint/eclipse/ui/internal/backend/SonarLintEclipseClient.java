@@ -248,17 +248,17 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
   @Override
   public void showSmartNotification(ShowSmartNotificationParams params) { }
 
-  //smart notifications not yet set to be handled by sonarlint-core
+  // project synchronizations not yet set to be handled by sonarlint-core
   @Override
   public CompletableFuture<Void> startProgress(StartProgressParams params) {
     return null;
   }
 
-  //smart notifications not yet set to be handled by sonarlint-core
+  // project synchronizations not yet set to be handled by sonarlint-core
   @Override
   public void reportProgress(ReportProgressParams params) { }
 
-  //smart notifications not yet set to be handled by sonarlint-core
+  // project synchronizations not yet set to be handled by sonarlint-core
   @Override
   public void didSynchronizeConfigurationScopes(DidSynchronizeConfigurationScopeParams params) { }
 }
