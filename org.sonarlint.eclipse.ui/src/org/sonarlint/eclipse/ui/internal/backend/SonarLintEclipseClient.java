@@ -63,6 +63,10 @@ import org.sonarsource.sonarlint.core.clientapi.client.host.GetHostInfoResponse;
 import org.sonarsource.sonarlint.core.clientapi.client.hotspot.HotspotDetailsDto;
 import org.sonarsource.sonarlint.core.clientapi.client.hotspot.ShowHotspotParams;
 import org.sonarsource.sonarlint.core.clientapi.client.message.ShowMessageParams;
+import org.sonarsource.sonarlint.core.clientapi.client.progress.ReportProgressParams;
+import org.sonarsource.sonarlint.core.clientapi.client.progress.StartProgressParams;
+import org.sonarsource.sonarlint.core.clientapi.client.smartnotification.ShowSmartNotificationParams;
+import org.sonarsource.sonarlint.core.clientapi.client.sync.DidSynchronizeConfigurationScopeParams;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
@@ -240,4 +244,21 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
       });
   }
 
+  // smart notifications not yet set to be handled by sonarlint-core
+  @Override
+  public void showSmartNotification(ShowSmartNotificationParams params) { }
+
+  //smart notifications not yet set to be handled by sonarlint-core
+  @Override
+  public CompletableFuture<Void> startProgress(StartProgressParams params) {
+    return null;
+  }
+
+  //smart notifications not yet set to be handled by sonarlint-core
+  @Override
+  public void reportProgress(ReportProgressParams params) { }
+
+  //smart notifications not yet set to be handled by sonarlint-core
+  @Override
+  public void didSynchronizeConfigurationScopes(DidSynchronizeConfigurationScopeParams params) { }
 }
