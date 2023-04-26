@@ -82,10 +82,12 @@ public class SonarLintBackendService {
 
     var sqConnections = buildSqConnectionDtos();
     var scConnections = buildScConnectionDtos();
-
+    
     backend.initialize(new InitializeParams(
       new HostInfoDto(getIdeName()),
-      "eclipse", StoragePathManager.getServerStorageRoot(),
+      "eclipse",
+      StoragePathManager.getServerStorageRoot(),
+      null,   // workDir set in SonarLintBackendImpl.initialize(...) if null!
       Set.copyOf(embeddedPluginPaths),
       embeddedPlugins,
       SonarLintUtils.getEnabledLanguages(),
@@ -94,10 +96,13 @@ public class SonarLintBackendService {
       sqConnections,
       scConnections,
       null,
-      true));
+      true,
+      Map.of(),
+      false,  // smart notifications not yet implemented
+      false,
+      false));
 
     SonarLintCorePlugin.getServersManager().addServerLifecycleListener(new IConnectedEngineFacadeLifecycleListener() {
-
       @Override
       public void connectionRemoved(IConnectedEngineFacade facade) {
         didUpdateConnections();
@@ -118,7 +123,6 @@ public class SonarLintBackendService {
         var scConnections = buildScConnectionDtos();
         backend.getConnectionService().didUpdateConnections(new DidUpdateConnectionsParams(sqConnections, scConnections));
       }
-
     });
 
     ResourcesPlugin.getWorkspace().addResourceChangeListener(CONFIG_SCOPE_CHANGE_LISTENER);
@@ -129,14 +133,14 @@ public class SonarLintBackendService {
   private static List<SonarQubeConnectionConfigurationDto> buildSqConnectionDtos() {
     return SonarLintCorePlugin.getServersManager().getServers().stream()
       .filter(c -> !c.isSonarCloud())
-      .map(c -> new SonarQubeConnectionConfigurationDto(c.getId(), c.getHost()))
+      .map(c -> new SonarQubeConnectionConfigurationDto(c.getId(), c.getHost(), c.areNotificationsDisabled()))
       .collect(toList());
   }
 
   private static List<SonarCloudConnectionConfigurationDto> buildScConnectionDtos() {
     return SonarLintCorePlugin.getServersManager().getServers().stream()
       .filter(IConnectedEngineFacade::isSonarCloud)
-      .map(c -> new SonarCloudConnectionConfigurationDto(c.getId(), c.getOrganization()))
+      .map(c -> new SonarCloudConnectionConfigurationDto(c.getId(), c.getOrganization(), c.areNotificationsDisabled()))
       .collect(toList());
   }
 

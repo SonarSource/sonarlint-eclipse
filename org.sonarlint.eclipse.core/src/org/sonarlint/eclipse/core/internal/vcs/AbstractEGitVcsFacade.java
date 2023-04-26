@@ -33,7 +33,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.vcs.GitUtils;
+import org.sonarsource.sonarlint.core.branch.GitUtils;
 
 abstract class AbstractEGitVcsFacade implements VcsFacade {
 

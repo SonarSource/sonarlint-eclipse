@@ -35,6 +35,10 @@ public class StoragePathManager {
   private static Path getSonarLintUserHome() {
     return ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").toFile().toPath();
   }
+  
+  public static Path getServerDefaultDir() {
+    return getSonarLintUserHome().resolve("default");
+  }
 
   public static Path getServerWorkDir(String serverId) {
     return getSonarLintUserHome().resolve("work").resolve(serverId);
