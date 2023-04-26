@@ -97,6 +97,10 @@ public class JdtUtils {
 
     context.setAnalysisProperty("sonar.java.source", javaSource);
     context.setAnalysisProperty("sonar.java.target", javaTarget);
+    
+    var javaPreview = javaProject.getOption(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, true);
+    context.setAnalysisProperty("sonar.java.enablePreview",
+      javaPreview != null && javaPreview.equalsIgnoreCase("enabled") ? "True" : "False");
 
     try {
       var configuration = new JavaProjectConfiguration();
