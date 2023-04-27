@@ -17,6 +17,26 @@
 
   <build>
     <plugins>
+      <!-- Because of SLE-608, we want to keep signing with JDK 11 jarsigner, until we stop supporting Eclipse < 2021-06 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-toolchains-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>toolchain</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <toolchains>
+            <jdk>
+              <version>${sonar.java.target}</version>
+            </jdk>
+          </toolchains>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jarsigner-plugin</artifactId>
