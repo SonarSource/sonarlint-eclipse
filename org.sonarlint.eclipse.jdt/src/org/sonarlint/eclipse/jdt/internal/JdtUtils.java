@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -98,9 +99,8 @@ public class JdtUtils {
     context.setAnalysisProperty("sonar.java.source", javaSource);
     context.setAnalysisProperty("sonar.java.target", javaTarget);
     
-    var javaPreview = javaProject.getOption(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, true);
-    context.setAnalysisProperty("sonar.java.enablePreview",
-      javaPreview != null && javaPreview.equalsIgnoreCase("enabled") ? "True" : "False");
+    var javaPreview = Optional.ofNullable(javaProject.getOption(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, true)).orElse("disabled");
+    context.setAnalysisProperty("sonar.java.enablePreview", javaPreview.equalsIgnoreCase("enabled") ? "true" : "false");
 
     try {
       var configuration = new JavaProjectConfiguration();

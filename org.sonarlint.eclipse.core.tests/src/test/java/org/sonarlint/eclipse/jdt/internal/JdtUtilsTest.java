@@ -110,7 +110,7 @@ public class JdtUtilsTest extends SonarTestCase {
     
     jdtUtils.configureJavaProject(project, context);
     
-    verify(context).setAnalysisProperty("sonar.java.enablePreview", "False");
+    verify(context).setAnalysisProperty("sonar.java.enablePreview", "false");
   }
   
   /* SLE-614: Check the new Sonar property: simulate enabled by the user */
@@ -139,7 +139,7 @@ public class JdtUtilsTest extends SonarTestCase {
     
     jdtUtils.configureJavaProject(project, context);
     
-    verify(context).setAnalysisProperty("sonar.java.enablePreview", "True");
+    verify(context).setAnalysisProperty("sonar.java.enablePreview", "true");
   }
 
   @Test
