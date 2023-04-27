@@ -128,7 +128,7 @@ public class JdtUtilsTest extends SonarTestCase {
     var project = mock(IJavaProject.class);
     var context = mock(IPreAnalysisContext.class);
     
-    when(project.getOption(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, true)).thenReturn("enabled");
+    when(project.getOption(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, true)).thenReturn(JavaCore.ENABLED);
     when(project.getPath()).thenReturn(new Path(projectRoot.getAbsolutePath()));
     
     var classpath = new IClasspathEntry[] {
