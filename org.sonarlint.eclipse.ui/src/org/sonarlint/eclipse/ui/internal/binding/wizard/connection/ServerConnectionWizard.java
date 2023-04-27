@@ -55,7 +55,6 @@ import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
-import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 import org.sonarsource.sonarlint.core.serverapi.exception.UnsupportedServerException;
 
@@ -262,14 +261,6 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     var job = new ConnectionStorageUpdateJob(resultServer);
 
     var boundProjects = resultServer.getBoundProjects();
-    if (model.getNotificationsSupported() && !model.getNotificationsDisabled() && !boundProjects.isEmpty()) {
-      var subscribeToNotificationsJob = new SubscribeToNotificationsJob(boundProjects);
-      AnalysisJobsScheduler.scheduleAfterSuccess(job, subscribeToNotificationsJob::schedule);
-      subscribeToNotificationsJob.schedule();
-    } else {
-      boundProjects.forEach(SonarLintUiPlugin::unsubscribeToNotifications);
-    }
-
     AnalysisJobsScheduler.scheduleAfterSuccess(job, () -> AnalysisJobsScheduler.scheduleAnalysisOfOpenFilesInBoundProjects(resultServer, TriggerType.BINDING_CHANGE));
     job.schedule();
     var selectedProjects = model.getSelectedProjects();

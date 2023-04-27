@@ -221,7 +221,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   }
 
   public static void unbind(ISonarLintProject project) {
-    SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(project);
     var config = SonarLintCorePlugin.loadConfig(project);
     config.setProjectBinding(null);
     SonarLintCorePlugin.saveConfig(project, config);
@@ -270,9 +269,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
   @Override
   public void updateProjectList(IProgressMonitor monitor) {
-    doWithEngine(engine -> {
-      reloadProjects(engine, monitor);
-    });
+    doWithEngine(engine -> reloadProjects(engine, monitor));
   }
 
   private static Stream<ISonarLintProject> getOpenedProjects() {
@@ -340,7 +337,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
         var idePathPrefix = projectBinding.idePathPrefix();
         var sqPathPrefix = projectBinding.serverPathPrefix();
         SonarLintLogger.get().debug("Detected prefixes for " + p.getName() + ":\n  IDE prefix: " + idePathPrefix + "\n  Server side prefix: " + sqPathPrefix);
-        SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(p);
+        var config = SonarLintCorePlugin.loadConfig(p);
         config.setProjectBinding(new EclipseProjectBinding(getId(), projectKey, sqPathPrefix, idePathPrefix));
         SonarLintCorePlugin.saveConfig(p, config);
       });
@@ -564,10 +561,9 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
         activeBranches.add(VcsService.getServerBranch(project));
       }
 
-      activeBranches.forEach(b -> {
-        engine.downloadAllServerIssues(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKey, b,
-          new WrappedProgressMonitor(monitor, "Synchronize issues for connection '" + getId() + "'"));
-      });
+      activeBranches.forEach(b -> engine.downloadAllServerIssues(createEndpointParams(),
+        buildClientWithProxyAndCredentials(), projectKey, b,
+        new WrappedProgressMonitor(monitor, "Synchronize issues for connection '" + getId() + "'")));
 
     }
   }

@@ -47,6 +47,7 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
 import org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView;
 import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
+import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
 import org.sonarlint.eclipse.ui.internal.popup.SingleBindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
@@ -244,9 +245,15 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
       });
   }
 
-  // smart notifications not yet set to be handled by sonarlint-core
   @Override
-  public void showSmartNotification(ShowSmartNotificationParams params) { }
+  public void showSmartNotification(ShowSmartNotificationParams params) {
+    var connectionOpt = SonarLintCorePlugin.getServersManager().findById(params.getConnectionId());
+    if (connectionOpt.isEmpty()) {
+      return;
+    }
+
+    Display.getDefault().asyncExec(() -> new DeveloperNotificationPopup(connectionOpt.get(), params, connectionOpt.get().isSonarCloud()).open());
+  }
 
   // project synchronizations not yet set to be handled by sonarlint-core
   @Override
@@ -256,9 +263,11 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
   // project synchronizations not yet set to be handled by sonarlint-core
   @Override
-  public void reportProgress(ReportProgressParams params) { }
+  public void reportProgress(ReportProgressParams params) {
+  }
 
   // project synchronizations not yet set to be handled by sonarlint-core
   @Override
-  public void didSynchronizeConfigurationScopes(DidSynchronizeConfigurationScopeParams params) { }
+  public void didSynchronizeConfigurationScopes(DidSynchronizeConfigurationScopeParams params) {
+  }
 }

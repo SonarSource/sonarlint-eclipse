@@ -19,55 +19,33 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 
-public class SonarLintProjectEventListener implements IResourceChangeListener {
+public class SonarLintVcsCleanupListener implements IResourceChangeListener {
 
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
     if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-      var projectToSubscribeToNotifications = new ArrayList<ISonarLintProject>();
-      var projectToUnsubscribeFromNotifications = new ArrayList<ISonarLintProject>();
       try {
-        event.getDelta().accept(delta -> visitDelta(delta, projectToSubscribeToNotifications, projectToUnsubscribeFromNotifications));
+        event.getDelta().accept(delta -> visitDelta(delta));
       } catch (CoreException e) {
         SonarLintLogger.get().error(e.getMessage(), e);
-      }
-      if (!projectToSubscribeToNotifications.isEmpty()) {
-        new SubscribeToNotificationsJob(projectToSubscribeToNotifications).schedule();
-      }
-      projectToUnsubscribeFromNotifications.forEach(p -> SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(p));
-      if (!projectToSubscribeToNotifications.isEmpty() || !projectToUnsubscribeFromNotifications.isEmpty()) {
-        SonarLintCorePlugin.getServersManager()
-          .subscribeForEvents(projectToSubscribeToNotifications.isEmpty() ? projectToUnsubscribeFromNotifications.get(0) : projectToSubscribeToNotifications.get(0));
       }
     }
   }
 
-  private static boolean visitDelta(IResourceDelta delta, List<ISonarLintProject> projectToSubscribeToNotifications,
-    List<ISonarLintProject> projectToUnsubscribeFromNotifications) {
+  private static boolean visitDelta(IResourceDelta delta) {
     if ((delta.getFlags() & IResourceDelta.OPEN) != 0) {
       var project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
-      if (project != null) {
-        if (project.isOpen() && SonarLintCorePlugin.loadConfig(project).isBound()) {
-          projectToSubscribeToNotifications.add(project);
-        } else {
-          projectToUnsubscribeFromNotifications.add(project);
-        }
-        if (!project.isOpen()) {
-          VcsService.projectClosed(project);
-        }
+      if (project != null && (!project.isOpen())) {
+        VcsService.projectClosed(project);
       }
       return false;
     }

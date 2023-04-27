@@ -98,7 +98,7 @@ public class SonarLintBackendService {
       null,
       true,
       Map.of(),
-      false,  // smart notifications not yet implemented
+      true,
       false,
       false));
 

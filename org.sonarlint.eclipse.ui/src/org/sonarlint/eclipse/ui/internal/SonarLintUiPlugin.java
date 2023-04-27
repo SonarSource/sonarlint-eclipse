@@ -46,12 +46,9 @@ import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.backend.SonarLintEclipseClient;
@@ -60,7 +57,6 @@ import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
 import org.sonarlint.eclipse.ui.internal.job.PeriodicStoragesSynchronizerJob;
-import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
 import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
@@ -80,11 +76,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   @Nullable
   private SonarLintConsole console;
 
-  private ListenerFactory listenerFactory;
-
   private static final WindowOpenCloseListener WINDOW_OPEN_CLOSE_LISTENER = new WindowOpenCloseListener();
   private static final SonarLintPostBuildListener SONARLINT_POST_BUILD_LISTENER = new SonarLintPostBuildListener();
-  private static final SonarLintProjectEventListener SONARLINT_PROJECT_EVENT_LISTENER = new SonarLintProjectEventListener();
+  private static final SonarLintVcsCleanupListener SONARLINT_PROJECT_EVENT_LISTENER = new SonarLintVcsCleanupListener();
   private static final SonarLintFlowLocationsService SONARLINT_FLOW_LOCATION_SERVICE = new SonarLintFlowLocationsService();
 
   public SonarLintUiPlugin() {
@@ -251,19 +245,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
   }
 
-  public synchronized ListenerFactory listenerFactory() {
-    if (listenerFactory == null) {
-      // don't replace the anon class with lambda, because then the factory's "create" will always return the same listener instance
-      listenerFactory = (IConnectedEngineFacade s) -> (notification -> Display.getDefault().asyncExec(() -> {
-        var popup = new DeveloperNotificationPopup(s, notification, s.isSonarCloud());
-        popup.open();
-        SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
-        telemetry.devNotificationsReceived(notification.category());
-      }));
-    }
-    return listenerFactory;
-  }
-
   private class StartupJob extends Job {
 
     StartupJob() {
@@ -290,8 +271,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         }
       }
 
-      SonarLintCorePlugin.getInstance().notificationsManager().subscribeAllNeedingProjectsToNotifications(SonarLintUiPlugin.getDefault().listenerFactory());
-
       return Status.OK_STATUS;
     }
 
@@ -300,10 +279,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public void startupAsync() {
     // SLE-122 Delay a little bit to let the time to the workspace to initialize (and avoid NPE)
     new StartupJob().schedule(2000);
-  }
-
-  public static void unsubscribeToNotifications(ISonarLintProject project) {
-    SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(project);
   }
 
   public static SonarLintFlowLocationsService getSonarlintMarkerSelectionService() {

@@ -39,9 +39,6 @@ import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.AbstractSonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.http.UserAgentInterceptor;
-import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager;
-import org.sonarlint.eclipse.core.internal.notifications.NotificationsTracker;
-import org.sonarlint.eclipse.core.internal.notifications.NotificationsTrackerRegistry;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
@@ -71,7 +68,6 @@ public class SonarLintCorePlugin extends Plugin {
 
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectConfigurationManager configManager;
-  private static NotificationsManager notificationsManager;
 
   private IssueTrackerRegistry issueTrackerRegistry;
   private ServerIssueUpdater serverIssueUpdater;
@@ -83,7 +79,6 @@ public class SonarLintCorePlugin extends Plugin {
   private final SonarLintTelemetry telemetry = new SonarLintTelemetry();
   private ConnectedEngineFacadeManager serversManager = null;
 
-  private NotificationsTrackerRegistry notificationsTrackerRegistry;
   private NodeJsManager nodeJsManager;
 
   private final OkHttpClient okhttpClient;
@@ -109,13 +104,6 @@ public class SonarLintCorePlugin extends Plugin {
     return configManager;
   }
 
-  public synchronized NotificationsManager notificationsManager() {
-    if (notificationsManager == null) {
-      notificationsManager = new NotificationsManager();
-    }
-    return notificationsManager;
-  }
-
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
@@ -128,8 +116,6 @@ public class SonarLintCorePlugin extends Plugin {
     issueTrackerRegistry = new IssueTrackerRegistry(factory);
 
     serverIssueUpdater = new ServerIssueUpdater(issueTrackerRegistry);
-
-    notificationsTrackerRegistry = new NotificationsTrackerRegistry();
 
     nodeJsManager = new NodeJsManager();
 
@@ -177,9 +163,6 @@ public class SonarLintCorePlugin extends Plugin {
     issueTrackerRegistry.shutdown();
     if (serversManager != null) {
       serversManager.stop();
-    }
-    if (notificationsManager != null) {
-      notificationsManager.stop();
     }
     SonarLintExtensionTracker.close();
     AbstractSonarLintExtensionTracker.closeTracker();
@@ -232,10 +215,6 @@ public class SonarLintCorePlugin extends Plugin {
       getInstance().serversManager.init();
     }
     return getInstance().serversManager;
-  }
-
-  public static NotificationsTracker getOrCreateNotificationsTracker(ISonarLintProject project) {
-    return getInstance().notificationsTrackerRegistry.getOrCreate(project);
   }
 
   public static SonarLintProjectConfiguration loadConfig(ISonarLintProject project) {

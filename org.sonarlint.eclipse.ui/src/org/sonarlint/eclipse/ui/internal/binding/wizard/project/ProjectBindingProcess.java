@@ -28,9 +28,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ProjectStorageUpdateJob;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
-import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 
 public class ProjectBindingProcess {
 
@@ -48,7 +46,6 @@ public class ProjectBindingProcess {
         changed = true;
       }
       if (changed) {
-        SonarLintUiPlugin.unsubscribeToNotifications(p);
         SonarLintCorePlugin.saveConfig(p, projectConfig);
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
@@ -57,9 +54,7 @@ public class ProjectBindingProcess {
         projectToSubscribeToNotifications.add(p);
       }
     });
-    if (!projectToSubscribeToNotifications.isEmpty()) {
-      new SubscribeToNotificationsJob(projectToSubscribeToNotifications).schedule();
-    }
+
     AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(job, projects, TriggerType.BINDING_CHANGE);
     job.schedule();
     return job;
