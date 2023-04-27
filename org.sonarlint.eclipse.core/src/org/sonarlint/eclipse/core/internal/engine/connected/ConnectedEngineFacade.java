@@ -120,8 +120,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
       var builder = isSonarCloud() ? ConnectedGlobalConfiguration.sonarCloudBuilder() : ConnectedGlobalConfiguration.sonarQubeBuilder();
       builder
         .setConnectionId(getId())
-        .setWorkDir(StoragePathManager.getServerWorkDir(getId()))
-        .setStorageRoot(StoragePathManager.getServerStorageRoot())
+        .setWorkDir(StoragePathManager.getConnectionSpecificWorkDir(getId()))
+        .setStorageRoot(StoragePathManager.getStorageDir())
         .setLogOutput(new SonarLintAnalyzerLogOutput())
         .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
         .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())

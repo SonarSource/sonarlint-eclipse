@@ -36,22 +36,27 @@ public class StoragePathManager {
     return ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").toFile().toPath();
   }
   
-  public static Path getServerDefaultDir() {
+  /** Get the working directory for no connection set */
+  public static Path getDefaultWorkDir() {
     return getSonarLintUserHome().resolve("default");
   }
 
-  public static Path getServerWorkDir(String serverId) {
+  /** Get the working directory for a specific connection */
+  public static Path getConnectionSpecificWorkDir(String serverId) {
     return getSonarLintUserHome().resolve("work").resolve(serverId);
   }
 
-  public static Path getServerStorageRoot() {
+  /** Get the storage root directory */
+  public static Path getStorageDir() {
     return getSonarLintUserHome().resolve("storage");
   }
 
+  /** Get the project issues directory */
   public static Path getIssuesDir(ISonarLintProject project) {
     return project.getWorkingDir().resolve("issues");
   }
 
+  /** Get the project notifications directory */
   public static Path getNotificationsDir(ISonarLintProject project) {
     return project.getWorkingDir().resolve("notifications");
   }

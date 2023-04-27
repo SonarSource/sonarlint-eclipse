@@ -56,7 +56,7 @@ public class StandaloneEngineFacade {
       var nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
       var globalConfig = StandaloneGlobalConfiguration.builder()
         .addPlugins(PluginPathHelper.getEmbeddedPluginPaths().stream().toArray(Path[]::new))
-        .setWorkDir(StoragePathManager.getServerDefaultDir())
+        .setWorkDir(StoragePathManager.getDefaultWorkDir())
         .setLogOutput(new SonarLintAnalyzerLogOutput())
         .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
         .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
