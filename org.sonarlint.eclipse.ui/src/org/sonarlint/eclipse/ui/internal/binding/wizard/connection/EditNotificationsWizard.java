@@ -27,8 +27,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 
 public class EditNotificationsWizard extends Wizard implements INewWizard {
@@ -77,13 +75,6 @@ public class EditNotificationsWizard extends Wizard implements INewWizard {
   @Override
   public boolean performFinish() {
     editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsDisabled());
-
-    var boundProjects = editedServer.getBoundProjects();
-    if (model.getNotificationsSupported() && !model.getNotificationsDisabled() && !boundProjects.isEmpty()) {
-      new SubscribeToNotificationsJob(boundProjects).schedule();
-    } else {
-      boundProjects.forEach(SonarLintUiPlugin::unsubscribeToNotifications);
-    }
     return true;
   }
 

@@ -86,11 +86,8 @@ public class DeleteConnectionDialog extends MessageDialog {
           }
           var boundProjects = server.getBoundProjects();
           server.delete();
-          // All bound projects have been unbound, so refresh issues and unsubscribe from notifications
-          boundProjects.forEach(p -> {
-            AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
-            SonarLintUiPlugin.unsubscribeToNotifications(p);
-          });
+          // All bound projects have been unbound, so refresh issues
+          boundProjects.forEach(p -> AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE));
         }
       } catch (Exception e) {
         return new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, 0, e.getMessage(), e);

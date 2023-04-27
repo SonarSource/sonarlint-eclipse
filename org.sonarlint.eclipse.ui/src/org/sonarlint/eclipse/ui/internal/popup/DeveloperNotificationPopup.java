@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -27,16 +26,16 @@ import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFaca
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.EditNotificationsWizard;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
-import org.sonarsource.sonarlint.core.serverconnection.smartnotifications.ServerNotification;
+import org.sonarsource.sonarlint.core.clientapi.client.smartnotification.ShowSmartNotificationParams;
 
 public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
 
-  private final ServerNotification notification;
+  private final ShowSmartNotificationParams notification;
   private final boolean isSonarCloud;
   private final String sqOrSc;
   private final IConnectedEngineFacade server;
 
-  public DeveloperNotificationPopup(IConnectedEngineFacade server, ServerNotification notification, boolean isSonarCloud) {
+  public DeveloperNotificationPopup(IConnectedEngineFacade server, ShowSmartNotificationParams notification, boolean isSonarCloud) {
     this.server = server;
     this.notification = notification;
     this.isSonarCloud = isSonarCloud;
@@ -45,7 +44,7 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getMessage() {
-    return notification.message();
+    return notification.getText();
   }
 
   @Override
@@ -54,8 +53,8 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
 
     addLink("Open in " + sqOrSc, e -> {
       var telemetry = SonarLintCorePlugin.getTelemetry();
-      telemetry.devNotificationsClicked(notification.category());
-      BrowserUtils.openExternalBrowser(notification.link());
+      telemetry.devNotificationsClicked(notification.getCategory());
+      BrowserUtils.openExternalBrowser(notification.getLink());
       close();
     });
 
