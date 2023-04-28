@@ -28,7 +28,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-public class SonarLintVcsCleanupListener implements IResourceChangeListener {
+public class SonarLintVcsCacheCleaner implements IResourceChangeListener {
 
   @Override
   public void resourceChanged(IResourceChangeEvent event) {

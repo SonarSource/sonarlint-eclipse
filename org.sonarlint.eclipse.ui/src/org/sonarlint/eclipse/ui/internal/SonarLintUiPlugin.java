@@ -78,7 +78,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private static final WindowOpenCloseListener WINDOW_OPEN_CLOSE_LISTENER = new WindowOpenCloseListener();
   private static final SonarLintPostBuildListener SONARLINT_POST_BUILD_LISTENER = new SonarLintPostBuildListener();
-  private static final SonarLintVcsCleanupListener SONARLINT_PROJECT_EVENT_LISTENER = new SonarLintVcsCleanupListener();
+  private static final SonarLintVcsCacheCleaner SONARLINT_VCS_CACHE_CLEANER = new SonarLintVcsCacheCleaner();
   private static final SonarLintFlowLocationsService SONARLINT_FLOW_LOCATION_SERVICE = new SonarLintFlowLocationsService();
 
   public SonarLintUiPlugin() {
@@ -158,7 +158,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     SonarLintLogger.get().addLogListener(logListener);
 
     addPostBuildListener();
-    ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_VCS_CACHE_CLEANER);
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_FLOW_LOCATION_SERVICE);
 
     notifListener = new PopupNotification();
@@ -195,7 +195,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   @Override
   public void stop(final BundleContext context) throws Exception {
     removePostBuildListener();
-    ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
+    ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_VCS_CACHE_CLEANER);
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_FLOW_LOCATION_SERVICE);
     SonarLintLogger.get().removeLogListener(logListener);
     logListener.shutdown();
