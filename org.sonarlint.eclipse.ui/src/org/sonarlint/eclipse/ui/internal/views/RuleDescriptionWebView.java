@@ -36,12 +36,14 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.job.AsyncDisplayRuleDescriptionJob;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionParams;
 
 /**
  * Display details of a rule in a web browser
@@ -129,7 +131,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
   }
 
   private void clear() {
-    browser.updateRule(null);
+    browser.clearRule();
   }
 
   @Override
@@ -148,17 +150,26 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
       return;
     }
 
-    var issuable = Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
-    var project = issuable.getProject();
+    try {
+      var project = Adapters.adapt(element.getResource(), ISonarLintIssuable.class).getProject();
+      var resolvedBindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+      if (resolvedBindingOpt.isPresent()) {
+        var configurationScopeId = resolvedBindingOpt.get().getProjectBinding().projectKey();
 
-    var resolvedBindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
-    if (resolvedBindingOpt.isPresent()) {
-      new AsyncDisplayRuleDescriptionJob(project, resolvedBindingOpt.get(), ruleKey, browser).schedule();
-    } else {
-      var ruleDetails = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getRuleDescription(ruleKey);
-      browser.updateRule(ruleDetails);
+        browser.updateRule(SonarLintBackendService.get()
+          .getBackend()
+          .getRulesService()
+          .getEffectiveRuleDetails(new GetEffectiveRuleDetailsParams(configurationScopeId, ruleKey, null)).get());
+      } else {
+        browser.updateRule(SonarLintBackendService.get()
+          .getBackend()
+          .getRulesService()
+          .getStandaloneRuleDetails(new GetStandaloneRuleDescriptionParams(ruleKey))
+          .get());
+      }
+    } catch (Exception e) {
+      SonarLintLogger.get().error("Unable to get standalone rule description", e);
     }
-
   }
 
   @Override

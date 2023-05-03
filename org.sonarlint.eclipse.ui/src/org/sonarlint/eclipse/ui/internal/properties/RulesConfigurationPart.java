@@ -61,11 +61,14 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionParams;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 // Inspired by: http://www.vogella.com/tutorials/EclipseJFaceTree/article.html
@@ -192,8 +195,8 @@ public class RulesConfigurationPart {
         if (!(e1 instanceof RuleDetailsWrapper && e2 instanceof RuleDetailsWrapper)) {
           return super.compare(viewer, e1, e2);
         }
-        RuleDetailsWrapper w1 = (RuleDetailsWrapper) e1;
-        RuleDetailsWrapper w2 = (RuleDetailsWrapper) e2;
+        var w1 = (RuleDetailsWrapper) e1;
+        var w2 = (RuleDetailsWrapper) e2;
         return w1.ruleDetails.getName().compareTo(w2.ruleDetails.getName());
       }
     });
@@ -208,19 +211,32 @@ public class RulesConfigurationPart {
     tree.getViewer().setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new Language[ruleDetailsWrappersByLanguage.size()]));
   }
 
+  /** Show GetEffectiveRuleDetailsResponse as well??? */
   private void refreshUiForRuleSelection(Object selectedNode) {
     paramPanel.dispose();
     if (selectedNode instanceof RuleDetailsWrapper) {
       var wrapper = (RuleDetailsWrapper) selectedNode;
-      ruleBrowser.updateRule(wrapper.ruleDetails);
-      if (wrapper.ruleDetails.paramDetails().isEmpty()) {
-        paramPanel = emptyRuleParam();
-      } else {
-        paramPanel = new RuleParameterPanel(paramPanelParent, SWT.NONE, wrapper.ruleDetails, wrapper.ruleConfig);
-        paramPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+      var ruleKey = wrapper.ruleDetails.getKey();
+
+      try {
+        ruleBrowser.updateRule(SonarLintBackendService.get()
+          .getBackend()
+          .getRulesService()
+          .getStandaloneRuleDetails(new GetStandaloneRuleDescriptionParams(ruleKey))
+          .get());
+
+        if (wrapper.ruleDetails.paramDetails().isEmpty()) {
+          paramPanel = emptyRuleParam();
+        } else {
+          paramPanel = new RuleParameterPanel(paramPanelParent, SWT.NONE, wrapper.ruleDetails, wrapper.ruleConfig);
+          paramPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        }
+      } catch (Exception e) {
+        SonarLintLogger.get().error("Unable to get standalone rule description", e);
+        ruleBrowser.clearRule();
       }
     } else {
-      ruleBrowser.updateRule(null);
+      ruleBrowser.clearRule();
       paramPanel = emptyRuleParam();
     }
     paramPanel.requestLayout();
@@ -426,7 +442,7 @@ public class RulesConfigurationPart {
       });
     if (tree != null) {
       tree.getViewer().refresh();
-      Object currentSelection = tree.getViewer().getStructuredSelection().getFirstElement();
+      var currentSelection = tree.getViewer().getStructuredSelection().getFirstElement();
       refreshUiForRuleSelection(currentSelection);
     }
   }
