@@ -45,6 +45,7 @@ import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.StandaloneRuleConfigDto;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 import org.sonarsource.sonarlint.shaded.com.google.gson.Gson;
 import org.sonarsource.sonarlint.shaded.com.google.gson.JsonParseException;
@@ -191,6 +192,9 @@ public class SonarLintGlobalConfiguration {
       .collect(toList());
   }
 
+  public static Map<String, StandaloneRuleConfigDto> buildStandaloneRulesConfig() {
+    return readRulesConfig().stream()
+      .collect(Collectors.toMap(r -> r.getKey(), r -> new StandaloneRuleConfigDto(r.isActive(), Map.copyOf(r.getParams()))));
   }
 
   public static Set<RuleConfig> readRulesConfig() {
