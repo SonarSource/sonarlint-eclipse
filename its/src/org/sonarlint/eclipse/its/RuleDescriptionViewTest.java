@@ -19,10 +19,12 @@
  */
 package org.sonarlint.eclipse.its;
 
+import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.junit.Test;
+import org.sonarlint.eclipse.its.reddeer.conditions.RuleDescriptionViewContainsText;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
 
@@ -51,7 +53,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     onTheFlyView.selectItem(0);
     ruleDescriptionView.open();
 
-    assertThat(ruleDescriptionView.getContent()).contains("java:S106");
+    new WaitUntil(new RuleDescriptionViewContainsText(ruleDescriptionView, "java:S106"));
     assertThat(ruleDescriptionView.getContent()).contains("Sensitive data must only be logged securely");
     assertThat(ruleDescriptionView.getContent()).contains("CERT, ERR02-J");
   }
