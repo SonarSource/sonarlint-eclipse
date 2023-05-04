@@ -288,10 +288,8 @@ public class SonarLintMarkerUpdater {
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.LINE_NUMBER, trackable.getLine() != null ? trackable.getLine() : 1);
 
     var position = MarkerUtils.getPosition(document, trackable.getTextRange());
-    if (position != null) {
-      setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_START, position.getOffset());
-      setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_END, position.getOffset() + position.getLength());
-    }
+    setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_START, position != null ? position.getOffset() : null);
+    setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_END, position != null ? (position.getOffset() + position.getLength()) : null);
 
     updateServerMarkerAttributes(trackable, marker);
   }
