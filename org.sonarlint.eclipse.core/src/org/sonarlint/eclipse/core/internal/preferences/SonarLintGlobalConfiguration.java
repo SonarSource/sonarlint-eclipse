@@ -41,11 +41,13 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.StandaloneRuleConfigDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.UpdateStandaloneRulesConfigurationParams;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 import org.sonarsource.sonarlint.shaded.com.google.gson.Gson;
 import org.sonarsource.sonarlint.shaded.com.google.gson.JsonParseException;
@@ -241,6 +243,7 @@ public class SonarLintGlobalConfiguration {
   public static void saveRulesConfig(Collection<RuleConfig> rules) {
     var json = serializeRulesJson(rules);
     setPreferenceString(PREF_RULES_CONFIG, json);
+    SonarLintBackendService.get().getBackend().getRulesService().updateStandaloneRulesConfiguration(new UpdateStandaloneRulesConfigurationParams(buildStandaloneRulesConfig()));
   }
 
   private static String serializeRulesJson(Collection<RuleConfig> rules) {
