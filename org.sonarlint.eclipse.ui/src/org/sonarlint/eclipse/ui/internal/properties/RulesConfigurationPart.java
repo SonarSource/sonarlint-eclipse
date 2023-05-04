@@ -63,6 +63,7 @@ import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.job.DisplayGlobalConfigurationRuleDescriptionJob;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
@@ -192,8 +193,8 @@ public class RulesConfigurationPart {
         if (!(e1 instanceof RuleDetailsWrapper && e2 instanceof RuleDetailsWrapper)) {
           return super.compare(viewer, e1, e2);
         }
-        RuleDetailsWrapper w1 = (RuleDetailsWrapper) e1;
-        RuleDetailsWrapper w2 = (RuleDetailsWrapper) e2;
+        var w1 = (RuleDetailsWrapper) e1;
+        var w2 = (RuleDetailsWrapper) e2;
         return w1.ruleDetails.getName().compareTo(w2.ruleDetails.getName());
       }
     });
@@ -212,7 +213,10 @@ public class RulesConfigurationPart {
     paramPanel.dispose();
     if (selectedNode instanceof RuleDetailsWrapper) {
       var wrapper = (RuleDetailsWrapper) selectedNode;
-      ruleBrowser.updateRule(wrapper.ruleDetails);
+
+      // Update global configuration rule description asynchronous
+      new DisplayGlobalConfigurationRuleDescriptionJob(wrapper.ruleDetails.getKey(), ruleBrowser).schedule();
+
       if (wrapper.ruleDetails.paramDetails().isEmpty()) {
         paramPanel = emptyRuleParam();
       } else {
@@ -220,7 +224,7 @@ public class RulesConfigurationPart {
         paramPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
       }
     } else {
-      ruleBrowser.updateRule(null);
+      ruleBrowser.clearRule();
       paramPanel = emptyRuleParam();
     }
     paramPanel.requestLayout();
@@ -426,7 +430,7 @@ public class RulesConfigurationPart {
       });
     if (tree != null) {
       tree.getViewer().refresh();
-      Object currentSelection = tree.getViewer().getStructuredSelection().getFirstElement();
+      var currentSelection = tree.getViewer().getStructuredSelection().getFirstElement();
       refreshUiForRuleSelection(currentSelection);
     }
   }

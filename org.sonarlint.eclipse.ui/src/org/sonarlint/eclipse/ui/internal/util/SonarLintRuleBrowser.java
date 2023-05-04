@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
@@ -35,14 +36,13 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionResponse;
 
 public class SonarLintRuleBrowser extends SonarLintWebView {
-
-  private RuleDetails ruleDetails;
+  private Either<GetEffectiveRuleDetailsResponse, GetStandaloneRuleDescriptionResponse> ruleDetailsResponse;
 
   public SonarLintRuleBrowser(Composite parent, boolean useEditorFontSize) {
     super(parent, useEditorFontSize);
@@ -50,37 +50,47 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
 
   @Override
   protected String body() {
-    if (ruleDetails == null) {
+    if (ruleDetailsResponse == null) {
       return "<small><em>(No rules selected)</em></small>";
-    } else {
-      var ruleName = ruleDetails.getName();
-      var ruleKey = ruleDetails.getKey();
-      var htmlDescription = ruleDetails.getHtmlDescription();
-      if (ruleDetails instanceof ConnectedRuleDetails) {
-        var extendedDescription = ((ConnectedRuleDetails) ruleDetails).getExtendedDescription();
-        if (StringUtils.isNotBlank(extendedDescription)) {
-          htmlDescription += "<div class=\"rule-desc\">" + extendedDescription + "</div>";
-        }
-      }
-      var ruleDetailsMarkup = "";
-      if (ruleDetails instanceof StandaloneRuleDetails) {
-        ruleDetailsMarkup = "<div>" + renderRuleParams((StandaloneRuleDetails) ruleDetails) + "</div>";
-      }
+    }
+
+    if (ruleDetailsResponse.isLeft()) {
+      // Educational rule description
+      var ruleDetails = ruleDetailsResponse.getLeft().details();
+
       var type = ruleDetails.getType();
       var typeImg64 = getAsBase64(SonarLintImages.getTypeImage(type));
-      var severity = ruleDetails.getDefaultSeverity();
+      var severity = ruleDetails.getSeverity();
       var severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
+
       return "<h1><span class=\"rulename\">"
-        + escapeHTML(ruleName) + "</span><span class=\"rulekey\"> (" + ruleKey + ")</span></h1>"
+        + escapeHTML(ruleDetails.getName()) + "</span><span class=\"rulekey\"> (" + ruleDetails.getKey() + ")</span></h1>"
         + "<div class=\"typeseverity\">"
         + "<img class=\"typeicon\" alt=\"" + type + "\" src=\"data:image/gif;base64," + typeImg64 + "\">"
         + "<span>" + clean(type.name()) + "</span>"
         + "<img class=\"severityicon\" alt=\"" + severity + "\" src=\"data:image/gif;base64," + severityImg64 + "\">"
         + "<span>" + clean(severity.name()) + "</span>"
         + "</div>"
-        + htmlDescription
-        + ruleDetailsMarkup;
+        + "NOT YET IMPLEMENTED EDUCATIONAL RULE DESCRIPTION";
     }
+
+    // Monolithic rule description
+    var ruleDetails = ruleDetailsResponse.getRight().getRuleDefinition();
+
+    var type = ruleDetails.getType();
+    var typeImg64 = getAsBase64(SonarLintImages.getTypeImage(type));
+    var severity = ruleDetails.getDefaultSeverity();
+    var severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
+
+    return "<h1><span class=\"rulename\">"
+      + escapeHTML(ruleDetails.getName()) + "</span><span class=\"rulekey\"> (" + ruleDetails.getKey() + ")</span></h1>"
+      + "<div class=\"typeseverity\">"
+      + "<img class=\"typeicon\" alt=\"" + type + "\" src=\"data:image/gif;base64," + typeImg64 + "\">"
+      + "<span>" + clean(type.name()) + "</span>"
+      + "<img class=\"severityicon\" alt=\"" + severity + "\" src=\"data:image/gif;base64," + severityImg64 + "\">"
+      + "<span>" + clean(severity.name()) + "</span>"
+      + "</div>"
+      + "NOT YET IMPLEMENTED MONOLITHIC RULE DESCRIPTION";
   }
 
   private static String renderRuleParams(StandaloneRuleDetails ruleDetails) {
@@ -125,8 +135,18 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
     return Optional.of(ruleConfig.get().getParams().get(paramName));
   }
 
-  public void updateRule(@Nullable RuleDetails ruleDetails) {
-    this.ruleDetails = ruleDetails;
+  public void updateRule(GetStandaloneRuleDescriptionResponse getStandaloneRuleDescriptionResponse) {
+    this.ruleDetailsResponse = Either.forRight(getStandaloneRuleDescriptionResponse);
+    refresh();
+  }
+
+  public void updateRule(GetEffectiveRuleDetailsResponse getEffectiveRuleDetailsResponse) {
+    this.ruleDetailsResponse = Either.forLeft(getEffectiveRuleDetailsResponse);
+    refresh();
+  }
+
+  public void clearRule() {
+    this.ruleDetailsResponse = null;
     refresh();
   }
 
@@ -162,5 +182,4 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
     loader.save(out, SWT.IMAGE_PNG);
     return Base64.getEncoder().encodeToString(out.toByteArray());
   }
-
 }
