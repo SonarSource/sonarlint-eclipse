@@ -167,7 +167,7 @@ public class SonarLintHttpClientOkHttpImpl implements HttpClient {
           var source = response.body().source();
           try (var buffer = new Buffer()) {
             while (!source.exhausted()) {
-              long count = source.read(buffer, 8192);
+              var count = source.read(buffer, 8192);
               messageConsumer.accept(buffer.readUtf8(count));
             }
           } catch (IOException e) {

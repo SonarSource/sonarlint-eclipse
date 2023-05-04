@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
+import java.util.Optional;
 import org.eclipse.jgit.annotations.Nullable;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
@@ -127,5 +128,10 @@ public class WrappedTrackable implements Trackable {
   @Override
   public List<QuickFix> getQuickFix() {
     return trackable.getQuickFix();
+  }
+
+  @Override
+  public Optional<String> getRuleDescriptionContextKey() {
+    return trackable.getRuleDescriptionContextKey();
   }
 }

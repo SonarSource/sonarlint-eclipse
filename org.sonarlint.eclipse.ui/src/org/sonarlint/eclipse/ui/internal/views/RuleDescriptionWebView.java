@@ -140,13 +140,12 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
   }
 
   private void showRuleDescription(IMarker element) {
-    String ruleKey;
-    try {
-      ruleKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR).toString();
-    } catch (CoreException e) {
-      SonarLintLogger.get().error("Unable to open rule description", e);
+    var ruleKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, null);
+    if (ruleKey == null) {
+      SonarLintLogger.get().error("No rule key on marker");
       return;
     }
+    var ruleDescriptionContextKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, null);
 
     var issuable = Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
     var project = issuable.getProject();

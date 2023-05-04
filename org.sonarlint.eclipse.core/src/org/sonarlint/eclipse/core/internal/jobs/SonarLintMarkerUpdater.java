@@ -243,6 +243,7 @@ public class SonarLintMarkerUpdater {
       setMarkerViewUtilsAttributes(issuable, marker);
 
       marker.setAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, taintIssue.getRuleKey());
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, taintIssue.getRuleDescriptionContextKey());
       marker.setAttribute(IMarker.SEVERITY, SonarLintGlobalConfiguration.getMarkerSeverity());
 
       marker.setAttribute(IMarker.MESSAGE, taintIssue.getMessage());
@@ -280,6 +281,7 @@ public class SonarLintMarkerUpdater {
     var existingAttributes = marker.getAttributes();
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, trackable.getRuleDescriptionContextKey().orElse(null));
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.SEVERITY, SonarLintGlobalConfiguration.getMarkerSeverity());
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.MESSAGE, trackable.getMessage());
