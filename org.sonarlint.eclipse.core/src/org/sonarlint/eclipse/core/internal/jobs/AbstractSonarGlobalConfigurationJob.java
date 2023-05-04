@@ -19,31 +19,14 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-
-/** Base class for all jobs running at a project level */
-public abstract class AbstractSonarProjectJob extends AbstractSonarJob {
-  private final ISonarLintProject project;
-  private final SonarLintProjectConfiguration config;
-
-  public AbstractSonarProjectJob(String title, ISonarLintProject project) {
+/** Base class for all jobs running at a Eclipse global configuration level */
+public abstract class AbstractSonarGlobalConfigurationJob extends AbstractSonarJob {
+  public AbstractSonarGlobalConfigurationJob(String title) {
     super(title);
-    this.project = project;
-    this.config = SonarLintCorePlugin.loadConfig(project);
-  }
-
-  protected ISonarLintProject getProject() {
-    return project;
-  }
-
-  public SonarLintProjectConfiguration getProjectConfig() {
-    return config;
   }
 
   @Override
   public final boolean belongsTo(Object family) {
-    return "org.sonarlint.eclipse.projectJob".equals(family);
+    return "org.sonarlint.eclipse.globalConfigurationJob".equals(family);
   }
 }
