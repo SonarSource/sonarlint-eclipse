@@ -36,6 +36,7 @@ import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeLifecycleListener;
 import org.sonarlint.eclipse.core.internal.jobs.GlobalLogOutput;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.SonarLintBackendImpl;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
@@ -82,7 +83,7 @@ public class SonarLintBackendService {
 
     var sqConnections = buildSqConnectionDtos();
     var scConnections = buildScConnectionDtos();
-    
+
     backend.initialize(new InitializeParams(
       new HostInfoDto(getIdeName()),
       "eclipse",
@@ -97,7 +98,7 @@ public class SonarLintBackendService {
       scConnections,
       null,
       true,
-      Map.of(),
+      SonarLintGlobalConfiguration.buildStandaloneRulesConfig(),
       true,
       false,
       false));
