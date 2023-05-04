@@ -49,6 +49,7 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
   public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocations";
   public static final String SONAR_MARKER_QUICK_FIXES_ATTR = "quickfixes";
+  public static final String SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR = "rulecontextkey";
 
   public static final Set<String> SONARLINT_PRIMARY_MARKER_IDS = Set.of(
     SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, SonarLintCorePlugin.MARKER_REPORT_ID, SonarLintCorePlugin.MARKER_TAINT_ID);
@@ -93,7 +94,7 @@ public final class MarkerUtils {
       return null;
     }
 
-    int lineDelimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
+    var lineDelimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
 
     return new Position(startLineStartOffset, length - lineDelimiterLength);
   }

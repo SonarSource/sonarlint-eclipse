@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
+import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
@@ -87,5 +88,7 @@ public interface Trackable {
   List<Flow> getFlows();
 
   List<QuickFix> getQuickFix();
+
+  Optional<String> getRuleDescriptionContextKey();
 
 }

@@ -138,6 +138,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     var markers = processTrackable(trackable);
     assertThat(markers).hasSize(1);
     assertThat(markers[0].getAttribute(IMarker.PRIORITY)).isEqualTo(priority);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR)).isNull();
     assertThat(markers[0].getAttribute(IMarker.SEVERITY)).isEqualTo(eclipseSeverity);
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR)).isEqualTo(severity);
     assertThat(markers[0].getAttribute(IMarker.MESSAGE)).isEqualTo(message);
@@ -158,6 +159,18 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
     assertThat(markers[0].getAttribute(IMarker.CHAR_START)).isEqualTo(78);
     assertThat(markers[0].getAttribute(IMarker.CHAR_END)).isEqualTo(88);
+  }
+
+  @Test
+  public void test_marker_of_trackable_with_rule_context() throws Exception {
+    var trackable = newMockTrackable();
+
+    when(trackable.getRuleDescriptionContextKey()).thenReturn(Optional.of("struts"));
+
+    var markers = processTrackable(trackable);
+    assertThat(markers).hasSize(1);
+
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR)).isEqualTo("struts");
   }
 
   @Test
