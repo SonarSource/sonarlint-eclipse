@@ -60,16 +60,6 @@ public class SonarLintGlobalConfiguration {
   public static final int PREF_MARKER_SEVERITY_DEFAULT = IMarker.SEVERITY_INFO;
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
   public static final String PREF_FILE_EXCLUSIONS = "fileExclusions"; //$NON-NLS-1$
-  /**
-   * @deprecated replaced by {@link #PREF_RULES_CONFIG}
-   */
-  @Deprecated
-  public static final String PREF_RULE_EXCLUSIONS = "ruleExclusions"; //$NON-NLS-1$
-  /**
-   * @deprecated replaced by {@link #PREF_RULES_CONFIG}
-   */
-  @Deprecated
-  public static final String PREF_RULE_INCLUSIONS = "ruleInclusions"; //$NON-NLS-1$
   public static final String PREF_RULES_CONFIG = "rulesConfig"; //$NON-NLS-1$
   public static final String PREF_DEFAULT = ""; //$NON-NLS-1$
   public static final String PREF_TEST_FILE_REGEXPS = "testFileRegexps"; //$NON-NLS-1$
@@ -194,10 +184,6 @@ public class SonarLintGlobalConfiguration {
       .collect(toList());
   }
 
-  public static void setExcludedRules(Collection<RuleKey> excludedRules) {
-    setPreferenceString(PREF_RULE_EXCLUSIONS, serializeRuleKeyList(excludedRules));
-  }
-
   public static Collection<RuleKey> getIncludedRules() {
     return readRulesConfig().stream()
       .filter(RuleConfig::isActive)
@@ -205,37 +191,9 @@ public class SonarLintGlobalConfiguration {
       .collect(toList());
   }
 
-  public static void setIncludedRules(Collection<RuleKey> includedRules) {
-    setPreferenceString(PREF_RULE_INCLUSIONS, serializeRuleKeyList(includedRules));
-  }
-
-  private static Set<RuleKey> deserializeRuleKeyList(@Nullable String property) {
-    return Stream.of(StringUtils.split(property, ";"))
-      .map(RuleKey::parse)
-      .collect(Collectors.toSet());
   }
 
   public static Set<RuleConfig> readRulesConfig() {
-    var instancePreferenceNode = getInstancePreferenceNode();
-    try {
-      if (!instancePreferenceNode.nodeExists(PREF_RULES_CONFIG)) {
-        var result = new ArrayList<RuleConfig>();
-        // Migration
-        if (List.of(instancePreferenceNode.keys()).contains(PREF_RULE_EXCLUSIONS)) {
-          deserializeRuleKeyList(getPreferenceString(PREF_RULE_EXCLUSIONS)).stream().map(r -> new RuleConfig(r.toString(), false)).forEach(result::add);
-          instancePreferenceNode.remove(PREF_RULE_EXCLUSIONS);
-        }
-        if (List.of(instancePreferenceNode.keys()).contains(PREF_RULE_INCLUSIONS)) {
-          deserializeRuleKeyList(getPreferenceString(PREF_RULE_INCLUSIONS)).stream().map(r -> new RuleConfig(r.toString(), true)).forEach(result::add);
-          instancePreferenceNode.remove(PREF_RULE_INCLUSIONS);
-        }
-        if (!result.isEmpty()) {
-          saveRulesConfig(result);
-        }
-      }
-    } catch (BackingStoreException e) {
-      throw new IllegalStateException("Unable to migrate rules configuration", e);
-    }
     var json = getPreferenceString(PREF_RULES_CONFIG);
     return deserializeRulesJson(json);
   }

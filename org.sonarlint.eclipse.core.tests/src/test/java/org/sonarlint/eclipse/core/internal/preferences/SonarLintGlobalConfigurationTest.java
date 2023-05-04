@@ -80,26 +80,6 @@ public class SonarLintGlobalConfigurationTest {
   }
 
   @Test
-  public void should_serialize_and_deserialize_excluded_rules() {
-    var excludedRules = List.of(new RuleKey("squid", "S123"), new RuleKey("php", "S456"));
-
-    SonarLintGlobalConfiguration.setExcludedRules(excludedRules);
-    var deserialized = SonarLintGlobalConfiguration.getExcludedRules();
-
-    assertThat(deserialized).containsExactlyInAnyOrderElementsOf(excludedRules);
-  }
-
-  @Test
-  public void should_serialize_and_deserialize_included_rules() {
-    var includedRules = List.of(new RuleKey("squid", "S123"), new RuleKey("php", "S456"));
-
-    SonarLintGlobalConfiguration.setIncludedRules(includedRules);
-    var deserialized = SonarLintGlobalConfiguration.getIncludedRules();
-
-    assertThat(deserialized).containsExactlyInAnyOrderElementsOf(includedRules);
-  }
-
-  @Test
   public void should_exclude_rule() {
     assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEmpty();
 
@@ -110,38 +90,6 @@ public class SonarLintGlobalConfigurationTest {
     var ruleKey2 = new RuleKey("php", "S456");
     SonarLintGlobalConfiguration.disableRule(ruleKey2);
     assertThat(SonarLintGlobalConfiguration.getExcludedRules()).containsExactlyInAnyOrder(ruleKey1, ruleKey2);
-  }
-
-  @Test
-  public void should_ignore_duplicate_excluded_rules() {
-    var ruleKey1 = new RuleKey("squid", "S123");
-    var ruleKey2 = new RuleKey("php", "S456");
-    var excludedRules = List.of(ruleKey1, ruleKey2);
-    SonarLintGlobalConfiguration.setExcludedRules(excludedRules);
-
-    var orig = SonarLintGlobalConfiguration.getExcludedRules();
-
-    SonarLintGlobalConfiguration.disableRule(ruleKey1);
-    assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEqualTo(orig);
-
-    SonarLintGlobalConfiguration.disableRule(ruleKey2);
-    assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEqualTo(orig);
-  }
-
-  @Test
-  public void should_store_rule_keys_in_consistent_order() {
-    var ruleKey1 = new RuleKey("squid", "S123");
-    var ruleKey2 = new RuleKey("php", "S456");
-    var ordering1 = List.of(ruleKey1, ruleKey2);
-    var ordering2 = List.of(ruleKey2, ruleKey1);
-
-    SonarLintGlobalConfiguration.setExcludedRules(ordering1);
-    var deserialized1 = SonarLintGlobalConfiguration.getExcludedRules();
-
-    SonarLintGlobalConfiguration.setExcludedRules(ordering2);
-    var deserialized2 = SonarLintGlobalConfiguration.getExcludedRules();
-
-    assertThat(deserialized1).isEqualTo(deserialized2);
   }
 
   @Test
@@ -171,24 +119,5 @@ public class SonarLintGlobalConfigurationTest {
         tuple("inactive", false, emptyMap()),
         tuple("ruleWithParams", true, expectedParams));
 
-  }
-
-  @Test
-  public void testRulesConfigMigration() throws BackingStoreException {
-    var configNode = ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
-    configNode.put(SonarLintGlobalConfiguration.PREF_RULE_EXCLUSIONS, "Web:S5255;php:S2010");
-    configNode.put(SonarLintGlobalConfiguration.PREF_RULE_INCLUSIONS, "Web:InputWithoutLabelCheck;Web:UnclosedTagCheck");
-    configNode.flush();
-
-    var rules = SonarLintGlobalConfiguration.readRulesConfig();
-    assertThat(rules)
-      .extracting(RuleConfig::getKey, RuleConfig::isActive, RuleConfig::getParams)
-      .containsOnly(
-        tuple("Web:S5255", false, emptyMap()),
-        tuple("php:S2010", false, emptyMap()),
-        tuple("Web:InputWithoutLabelCheck", true, emptyMap()),
-        tuple("Web:UnclosedTagCheck", true, emptyMap()));
-
-    assertThat(configNode.keys()).containsOnly(SonarLintGlobalConfiguration.PREF_RULES_CONFIG);
   }
 }
