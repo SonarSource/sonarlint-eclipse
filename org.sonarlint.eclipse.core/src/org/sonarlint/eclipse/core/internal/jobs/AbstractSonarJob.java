@@ -19,31 +19,26 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.jobs.Job;
 
-/** Base class for all jobs running at a project level */
-public abstract class AbstractSonarProjectJob extends AbstractSonarJob {
-  private final ISonarLintProject project;
-  private final SonarLintProjectConfiguration config;
-
-  public AbstractSonarProjectJob(String title, ISonarLintProject project) {
+/** Base class for all SonarLint jobs, for level specific jobs see subclasses */
+public abstract class AbstractSonarJob extends Job {
+  public AbstractSonarJob(String title) {
     super(title);
-    this.project = project;
-    this.config = SonarLintCorePlugin.loadConfig(project);
-  }
-
-  protected ISonarLintProject getProject() {
-    return project;
-  }
-
-  public SonarLintProjectConfiguration getProjectConfig() {
-    return config;
+    setPriority(Job.DECORATE);
   }
 
   @Override
-  public final boolean belongsTo(Object family) {
-    return "org.sonarlint.eclipse.projectJob".equals(family);
+  public final IStatus run(final IProgressMonitor monitor) {
+    try {
+      return doRun(monitor);
+    } catch (CoreException e) {
+      return e.getStatus();
+    }
   }
+
+  protected abstract IStatus doRun(final IProgressMonitor monitor) throws CoreException;
 }
