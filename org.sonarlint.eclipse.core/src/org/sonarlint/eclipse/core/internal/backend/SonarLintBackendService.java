@@ -176,7 +176,7 @@ public class SonarLintBackendService {
     return getBackend()
       .getRulesService()
       .getStandaloneRuleDetails(new GetStandaloneRuleDescriptionParams(ruleKey))
-      .get(500, TimeUnit.MILLISECONDS);
+      .get();
   }
 
   /**
@@ -195,7 +195,7 @@ public class SonarLintBackendService {
     return getBackend()
       .getRulesService()
       .getEffectiveRuleDetails(new GetEffectiveRuleDetailsParams(ConfigScopeSynchronizer.getConfigScopeId(project), ruleKey, contextKey))
-      .get(500, TimeUnit.MILLISECONDS);
+      .get();
   }
 
   public void stop() {

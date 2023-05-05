@@ -42,13 +42,14 @@ public class DisplayGlobalConfigurationRuleDescriptionJob extends AbstractSonarG
 
   @Override
   protected IStatus doRun(IProgressMonitor monitor) throws CoreException {
-    Display.getDefault().syncExec(() -> {
-      try {
-        browser.updateRule(SonarLintBackendService.get().getStandaloneRuleDetails(ruleKey));
-      } catch (Exception e) {
-        SonarLintLogger.get().error("Unable to display global configuration rule description for rule " + ruleKey, e);
-      }
-    });
+    try {
+      // Getting the CompletableFuture<...> object before running the UI update to not block the UI thread
+      var ruleDetails = SonarLintBackendService.get().getStandaloneRuleDetails(ruleKey);
+      Display.getDefault().syncExec(() -> browser.updateRule(ruleDetails));
+    } catch (Exception e) {
+      SonarLintLogger.get().error("Unable to display global configuration rule description for rule " + ruleKey, e);
+      Display.getDefault().syncExec(browser::clearRule);
+    }
 
     return Status.OK_STATUS;
   }
