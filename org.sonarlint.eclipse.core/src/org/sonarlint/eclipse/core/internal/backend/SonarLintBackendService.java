@@ -163,35 +163,17 @@ public class SonarLintBackendService {
     return ideName;
   }
 
-  /**
-   *  Get the rules details (global configuration)
-   *
-   *  @param ruleKey identifier of the rule
-   *  @return
-   *  @throws InterruptedException
-   *  @throws ExecutionException
-   *  @throws TimeoutException
-   */
-  public GetStandaloneRuleDescriptionResponse getStandaloneRuleDetails(String ruleKey) throws InterruptedException, ExecutionException, TimeoutException {
+  /** Get the rules details (global configuration) */
+  public GetStandaloneRuleDescriptionResponse getStandaloneRuleDetails(String ruleKey) throws InterruptedException, ExecutionException {
     return getBackend()
       .getRulesService()
       .getStandaloneRuleDetails(new GetStandaloneRuleDescriptionParams(ruleKey))
       .get();
   }
 
-  /**
-   *  Get the rules details (project configuration, maybe connected mode)
-   *
-   *  @param project current project
-   *  @param ruleKey identifier of the rule
-   *  @param contextKey identifier of the possible connection
-   *  @return
-   *  @throws InterruptedException
-   *  @throws ExecutionException
-   *  @throws TimeoutException
-   */
-  public GetEffectiveRuleDetailsResponse getEffectiveRuleDetails(ISonarLintProject project, String ruleKey, String contextKey)
-    throws InterruptedException, ExecutionException, TimeoutException {
+  /** Get the rules details (project configuration, maybe connected mode) */
+  public GetEffectiveRuleDetailsResponse getEffectiveRuleDetails(ISonarLintProject project, String ruleKey, @Nullable String contextKey)
+    throws InterruptedException, ExecutionException {
     return getBackend()
       .getRulesService()
       .getEffectiveRuleDetails(new GetEffectiveRuleDetailsParams(ConfigScopeSynchronizer.getConfigScopeId(project), ruleKey, contextKey))
