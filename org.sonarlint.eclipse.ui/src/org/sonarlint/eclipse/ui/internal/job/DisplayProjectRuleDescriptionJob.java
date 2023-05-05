@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
@@ -37,7 +38,7 @@ public class DisplayProjectRuleDescriptionJob extends AbstractSonarProjectJob {
   private final String contextKey;
   private final SonarLintRuleBrowser browser;
 
-  public DisplayProjectRuleDescriptionJob(ISonarLintProject project, String ruleKey, String contextKey, SonarLintRuleBrowser browser) {
+  public DisplayProjectRuleDescriptionJob(ISonarLintProject project, String ruleKey, @Nullable String contextKey, SonarLintRuleBrowser browser) {
     super("Fetching rule description for rule '" + ruleKey + "'...", project);
     this.project = project;
     this.ruleKey = ruleKey;
