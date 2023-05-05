@@ -50,8 +50,13 @@ public class DisplayProjectRuleDescriptionJob extends AbstractSonarProjectJob {
     Display.getDefault().syncExec(() -> {
       try {
         browser.updateRule(SonarLintBackendService.get().getEffectiveRuleDetails(project, ruleKey, contextKey));
-      } catch (Exception e) {
-        SonarLintLogger.get().error("Unable to display project rule description for rule " + ruleKey, e);
+      } catch (Exception ignored) {
+        try {
+          // TODO: Inform the user that the rule description cannot be loaded from the connection!
+          browser.updateRule(SonarLintBackendService.get().getStandaloneRuleDetails(ruleKey));
+        } catch (Exception e) {
+          SonarLintLogger.get().error("Unable to display project rule description for rule " + ruleKey, e);
+        }
       }
     });
 

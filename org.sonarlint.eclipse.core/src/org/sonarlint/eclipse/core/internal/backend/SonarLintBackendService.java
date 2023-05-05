@@ -170,12 +170,13 @@ public class SonarLintBackendService {
    *  @return
    *  @throws InterruptedException
    *  @throws ExecutionException
+   *  @throws TimeoutException
    */
-  public GetStandaloneRuleDescriptionResponse getStandaloneRuleDetails(String ruleKey) throws InterruptedException, ExecutionException {
+  public GetStandaloneRuleDescriptionResponse getStandaloneRuleDetails(String ruleKey) throws InterruptedException, ExecutionException, TimeoutException {
     return getBackend()
       .getRulesService()
       .getStandaloneRuleDetails(new GetStandaloneRuleDescriptionParams(ruleKey))
-      .get();
+      .get(500, TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -187,13 +188,14 @@ public class SonarLintBackendService {
    *  @return
    *  @throws InterruptedException
    *  @throws ExecutionException
+   *  @throws TimeoutException
    */
   public GetEffectiveRuleDetailsResponse getEffectiveRuleDetails(ISonarLintProject project, String ruleKey, String contextKey)
-    throws InterruptedException, ExecutionException {
+    throws InterruptedException, ExecutionException, TimeoutException {
     return getBackend()
       .getRulesService()
       .getEffectiveRuleDetails(new GetEffectiveRuleDetailsParams(ConfigScopeSynchronizer.getConfigScopeId(project), ruleKey, contextKey))
-      .get();
+      .get(500, TimeUnit.MILLISECONDS);
   }
 
   public void stop() {
