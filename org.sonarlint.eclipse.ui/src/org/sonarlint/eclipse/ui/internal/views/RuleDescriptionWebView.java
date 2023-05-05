@@ -40,8 +40,8 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.job.AsyncDisplayRuleDescriptionJob;
+import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
-import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 
 /**
  * Display details of a rule in a web browser
@@ -59,19 +59,19 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
    */
   private IMarker lastSelection;
 
-  private SonarLintRuleBrowser browser;
+  private RuleDetailsPanel ruleDetailsPanel;
 
   @Override
   public void createPartControl(Composite parent) {
     createToolbar();
-    browser = new SonarLintRuleBrowser(parent, true);
+    ruleDetailsPanel = new RuleDetailsPanel(parent, true);
 
     startListeningForSelectionChanges();
   }
 
   @Override
   public final void setFocus() {
-    browser.setFocus();
+    ruleDetailsPanel.setFocus();
   }
 
   private void createToolbar() {
@@ -129,7 +129,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
   }
 
   private void clear() {
-    browser.updateRule(null);
+    ruleDetailsPanel.updateRule(null);
   }
 
   @Override
@@ -152,10 +152,10 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
 
     var resolvedBindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
     if (resolvedBindingOpt.isPresent()) {
-      new AsyncDisplayRuleDescriptionJob(project, resolvedBindingOpt.get(), ruleKey, browser).schedule();
+      new AsyncDisplayRuleDescriptionJob(project, resolvedBindingOpt.get(), ruleKey, ruleDetailsPanel).schedule();
     } else {
       var ruleDetails = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getRuleDescription(ruleKey);
-      browser.updateRule(ruleDetails);
+      ruleDetailsPanel.updateRule(ruleDetails);
     }
 
   }

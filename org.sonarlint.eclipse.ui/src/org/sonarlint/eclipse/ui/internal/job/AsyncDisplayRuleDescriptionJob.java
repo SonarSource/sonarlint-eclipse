@@ -29,18 +29,18 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.AbstractSonarProjectJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
+import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
 
 public class AsyncDisplayRuleDescriptionJob extends AbstractSonarProjectJob {
   private final ResolvedBinding binding;
   private final String ruleKey;
-  private final SonarLintRuleBrowser browser;
+  private final RuleDetailsPanel ruleDetailsPanel;
 
-  public AsyncDisplayRuleDescriptionJob(ISonarLintProject project, ResolvedBinding binding, String ruleKey, SonarLintRuleBrowser browser) {
+  public AsyncDisplayRuleDescriptionJob(ISonarLintProject project, ResolvedBinding binding, String ruleKey, RuleDetailsPanel ruleDetailsPanel) {
     super("Fetching rule description for rule '" + ruleKey + "'...", project);
     this.binding = binding;
     this.ruleKey = ruleKey;
-    this.browser = browser;
+    this.ruleDetailsPanel = ruleDetailsPanel;
   }
 
   @Override
@@ -48,7 +48,7 @@ public class AsyncDisplayRuleDescriptionJob extends AbstractSonarProjectJob {
     try {
       var ruleDetails = binding.getEngineFacade().getRuleDescription(ruleKey, binding.getProjectBinding().projectKey()).get(1, TimeUnit.MINUTES);
       if (ruleDetails != null) {
-        Display.getDefault().syncExec(() -> browser.updateRule(ruleDetails));
+        Display.getDefault().syncExec(() -> ruleDetailsPanel.updateRule(ruleDetails));
       } else {
         SonarLintLogger.get().error("Cannot fetch rule description for rule" + ruleKey);
       }

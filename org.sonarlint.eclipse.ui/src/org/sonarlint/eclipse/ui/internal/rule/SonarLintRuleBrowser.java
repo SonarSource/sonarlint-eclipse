@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.util;
+package org.sonarlint.eclipse.ui.internal.rule;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
@@ -33,8 +33,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
+import org.sonarlint.eclipse.ui.internal.util.SonarLintWebView;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
@@ -44,7 +44,7 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
 
   private RuleDetails ruleDetails;
 
-  public SonarLintRuleBrowser(Composite parent, boolean useEditorFontSize) {
+  SonarLintRuleBrowser(Composite parent, boolean useEditorFontSize) {
     super(parent, useEditorFontSize);
   }
 
@@ -53,8 +53,6 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
     if (ruleDetails == null) {
       return "<small><em>(No rules selected)</em></small>";
     } else {
-      var ruleName = ruleDetails.getName();
-      var ruleKey = ruleDetails.getKey();
       var htmlDescription = ruleDetails.getHtmlDescription();
       if (ruleDetails instanceof ConnectedRuleDetails) {
         var extendedDescription = ((ConnectedRuleDetails) ruleDetails).getExtendedDescription();
@@ -66,19 +64,7 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
       if (ruleDetails instanceof StandaloneRuleDetails) {
         ruleDetailsMarkup = "<div>" + renderRuleParams((StandaloneRuleDetails) ruleDetails) + "</div>";
       }
-      var type = ruleDetails.getType();
-      var typeImg64 = getAsBase64(SonarLintImages.getTypeImage(type));
-      var severity = ruleDetails.getDefaultSeverity();
-      var severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
-      return "<h1><span class=\"rulename\">"
-        + escapeHTML(ruleName) + "</span><span class=\"rulekey\"> (" + ruleKey + ")</span></h1>"
-        + "<div class=\"typeseverity\">"
-        + "<img class=\"typeicon\" alt=\"" + type + "\" src=\"data:image/gif;base64," + typeImg64 + "\">"
-        + "<span>" + clean(type.name()) + "</span>"
-        + "<img class=\"severityicon\" alt=\"" + severity + "\" src=\"data:image/gif;base64," + severityImg64 + "\">"
-        + "<span>" + clean(severity.name()) + "</span>"
-        + "</div>"
-        + htmlDescription
+      return htmlDescription
         + ruleDetailsMarkup;
     }
   }
