@@ -22,16 +22,23 @@ package org.sonarlint.eclipse.ui.internal.rule;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 
+/**
+ *  Panel containing the rule title, details and description
+ *
+ *  | Rule title                                                         |  -> StyledText
+ *  | Type icon | Type label | Severity icon | Severity label | Rule key |  -> RuleHeaderPanel
+ *  | Rule description                                                   |  -> SonarLintRuleBrowser
+ */
 public class RuleDetailsPanel extends Composite {
 
-  private final Label ruleNameLabel;
+  private final StyledText ruleNameLabel;
   private final RuleHeaderPanel ruleHeaderPanel;
   private final SonarLintRuleBrowser description;
   private final Font nameLabelFont;
@@ -42,11 +49,16 @@ public class RuleDetailsPanel extends Composite {
     var layout = new GridLayout(1, false);
     setLayout(layout);
 
-    ruleNameLabel = new Label(this, SWT.LEFT);
+    ruleNameLabel = new StyledText(this, SWT.LEFT);
     ruleNameLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-    var nameLabelFontDescriptor = FontDescriptor.createFrom(ruleNameLabel.getFont()).setStyle(SWT.BOLD).increaseHeight(3);
-    nameLabelFont = nameLabelFontDescriptor.createFont(ruleNameLabel.getDisplay());
+    nameLabelFont = FontDescriptor.createFrom(ruleNameLabel.getFont())
+      .setStyle(SWT.BOLD)
+      .increaseHeight(3)
+      .createFont(ruleNameLabel.getDisplay());
     ruleNameLabel.setFont(nameLabelFont);
+    ruleNameLabel.setEditable(false);
+    ruleNameLabel.setCaret(null);
+    ruleNameLabel.setBackground(getBackground());
 
     ruleHeaderPanel = new RuleHeaderPanel(this);
     ruleHeaderPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));

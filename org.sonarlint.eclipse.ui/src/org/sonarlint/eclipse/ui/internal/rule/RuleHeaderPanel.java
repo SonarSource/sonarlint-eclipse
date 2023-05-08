@@ -32,35 +32,38 @@ import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 
+/** Rule header containing all information excluding the title and description */
 public class RuleHeaderPanel extends Composite {
-
   private final Label ruleTypeIcon;
-  private final Label ruleTypeLabel;
+  private final StyledText ruleTypeLabel;
   private final Label ruleSeverityIcon;
-  private final Label ruleSeverityLabel;
+  private final StyledText ruleSeverityLabel;
   private final StyledText ruleKeyLabel;
 
   public RuleHeaderPanel(Composite parent) {
     super(parent, SWT.NONE);
-
-    var layout = new GridLayout(5, false);
-    setLayout(layout);
+    setLayout(new GridLayout(5, false));
 
     ruleTypeIcon = new Label(this, SWT.LEFT);
 
-    ruleTypeLabel = new Label(this, SWT.LEFT);
+    ruleTypeLabel = new StyledText(this, SWT.LEFT);
+    ruleTypeLabel.setEditable(false);
+    ruleTypeLabel.setCaret(null);
+    ruleTypeLabel.setBackground(getBackground());
 
     ruleSeverityIcon = new Label(this, SWT.LEFT);
 
-    ruleSeverityLabel = new Label(this, SWT.LEFT);
-    // Take all the space so that rulekey label is aligned to the right
+    // element including "filler" for rule key to be always at the end of line
+    ruleSeverityLabel = new StyledText(this, SWT.LEFT);
+    ruleSeverityLabel.setEditable(false);
+    ruleSeverityLabel.setCaret(null);
+    ruleSeverityLabel.setBackground(getBackground());
     ruleSeverityLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-    // Use a styledtext to allow copy/paste
-    ruleKeyLabel = new StyledText(this, SWT.NONE);
+    ruleKeyLabel = new StyledText(this, SWT.RIGHT);
     ruleKeyLabel.setEditable(false);
-    // Set caret null this will hide caret
     ruleKeyLabel.setCaret(null);
+    ruleKeyLabel.setBackground(getBackground());
   }
 
   public void clear() {
@@ -71,12 +74,18 @@ public class RuleHeaderPanel extends Composite {
     ruleSeverityLabel.setText("");
   }
 
+  /** Updating the panel requires each element to adjust to the grid again */
   public void update(String ruleKey, RuleType type, IssueSeverity severity) {
     ruleTypeIcon.setImage(SonarLintImages.getTypeImage(type));
+    ruleTypeIcon.requestLayout();
     ruleTypeLabel.setText(clean(type.toString()));
+    ruleTypeLabel.requestLayout();
     ruleKeyLabel.setText(ruleKey);
+    ruleKeyLabel.requestLayout();
     ruleSeverityIcon.setImage(SonarLintImages.getSeverityImage(severity));
+    ruleSeverityIcon.requestLayout();
     ruleSeverityLabel.setText(clean(severity.toString()));
+    ruleSeverityLabel.requestLayout();
   }
 
   private static String clean(@Nullable String txt) {
