@@ -83,8 +83,12 @@ public class RuleDetailsPanel extends Composite {
       ruleNameLabel.setText("No rules selected");
       ruleHeaderPanel.clear();
     }
-    description.updateRule(ruleDetails);
-    // requestLayout();
+    description.clearRule();
   }
 
+  public void clearRule() {
+    ruleNameLabel.setText("No rules selected");
+    ruleHeaderPanel.clear();
+    description.clearRule();
+  }
 }

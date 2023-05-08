@@ -123,12 +123,8 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     if (marker != null) {
       showRuleDescription(marker);
     } else {
-      browser.clearRule();
+      ruleDetailsPanel.clearRule();
     }
-  }
-
-  private void clear() {
-    ruleDetailsPanel.updateRule(null);
   }
   
   @Override

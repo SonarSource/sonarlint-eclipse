@@ -65,7 +65,6 @@ import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
 import org.sonarlint.eclipse.ui.internal.job.DisplayGlobalConfigurationRuleDescriptionJob;
-import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.commons.Language;

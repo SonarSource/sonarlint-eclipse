@@ -42,6 +42,7 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetail
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionResponse;
+import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
 public class SonarLintRuleBrowser extends SonarLintWebView {
   private Either<GetEffectiveRuleDetailsResponse, GetStandaloneRuleDescriptionResponse> ruleDetailsResponse;
