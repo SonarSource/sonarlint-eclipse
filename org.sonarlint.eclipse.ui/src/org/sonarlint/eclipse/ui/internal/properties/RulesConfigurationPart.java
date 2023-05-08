@@ -64,6 +64,8 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
+import org.sonarlint.eclipse.ui.internal.job.DisplayGlobalConfigurationRuleDescriptionJob;
+import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.commons.Language;
@@ -212,7 +214,9 @@ public class RulesConfigurationPart {
     paramPanel.dispose();
     if (selectedNode instanceof RuleDetailsWrapper) {
       var wrapper = (RuleDetailsWrapper) selectedNode;
-      ruleDetailsPanel.updateRule(wrapper.ruleDetails);
+
+      // Update global configuration rule description asynchronous
+      new DisplayGlobalConfigurationRuleDescriptionJob(wrapper.ruleDetails.getKey(), ruleDetailsPanel).schedule();
       if (wrapper.ruleDetails.paramDetails().isEmpty()) {
         paramPanel = emptyRuleParam();
       } else {

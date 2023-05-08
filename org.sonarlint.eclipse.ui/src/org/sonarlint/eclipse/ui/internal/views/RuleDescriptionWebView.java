@@ -35,12 +35,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.job.AsyncDisplayRuleDescriptionJob;
 import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
+import org.sonarlint.eclipse.ui.internal.job.DisplayProjectRuleDescriptionJob;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
 /**
@@ -124,14 +123,14 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     if (marker != null) {
       showRuleDescription(marker);
     } else {
-      clear();
+      browser.clearRule();
     }
   }
 
   private void clear() {
     ruleDetailsPanel.updateRule(null);
   }
-
+  
   @Override
   public void dispose() {
     stopListeningForSelectionChanges();
@@ -147,17 +146,8 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     }
     var ruleDescriptionContextKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, null);
 
-    var issuable = Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
-    var project = issuable.getProject();
-
-    var resolvedBindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
-    if (resolvedBindingOpt.isPresent()) {
-      new AsyncDisplayRuleDescriptionJob(project, resolvedBindingOpt.get(), ruleKey, ruleDetailsPanel).schedule();
-    } else {
-      var ruleDetails = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getRuleDescription(ruleKey);
-      ruleDetailsPanel.updateRule(ruleDetails);
-    }
-
+    // Update project rule description asynchronous
+    new DisplayProjectRuleDescriptionJob(Adapters.adapt(element.getResource(), ISonarLintIssuable.class).getProject(), ruleKey, ruleDescriptionContextKey, ruleDetailsPanel).schedule();
   }
 
   @Override
