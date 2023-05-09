@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.ui.internal.rule;
 import java.util.Locale;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -35,35 +34,26 @@ import org.sonarsource.sonarlint.core.commons.RuleType;
 /** Rule header containing all information excluding the title and description */
 public class RuleHeaderPanel extends Composite {
   private final Label ruleTypeIcon;
-  private final StyledText ruleTypeLabel;
+  private final CopyableLabel ruleTypeLabel;
   private final Label ruleSeverityIcon;
-  private final StyledText ruleSeverityLabel;
-  private final StyledText ruleKeyLabel;
+  private final CopyableLabel ruleSeverityLabel;
+  private final CopyableLabel ruleKeyLabel;
 
   public RuleHeaderPanel(Composite parent) {
     super(parent, SWT.NONE);
     setLayout(new GridLayout(5, false));
 
-    ruleTypeIcon = new Label(this, SWT.LEFT);
+    ruleTypeIcon = new Label(this, SWT.NONE);
 
-    ruleTypeLabel = new StyledText(this, SWT.LEFT);
-    ruleTypeLabel.setEditable(false);
-    ruleTypeLabel.setCaret(null);
-    ruleTypeLabel.setBackground(getBackground());
+    ruleTypeLabel = new CopyableLabel(this);
 
-    ruleSeverityIcon = new Label(this, SWT.LEFT);
+    ruleSeverityIcon = new Label(this, SWT.NONE);
 
     // element including "filler" for rule key to be always at the end of line
-    ruleSeverityLabel = new StyledText(this, SWT.LEFT);
-    ruleSeverityLabel.setEditable(false);
-    ruleSeverityLabel.setCaret(null);
-    ruleSeverityLabel.setBackground(getBackground());
+    ruleSeverityLabel = new CopyableLabel(this);
     ruleSeverityLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-    ruleKeyLabel = new StyledText(this, SWT.RIGHT);
-    ruleKeyLabel.setEditable(false);
-    ruleKeyLabel.setCaret(null);
-    ruleKeyLabel.setBackground(getBackground());
+    ruleKeyLabel = new CopyableLabel(this);
   }
 
   public void clearRule() {

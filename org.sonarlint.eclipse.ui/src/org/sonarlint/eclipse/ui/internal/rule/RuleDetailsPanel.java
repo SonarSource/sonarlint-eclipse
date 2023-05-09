@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.rule;
 
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -38,7 +37,7 @@ import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleD
  */
 public class RuleDetailsPanel extends Composite {
 
-  private final StyledText ruleNameLabel;
+  private final CopyableLabel ruleNameLabel;
   private final RuleHeaderPanel ruleHeaderPanel;
   private final SonarLintRuleBrowser description;
   private final Font nameLabelFont;
@@ -49,16 +48,13 @@ public class RuleDetailsPanel extends Composite {
     var layout = new GridLayout(1, false);
     setLayout(layout);
 
-    ruleNameLabel = new StyledText(this, SWT.LEFT);
+    ruleNameLabel = new CopyableLabel(this);
     ruleNameLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
     nameLabelFont = FontDescriptor.createFrom(ruleNameLabel.getFont())
       .setStyle(SWT.BOLD)
       .increaseHeight(3)
       .createFont(ruleNameLabel.getDisplay());
     ruleNameLabel.setFont(nameLabelFont);
-    ruleNameLabel.setEditable(false);
-    ruleNameLabel.setCaret(null);
-    ruleNameLabel.setBackground(getBackground());
 
     ruleHeaderPanel = new RuleHeaderPanel(this);
     ruleHeaderPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
