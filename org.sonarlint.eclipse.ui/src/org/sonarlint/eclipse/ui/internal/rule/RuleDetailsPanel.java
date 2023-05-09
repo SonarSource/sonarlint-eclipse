@@ -19,14 +19,23 @@
  */
 package org.sonarlint.eclipse.ui.internal.rule;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.FontDescriptor;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.ui.internal.util.SonarLintWebView;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionResponse;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleSplitDescriptionDto;
 
 /**
  *  Panel containing the rule title, details and description
@@ -39,11 +48,15 @@ public class RuleDetailsPanel extends Composite {
 
   private final CopyableLabel ruleNameLabel;
   private final RuleHeaderPanel ruleHeaderPanel;
-  private final SonarLintRuleBrowser description;
+  @Nullable
+  private Composite descriptionComposite;
   private final Font nameLabelFont;
+  private final boolean useEditorFontSize;
 
   public RuleDetailsPanel(Composite parent, boolean useEditorFontSize) {
     super(parent, SWT.NONE);
+    this.useEditorFontSize = useEditorFontSize;
+    setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
     var layout = new GridLayout(1, false);
     setLayout(layout);
@@ -58,9 +71,6 @@ public class RuleDetailsPanel extends Composite {
 
     ruleHeaderPanel = new RuleHeaderPanel(this);
     ruleHeaderPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-
-    description = new SonarLintRuleBrowser(this, useEditorFontSize);
-    description.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
     // TODO params
   }
@@ -77,7 +87,7 @@ public class RuleDetailsPanel extends Composite {
     ruleNameLabel.setText(ruleDefinition.getName());
     ruleNameLabel.requestLayout();
     ruleHeaderPanel.update(ruleDefinition.getKey(), ruleDefinition.getType(), ruleDefinition.getDefaultSeverity());
-    description.updateRule(getStandaloneRuleDescriptionResponse.getDescription());
+    updateDescription(getStandaloneRuleDescriptionResponse.getDescription());
   }
 
   public void updateRule(GetEffectiveRuleDetailsResponse getEffectiveRuleDetailsResponse) {
@@ -86,13 +96,60 @@ public class RuleDetailsPanel extends Composite {
     ruleNameLabel.setText(details.getName());
     ruleNameLabel.requestLayout();
     ruleHeaderPanel.update(details.getKey(), details.getType(), details.getSeverity());
-    description.updateRule(details.getDescription());
+    updateDescription(details.getDescription());
+  }
+
+  private void updateDescription(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
+    if (descriptionComposite != null && !descriptionComposite.isDisposed()) {
+      descriptionComposite.dispose();
+    }
+    descriptionComposite = new Composite(this, SWT.NONE);
+    descriptionComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    descriptionComposite.setLayout(new GridLayout());
+
+    description.map(monolithDescription -> {
+      var browser = new SonarLintWebView(descriptionComposite, useEditorFontSize);
+      browser.setHtmlBody(monolithDescription.getHtmlContent());
+      browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+      return null;
+    },
+      withSections -> {
+        var intro = withSections.getIntroductionHtmlContent();
+        if (StringUtils.isNotBlank(intro)) {
+          var introBrowser = new SonarLintWebView(descriptionComposite, useEditorFontSize);
+          introBrowser.setHtmlBody(intro);
+          introBrowser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+        }
+
+        final var tabFolder = new TabFolder(descriptionComposite, SWT.NONE);
+        tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+
+        for (var tab : withSections.getTabs()) {
+          var tabItem = new TabItem(tabFolder, SWT.NONE);
+          tabItem.setText(tab.getTitle());
+          var browser = new SonarLintWebView(tabFolder, useEditorFontSize);
+          tab.getContent().map(nonContextual -> {
+            browser.setHtmlBody(nonContextual.getHtmlContent());
+            return null;
+          }, contextual -> {
+            return null;
+          });
+
+          tabItem.setControl(browser);
+        }
+
+        return null;
+      });
+
+    this.requestLayout();
   }
 
   public void clearRule() {
     ruleNameLabel.setText("No rule selected");
     ruleNameLabel.requestLayout();
     ruleHeaderPanel.clearRule();
-    description.clearRule();
+    if (descriptionComposite != null && !descriptionComposite.isDisposed()) {
+      descriptionComposite.dispose();
+    }
   }
 }
