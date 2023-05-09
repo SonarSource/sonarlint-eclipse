@@ -223,7 +223,7 @@ public class RulesConfigurationPart {
         paramPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
       }
     } else {
-      ruleDetailsPanel.updateRule(null);
+      ruleDetailsPanel.clearRule();
       paramPanel = emptyRuleParam();
     }
     paramPanel.requestLayout();

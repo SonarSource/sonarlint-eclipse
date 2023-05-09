@@ -36,16 +36,13 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintWebView;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionResponse;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleSplitDescriptionDto;
 
 public class SonarLintRuleBrowser extends SonarLintWebView {
-  private Either<GetEffectiveRuleDetailsResponse, GetStandaloneRuleDescriptionResponse> ruleDetailsResponse;
+  private Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description;
 
   SonarLintRuleBrowser(Composite parent, boolean useEditorFontSize) {
     super(parent, useEditorFontSize);
@@ -53,47 +50,16 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
 
   @Override
   protected String body() {
-    if (ruleDetailsResponse == null) {
-      return "<small><em>(No rules selected)</em></small>";
+    if (description == null) {
+      return "";
     }
 
-    if (ruleDetailsResponse.isLeft()) {
-      // Educational rule description
-      var ruleDetails = ruleDetailsResponse.getLeft().details();
-
-      var type = ruleDetails.getType();
-      var typeImg64 = getAsBase64(SonarLintImages.getTypeImage(type));
-      var severity = ruleDetails.getSeverity();
-      var severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
-
-      return "<h1><span class=\"rulename\">"
-        + escapeHTML(ruleDetails.getName()) + "</span><span class=\"rulekey\"> (" + ruleDetails.getKey() + ")</span></h1>"
-        + "<div class=\"typeseverity\">"
-        + "<img class=\"typeicon\" alt=\"" + type + "\" src=\"data:image/gif;base64," + typeImg64 + "\">"
-        + "<span>" + clean(type.name()) + "</span>"
-        + "<img class=\"severityicon\" alt=\"" + severity + "\" src=\"data:image/gif;base64," + severityImg64 + "\">"
-        + "<span>" + clean(severity.name()) + "</span>"
-        + "</div>"
-        + "NOT YET IMPLEMENTED EDUCATIONAL RULE DESCRIPTION";
+    if (description.isLeft()) {
+      // We have to check if it's one of the "fake" tabbed description and handle it the same way as below!
+      return description.getLeft().getHtmlContent();
     }
 
-    // Monolithic rule description
-    var ruleDetails = ruleDetailsResponse.getRight().getRuleDefinition();
-
-    var type = ruleDetails.getType();
-    var typeImg64 = getAsBase64(SonarLintImages.getTypeImage(type));
-    var severity = ruleDetails.getDefaultSeverity();
-    var severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
-
-    return "<h1><span class=\"rulename\">"
-      + escapeHTML(ruleDetails.getName()) + "</span><span class=\"rulekey\"> (" + ruleDetails.getKey() + ")</span></h1>"
-      + "<div class=\"typeseverity\">"
-      + "<img class=\"typeicon\" alt=\"" + type + "\" src=\"data:image/gif;base64," + typeImg64 + "\">"
-      + "<span>" + clean(type.name()) + "</span>"
-      + "<img class=\"severityicon\" alt=\"" + severity + "\" src=\"data:image/gif;base64," + severityImg64 + "\">"
-      + "<span>" + clean(severity.name()) + "</span>"
-      + "</div>"
-      + "NOT YET IMPLEMENTED MONOLITHIC RULE DESCRIPTION";
+    return "<small><em>RuleSplitDescriptionDto NOT IMPLEMENTED YET!</em></small>";
   }
 
   private static String renderRuleParams(StandaloneRuleDetails ruleDetails) {
@@ -138,18 +104,13 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
     return Optional.of(ruleConfig.get().getParams().get(paramName));
   }
 
-  public void updateRule(GetStandaloneRuleDescriptionResponse getStandaloneRuleDescriptionResponse) {
-    this.ruleDetailsResponse = Either.forRight(getStandaloneRuleDescriptionResponse);
-    refresh();
-  }
-
-  public void updateRule(GetEffectiveRuleDetailsResponse getEffectiveRuleDetailsResponse) {
-    this.ruleDetailsResponse = Either.forLeft(getEffectiveRuleDetailsResponse);
+  public void updateRule(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
+    this.description = description;
     refresh();
   }
 
   public void clearRule() {
-    this.ruleDetailsResponse = null;
+    this.description = null;
     refresh();
   }
 

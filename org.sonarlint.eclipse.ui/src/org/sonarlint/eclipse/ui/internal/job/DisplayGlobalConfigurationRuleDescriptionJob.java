@@ -45,8 +45,7 @@ public class DisplayGlobalConfigurationRuleDescriptionJob extends AbstractSonarG
     try {
       // Getting the CompletableFuture<...> object before running the UI update to not block the UI thread
       var ruleDetails = SonarLintBackendService.get().getStandaloneRuleDetails(ruleKey);
-      //Display.getDefault().syncExec(() -> ruleDetailsPanel.updateRule(ruleDetails));
-      Display.getDefault().syncExec(() -> ruleDetailsPanel.updateRule(null));
+      Display.getDefault().syncExec(() -> ruleDetailsPanel.updateRule(ruleDetails));
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to display global configuration rule description for rule " + ruleKey, e);
       Display.getDefault().syncExec(ruleDetailsPanel::clearRule);

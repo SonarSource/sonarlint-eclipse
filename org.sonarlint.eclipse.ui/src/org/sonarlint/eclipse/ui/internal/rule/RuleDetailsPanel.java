@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.rule;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -27,7 +26,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionResponse;
 
 /**
  *  Panel containing the rule title, details and description
@@ -75,20 +75,28 @@ public class RuleDetailsPanel extends Composite {
     super.dispose();
   }
 
-  public void updateRule(@Nullable RuleDetails ruleDetails) {
-    if (ruleDetails != null) {
-      ruleNameLabel.setText(ruleDetails.getName());
-      ruleHeaderPanel.update(ruleDetails.getKey(), ruleDetails.getType(), ruleDetails.getDefaultSeverity());
-    } else {
-      ruleNameLabel.setText("No rules selected");
-      ruleHeaderPanel.clear();
-    }
-    description.clearRule();
+  public void updateRule(GetStandaloneRuleDescriptionResponse getStandaloneRuleDescriptionResponse) {
+    var ruleDefinition = getStandaloneRuleDescriptionResponse.getRuleDefinition();
+
+    ruleNameLabel.setText(ruleDefinition.getName());
+    ruleNameLabel.requestLayout();
+    ruleHeaderPanel.update(ruleDefinition.getKey(), ruleDefinition.getType(), ruleDefinition.getDefaultSeverity());
+    description.updateRule(getStandaloneRuleDescriptionResponse.getDescription());
+  }
+
+  public void updateRule(GetEffectiveRuleDetailsResponse getEffectiveRuleDetailsResponse) {
+    var details = getEffectiveRuleDetailsResponse.details();
+
+    ruleNameLabel.setText(details.getName());
+    ruleNameLabel.requestLayout();
+    ruleHeaderPanel.update(details.getKey(), details.getType(), details.getSeverity());
+    description.updateRule(details.getDescription());
   }
 
   public void clearRule() {
-    ruleNameLabel.setText("No rules selected");
-    ruleHeaderPanel.clear();
+    ruleNameLabel.setText("No rule selected");
+    ruleNameLabel.requestLayout();
+    ruleHeaderPanel.clearRule();
     description.clearRule();
   }
 }

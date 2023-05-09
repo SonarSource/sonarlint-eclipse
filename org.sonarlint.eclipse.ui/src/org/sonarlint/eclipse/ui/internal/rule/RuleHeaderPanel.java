@@ -66,7 +66,7 @@ public class RuleHeaderPanel extends Composite {
     ruleKeyLabel.setBackground(getBackground());
   }
 
-  public void clear() {
+  public void clearRule() {
     ruleTypeIcon.setImage(null);
     ruleTypeLabel.setText("");
     ruleKeyLabel.setText("");
