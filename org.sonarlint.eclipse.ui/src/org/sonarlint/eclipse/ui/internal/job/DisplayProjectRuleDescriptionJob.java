@@ -29,21 +29,21 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.AbstractSonarProjectJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
+import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
 
 /** Update "web browser" view for the project rule description (maybe context based on connection) in a separate thread */
 public class DisplayProjectRuleDescriptionJob extends AbstractSonarProjectJob {
   private final ISonarLintProject project;
   private final String ruleKey;
   private final String contextKey;
-  private final SonarLintRuleBrowser browser;
+  private final RuleDetailsPanel ruleDetailsPanel;
 
-  public DisplayProjectRuleDescriptionJob(ISonarLintProject project, String ruleKey, @Nullable String contextKey, SonarLintRuleBrowser browser) {
+  public DisplayProjectRuleDescriptionJob(ISonarLintProject project, String ruleKey, @Nullable String contextKey, RuleDetailsPanel ruleDetailsPanel) {
     super("Fetching rule description for rule '" + ruleKey + "'...", project);
     this.project = project;
     this.ruleKey = ruleKey;
     this.contextKey = contextKey;
-    this.browser = browser;
+    this.ruleDetailsPanel = ruleDetailsPanel;
   }
 
   @Override
@@ -51,10 +51,10 @@ public class DisplayProjectRuleDescriptionJob extends AbstractSonarProjectJob {
     try {
       // Getting the CompletableFuture<...> object before running the UI update to not block the UI thread
       var ruleDetails = SonarLintBackendService.get().getEffectiveRuleDetails(project, ruleKey, contextKey);
-      Display.getDefault().syncExec(() -> browser.updateRule(ruleDetails));
+      Display.getDefault().syncExec(() -> ruleDetailsPanel.updateRule(ruleDetails));
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to display project rule description for rule " + ruleKey, e);
-      Display.getDefault().syncExec(browser::clearRule);
+      Display.getDefault().syncExec(ruleDetailsPanel::clearRule);
     }
 
     return Status.OK_STATUS;
