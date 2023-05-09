@@ -39,8 +39,8 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.job.DisplayProjectRuleDescriptionJob;
+import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
-import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 
 /**
  * Display details of a rule in a web browser
@@ -58,19 +58,19 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
    */
   private IMarker lastSelection;
 
-  private SonarLintRuleBrowser browser;
+  private RuleDetailsPanel ruleDetailsPanel;
 
   @Override
   public void createPartControl(Composite parent) {
     createToolbar();
-    browser = new SonarLintRuleBrowser(parent, true);
+    ruleDetailsPanel = new RuleDetailsPanel(parent, true);
 
     startListeningForSelectionChanges();
   }
 
   @Override
   public final void setFocus() {
-    browser.setFocus();
+    ruleDetailsPanel.setFocus();
   }
 
   private void createToolbar() {
@@ -123,7 +123,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     if (marker != null) {
       showRuleDescription(marker);
     } else {
-      browser.clearRule();
+      ruleDetailsPanel.clearRule();
     }
   }
 
@@ -140,10 +140,14 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
       SonarLintLogger.get().error("No rule key on marker");
       return;
     }
-    var ruleDescriptionContextKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, null);
 
     // Update project rule description asynchronous
-    new DisplayProjectRuleDescriptionJob(Adapters.adapt(element.getResource(), ISonarLintIssuable.class).getProject(), ruleKey, null, browser).schedule();
+    new DisplayProjectRuleDescriptionJob(Adapters.adapt(
+      element.getResource(), ISonarLintIssuable.class).getProject(),
+      ruleKey,
+      element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, null),
+      ruleDetailsPanel)
+        .schedule();
   }
 
   @Override

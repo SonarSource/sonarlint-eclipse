@@ -27,17 +27,17 @@ import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.AbstractSonarGlobalConfigurationJob;
-import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
+import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
 
-/** Update "web browser" view for the global configuration rule description in a separate thread */
+/** Update rule details view for the global configuration rule description in a separate thread */
 public class DisplayGlobalConfigurationRuleDescriptionJob extends AbstractSonarGlobalConfigurationJob {
   private final String ruleKey;
-  private final SonarLintRuleBrowser browser;
+  private final RuleDetailsPanel ruleDetailsPanel;
 
-  public DisplayGlobalConfigurationRuleDescriptionJob(String ruleKey, SonarLintRuleBrowser browser) {
+  public DisplayGlobalConfigurationRuleDescriptionJob(String ruleKey, RuleDetailsPanel ruleDetailsPanel) {
     super("Fetching rule description for rule '" + ruleKey + "'...");
     this.ruleKey = ruleKey;
-    this.browser = browser;
+    this.ruleDetailsPanel = ruleDetailsPanel;
   }
 
   @Override
@@ -45,10 +45,10 @@ public class DisplayGlobalConfigurationRuleDescriptionJob extends AbstractSonarG
     try {
       // Getting the CompletableFuture<...> object before running the UI update to not block the UI thread
       var ruleDetails = SonarLintBackendService.get().getStandaloneRuleDetails(ruleKey);
-      Display.getDefault().syncExec(() -> browser.updateRule(ruleDetails));
+      Display.getDefault().syncExec(() -> ruleDetailsPanel.updateRule(ruleDetails));
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to display global configuration rule description for rule " + ruleKey, e);
-      Display.getDefault().syncExec(browser::clearRule);
+      Display.getDefault().syncExec(ruleDetailsPanel::clearRule);
     }
 
     return Status.OK_STATUS;
