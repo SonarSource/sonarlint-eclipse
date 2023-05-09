@@ -64,7 +64,7 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.job.DisplayGlobalConfigurationRuleDescriptionJob;
-import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
+import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.commons.Language;
@@ -79,7 +79,7 @@ public class RulesConfigurationPart {
   private Map<Language, List<RuleDetailsWrapper>> ruleDetailsWrappersByLanguage = Map.of();
 
   private final RuleDetailsWrapperFilter filter;
-  private SonarLintRuleBrowser ruleBrowser;
+  private RuleDetailsPanel ruleDetailsPanel;
   private CheckBoxFilteredTree tree;
   private Composite paramPanelParent;
   private Composite paramPanel;
@@ -110,7 +110,7 @@ public class RulesConfigurationPart {
     createTreeViewer(filterAndTree);
 
     horizontalSplitter = new SashForm(verticalSplitter, SWT.VERTICAL);
-    ruleBrowser = new SonarLintRuleBrowser(horizontalSplitter, false);
+    ruleDetailsPanel = new RuleDetailsPanel(horizontalSplitter, false);
     paramPanelParent = new Composite(horizontalSplitter, SWT.NONE);
     paramPanelParent.setLayout(new GridLayout());
     paramPanel = emptyRuleParam();
@@ -215,8 +215,7 @@ public class RulesConfigurationPart {
       var wrapper = (RuleDetailsWrapper) selectedNode;
 
       // Update global configuration rule description asynchronous
-      new DisplayGlobalConfigurationRuleDescriptionJob(wrapper.ruleDetails.getKey(), ruleBrowser).schedule();
-
+      new DisplayGlobalConfigurationRuleDescriptionJob(wrapper.ruleDetails.getKey(), ruleDetailsPanel).schedule();
       if (wrapper.ruleDetails.paramDetails().isEmpty()) {
         paramPanel = emptyRuleParam();
       } else {
@@ -224,7 +223,7 @@ public class RulesConfigurationPart {
         paramPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
       }
     } else {
-      ruleBrowser.clearRule();
+      ruleDetailsPanel.clearRule();
       paramPanel = emptyRuleParam();
     }
     paramPanel.requestLayout();
