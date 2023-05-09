@@ -47,7 +47,7 @@ import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_BACKGROUND_COLOR;
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROUND_COLOR;
 
-public abstract class SonarLintWebView extends Composite implements Listener, IPropertyChangeListener {
+public class SonarLintWebView extends Composite implements Listener, IPropertyChangeListener {
 
   private static final RGB DEFAULT_ACTIVE_LINK_COLOR = new RGB(0, 0, 128);
   private static final RGB DEFAULT_LINK_COLOR = new RGB(0, 0, 255);
@@ -66,8 +66,9 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
   private Color activeLinkColor;
   private Font defaultFont;
   private final boolean useEditorFontSize;
+  private String htmlBody = "";
 
-  protected SonarLintWebView(Composite parent, boolean useEditorFontSize) {
+  public SonarLintWebView(Composite parent, boolean useEditorFontSize) {
     super(parent, SWT.NONE);
     this.useEditorFontSize = useEditorFontSize;
     var layout = new GridLayout(1, false);
@@ -98,8 +99,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
       }
       new Label(this, SWT.WRAP).setText("Unable to create SWT Browser:\n " + e.getMessage());
     }
-
-    refresh();
+    reload();
   }
 
   private void openSonarLintPreferences() {
@@ -155,7 +155,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
     }
     if (shouldRefresh) {
       // Reload HTML to possibly apply theme change
-      getDisplay().asyncExec(this::refresh);
+      getDisplay().asyncExec(this::reload);
     }
   }
 
@@ -244,14 +244,17 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
     return JFaceColors.getActiveHyperlinkText(this.getDisplay());
   }
 
-  public void refresh() {
+  public void setHtmlBody(String htmlBody) {
+    this.htmlBody = htmlBody;
     if (browser == null) {
       return;
     }
-    browser.setText("<!doctype html><html><head>" + css() + "</head><body>" + body() + "</body></html>");
+    reload();
   }
 
-  protected abstract String body();
+  private void reload() {
+    browser.setText("<!doctype html><html><head>" + css() + "</head><body>" + htmlBody + "</body></html>");
+  }
 
   public static String escapeHTML(String s) {
     var out = new StringBuilder(Math.max(16, s.length()));

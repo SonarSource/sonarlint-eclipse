@@ -118,65 +118,22 @@ public class HotspotsView extends ViewPart {
     var riskDescriptionTab = new TabItem(tabFolder, SWT.NONE);
     riskDescriptionTab.setText("What's the risk?");
     riskDescriptionTab.setToolTipText("Risk decription");
-    riskDescriptionTab.setControl(createRiskDescriptionControl(tabFolder));
+    riskDescriptionBrowser = new SonarLintWebView(tabFolder, true);
+    riskDescriptionTab.setControl(riskDescriptionBrowser);
 
     var vulnerabilityDescriptionTab = new TabItem(tabFolder, SWT.NONE);
     vulnerabilityDescriptionTab.setText("Are you at risk?");
     vulnerabilityDescriptionTab.setToolTipText("Vulnerability decription");
-    vulnerabilityDescriptionTab.setControl(createVulnerabilityDescriptionControl(tabFolder));
+    vulnerabilityDescriptionBrowser = new SonarLintWebView(tabFolder, true);
+    vulnerabilityDescriptionTab.setControl(vulnerabilityDescriptionBrowser);
 
     var fixRecommendationsTab = new TabItem(tabFolder, SWT.NONE);
     fixRecommendationsTab.setText("How can you fix it?");
     fixRecommendationsTab.setToolTipText("Recommendations");
-    fixRecommendationsTab.setControl(createFixRecommendationsControl(tabFolder));
+    fixRecommendationsBrowser = new SonarLintWebView(tabFolder, true);
+    fixRecommendationsTab.setControl(fixRecommendationsBrowser);
 
     return form;
-  }
-
-  private Control createRiskDescriptionControl(Composite parent) {
-    riskDescriptionBrowser = new SonarLintWebView(parent, true) {
-
-      @Override
-      protected String body() {
-        var hotspot = getSelectedHotspot();
-        if (hotspot == null) {
-          return NO_SECURITY_HOTSPOTS_SELECTED;
-        }
-        return wrapInDiv(hotspot.getRule().getRiskDescription());
-      }
-
-    };
-    return riskDescriptionBrowser;
-  }
-
-  private Control createVulnerabilityDescriptionControl(Composite parent) {
-    vulnerabilityDescriptionBrowser = new SonarLintWebView(parent, true) {
-
-      @Override
-      protected String body() {
-        var hotspot = getSelectedHotspot();
-        if (hotspot == null) {
-          return NO_SECURITY_HOTSPOTS_SELECTED;
-        }
-        return wrapInDiv(hotspot.getRule().getVulnerabilityDescription());
-      }
-    };
-    return vulnerabilityDescriptionBrowser;
-  }
-
-  private Control createFixRecommendationsControl(Composite parent) {
-    fixRecommendationsBrowser = new SonarLintWebView(parent, true) {
-
-      @Override
-      protected String body() {
-        var hotspot = getSelectedHotspot();
-        if (hotspot == null) {
-          return NO_SECURITY_HOTSPOTS_SELECTED;
-        }
-        return wrapInDiv(hotspot.getRule().getFixRecommendations());
-      }
-    };
-    return fixRecommendationsBrowser;
   }
 
   private static String wrapInDiv(String content) {
@@ -214,9 +171,16 @@ public class HotspotsView extends ViewPart {
     });
 
     hotspotViewer.addPostSelectionChangedListener(event -> {
-      riskDescriptionBrowser.refresh();
-      vulnerabilityDescriptionBrowser.refresh();
-      fixRecommendationsBrowser.refresh();
+      var hotspot = getSelectedHotspot();
+      if (hotspot == null) {
+        riskDescriptionBrowser.setHtmlBody(NO_SECURITY_HOTSPOTS_SELECTED);
+        vulnerabilityDescriptionBrowser.setHtmlBody(NO_SECURITY_HOTSPOTS_SELECTED);
+        fixRecommendationsBrowser.setHtmlBody(NO_SECURITY_HOTSPOTS_SELECTED);
+      } else {
+        riskDescriptionBrowser.setHtmlBody(wrapInDiv(hotspot.getRule().getRiskDescription()));
+        vulnerabilityDescriptionBrowser.setHtmlBody(wrapInDiv(hotspot.getRule().getVulnerabilityDescription()));
+        fixRecommendationsBrowser.setHtmlBody(wrapInDiv(hotspot.getRule().getFixRecommendations()));
+      }
     });
 
     hotspotViewer.addDoubleClickListener(event -> openMarkerOfSelectedHotspot());
