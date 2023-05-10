@@ -49,11 +49,14 @@ public class RuleHeaderPanel extends Composite {
 
     ruleSeverityIcon = new Label(this, SWT.NONE);
 
-    // element including "filler" for rule key to be always at the end of line
     ruleSeverityLabel = new CopyableLabel(this);
-    ruleSeverityLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-    ruleKeyLabel = new CopyableLabel(this);
+    var ruleKeyFiller = new Composite(this, SWT.NONE);
+    ruleKeyFiller.setLayout(new GridLayout(1, false));
+    ruleKeyFiller.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+    ruleKeyLabel = new CopyableLabel(ruleKeyFiller);
+    ruleKeyLabel.setLayoutData(new GridData(SWT.END, SWT.FILL, true, true));
   }
 
   public void clearRule() {
