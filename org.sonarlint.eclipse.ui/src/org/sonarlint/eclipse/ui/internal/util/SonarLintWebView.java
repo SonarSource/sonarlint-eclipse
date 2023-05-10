@@ -37,6 +37,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -44,7 +45,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
 
-import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_BACKGROUND_COLOR;
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROUND_COLOR;
 
 public class SonarLintWebView extends Composite implements Listener, IPropertyChangeListener {
@@ -138,7 +138,7 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
       SonarLintWebView.this.foreground = newFg;
       shouldRefresh = true;
     }
-    var newBg = getBgColor();
+    var newBg = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
     if (!Objects.equals(newBg, background)) {
       SonarLintWebView.this.background = newBg;
       shouldRefresh = true;
@@ -214,15 +214,6 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
       + ".rule-params th { text-align: left; vertical-align: top }"
       + ".rule-params td { text-align: left; vertical-align: top }"
       + "</style>";
-  }
-
-  private Color getBgColor() {
-    var colorRegistry = JFaceResources.getColorRegistry();
-    var bg = colorRegistry.get(INFORMATION_BACKGROUND_COLOR);
-    if (bg == null) {
-      bg = JFaceColors.getInformationViewerBackgroundColor(this.getDisplay());
-    }
-    return bg;
   }
 
   private Color getFgColor() {

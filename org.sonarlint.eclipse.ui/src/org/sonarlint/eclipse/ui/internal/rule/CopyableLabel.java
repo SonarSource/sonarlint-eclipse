@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.rule;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 
 /**
  *  Workaround for a Label that supports selection and copy to clipboard
@@ -29,9 +30,10 @@ import org.eclipse.swt.widgets.Composite;
 public class CopyableLabel extends StyledText {
 
   public CopyableLabel(Composite parent) {
-    super(parent, SWT.NONE);
+    super(parent, SWT.READ_ONLY);
     setEditable(false);
     setCaret(null);
+    setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
   }
 
 }

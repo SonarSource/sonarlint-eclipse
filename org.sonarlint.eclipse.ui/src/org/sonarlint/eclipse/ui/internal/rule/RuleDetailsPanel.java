@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -55,6 +56,7 @@ public class RuleDetailsPanel extends Composite {
   public RuleDetailsPanel(Composite parent, boolean useEditorFontSize) {
     super(parent, SWT.NONE);
     this.useEditorFontSize = useEditorFontSize;
+    setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
     var layout = new GridLayout(1, false);
     setLayout(layout);
