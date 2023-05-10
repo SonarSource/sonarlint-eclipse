@@ -68,7 +68,7 @@ public class RuleHeaderPanel extends Composite {
   }
 
   /** Updating the panel requires each element to adjust to the grid again */
-  public void update(String ruleKey, RuleType type, IssueSeverity severity) {
+  public void updateRule(String ruleKey, RuleType type, IssueSeverity severity) {
     ruleTypeIcon.setImage(SonarLintImages.getTypeImage(type));
     ruleTypeIcon.requestLayout();
     ruleTypeLabel.setText(clean(type.toString()));
