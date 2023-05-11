@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.rule;
 
+import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
@@ -103,7 +104,10 @@ public class RuleDescriptionPanel extends Composite {
           for (var contextualTab : contextualDescription.getContextualSections()) {
             // context description
             var contextualTabItem = new TabItem(contextualTabFolder, SWT.NONE);
-            contextualTabItem.setText(contextualTab.getContextKey());
+            contextualTabItem.setText(contextualTab.getDisplayName());
+            if (Objects.equals(contextualDescription.getDefaultContextKey(), contextualTab.getContextKey())) {
+              contextualTabFolder.setSelection(contextualTabItem);
+            }
 
             var contextualTabTitle = new StyledText(contextualTabFolder, SWT.NONE);
             contextualTabTitle.setText(contextualTab.getDisplayName());
