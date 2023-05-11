@@ -49,12 +49,14 @@ public class DisplayProjectRuleDescriptionJob extends AbstractSonarProjectJob {
   @Override
   protected IStatus doRun(IProgressMonitor monitor) throws CoreException {
     try {
+      Display.getDefault().syncExec(ruleDetailsPanel::displayLoadingIndicator);
       // Getting the CompletableFuture<...> object before running the UI update to not block the UI thread
       var ruleDetails = SonarLintBackendService.get().getEffectiveRuleDetails(project, ruleKey, contextKey);
       Display.getDefault().syncExec(() -> ruleDetailsPanel.updateRule(ruleDetails));
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to display project rule description for rule " + ruleKey, e);
       Display.getDefault().syncExec(ruleDetailsPanel::clearRule);
+      return Status.error(e.getMessage(), e);
     }
 
     return Status.OK_STATUS;

@@ -160,8 +160,13 @@ public class RuleDetailsPanel extends Composite {
     ruleDescriptionPanel.updateRule(description);
   }
 
+  public void displayLoadingIndicator() {
+    ruleNameLabel.setText("Loading...");
+    ruleNameLabel.requestLayout();
+  }
+
   public void clearRule() {
-    ruleNameLabel.setText("No rule selected");
+    ruleNameLabel.setText("No rules selected");
     ruleNameLabel.requestLayout();
     ruleHeaderPanel.clearRule();
 
