@@ -19,15 +19,28 @@
  */
 package org.sonarlint.eclipse.ui.internal.rule;
 
+import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.FontDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.EffectiveRuleDetailsDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionResponse;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleSplitDescriptionDto;
 
 /**
  *  Panel containing the rule title, details and description
@@ -43,6 +56,8 @@ public class RuleDetailsPanel extends Composite {
   @Nullable
   private RuleDescriptionPanel ruleDescriptionPanel;
   private final boolean useEditorFontSize;
+  @Nullable
+  private Group ruleParamsPanel;
 
   public RuleDetailsPanel(Composite parent, boolean useEditorFontSize) {
     super(parent, SWT.NONE);
@@ -64,7 +79,6 @@ public class RuleDetailsPanel extends Composite {
     ruleHeaderPanel = new RuleHeaderPanel(this);
     ruleHeaderPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 
-    // TODO params
   }
 
   public void updateRule(GetStandaloneRuleDescriptionResponse getStandaloneRuleDescriptionResponse) {
@@ -74,12 +88,8 @@ public class RuleDetailsPanel extends Composite {
     ruleNameLabel.requestLayout();
     ruleHeaderPanel.updateRule(ruleDefinition.getKey(), ruleDefinition.getType(), ruleDefinition.getDefaultSeverity());
 
-    if (ruleDescriptionPanel != null && !ruleDescriptionPanel.isDisposed()) {
-      ruleDescriptionPanel.dispose();
-    }
-    ruleDescriptionPanel = new RuleDescriptionPanel(this, this.useEditorFontSize);
-    ruleDescriptionPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    ruleDescriptionPanel.updateRule(getStandaloneRuleDescriptionResponse.getDescription());
+    updateHtmlDescription(getStandaloneRuleDescriptionResponse.getDescription());
+
     requestLayout();
   }
 
@@ -90,13 +100,64 @@ public class RuleDetailsPanel extends Composite {
     ruleNameLabel.requestLayout();
     ruleHeaderPanel.updateRule(details.getKey(), details.getType(), details.getSeverity());
 
+    updateHtmlDescription(details.getDescription());
+
+    updateParameters(details);
+
+    requestLayout();
+  }
+
+  private void updateParameters(EffectiveRuleDetailsDto details) {
+    if (ruleParamsPanel != null && !ruleParamsPanel.isDisposed()) {
+      ruleParamsPanel.dispose();
+    }
+    if (!details.getParams().isEmpty()) {
+      ruleParamsPanel = new Group(this, SWT.NONE);
+      ruleParamsPanel.setText("Parameters");
+      ruleParamsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+
+      ruleParamsPanel.setLayout(new GridLayout(2, false));
+
+      var link = new Link(ruleParamsPanel, SWT.NONE);
+      link.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
+      link.setText("Parameter values can be set in <a>Rules Configuration</a>. In connected mode, server-side configuration overrides local settings.");
+      link.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DIALOG_FONT));
+      link.addSelectionListener(new SelectionAdapter() {
+
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+          PreferencesUtil.createPreferenceDialogOn(
+            getShell(), RulesConfigurationPage.RULES_CONFIGURATION_ID,
+            new String[] {RulesConfigurationPage.RULES_CONFIGURATION_ID}, null).open();
+        }
+      });
+
+      for (var param : details.getParams()) {
+        var paramDefaultValue = param.getDefaultValue();
+        var defaultValue = paramDefaultValue != null ? paramDefaultValue : "(none)";
+        var currentValue = param.getValue();
+        var paramName = new Label(ruleParamsPanel, SWT.BOLD);
+        paramName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+        paramName.setFont(JFaceResources.getFontRegistry().getBold(
+          JFaceResources.DIALOG_FONT));
+        paramName.setText(param.getName());
+        paramName.setToolTipText(param.getDescription());
+        var paramValue = new Label(ruleParamsPanel, SWT.LEFT);
+        var paramValueLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+        paramValueLayoutData.horizontalIndent = 5;
+        paramValue.setLayoutData(paramValueLayoutData);
+        paramValue.setText(currentValue + (!Objects.equals(defaultValue, currentValue) ? (" (default: " + defaultValue + ")") : ""));
+      }
+    }
+  }
+
+  private void updateHtmlDescription(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
     if (ruleDescriptionPanel != null && !ruleDescriptionPanel.isDisposed()) {
       ruleDescriptionPanel.dispose();
     }
     ruleDescriptionPanel = new RuleDescriptionPanel(this, this.useEditorFontSize);
     ruleDescriptionPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    ruleDescriptionPanel.updateRule(details.getDescription());
-    requestLayout();
+    ruleDescriptionPanel.updateRule(description);
   }
 
   public void clearRule() {
