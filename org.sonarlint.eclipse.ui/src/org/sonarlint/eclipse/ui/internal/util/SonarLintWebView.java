@@ -20,6 +20,10 @@
 package org.sonarlint.eclipse.ui.internal.util;
 
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
@@ -31,6 +35,8 @@ import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
@@ -64,6 +70,8 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
   private Font defaultFont;
   private final boolean useEditorFontSize;
   private String htmlBody = "";
+  private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+  private ScheduledFuture<?> scheduledFuture;
 
   public SonarLintWebView(Composite parent, boolean useEditorFontSize) {
     super(parent, SWT.NONE);
@@ -82,19 +90,36 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
       // Replace browser's built-in context menu with none
       browser.setMenu(new Menu(parent.getShell(), SWT.NONE));
       updateColorAndFontCache();
+      this.defaultFont = getDefaultFont();
+
       parent.getDisplay().addListener(SWT.Settings, this);
       JFaceResources.getColorRegistry().addListener(this);
-      this.defaultFont = getDefaultFont();
       JFaceResources.getFontRegistry().addListener(this);
 
       this.addDisposeListener(e -> {
+        scheduler.shutdownNow();
         JFaceResources.getColorRegistry().removeListener(this);
         JFaceResources.getFontRegistry().removeListener(this);
-        browser.getDisplay().removeListener(SWT.Settings, this);
+        parent.getDisplay().removeListener(SWT.Settings, this);
+      });
+
+      // Hide the browser while resizing to avoid the lag
+      this.addControlListener(new ControlAdapter() {
+
+        @Override
+        public void controlResized(ControlEvent e) {
+          browser.setVisible(false);
+          if (scheduledFuture != null) {
+            scheduledFuture.cancel(true);
+          }
+          scheduledFuture = scheduler.schedule(
+            () -> browser.getDisplay().asyncExec(() -> browser.setVisible(true)),
+            300, TimeUnit.MILLISECONDS);
+        }
       });
 
     } catch (SWTError e) {
-      // Browser is probably not available but it will be partially initialized in parent
+      // Browser is probably not available but it will be partially initialized
       for (var c : this.getChildren()) {
         if (c instanceof Browser) {
           c.dispose();
@@ -159,7 +184,7 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
     }
   }
 
-  private void addLinkListener(Browser browser) {
+  private static void addLinkListener(Browser browser) {
     browser.addLocationListener(new LocationAdapter() {
       @Override
       public void changing(LocationEvent event) {
