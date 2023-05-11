@@ -41,8 +41,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
 
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROUND_COLOR;
 
@@ -107,13 +105,6 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
     reload();
   }
 
-  private void openSonarLintPreferences() {
-    var dialog = PreferencesUtil.createPreferenceDialogOn(
-      getShell(), RulesConfigurationPage.RULES_CONFIGURATION_ID,
-      new String[] {RulesConfigurationPage.RULES_CONFIGURATION_ID}, null);
-    dialog.open();
-  }
-
   @Override
   public void handleEvent(Event event) {
     updateColorAndFontCache();
@@ -160,7 +151,11 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
     }
     if (shouldRefresh) {
       // Reload HTML to possibly apply theme change
-      getDisplay().asyncExec(this::reload);
+      getDisplay().asyncExec(() -> {
+        if (!browser.isDisposed()) {
+          reload();
+        }
+      });
     }
   }
 
@@ -181,11 +176,7 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
 
         event.doit = false;
 
-        if (RulesConfigurationPage.RULES_CONFIGURATION_LINK.equals(loc)) {
-          openSonarLintPreferences();
-        } else {
-          BrowserUtils.openExternalBrowser(loc);
-        }
+        BrowserUtils.openExternalBrowser(loc);
       }
     });
   }
