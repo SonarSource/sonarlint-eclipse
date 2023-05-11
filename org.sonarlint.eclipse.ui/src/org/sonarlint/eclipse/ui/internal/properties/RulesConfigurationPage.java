@@ -38,7 +38,6 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetail
 
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
 
-  public static final String RULES_CONFIGURATION_LINK = "sonarlint://rules-configuration";
   public static final String RULES_CONFIGURATION_ID = "org.sonarlint.eclipse.ui.properties.RulesConfigurationPage";
 
   private RulesConfigurationPart rulesConfigurationPart;
