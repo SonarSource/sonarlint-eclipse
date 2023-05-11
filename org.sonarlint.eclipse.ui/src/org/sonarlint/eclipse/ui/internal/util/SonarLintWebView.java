@@ -37,7 +37,6 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -90,6 +89,12 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
       this.defaultFont = getDefaultFont();
       JFaceResources.getFontRegistry().addListener(this);
 
+      this.addDisposeListener(e -> {
+        JFaceResources.getColorRegistry().removeListener(this);
+        JFaceResources.getFontRegistry().removeListener(this);
+        browser.getDisplay().removeListener(SWT.Settings, this);
+      });
+
     } catch (SWTError e) {
       // Browser is probably not available but it will be partially initialized in parent
       for (var c : this.getChildren()) {
@@ -138,7 +143,7 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
       SonarLintWebView.this.foreground = newFg;
       shouldRefresh = true;
     }
-    var newBg = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+    var newBg = this.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
     if (!Objects.equals(newBg, background)) {
       SonarLintWebView.this.background = newBg;
       shouldRefresh = true;
@@ -299,14 +304,6 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
     } catch (Exception e) {
       return 255;
     }
-  }
-
-  @Override
-  public void dispose() {
-    super.dispose();
-    JFaceResources.getColorRegistry().removeListener(this);
-    JFaceResources.getFontRegistry().removeListener(this);
-    browser.getDisplay().removeListener(SWT.Settings, this);
   }
 
 }

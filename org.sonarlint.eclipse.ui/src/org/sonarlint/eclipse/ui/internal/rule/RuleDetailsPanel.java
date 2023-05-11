@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.ui.internal.rule;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -43,7 +42,6 @@ public class RuleDetailsPanel extends Composite {
   private final RuleHeaderPanel ruleHeaderPanel;
   @Nullable
   private RuleDescriptionPanel ruleDescriptionPanel;
-  private final Font nameLabelFont;
   private final boolean useEditorFontSize;
 
   public RuleDetailsPanel(Composite parent, boolean useEditorFontSize) {
@@ -56,22 +54,17 @@ public class RuleDetailsPanel extends Composite {
 
     ruleNameLabel = new CopyableLabel(this);
     ruleNameLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-    nameLabelFont = FontDescriptor.createFrom(ruleNameLabel.getFont())
+    var nameLabelFont = FontDescriptor.createFrom(ruleNameLabel.getFont())
       .setStyle(SWT.BOLD)
       .increaseHeight(3)
       .createFont(ruleNameLabel.getDisplay());
     ruleNameLabel.setFont(nameLabelFont);
+    ruleNameLabel.addDisposeListener(e -> nameLabelFont.dispose());
 
     ruleHeaderPanel = new RuleHeaderPanel(this);
     ruleHeaderPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 
     // TODO params
-  }
-
-  @Override
-  public void dispose() {
-    nameLabelFont.dispose();
-    super.dispose();
   }
 
   public void updateRule(GetStandaloneRuleDescriptionResponse getStandaloneRuleDescriptionResponse) {
