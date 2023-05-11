@@ -213,6 +213,21 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
       + ".rule-params .param-description p { margin: 0.1em; }"
       + ".rule-params th { text-align: left; vertical-align: top }"
       + ".rule-params td { text-align: left; vertical-align: top }"
+      + ".other-context-list {\n"
+      + "  list-style: none;\n"
+      + "}\n"
+      + "\n"
+      + ".other-context-list .do::before {\n"
+      + "  content: \"\\2713\";\n"
+      + "  color: green;\n"
+      + "  padding-right:5px;\n"
+      + "}\n"
+      + "\n"
+      + ".other-context-list .dont::before {\n"
+      + "  content: \"\\2717\";\n"
+      + "  color: red;\n"
+      + "  padding-right:5px;\n"
+      + "}"
       + "</style>";
   }
 
