@@ -42,45 +42,35 @@ public class OnTheFlyView extends AbstractMarkersSupportView {
   public OnTheFlyView() {
     super("SonarLint On-The-Fly");
   }
-  
+
   public DefaultTree getTree() {
     activate();
     return new DefaultTree(cTabItem);
   }
 
-  public List<TreeItem> getItems() {
-    activate();
-    new WaitUntil(new OnTheFlyIssuesViewMarkerIsUpdating(), TimePeriod.SHORT, false);
-    new WaitWhile(new OnTheFlyIssuesViewMarkerIsUpdating());
-    return new DefaultTree(cTabItem).getItems();
-  }
-  
-
-  public List<SonarLintIssue> getIssues(AbstractMarkerMatcher... matchers) {
+  public List<SonarLintIssueMarker> getIssues(AbstractMarkerMatcher... matchers) {
     activate();
     new WaitUntil(new OnTheFlyIssuesViewMarkerIsUpdating(), TimePeriod.SHORT, false);
     new WaitWhile(new OnTheFlyIssuesViewMarkerIsUpdating());
 
-    List<SonarLintIssue> result = new ArrayList<>();
-    result.addAll(getMarkers(matchers));
-    return result;
+    return getMarkers(matchers);
   }
-  
+
   public void selectItem(int index) {
-    activate();
-    new WaitUntil(new OnTheFlyIssuesViewMarkerIsUpdating(), TimePeriod.SHORT, false);
-    new WaitWhile(new OnTheFlyIssuesViewMarkerIsUpdating());
-    new DefaultTree(cTabItem).getItems().get(index).select();
+    getIssues().get(index).select();
   }
 
-  protected List<SonarLintIssue> getMarkers(AbstractMarkerMatcher... matchers) {
-    var filteredResult = new ArrayList<SonarLintIssue>();
+  /**
+   * Overrides {@link #getMarkers(Class, String, AbstractMarkerMatcher...)} to remove the filter on markerType that doesn't work for us.
+   */
+  private List<SonarLintIssueMarker> getMarkers(AbstractMarkerMatcher... matchers) {
+    var filteredResult = new ArrayList<SonarLintIssueMarker>();
     var markerItems = new DefaultTree(cTabItem).getItems();
     if (markerItems != null) {
       for (var markerItem : markerItems) {
         if (matchMarkerTreeItem(markerItem, matchers)) {
           try {
-            filteredResult.add(new SonarLintIssue(markerItem));
+            filteredResult.add(new SonarLintIssueMarker(markerItem));
           } catch (IllegalArgumentException | SecurityException e) {
             // if something bad happen, print stack trace and throw RedDeer Exception
             e.printStackTrace();
@@ -92,6 +82,7 @@ public class OnTheFlyView extends AbstractMarkersSupportView {
     return filteredResult;
   }
 
+  // Copied from parent since it is private
   private boolean matchMarkerTreeItem(TreeItem item, AbstractMarkerMatcher... matchers) {
     var itemFitsMatchers = true;
     if (matchers != null) {

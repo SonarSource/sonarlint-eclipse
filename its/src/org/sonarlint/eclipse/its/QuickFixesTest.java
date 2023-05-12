@@ -115,9 +115,9 @@ public class QuickFixesTest extends AbstractSonarLintTest {
     if (!menu.isEnabled()) {
       throw new WorkbenchLayerException("Quick Fix is disabled!");
     }
-    Shell[] shells = ShellLookup.getInstance().getShells();
+    var shells = ShellLookup.getInstance().getShells();
     menu.select();
-    ContentAssistantShellIsOpened caw = new ContentAssistantShellIsOpened(shells);
+    var caw = new ContentAssistantShellIsOpened(shells);
     new WaitUntil(caw);
     return new ContentAssistant(caw.getContentAssistTable());
   }
@@ -139,7 +139,7 @@ public class QuickFixesTest extends AbstractSonarLintTest {
 
     var editor = new TextEditor(FILE_NAME);
     editor.activate();
-    new OnTheFlyView().getItems().get(0).select();
+    new OnTheFlyView().selectItem(0);
     new ContextMenuItem("Quick Fix").select();
     applyFixThrough(new QuickFixWizard());
 
@@ -170,7 +170,7 @@ public class QuickFixesTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldApplyQuickFixAfterFileModifiedOnFileSystem() throws IOException {
-    Resource file = openQuickFixableFile();
+    var file = openQuickFixableFile();
     var editor = new TextEditor(FILE_NAME);
     var ioFile = ResourcesPlugin.getWorkspace().getRoot().getProject(QUICK_FIXES_PROJECT_NAME).getFile("src/hello/" + FILE_NAME).getLocation().toFile();
     Files.write(ioFile.toPath(), (PLACEHOLDER_LICENSE_HEADER + editor.getText()).getBytes());
@@ -189,7 +189,7 @@ public class QuickFixesTest extends AbstractSonarLintTest {
     new TextEditor(FILE_NAME).insertText(8, 14, "random change");
 
     var quickFixWizard = findQuickFixableMarkerInProblemsView().openQuickFix();
-    boolean quickFixProposed = new DefaultTable(quickFixWizard, 0).containsItem(QUICK_FIX_MESSAGE);
+    var quickFixProposed = new DefaultTable(quickFixWizard, 0).containsItem(QUICK_FIX_MESSAGE);
     quickFixWizard.cancel();
 
     assertThat(quickFixProposed).isFalse();
@@ -217,7 +217,7 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   }
 
   private static AbstractMarker findQuickFixableMarkerInProblemsView() {
-    AbstractMarkerMatcher[] matchers = new AbstractMarkerMatcher[] {new MarkerTypeMatcher("SonarLint On-The-Fly Issue"), new MarkerDescriptionMatcher(ISSUE_MESSAGE)};
+    var matchers = new AbstractMarkerMatcher[] {new MarkerTypeMatcher("SonarLint On-The-Fly Issue"), new MarkerDescriptionMatcher(ISSUE_MESSAGE)};
     new WaitUntil(new ProblemExists(ProblemType.WARNING, matchers));
     return new ProblemsView().getProblems(ProblemType.WARNING, matchers).get(0);
   }

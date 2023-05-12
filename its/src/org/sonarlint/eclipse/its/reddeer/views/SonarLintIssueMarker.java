@@ -22,22 +22,19 @@ package org.sonarlint.eclipse.its.reddeer.views;
 import org.eclipse.reddeer.eclipse.ui.markers.AbstractMarker;
 import org.eclipse.reddeer.eclipse.ui.views.markers.AbstractMarkersSupportView.Column;
 import org.eclipse.reddeer.swt.api.TreeItem;
+import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
 
 /**
- * SonarLintIssue represents an error or warning in Problems view.
- *
- * @author mlabuda@redhat.com
- * @author rawagner
- * @since 0.7
+ * {@link SonarLintIssueMarker} represents an item in the {@link OnTheFlyView}.
  */
-public class SonarLintIssue extends AbstractMarker {
+public class SonarLintIssueMarker extends AbstractMarker {
 
   /**
    * Creates a new problem of Problems view.
    *
    * @param item tree item of a problem
    */
-  public SonarLintIssue(TreeItem item) {
+  public SonarLintIssueMarker(TreeItem item) {
     super(item);
   }
 
@@ -62,5 +59,19 @@ public class SonarLintIssue extends AbstractMarker {
 
   public String getCreationDate() {
     return getCell("Date");
+  }
+
+  public void select() {
+    markerItem.select();
+  }
+
+  public void deactivateRule() {
+    markerItem.select();
+    new ContextMenuItem("Deactivate rule").select();
+  }
+
+  public void delete() {
+    markerItem.select();
+    new ContextMenuItem("Delete").select();
   }
 }

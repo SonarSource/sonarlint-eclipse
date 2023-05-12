@@ -24,7 +24,7 @@ import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
-import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssue;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -48,7 +48,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     var sonarlintIssues = issuesView.getIssues();
 
-    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
       .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", ""));
 
     // Change content
@@ -58,7 +58,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     sonarlintIssues = issuesView.getIssues();
 
-    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
       .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", ""),
         tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", "few seconds ago"));
   }
@@ -77,7 +77,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     var sonarlintIssues = issuesView.getIssues();
 
-    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
       .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""));
 
     // Change content
@@ -87,7 +87,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     sonarlintIssues = issuesView.getIssues();
 
-    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
       .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
         tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
 
@@ -99,7 +99,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     // Issues are still there
     sonarlintIssues = issuesView.getIssues();
 
-    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
       .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
         tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
 
@@ -109,7 +109,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     sonarlintIssues = issuesView.getIssues();
 
-    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
       .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
         tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
 

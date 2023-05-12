@@ -20,11 +20,14 @@
 package org.sonarlint.eclipse.its;
 
 import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.eclipse.ui.markers.matcher.MarkerDescriptionMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
-import org.sonarlint.eclipse.its.reddeer.conditions.RuleDescriptionViewContainsText;
+import org.sonarlint.eclipse.its.reddeer.conditions.RuleDescriptionViewIsLoaded;
+import org.sonarlint.eclipse.its.reddeer.preferences.RuleConfigurationPreferences;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
 
@@ -53,9 +56,43 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     onTheFlyView.selectItem(0);
     ruleDescriptionView.open();
 
-    new WaitUntil(new RuleDescriptionViewContainsText(ruleDescriptionView, "java:S106"));
-    assertThat(ruleDescriptionView.getContent()).contains("Sensitive data must only be logged securely");
-    assertThat(ruleDescriptionView.getContent()).contains("CERT, ERR02-J");
+    new WaitUntil(new RuleDescriptionViewIsLoaded(ruleDescriptionView));
+    var flatTextContent = ruleDescriptionView.getFlatTextContent();
+    assertThat(flatTextContent).contains("java:S106");
+    assertThat(flatTextContent).contains("Sensitive data must only be logged securely");
+    assertThat(flatTextContent).contains("CERT, ERR02-J");
+  }
+
+  @Test
+  public void openRuleDescription_with_educational_content() {
+    var ruleConfigurationPreferences = RuleConfigurationPreferences.open();
+    var monsterClassRule = ruleConfigurationPreferences.selectRule("java:S6539", "Java", "Classes should not depend on an excessive number of classes (aka Monster Class)");
+    ruleConfigurationPreferences.setRuleParameter(2);
+    ruleConfigurationPreferences.ok();
+
+    new JavaPerspective().open();
+    var ruleDescriptionView = new RuleDescriptionView();
+    ruleDescriptionView.open();
+    var onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+
+    var project = importExistingProjectIntoWorkspace("java/java-education-rule", "java-education-rule");
+
+    openFileAndWaitForAnalysisCompletion(project.getResource("src", "hello", "MonsterClass.java"));
+
+    var defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .contains(
+        tuple("Split this “Monster Class” into smaller and more specialized ones to reduce its dependencies on other classes from 3 to the maximum authorized 2 or less.", 3));
+
+    onTheFlyView.getIssues(new MarkerDescriptionMatcher(CoreMatchers.containsString("Monster Class"))).get(0).select();
+    ruleDescriptionView.open();
+
+    new WaitUntil(new RuleDescriptionViewIsLoaded(ruleDescriptionView));
+    assertThat(ruleDescriptionView.getFlatTextContent()).contains("Classes should not depend on an excessive number of classes (aka Monster Class)");
+
+    assertThat(ruleDescriptionView.getSections().getTabItemLabels()).containsExactly("Why is this an issue?", "How can I fix it?", "More Info");
   }
 
 }

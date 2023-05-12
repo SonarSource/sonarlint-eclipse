@@ -19,7 +19,16 @@
  */
 package org.sonarlint.eclipse.its.reddeer.views;
 
+import org.eclipse.reddeer.common.wait.TimePeriod;
+import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.core.condition.WidgetIsFound;
+import org.eclipse.reddeer.swt.api.Browser;
+import org.eclipse.reddeer.swt.api.StyledText;
+import org.eclipse.reddeer.swt.api.TabFolder;
+import org.eclipse.reddeer.swt.condition.PageIsLoaded;
 import org.eclipse.reddeer.swt.impl.browser.InternalBrowser;
+import org.eclipse.reddeer.swt.impl.styledtext.DefaultStyledText;
+import org.eclipse.reddeer.swt.impl.tab.DefaultTabFolder;
 import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 
 public class RuleDescriptionView extends WorkbenchView {
@@ -28,8 +37,39 @@ public class RuleDescriptionView extends WorkbenchView {
     super("SonarLint Rule Description");
   }
 
-  public String getContent() {
-    return new InternalBrowser(getCTabItem()).getText();
+  public StyledText getRuleName() {
+    return new DefaultStyledText(getCTabItem(), 0);
+  }
+
+  public StyledText getRuleType() {
+    return new DefaultStyledText(getCTabItem(), 1);
+  }
+
+  public StyledText getRuleSeverity() {
+    return new DefaultStyledText(getCTabItem(), 2);
+  }
+
+  public StyledText getRuleKey() {
+    return new DefaultStyledText(getCTabItem(), 3);
+  }
+
+  public Browser getTopBrowser() {
+    // Browser can take a while to render
+    new WaitUntil(new WidgetIsFound(org.eclipse.swt.browser.Browser.class, getCTabItem().getControl()),
+      TimePeriod.DEFAULT, false);
+    return new InternalBrowser(getCTabItem());
+  }
+
+  public TabFolder getSections() {
+    return new DefaultTabFolder(getCTabItem());
+  }
+
+  public String getFlatTextContent() {
+    new WaitUntil(new PageIsLoaded(getTopBrowser()));
+
+    return getRuleName().getText() + "\n"
+      + getRuleType().getText() + " " + getRuleSeverity().getText() + " " + getRuleKey().getText() + "\n"
+      + getTopBrowser().getText();
   }
 
 }

@@ -62,7 +62,7 @@ import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintProperties;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.PydevPackageExplorer;
 import org.sonarlint.eclipse.its.reddeer.views.ReportView;
-import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssue;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -89,7 +89,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     defaultEditor.close();
 
     // clear marker (probably a better way to do that)
-    new ContextMenu(onTheFlyView.getItems().get(0)).getItem("Delete").select();
+    onTheFlyView.getIssues().get(0).delete();
     new PushButton(new DefaultShell("Delete Selected Entries"), "Delete").click();
     new WaitUntil(new OnTheFlyViewIsEmpty(onTheFlyView));
 
@@ -97,7 +97,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var dialog = new PropertyDialog(rootProject.getName());
     dialog.open();
 
-    int analysisJobCountBefore = scheduledAnalysisJobCount.get();
+    var analysisJobCountBefore = scheduledAnalysisJobCount.get();
 
     var sonarLintProperties = new SonarLintProperties(dialog);
     dialog.select(sonarLintProperties);
@@ -296,21 +296,21 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
     assertThat(onTheFlyView.getIssues())
-      .extracting(SonarLintIssue::getDescription, SonarLintIssue::getResource)
+      .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource)
       .contains(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.php"));
 
     // SLE-342
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("foo.inc"));
 
     assertThat(onTheFlyView.getIssues())
-      .extracting(SonarLintIssue::getDescription, SonarLintIssue::getResource)
+      .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource)
       .contains(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.inc"));
   }
 
   @Test
   public void shouldAnalyseLinkedFile() throws IOException {
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("java/java-linked", "java-linked");
+    var rootProject = importExistingProjectIntoWorkspace("java/java-linked", "java-linked");
 
     var dotProject = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-linked").getLocation().toFile(), ".project");
     var content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
