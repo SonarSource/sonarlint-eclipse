@@ -22,7 +22,7 @@ package org.sonarlint.eclipse.its.reddeer.conditions;
 import java.util.List;
 import org.eclipse.reddeer.common.condition.WaitCondition;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
-import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssue;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 
 public class OnTheFlyViewIsEmpty implements WaitCondition {
   private final OnTheFlyView issuesView;
@@ -38,7 +38,7 @@ public class OnTheFlyViewIsEmpty implements WaitCondition {
   }
 
   @Override
-  public List<SonarLintIssue> getResult() {
+  public List<SonarLintIssueMarker> getResult() {
     return issuesView.getIssues();
   }
 

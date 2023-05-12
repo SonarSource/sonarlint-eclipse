@@ -71,4 +71,22 @@ public class RuleConfigurationPreferences extends PropertyPage {
   public void ok() {
     ((WorkbenchPreferenceDialog) referencedComposite).ok();
   }
+
+  public static RuleConfigurationPreferences open() {
+    var preferenceDialog = new WorkbenchPreferenceDialog();
+    if (!preferenceDialog.isOpen()) {
+      preferenceDialog.open();
+    }
+
+    var ruleConfigurationPreferences = new RuleConfigurationPreferences(preferenceDialog);
+    preferenceDialog.select(ruleConfigurationPreferences);
+    return ruleConfigurationPreferences;
+  }
+
+  public TreeItem selectRule(String key, String language, String name) {
+    filter(key);
+    var ruleItem = getItem(language, name);
+    ruleItem.select();
+    return ruleItem;
+  }
 }

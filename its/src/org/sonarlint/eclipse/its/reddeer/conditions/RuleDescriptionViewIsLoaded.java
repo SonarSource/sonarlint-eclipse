@@ -22,17 +22,20 @@ package org.sonarlint.eclipse.its.reddeer.conditions;
 import org.eclipse.reddeer.common.condition.AbstractWaitCondition;
 import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
 
-public class RuleDescriptionViewContainsText extends AbstractWaitCondition {
+public class RuleDescriptionViewIsLoaded extends AbstractWaitCondition {
   private final RuleDescriptionView ruleDescriptionView;
-  private String text;
 
-  public RuleDescriptionViewContainsText(RuleDescriptionView ruleDescriptionView, String text) {
+  public RuleDescriptionViewIsLoaded(RuleDescriptionView ruleDescriptionView) {
     this.ruleDescriptionView = ruleDescriptionView;
-    this.text = text;
   }
 
   @Override
   public boolean test() {
-    return ruleDescriptionView.getContent().contains(text);
+    return !"Loading...".equals(ruleDescriptionView.getRuleName().getText()) && !ruleDescriptionView.getTopBrowser().getText().isBlank();
+  }
+
+  @Override
+  public String description() {
+    return "Rule description is loading";
   }
 }

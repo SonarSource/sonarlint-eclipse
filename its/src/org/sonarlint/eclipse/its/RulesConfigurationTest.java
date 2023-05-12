@@ -20,12 +20,10 @@
 package org.sonarlint.eclipse.its;
 
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
-import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
-import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.reddeer.preferences.RuleConfigurationPreferences;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
@@ -47,7 +45,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
     checkIssueIsDefault();
 
-    doAndWaitForSonarLintAnalysisJob(() -> new ContextMenu(onTheFlyView.getItems().get(1)).getItem("Deactivate rule").select());
+    doAndWaitForSonarLintAnalysisJob(() -> onTheFlyView.getIssues().get(1).deactivateRule());
 
     var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
@@ -83,9 +81,8 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
   @Test
   public void ruleParametersActivationRoundTrip() {
-    var ruleConfigurationPreferences = openRuleConfigurationPreferences();
-    var cognitiveComplexityRuleItem = getCognitiveComplexityRuleTreeItem(ruleConfigurationPreferences);
-    cognitiveComplexityRuleItem.select();
+    var ruleConfigurationPreferences = RuleConfigurationPreferences.open();
+    var cognitiveComplexityRuleItem = ruleConfigurationPreferences.selectRule("java:S3776", "Java", "Cognitive Complexity of methods should not be too high");
 
     assertThat(ruleConfigurationPreferences.getRuleParamSpinner().isEnabled()).isTrue();
 
@@ -110,7 +107,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
   @Test
   public void open_rules_configuration() {
-    var ruleConfigurationPreferences = openRuleConfigurationPreferences();
+    var ruleConfigurationPreferences = RuleConfigurationPreferences.open();
 
     assertThat(ruleConfigurationPreferences.getItems()).hasSize(9 /* CSS, HTML, Java, JavaScript, PHP, Python, Secrets, TypeScript, XML */);
     var cssNode = ruleConfigurationPreferences.getItems().get(0);
@@ -119,15 +116,6 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
     cssNode.expand();
     assertThat(cssNode.getItems().get(0).getText()).isEqualTo("\"!important\" should not be used on \"keyframes\"");
-  }
-
-  private static RuleConfigurationPreferences openRuleConfigurationPreferences() {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    preferenceDialog.open();
-
-    var ruleConfigurationPreferences = new RuleConfigurationPreferences(preferenceDialog);
-    preferenceDialog.select(ruleConfigurationPreferences);
-    return ruleConfigurationPreferences;
   }
 
   private DefaultLink paramRestoreDefaultLink() {
@@ -145,14 +133,9 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   }
 
   private static RuleConfigurationPreferences selectCognitiveComplexityRule() {
-    var ruleConfigurationPreferences = openRuleConfigurationPreferences();
-    getCognitiveComplexityRuleTreeItem(ruleConfigurationPreferences).select();
+    var ruleConfigurationPreferences = RuleConfigurationPreferences.open();
+    ruleConfigurationPreferences.selectRule("java:S3776", "Java", "Cognitive Complexity of methods should not be too high");
     return ruleConfigurationPreferences;
-  }
-
-  private static TreeItem getCognitiveComplexityRuleTreeItem(RuleConfigurationPreferences ruleConfigurationPreferences) {
-    ruleConfigurationPreferences.filter("java:S3776");
-    return ruleConfigurationPreferences.getItem("Java", "Cognitive Complexity of methods should not be too high");
   }
 
   static void checkIssueChanged() {
