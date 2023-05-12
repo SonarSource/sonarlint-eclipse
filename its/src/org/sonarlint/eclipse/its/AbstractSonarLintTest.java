@@ -59,6 +59,7 @@ import org.eclipse.reddeer.swt.impl.button.FinishButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.workbench.impl.shell.WorkbenchShell;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -106,6 +107,7 @@ public abstract class AbstractSonarLintTest {
     System.out.println(consoleView.getConsoleView().getConsoleText());
     consoleView.clear();
 
+    new WorkbenchShell().maximize();
     new CleanWorkspaceRequirement().fulfill();
 
     restoreDefaultRulesConfiguration();
