@@ -59,7 +59,6 @@ import org.eclipse.reddeer.swt.impl.button.FinishButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
-import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -103,7 +102,7 @@ public abstract class AbstractSonarLintTest {
     // this prevents trying to clear the console in the middle of a job
     waitSonarLintAnalysisJobs();
 
-    SonarLintConsole consoleView = new SonarLintConsole();
+    var consoleView = new SonarLintConsole();
     System.out.println(consoleView.getConsoleView().getConsoleText());
     consoleView.clear();
 
@@ -168,12 +167,12 @@ public abstract class AbstractSonarLintTest {
       Job.getJobManager().addJobChangeListener(sonarlintItJobListener);
     }
 
-    SonarLintConsole consoleView = new SonarLintConsole();
+    var consoleView = new SonarLintConsole();
     consoleView.enableVerboseOutput();
     consoleView.enableAnalysisLogs();
     consoleView.showConsole(ShowConsoleOption.NEVER);
     if (hotspotServerPort == -1) {
-      ConsoleHasText consoleHasText = new ConsoleHasText(consoleView.getConsoleView(), "Started embedded server on port");
+      var consoleHasText = new ConsoleHasText(consoleView.getConsoleView(), "Started embedded server on port");
       new WaitUntil(consoleHasText);
       var consoleText = consoleHasText.getResult();
       var pattern = Pattern.compile(".*Started embedded server on port (\\d+).*");
@@ -190,10 +189,10 @@ public abstract class AbstractSonarLintTest {
   }
 
   protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
-    File projectFolder = new File(projectsFolder, relativePathFromProjectsFolder);
+    var projectFolder = new File(projectsFolder, relativePathFromProjectsFolder);
     try {
       FileUtils.copyDirectory(new File("projects", relativePathFromProjectsFolder), projectFolder);
-      File gitFolder = new File(projectFolder, "git");
+      var gitFolder = new File(projectFolder, "git");
       if (gitFolder.exists()) {
         FileUtils.moveDirectory(gitFolder, new File(projectFolder, ".git"));
       }
@@ -277,15 +276,9 @@ public abstract class AbstractSonarLintTest {
   }
 
   void restoreDefaultRulesConfiguration() {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    if (!preferenceDialog.isOpen()) {
-      preferenceDialog.open();
-    }
-
-    var ruleConfigurationPreferences = new RuleConfigurationPreferences(preferenceDialog);
-    preferenceDialog.select(ruleConfigurationPreferences);
+    var ruleConfigurationPreferences = RuleConfigurationPreferences.open();
     ruleConfigurationPreferences.restoreDefaults();
-    preferenceDialog.ok();
+    ruleConfigurationPreferences.ok();
   }
 
 }

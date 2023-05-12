@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.sonarlint.eclipse.its.reddeer.conditions.OnTheFlyViewIsEmpty;
 import org.sonarlint.eclipse.its.reddeer.preferences.FileExclusionsPreferences;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
-import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssue;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -53,7 +53,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
 
     var sonarlintIssues = issuesView.getIssues();
 
-    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription)
+    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription)
       .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger."));
 
     new JavaEditor("Hello.java").close();
