@@ -23,11 +23,11 @@ import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.core.condition.WidgetIsFound;
 import org.eclipse.reddeer.swt.api.Browser;
-import org.eclipse.reddeer.swt.api.StyledText;
+import org.eclipse.reddeer.swt.api.Label;
 import org.eclipse.reddeer.swt.api.TabFolder;
 import org.eclipse.reddeer.swt.condition.PageIsLoaded;
 import org.eclipse.reddeer.swt.impl.browser.InternalBrowser;
-import org.eclipse.reddeer.swt.impl.styledtext.DefaultStyledText;
+import org.eclipse.reddeer.swt.impl.label.DefaultLabel;
 import org.eclipse.reddeer.swt.impl.tab.DefaultTabFolder;
 import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 
@@ -37,20 +37,20 @@ public class RuleDescriptionView extends WorkbenchView {
     super("SonarLint Rule Description");
   }
 
-  public StyledText getRuleName() {
-    return new DefaultStyledText(getCTabItem(), 0);
+  public Label getRuleName() {
+    return new DefaultLabel(getCTabItem(), 0);
   }
 
-  public StyledText getRuleType() {
-    return new DefaultStyledText(getCTabItem(), 1);
+  public Label getRuleType() {
+    return new DefaultLabel(getCTabItem(), 2);
   }
 
-  public StyledText getRuleSeverity() {
-    return new DefaultStyledText(getCTabItem(), 2);
+  public Label getRuleSeverity() {
+    return new DefaultLabel(getCTabItem(), 4);
   }
 
-  public StyledText getRuleKey() {
-    return new DefaultStyledText(getCTabItem(), 3);
+  public Label getRuleKey() {
+    return new DefaultLabel(getCTabItem(), 5);
   }
 
   public Browser getTopBrowser() {

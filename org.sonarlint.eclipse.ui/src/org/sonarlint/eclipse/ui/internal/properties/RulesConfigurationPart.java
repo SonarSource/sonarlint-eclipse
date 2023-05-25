@@ -52,6 +52,7 @@ import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -110,7 +111,11 @@ public class RulesConfigurationPart {
     createTreeViewer(filterAndTree);
 
     horizontalSplitter = new SashForm(verticalSplitter, SWT.VERTICAL);
-    ruleDetailsPanel = new RuleDetailsPanel(horizontalSplitter, false);
+    // It seems composite inside SashForm are receiving a special CSS background, and so if we try to add directly our custom Composite
+    // RuleDetailsPanel inside the SashForm then the background is wrong. See https://www.eclipse.org/forums/index.php/t/1099071/
+    var compositeToFixDarkTheme = new Composite(horizontalSplitter, SWT.NONE);
+    compositeToFixDarkTheme.setLayout(new FillLayout());
+    ruleDetailsPanel = new RuleDetailsPanel(compositeToFixDarkTheme, false);
     paramPanelParent = new Composite(horizontalSplitter, SWT.NONE);
     paramPanelParent.setLayout(new GridLayout());
     paramPanel = emptyRuleParam();

@@ -48,8 +48,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 
-import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROUND_COLOR;
-
 public class SonarLintWebView extends Composite implements Listener, IPropertyChangeListener {
 
   private static final RGB DEFAULT_ACTIVE_LINK_COLOR = new RGB(0, 0, 128);
@@ -72,16 +70,24 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
   private String htmlBody = "";
   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
   private ScheduledFuture<?> scheduledFuture;
+  private final Label labelToCopyColorsFrom;
 
   public SonarLintWebView(Composite parent, boolean useEditorFontSize) {
     super(parent, SWT.NONE);
-    this.useEditorFontSize = useEditorFontSize;
-    var layout = new GridLayout(1, false);
-    layout.marginWidth = 0;
+    var layout = new GridLayout();
+    layout.horizontalSpacing = 0;
     layout.marginHeight = 0;
-    this.setLayout(layout);
+    layout.marginWidth = 0;
+    layout.verticalSpacing = 0;
+    setLayout(layout);
+    this.labelToCopyColorsFrom = new Label(this, SWT.LEFT);
+    labelToCopyColorsFrom.setVisible(false);
+    var layoutData = new GridData();
+    layoutData.exclude = true;
+    labelToCopyColorsFrom.setLayoutData(layoutData);
+    this.useEditorFontSize = useEditorFontSize;
     try {
-      browser = new Browser(this, SWT.FILL);
+      browser = new Browser(this, SWT.NONE);
       addLinkListener(browser);
       browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
       browser.setJavascriptEnabled(false);
@@ -89,43 +95,43 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
       browser.addOpenWindowListener(event -> event.required = true);
       // Replace browser's built-in context menu with none
       browser.setMenu(new Menu(parent.getShell(), SWT.NONE));
-      updateColorAndFontCache();
-      this.defaultFont = getDefaultFont();
 
-      parent.getDisplay().addListener(SWT.Settings, this);
+      cacheColorsAndFonts();
+
+      parent.addListener(SWT.Paint, this);
       JFaceResources.getColorRegistry().addListener(this);
       JFaceResources.getFontRegistry().addListener(this);
 
-      this.addDisposeListener(e -> {
+      addDisposeListener(e -> {
         scheduler.shutdownNow();
         JFaceResources.getColorRegistry().removeListener(this);
         JFaceResources.getFontRegistry().removeListener(this);
-        parent.getDisplay().removeListener(SWT.Settings, this);
+        parent.removeListener(SWT.Paint, this);
       });
 
       // Hide the browser while resizing to avoid the lag
-      this.addControlListener(new ControlAdapter() {
+      addControlListener(new ControlAdapter() {
 
         @Override
         public void controlResized(ControlEvent e) {
-          browser.setVisible(false);
+          SonarLintWebView.this.setVisible(false);
           if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
           }
           scheduledFuture = scheduler.schedule(
-            () -> browser.getDisplay().asyncExec(() -> browser.setVisible(true)),
+            () -> browser.getDisplay().asyncExec(() -> SonarLintWebView.this.setVisible(true)),
             300, TimeUnit.MILLISECONDS);
         }
       });
 
     } catch (SWTError e) {
       // Browser is probably not available but it will be partially initialized
-      for (var c : this.getChildren()) {
+      for (var c : parent.getChildren()) {
         if (c instanceof Browser) {
           c.dispose();
         }
       }
-      new Label(this, SWT.WRAP).setText("Unable to create SWT Browser:\n " + e.getMessage());
+      new Label(parent, SWT.WRAP).setText("Unable to create SWT Browser:\n " + e.getMessage());
     }
     reload();
   }
@@ -144,44 +150,49 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
     if (useEditorFontSize) {
       return JFaceResources.getTextFont();
     } else {
-      return getFont();
+      return labelToCopyColorsFrom.getFont();
     }
   }
 
   private void updateColorAndFontCache() {
-    var shouldRefresh = false;
-    if (!getDefaultFont().equals(defaultFont)) {
-      this.defaultFont = getDefaultFont();
-      shouldRefresh = true;
-    }
-    var newFg = getFgColor();
-    if (!Objects.equals(newFg, foreground)) {
-      SonarLintWebView.this.foreground = newFg;
-      shouldRefresh = true;
-    }
-    var newBg = this.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
-    if (!Objects.equals(newBg, background)) {
-      SonarLintWebView.this.background = newBg;
-      shouldRefresh = true;
-    }
-    var newLink = getLinkColor();
-    if (!Objects.equals(newLink, linkColor)) {
-      SonarLintWebView.this.linkColor = newLink;
-      shouldRefresh = true;
-    }
-    var newActiveLink = getActiveLinkColor();
-    if (!Objects.equals(newActiveLink, activeLinkColor)) {
-      SonarLintWebView.this.activeLinkColor = newActiveLink;
-      shouldRefresh = true;
-    }
+    var shouldRefresh = cacheColorsAndFonts();
     if (shouldRefresh) {
       // Reload HTML to possibly apply theme change
-      getDisplay().asyncExec(() -> {
+      browser.getDisplay().asyncExec(() -> {
         if (!browser.isDisposed()) {
           reload();
         }
       });
     }
+  }
+
+  private boolean cacheColorsAndFonts() {
+    var changed = false;
+    if (!getDefaultFont().equals(defaultFont)) {
+      this.defaultFont = getDefaultFont();
+      changed = true;
+    }
+    var newFg = labelToCopyColorsFrom.getForeground();
+    if (!Objects.equals(newFg, foreground)) {
+      this.foreground = newFg;
+      changed = true;
+    }
+    var newBg = labelToCopyColorsFrom.getBackground();
+    if (!Objects.equals(newBg, background)) {
+      this.background = newBg;
+      changed = true;
+    }
+    var newLink = getLinkColor();
+    if (!Objects.equals(newLink, linkColor)) {
+      this.linkColor = newLink;
+      changed = true;
+    }
+    var newActiveLink = getActiveLinkColor();
+    if (!Objects.equals(newActiveLink, activeLinkColor)) {
+      this.activeLinkColor = newActiveLink;
+      changed = true;
+    }
+    return changed;
   }
 
   private static void addLinkListener(Browser browser) {
@@ -252,23 +263,14 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
       + "</style>";
   }
 
-  private Color getFgColor() {
-    var colorRegistry = JFaceResources.getColorRegistry();
-    var fg = colorRegistry.get(INFORMATION_FOREGROUND_COLOR);
-    if (fg == null) {
-      fg = JFaceColors.getInformationViewerForegroundColor(this.getDisplay());
-    }
-    return fg;
-  }
-
   @Nullable
   private Color getLinkColor() {
-    return JFaceColors.getHyperlinkText(this.getDisplay());
+    return JFaceColors.getHyperlinkText(browser.getDisplay());
   }
 
   @Nullable
   private Color getActiveLinkColor() {
-    return JFaceColors.getActiveHyperlinkText(this.getDisplay());
+    return JFaceColors.getActiveHyperlinkText(browser.getDisplay());
   }
 
   public void setHtmlBody(String htmlBody) {

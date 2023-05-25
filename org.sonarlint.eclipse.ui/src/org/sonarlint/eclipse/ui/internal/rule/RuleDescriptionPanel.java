@@ -23,7 +23,6 @@ import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -109,10 +108,6 @@ public class RuleDescriptionPanel extends Composite {
               contextualTabFolder.setSelection(contextualTabItem);
             }
 
-            var contextualTabTitle = new StyledText(contextualTabFolder, SWT.NONE);
-            contextualTabTitle.setText(contextualTab.getDisplayName());
-            contextualTabItem.setControl(contextualTabTitle);
-
             var contextualDescriptionHTML = new SonarLintWebView(contextualTabFolder, useEditorFontSize);
             contextualDescriptionHTML.setHtmlBody(contextualTab.getHtmlContent());
             contextualTabItem.setControl(contextualDescriptionHTML);
@@ -126,14 +121,4 @@ public class RuleDescriptionPanel extends Composite {
     requestLayout();
   }
 
-  @Override
-  public void dispose() {
-    super.dispose();
-    if (monolithicDescriptionOrIntro != null && !monolithicDescriptionOrIntro.isDisposed()) {
-      monolithicDescriptionOrIntro.dispose();
-    }
-    if (tabFolder != null && !tabFolder.isDisposed()) {
-      tabFolder.dispose();
-    }
-  }
 }
