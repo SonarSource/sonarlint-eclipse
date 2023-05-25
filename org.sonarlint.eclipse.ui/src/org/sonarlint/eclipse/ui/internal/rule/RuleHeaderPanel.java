@@ -34,10 +34,10 @@ import org.sonarsource.sonarlint.core.commons.RuleType;
 /** Rule header containing all information excluding the title and description */
 public class RuleHeaderPanel extends Composite {
   private final Label ruleTypeIcon;
-  private final CopyableLabel ruleTypeLabel;
+  private final Label ruleTypeLabel;
   private final Label ruleSeverityIcon;
-  private final CopyableLabel ruleSeverityLabel;
-  private final CopyableLabel ruleKeyLabel;
+  private final Label ruleSeverityLabel;
+  private final Label ruleKeyLabel;
 
   public RuleHeaderPanel(Composite parent) {
     super(parent, SWT.NONE);
@@ -45,17 +45,13 @@ public class RuleHeaderPanel extends Composite {
 
     ruleTypeIcon = new Label(this, SWT.NONE);
 
-    ruleTypeLabel = new CopyableLabel(this);
+    ruleTypeLabel = new Label(this, SWT.NONE);
 
     ruleSeverityIcon = new Label(this, SWT.NONE);
 
-    ruleSeverityLabel = new CopyableLabel(this);
+    ruleSeverityLabel = new Label(this, SWT.LEFT);
 
-    var ruleKeyFiller = new Composite(this, SWT.NONE);
-    ruleKeyFiller.setLayout(new GridLayout(1, false));
-    ruleKeyFiller.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-    ruleKeyLabel = new CopyableLabel(ruleKeyFiller);
+    ruleKeyLabel = new Label(this, SWT.LEFT);
     ruleKeyLabel.setLayoutData(new GridData(SWT.END, SWT.FILL, true, true));
   }
 
@@ -65,20 +61,17 @@ public class RuleHeaderPanel extends Composite {
     ruleKeyLabel.setText("");
     ruleSeverityIcon.setImage(null);
     ruleSeverityLabel.setText("");
+    layout();
   }
 
   /** Updating the panel requires each element to adjust to the grid again */
   public void updateRule(String ruleKey, RuleType type, IssueSeverity severity) {
     ruleTypeIcon.setImage(SonarLintImages.getTypeImage(type));
-    ruleTypeIcon.requestLayout();
     ruleTypeLabel.setText(clean(type.toString()));
-    ruleTypeLabel.requestLayout();
     ruleKeyLabel.setText(ruleKey);
-    ruleKeyLabel.requestLayout();
     ruleSeverityIcon.setImage(SonarLintImages.getSeverityImage(severity));
-    ruleSeverityIcon.requestLayout();
     ruleSeverityLabel.setText(clean(severity.toString()));
-    ruleSeverityLabel.requestLayout();
+    layout();
   }
 
   private static String clean(@Nullable String txt) {

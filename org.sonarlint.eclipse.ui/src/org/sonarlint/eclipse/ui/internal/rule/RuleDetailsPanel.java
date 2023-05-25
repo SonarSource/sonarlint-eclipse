@@ -30,7 +30,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
@@ -45,13 +44,13 @@ import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleSplitDescripti
 /**
  *  Panel containing the rule title, details and description
  *
- *  | Rule title                                                         |  -> StyledText
- *  | Type icon | Type label | Severity icon | Severity label | Rule key |  -> RuleHeaderPanel
- *  | Rule description                                                   |  -> RuleDescriptionPanel
+ *  | Rule title                                                         |  -> {@link Label}
+ *  | Type icon | Type label | Severity icon | Severity label | Rule key |  -> {@link RuleHeaderPanel}
+ *  | Rule description                                                   |  -> {@link RuleDescriptionPanel}
  */
 public class RuleDetailsPanel extends Composite {
 
-  private final CopyableLabel ruleNameLabel;
+  private final Label ruleNameLabel;
   private final RuleHeaderPanel ruleHeaderPanel;
   @Nullable
   private RuleDescriptionPanel ruleDescriptionPanel;
@@ -62,12 +61,11 @@ public class RuleDetailsPanel extends Composite {
   public RuleDetailsPanel(Composite parent, boolean useEditorFontSize) {
     super(parent, SWT.NONE);
     this.useEditorFontSize = useEditorFontSize;
-    setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
     var layout = new GridLayout(1, false);
     setLayout(layout);
 
-    ruleNameLabel = new CopyableLabel(this);
+    ruleNameLabel = new Label(this, SWT.NONE);
     ruleNameLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
     var nameLabelFont = FontDescriptor.createFrom(ruleNameLabel.getFont())
       .setStyle(SWT.BOLD)
@@ -155,7 +153,7 @@ public class RuleDetailsPanel extends Composite {
     if (ruleDescriptionPanel != null && !ruleDescriptionPanel.isDisposed()) {
       ruleDescriptionPanel.dispose();
     }
-    ruleDescriptionPanel = new RuleDescriptionPanel(this, this.useEditorFontSize);
+    ruleDescriptionPanel = new RuleDescriptionPanel(this, useEditorFontSize);
     ruleDescriptionPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     ruleDescriptionPanel.updateRule(description);
   }
@@ -174,4 +172,5 @@ public class RuleDetailsPanel extends Composite {
       ruleDescriptionPanel.dispose();
     }
   }
+
 }
