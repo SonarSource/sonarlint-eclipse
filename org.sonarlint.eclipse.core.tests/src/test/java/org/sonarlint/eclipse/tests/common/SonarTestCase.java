@@ -45,6 +45,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
@@ -192,6 +193,9 @@ public abstract class SonarTestCase {
     workspace.setDescription(description);
 
     cleanWorkspace();
+
+    // Clear all registered servers to prevent auto-binding or auto-sync to create unexpected logs
+    SonarLintCorePlugin.getServersManager().getServers().forEach(s -> SonarLintCorePlugin.getServersManager().removeServer(s));
   }
 
   @AfterClass
