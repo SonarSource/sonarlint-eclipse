@@ -55,6 +55,7 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
 
       @Override
       public void debug(String msg, boolean fromAnalyzer) {
+        System.out.println(msg);
       }
 
     });
