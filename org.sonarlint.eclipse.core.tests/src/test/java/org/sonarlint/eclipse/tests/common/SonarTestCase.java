@@ -30,18 +30,14 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceDescription;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -69,7 +65,7 @@ public abstract class SonarTestCase {
   private static final ReadWriteLock COPY_PROJECT_LOCK = new ReentrantReadWriteLock();
 
   protected static File getProject(String projectName) throws IOException {
-    File destDir = new File(projectsWorkdir, projectName);
+    var destDir = new File(projectsWorkdir, projectName);
     return getProject(projectName, destDir);
   }
 
@@ -87,14 +83,14 @@ public abstract class SonarTestCase {
   protected static File getProject(String projectName, File destDir) throws IOException {
     COPY_PROJECT_LOCK.writeLock().lock();
     try {
-      File projectFolder = new File(projectsSource, projectName);
+      var projectFolder = new File(projectsSource, projectName);
       assertTrue("Project " + projectName + " folder not found.\n" + projectFolder.getAbsolutePath(), projectFolder.isDirectory());
       if (destDir.isDirectory()) {
         System.out.println("Directory for project already exists: " + destDir);
       }
       Files.copy(projectFolder.toPath(), destDir.toPath());
       EnumSet<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
-      TreeCopier tc = new TreeCopier(projectFolder.toPath(), destDir.toPath(), true, true);
+      var tc = new TreeCopier(projectFolder.toPath(), destDir.toPath(), true, true);
       Files.walkFileTree(projectFolder.toPath(), opts, Integer.MAX_VALUE, tc);
       return destDir;
     } finally {
@@ -122,9 +118,9 @@ public abstract class SonarTestCase {
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
       // before visiting entries in a directory we copy the directory
       // (okay if directory already exists).
-      CopyOption[] options = (preserve) ? new CopyOption[] {COPY_ATTRIBUTES} : new CopyOption[0];
+      var options = (preserve) ? new CopyOption[] {COPY_ATTRIBUTES} : new CopyOption[0];
 
-      Path newdir = target.resolve(source.relativize(dir));
+      var newdir = target.resolve(source.relativize(dir));
       try {
         Files.copy(dir, newdir, options);
       } catch (FileAlreadyExistsException x) {
@@ -146,9 +142,9 @@ public abstract class SonarTestCase {
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
       // fix up modification time of directory when done
       if (exc == null && preserve) {
-        Path newdir = target.resolve(source.relativize(dir));
+        var newdir = target.resolve(source.relativize(dir));
         try {
-          FileTime time = Files.getLastModifiedTime(dir);
+          var time = Files.getLastModifiedTime(dir);
           Files.setLastModifiedTime(newdir, time);
         } catch (IOException x) {
           System.err.format("Unable to copy all attributes to: %s: %s%n", newdir, x);
@@ -174,7 +170,7 @@ public abstract class SonarTestCase {
    * parameter determines if file attributes should be copied/preserved.
    */
   static void copyFile(Path source, Path target, boolean force, boolean preserve) {
-    CopyOption[] options = (preserve) ? new CopyOption[] {COPY_ATTRIBUTES, REPLACE_EXISTING} : new CopyOption[] {REPLACE_EXISTING};
+    var options = (preserve) ? new CopyOption[] {COPY_ATTRIBUTES, REPLACE_EXISTING} : new CopyOption[] {REPLACE_EXISTING};
     if (force || Files.notExists(target)) {
       try {
         Files.copy(source, target, options);
@@ -191,7 +187,7 @@ public abstract class SonarTestCase {
     projectsWorkdir = new File("target/projects-target");
 
     workspace = ResourcesPlugin.getWorkspace();
-    final IWorkspaceDescription description = workspace.getDescription();
+    final var description = workspace.getDescription();
     description.setAutoBuilding(false);
     workspace.setDescription(description);
 
@@ -200,13 +196,13 @@ public abstract class SonarTestCase {
 
   @AfterClass
   final static public void end() throws Exception {
-    final IWorkspaceDescription description = workspace.getDescription();
+    final var description = workspace.getDescription();
     description.setAutoBuilding(true);
     workspace.setDescription(description);
   }
 
   private static void cleanWorkspace() throws Exception {
-    final IWorkspaceRoot root = workspace.getRoot();
+    final var root = workspace.getRoot();
     for (final IProject project : root.getProjects()) {
       project.delete(true, true, MONITOR);
     }
@@ -218,13 +214,13 @@ public abstract class SonarTestCase {
    * @return created projects
    */
   public static IProject importEclipseProject(final String projectdir) throws IOException, CoreException {
-    final IWorkspaceRoot root = workspace.getRoot();
+    final var root = workspace.getRoot();
 
-    final String projectName = projectdir;
-    File dst = new File(root.getLocation().toFile(), projectName);
+    final var projectName = projectdir;
+    var dst = new File(root.getLocation().toFile(), projectName);
     getProject(projectName, dst);
 
-    final IProject project = workspace.getRoot().getProject(projectName);
+    final var project = workspace.getRoot().getProject(projectName);
     final List<IProject> addedProjectList = new ArrayList<IProject>();
 
     workspace.run(new IWorkspaceRunnable() {
@@ -233,7 +229,7 @@ public abstract class SonarTestCase {
       public void run(final IProgressMonitor monitor) throws CoreException {
         // create project as java project
         if (!project.exists()) {
-          final IProjectDescription projectDescription = workspace.newProjectDescription(project.getName());
+          final var projectDescription = workspace.newProjectDescription(project.getName());
           projectDescription.setLocation(null);
           project.create(projectDescription, monitor);
           project.open(IResource.NONE, monitor);
