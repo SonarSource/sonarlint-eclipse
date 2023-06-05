@@ -20,7 +20,9 @@
 package org.sonarlint.eclipse.ui.internal.rule;
 
 import java.util.Objects;
-import org.eclipse.jdt.annotation.Nullable;
+import java.util.regex.Pattern;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -49,15 +51,11 @@ import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleSplitDescripti
  *           -> context description
  */
 public class RuleDescriptionPanel extends Composite {
-  @Nullable
-  private SonarLintWebView monolithicDescriptionOrIntro;
-  @Nullable
-  private TabFolder tabFolder;
   private final boolean useEditorFontSize;
 
   public RuleDescriptionPanel(Composite parent, boolean useEditorFontSize) {
     super(parent, SWT.NONE);
-    setLayout(new GridLayout());
+    setLayout(new GridLayout(1, false));
 
     this.useEditorFontSize = useEditorFontSize;
   }
@@ -65,10 +63,7 @@ public class RuleDescriptionPanel extends Composite {
   public void updateRule(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
     if (description.isLeft()) {
       // monolithic description
-      var monoDescription = description.getLeft();
-      monolithicDescriptionOrIntro = new SonarLintWebView(this, useEditorFontSize);
-      monolithicDescriptionOrIntro.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-      monolithicDescriptionOrIntro.setHtmlBody(monoDescription.getHtmlContent());
+      parseHTMLIntoElements(description.getLeft().getHtmlContent(), this);
     } else {
       // split description
       var ruleDescription = description.getRight();
@@ -76,49 +71,94 @@ public class RuleDescriptionPanel extends Composite {
       var intro = ruleDescription.getIntroductionHtmlContent();
       if (StringUtils.isNotBlank(intro)) {
         // introduction (optional)
-        monolithicDescriptionOrIntro = new SonarLintWebView(this, useEditorFontSize);
-        monolithicDescriptionOrIntro.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-        monolithicDescriptionOrIntro.setHtmlBody(intro);
+        parseHTMLIntoElements(intro, this);
       }
 
       // tab view
-      tabFolder = new TabFolder(this, SWT.NONE);
+      var tabFolder = new TabFolder(this, SWT.NONE);
       tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
       for (var tab : ruleDescription.getTabs()) {
         var tabItem = new TabItem(tabFolder, SWT.NONE);
         tabItem.setText(tab.getTitle());
+        var tabContent = new Composite(tabFolder, SWT.NONE);
+        tabContent.setLayout(new GridLayout(1, false));
 
         var content = tab.getContent();
         if (content.isLeft()) {
           // tab description
-          var nonContextualDescription = new SonarLintWebView(tabFolder, useEditorFontSize);
-          nonContextualDescription.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-          nonContextualDescription.setHtmlBody(content.getLeft().getHtmlContent());
-          tabItem.setControl(nonContextualDescription);
+          parseHTMLIntoElements(content.getLeft().getHtmlContent(), tabContent);
         } else {
           // context view
           var contextualDescription = content.getRight();
-
-          var contextualTabFolder = new TabFolder(tabFolder, SWT.NONE);
+          var contextualTabFolder = new TabFolder(tabContent, SWT.NONE);
           for (var contextualTab : contextualDescription.getContextualSections()) {
             // context description
             var contextualTabItem = new TabItem(contextualTabFolder, SWT.NONE);
             contextualTabItem.setText(contextualTab.getDisplayName());
+            var contextualTabContent = new Composite(contextualTabFolder, SWT.NONE);
+            tabContent.setLayout(new GridLayout(1, false));
+
             if (Objects.equals(contextualDescription.getDefaultContextKey(), contextualTab.getContextKey())) {
               contextualTabFolder.setSelection(contextualTabItem);
             }
 
-            var contextualDescriptionHTML = new SonarLintWebView(contextualTabFolder, useEditorFontSize);
-            contextualDescriptionHTML.setHtmlBody(contextualTab.getHtmlContent());
-            contextualTabItem.setControl(contextualDescriptionHTML);
+            parseHTMLIntoElements(contextualTab.getHtmlContent(), contextualTabContent);
+            contextualTabItem.setControl(contextualTabContent);
           }
-          tabItem.setControl(contextualTabFolder);
           contextualTabFolder.requestLayout();
         }
+        tabItem.setControl(tabContent);
       }
       tabFolder.requestLayout();
     }
     requestLayout();
   }
 
+  private void parseHTMLIntoElements(String html, Composite parent) {
+    var currentHTML = html;
+    var matcherStart = Pattern.compile("<pre[^>]*>").matcher(currentHTML);
+    var matcherEnd = Pattern.compile("</pre>").matcher(currentHTML);
+
+    while (matcherStart.find() && matcherEnd.find()) {
+      var front = currentHTML.substring(0, matcherStart.start()).trim();
+      if (!front.isEmpty() && !front.isBlank()) {
+        var frontFragment = new SonarLintWebView(parent, useEditorFontSize);
+        var gridData = new GridData();
+        gridData.horizontalAlignment = SWT.FILL;
+        gridData.grabExcessHorizontalSpace = true;
+        frontFragment.setLayoutData(gridData);
+
+        frontFragment.setHtmlBody(front);
+      }
+
+      var middle = currentHTML.substring(matcherStart.end(), matcherEnd.start()).trim();
+      if (!middle.isEmpty() && !middle.isBlank()) {
+        var snippetElement = new SourceViewer(parent, null, SWT.NONE);
+        var gridData = new GridData();
+        gridData.horizontalAlignment = SWT.FILL;
+        gridData.grabExcessHorizontalSpace = true;
+        snippetElement.getTextWidget().setLayoutData(gridData);
+
+        snippetElement.setDocument(new Document(middle));
+        snippetElement.setEditable(false);
+
+        // Configure the syntax highlighting based on the language guessing algorithm blindly copied from SLI
+        // snippetElement.configure(Class extending org.eclipse.ui.editors.text.TextSourceViewerConfiguration);
+      }
+
+      currentHTML = currentHTML.substring(matcherEnd.end(), currentHTML.length()).trim();
+      matcherStart = Pattern.compile("<pre[^>]*>").matcher(currentHTML);
+      matcherEnd = Pattern.compile("</pre>").matcher(currentHTML);
+    }
+
+    if (!currentHTML.isEmpty() && !currentHTML.isBlank()) {
+      var endFragment = new SonarLintWebView(parent, useEditorFontSize);
+      var gridData = new GridData();
+      gridData.horizontalAlignment = SWT.FILL;
+      gridData.grabExcessHorizontalSpace = true;
+      endFragment.setLayoutData(gridData);
+
+      endFragment.setHtmlBody(currentHTML);
+    }
+  }
 }
