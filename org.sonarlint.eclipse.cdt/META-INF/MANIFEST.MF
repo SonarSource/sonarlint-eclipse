@@ -10,10 +10,14 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface.text,
  org.eclipse.core.filebuffers,
  org.eclipse.cdt.core;resolution:=optional,
+ org.eclipse.cdt.ui;resolution:=optional,
  org.sonarlint.eclipse.core,
  org.sonarsource.sonarlint.core.sonarlint-core-osgi,
  org.eclipse.core.filesystem,
- org.eclipse.jdt.annotation;resolution:=optional
+ org.eclipse.jdt.annotation;resolution:=optional,
+ org.eclipse.text
+Import-Package:  org.eclipse.ui.texteditor,
+ org.eclipse.jface.preference
 Export-Package: org.sonarlint.eclipse.cdt.internal;x-friends:="org.sonarlint.eclipse.core.tests"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
