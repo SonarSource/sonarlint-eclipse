@@ -140,10 +140,12 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
       SonarLintLogger.get().error("No rule key on marker");
       return;
     }
-
+    ISonarLintIssuable issuable= Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
+    if (issuable==null){
+      return;
+    }
     // Update project rule description asynchronous
-    new DisplayProjectRuleDescriptionJob(Adapters.adapt(
-      element.getResource(), ISonarLintIssuable.class).getProject(),
+    new DisplayProjectRuleDescriptionJob(issuable.getProject(),
       ruleKey,
       element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, null),
       ruleDetailsPanel)
