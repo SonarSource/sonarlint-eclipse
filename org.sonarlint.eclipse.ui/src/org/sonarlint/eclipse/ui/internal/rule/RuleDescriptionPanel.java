@@ -30,6 +30,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintWebView;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
@@ -60,10 +61,10 @@ public class RuleDescriptionPanel extends Composite {
     this.useEditorFontSize = useEditorFontSize;
   }
 
-  public void updateRule(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
+  public void updateRule(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description, String languageKey) {
     if (description.isLeft()) {
       // monolithic description
-      parseHTMLIntoElements(description.getLeft().getHtmlContent(), this);
+      parseHTMLIntoElements(description.getLeft().getHtmlContent(), this, languageKey);
     } else {
       // split description
       var ruleDescription = description.getRight();
@@ -71,7 +72,7 @@ public class RuleDescriptionPanel extends Composite {
       var intro = ruleDescription.getIntroductionHtmlContent();
       if (StringUtils.isNotBlank(intro)) {
         // introduction (optional)
-        parseHTMLIntoElements(intro, this);
+        parseHTMLIntoElements(intro, this, languageKey);
       }
 
       // tab view
@@ -86,7 +87,7 @@ public class RuleDescriptionPanel extends Composite {
         var content = tab.getContent();
         if (content.isLeft()) {
           // tab description
-          parseHTMLIntoElements(content.getLeft().getHtmlContent(), tabContent);
+          parseHTMLIntoElements(content.getLeft().getHtmlContent(), tabContent, languageKey);
         } else {
           // context view
           var contextualDescription = content.getRight();
@@ -102,7 +103,7 @@ public class RuleDescriptionPanel extends Composite {
               contextualTabFolder.setSelection(contextualTabItem);
             }
 
-            parseHTMLIntoElements(contextualTab.getHtmlContent(), contextualTabContent);
+            parseHTMLIntoElements(contextualTab.getHtmlContent(), contextualTabContent, languageKey);
             contextualTabItem.setControl(contextualTabContent);
           }
           contextualTabFolder.requestLayout();
@@ -114,7 +115,7 @@ public class RuleDescriptionPanel extends Composite {
     requestLayout();
   }
 
-  private void parseHTMLIntoElements(String html, Composite parent) {
+  private void parseHTMLIntoElements(String html, Composite parent, String languageKey) {
     var currentHTML = html;
     var matcherStart = Pattern.compile("<pre[^>]*>").matcher(currentHTML);
     var matcherEnd = Pattern.compile("</pre>").matcher(currentHTML);
@@ -142,8 +143,17 @@ public class RuleDescriptionPanel extends Composite {
         snippetElement.setDocument(new Document(middle));
         snippetElement.setEditable(false);
 
-        // Configure the syntax highlighting based on the language guessing algorithm blindly copied from SLI
-        // snippetElement.configure(Class extending org.eclipse.ui.editors.text.TextSourceViewerConfiguration);
+        // Configure the syntax highlighting based on the rule language key and if a configuration is provided by any
+        // plug-in via the extension mechanism.
+        // INFO: Configuration must extend of org.eclipse.jface.text.source.SourceViewerConfiguration
+        var configurationProviders = SonarLintExtensionTracker.getInstance().getSourceViewerConfigurationProvider();
+        for (var configurationProvider : configurationProviders) {
+          var sourceViewerConfiguration = configurationProvider.sourceViewerConfiguration(languageKey);
+          if (sourceViewerConfiguration.isPresent()) {
+            snippetElement.configure(sourceViewerConfiguration.get());
+            break;
+          }
+        }
       }
 
       currentHTML = currentHTML.substring(matcherEnd.end(), currentHTML.length()).trim();

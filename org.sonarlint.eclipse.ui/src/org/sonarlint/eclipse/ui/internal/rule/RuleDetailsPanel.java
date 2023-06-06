@@ -86,7 +86,7 @@ public class RuleDetailsPanel extends Composite {
     ruleNameLabel.requestLayout();
     ruleHeaderPanel.updateRule(ruleDefinition.getKey(), ruleDefinition.getType(), ruleDefinition.getDefaultSeverity());
 
-    updateHtmlDescription(getStandaloneRuleDescriptionResponse.getDescription());
+    updateHtmlDescription(getStandaloneRuleDescriptionResponse.getDescription(), ruleDefinition.getLanguage().getLanguageKey());
 
     requestLayout();
   }
@@ -98,7 +98,7 @@ public class RuleDetailsPanel extends Composite {
     ruleNameLabel.requestLayout();
     ruleHeaderPanel.updateRule(details.getKey(), details.getType(), details.getSeverity());
 
-    updateHtmlDescription(details.getDescription());
+    updateHtmlDescription(details.getDescription(), details.getLanguage().getLanguageKey());
 
     updateParameters(details);
 
@@ -149,13 +149,13 @@ public class RuleDetailsPanel extends Composite {
     }
   }
 
-  private void updateHtmlDescription(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
+  private void updateHtmlDescription(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description, String languageKey) {
     if (ruleDescriptionPanel != null && !ruleDescriptionPanel.isDisposed()) {
       ruleDescriptionPanel.dispose();
     }
     ruleDescriptionPanel = new RuleDescriptionPanel(this, useEditorFontSize);
     ruleDescriptionPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    ruleDescriptionPanel.updateRule(description);
+    ruleDescriptionPanel.updateRule(description, languageKey);
   }
 
   public void displayLoadingIndicator() {

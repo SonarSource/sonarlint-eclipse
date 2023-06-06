@@ -28,6 +28,7 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
+import org.sonarlint.eclipse.core.rule.ISourceViewerConfigurationProvider;
 
 public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker {
 
@@ -41,9 +42,11 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
     "org.sonarlint.eclipse.core.projectAdapterParticipant"); //$NON-NLS-1$
   private final SonarLintEP<IFileLanguageProvider> languageEp = new SonarLintEP<>("org.sonarlint.eclipse.core.languageProvider"); //$NON-NLS-1$
   private final SonarLintEP<IFileTypeProvider> typeEp = new SonarLintEP<>("org.sonarlint.eclipse.core.typeProvider"); //$NON-NLS-1$
+  private final SonarLintEP<ISourceViewerConfigurationProvider> sourceViewerConfigurationEP = new SonarLintEP<>(
+    "org.sonarlint.eclipse.core.sourceViewerConfigurationProvider");
 
   private final Collection<SonarLintEP<?>> allEps = List.of(configuratorEp, analysisEp, projectsProviderEp, fileAdapterParticipantEp, projectAdapterParticipantEp,
-    languageEp, typeEp);
+    languageEp, typeEp, sourceViewerConfigurationEP);
 
   private SonarLintExtensionTracker() {
     init(allEps);
@@ -90,4 +93,7 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
     return typeEp.getInstances();
   }
 
+  public Collection<ISourceViewerConfigurationProvider> getSourceViewerConfigurationProvider() {
+    return sourceViewerConfigurationEP.getInstances();
+  }
 }

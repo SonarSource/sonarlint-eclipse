@@ -20,16 +20,25 @@
 package org.sonarlint.eclipse.jdt.internal;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jdt.ui.text.JavaSourceViewerConfiguration;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
 import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 
 public class JdtUiUtils {
-
   public static ISonarLintMarkerResolver enhance(ISonarLintMarkerResolver resolution, IMarker marker) {
     if (CompatibilityUtils.supportMarkerResolutionRelevance()) {
       return new MarkerResolverRelevanceJdtAdapter(resolution, marker);
     } else {
       return new MarkerResolverJdtAdapter(resolution, marker);
     }
+  }
+
+  public static SourceViewerConfiguration sourceViewerConfiguration() {
+    var tools = JavaPlugin.getDefault().getJavaTextTools();
+
+    return new JavaSourceViewerConfiguration(tools.getColorManager(),
+      JavaPlugin.getDefault().getCombinedPreferenceStore(), null, null);
   }
 }
