@@ -32,11 +32,14 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.eclipse.cdt.core.CCorePlugin;
 import org.eclipse.cdt.core.model.CoreModel;
+import org.eclipse.cdt.ui.CUIPlugin;
+import org.eclipse.cdt.ui.text.CSourceViewerConfiguration;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.internal.jobs.DefaultPreAnalysisContext;
@@ -154,5 +157,11 @@ public class CdtUtils {
   @Nullable
   public String language(IFile iFile) {
     return getFileLanguage(iFile.getProject(), iFile);
+  }
+
+  public SourceViewerConfiguration sourceViewerConfiguration() {
+    var tools = CUIPlugin.getDefault().getTextTools();
+    return new CSourceViewerConfiguration(tools.getColorManager(),
+      CUIPlugin.getDefault().getCorePreferenceStore(), null, tools.getDocumentPartitioning());
   }
 }

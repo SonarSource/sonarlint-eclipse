@@ -28,7 +28,8 @@ Export-Package: org.sonarlint.eclipse.core,
  org.sonarlint.eclipse.core.internal.utils;x-friends:="org.sonarlint.eclipse.core.tests,org.sonarlint.eclipse.jdt,org.sonarlint.eclipse.ui",
  org.sonarlint.eclipse.core.internal.vcs;x-friends:="org.sonarlint.eclipse.ui",
  org.sonarlint.eclipse.core.listener,
- org.sonarlint.eclipse.core.resource
+ org.sonarlint.eclipse.core.resource,
+ org.sonarlint.eclipse.core.rule
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime;bundle-version="3.14.0",
  org.eclipse.core.resources,
@@ -44,6 +45,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.egit.core;resolution:=optional,
  org.eclipse.egit.ui;resolution:=optional,
  com.squareup.okhttp3;bundle-version="4.10.0",
- com.squareup.okio;bundle-version="3.0.0"
+ com.squareup.okio;bundle-version="3.0.0",
+ org.eclipse.text
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11

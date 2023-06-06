@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.cdt.internal;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 import org.eclipse.cdt.core.CCProjectNature;
 import org.eclipse.cdt.core.CProjectNature;
@@ -29,18 +30,20 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.core.rule.ISourceViewerConfigurationProvider;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 /**
  * Responsible for checking at runtime if CDT plugin is installed.
  */
-public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFileLanguageProvider {
+public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFileLanguageProvider, ISourceViewerConfigurationProvider {
 
   @Nullable
   private final CdtUtils cdtUtils;
@@ -104,6 +107,14 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
       }
     }
     return null;
+  }
+
+  @Override
+  public Optional<SourceViewerConfiguration> sourceViewerConfiguration(String ruleLanguage) {
+    if (isCdtPresent() && (ruleLanguage.equals(Language.C.getLanguageKey()) || ruleLanguage.equals(Language.CPP.getLanguageKey()))) {
+      return Optional.of(cdtUtils.sourceViewerConfiguration());
+    }
+    return Optional.empty();
   }
 
 }
