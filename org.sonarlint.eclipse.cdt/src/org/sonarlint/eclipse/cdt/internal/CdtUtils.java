@@ -32,13 +32,17 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.eclipse.cdt.core.CCorePlugin;
 import org.eclipse.cdt.core.model.CoreModel;
+import org.eclipse.cdt.internal.ui.text.FastCPartitionScanner;
 import org.eclipse.cdt.ui.CUIPlugin;
 import org.eclipse.cdt.ui.text.CSourceViewerConfiguration;
+import org.eclipse.cdt.ui.text.ICPartitions;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.text.IDocumentPartitioner;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
@@ -163,5 +167,9 @@ public class CdtUtils {
     var tools = CUIPlugin.getDefault().getTextTools();
     return new CSourceViewerConfiguration(tools.getColorManager(),
       CUIPlugin.getDefault().getCorePreferenceStore(), null, tools.getDocumentPartitioning());
+  }
+
+  public IDocumentPartitioner documentPartitioner() {
+    return new FastPartitioner(new FastCPartitionScanner(), ICPartitions.ALL_ASM_PARTITIONS);
   }
 }

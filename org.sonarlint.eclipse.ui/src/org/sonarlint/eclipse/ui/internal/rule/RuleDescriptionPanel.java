@@ -22,7 +22,9 @@ package org.sonarlint.eclipse.ui.internal.rule;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -134,26 +136,7 @@ public class RuleDescriptionPanel extends Composite {
 
       var middle = currentHTML.substring(matcherStart.end(), matcherEnd.start()).trim();
       if (!middle.isEmpty() && !middle.isBlank()) {
-        var snippetElement = new SourceViewer(parent, null, SWT.BORDER);
-        var gridData = new GridData();
-        gridData.horizontalAlignment = SWT.FILL;
-        gridData.grabExcessHorizontalSpace = true;
-        snippetElement.getTextWidget().setLayoutData(gridData);
-
-        snippetElement.setDocument(new Document(middle));
-        snippetElement.setEditable(false);
-
-        // Configure the syntax highlighting based on the rule language key and if a configuration is provided by any
-        // plug-in via the extension mechanism.
-        // INFO: Configuration must extend of org.eclipse.jface.text.source.SourceViewerConfiguration
-        var configurationProviders = SonarLintExtensionTracker.getInstance().getSourceViewerConfigurationProvider();
-        for (var configurationProvider : configurationProviders) {
-          var sourceViewerConfiguration = configurationProvider.sourceViewerConfiguration(languageKey);
-          if (sourceViewerConfiguration.isPresent()) {
-            snippetElement.configure(sourceViewerConfiguration.get());
-            break;
-          }
-        }
+        createSourceViewer(StringUtils.xmlDecode(middle), parent, languageKey);
       }
 
       currentHTML = currentHTML.substring(matcherEnd.end(), currentHTML.length()).trim();
@@ -170,5 +153,52 @@ public class RuleDescriptionPanel extends Composite {
 
       endFragment.setHtmlBody(currentHTML);
     }
+  }
+
+  private static void createSourceViewer(String html, Composite parent, String languageKey) {
+    // Configure the syntax highlighting based on the rule language key and if a configuration and document partitioner
+    // is provided by any plug-in via the extension mechanism.
+    // INFO: Configuration must extend of org.eclipse.jface.text.source.SourceViewerConfiguration
+    // INFO: Document partitioner must implement org.eclipse.jface.text.IDocumentPartitioner
+    var configurationProviders = SonarLintExtensionTracker.getInstance().getSyntaxHighlightingProvider();
+    SourceViewerConfiguration sourceViewerConfigurationNullable = null;
+    for (var configurationProvider : configurationProviders) {
+      var sourceViewerConfigurationOptional = configurationProvider.sourceViewerConfiguration(languageKey);
+      if (sourceViewerConfigurationOptional.isPresent()) {
+        sourceViewerConfigurationNullable = sourceViewerConfigurationOptional.get();
+        break;
+      }
+    }
+
+    IDocumentPartitioner documentPartitionerNullable = null;
+    for (var configurationProvider : configurationProviders) {
+      var documentPartitionerOptional = configurationProvider.documentPartitioner(languageKey);
+      if (documentPartitionerOptional.isPresent()) {
+        documentPartitionerNullable = documentPartitionerOptional.get();
+        break;
+      }
+    }
+
+    var snippetElement = new SourceViewer(parent, null, SWT.BORDER);
+    var gridData = new GridData();
+    gridData.horizontalAlignment = SWT.FILL;
+    gridData.grabExcessHorizontalSpace = true;
+    snippetElement.getTextWidget().setLayoutData(gridData);
+
+    Document content = new Document(html);
+    if (sourceViewerConfigurationNullable != null && documentPartitionerNullable != null) {
+      content.setDocumentPartitioner(
+        sourceViewerConfigurationNullable.getConfiguredDocumentPartitioning(snippetElement),
+        documentPartitionerNullable);
+      content.setDocumentPartitioner(documentPartitionerNullable);
+      documentPartitionerNullable.connect(content);
+    }
+
+    if (sourceViewerConfigurationNullable != null) {
+      snippetElement.configure(sourceViewerConfigurationNullable);
+    }
+
+    snippetElement.setDocument(content);
+    snippetElement.setEditable(false);
   }
 }

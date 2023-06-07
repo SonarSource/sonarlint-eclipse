@@ -25,7 +25,7 @@
       </enhancer>
    </extension>
    <extension
-         point="org.sonarlint.eclipse.core.sourceViewerConfigurationProvider">
+         point="org.sonarlint.eclipse.core.syntaxHighlightingProvider">
       <enhancer
             class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
       </enhancer>
