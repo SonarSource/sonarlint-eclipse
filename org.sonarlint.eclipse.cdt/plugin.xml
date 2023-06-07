@@ -12,4 +12,10 @@
               class="org.sonarlint.eclipse.cdt.internal.CProjectConfiguratorExtension">
         </provider>
      </extension>
+     <extension
+         point="org.sonarlint.eclipse.core.sourceViewerConfigurationProvider">
+      <enhancer
+            class="org.sonarlint.eclipse.cdt.internal.CProjectConfiguratorExtension">
+      </enhancer>
+   </extension>
 </plugin>
