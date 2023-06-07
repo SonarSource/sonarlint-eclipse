@@ -13,7 +13,7 @@
         </provider>
      </extension>
      <extension
-         point="org.sonarlint.eclipse.core.sourceViewerConfigurationProvider">
+         point="org.sonarlint.eclipse.core.syntaxHighlightingProvider">
       <enhancer
             class="org.sonarlint.eclipse.cdt.internal.CProjectConfiguratorExtension">
       </enhancer>
