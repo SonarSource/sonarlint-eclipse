@@ -24,4 +24,10 @@
             class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
       </enhancer>
    </extension>
+   <extension
+         point="org.sonarlint.eclipse.core.sourceViewerConfigurationProvider">
+      <enhancer
+            class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
+      </enhancer>
+   </extension>
 </plugin>
