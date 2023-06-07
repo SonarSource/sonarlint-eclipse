@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.rule;
 
 import java.util.Optional;
+import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
 /**
@@ -29,9 +30,14 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
  *  
  *  @since 7.12
  */
-public interface ISourceViewerConfigurationProvider {
+public interface ISyntaxHighlightingProvider {
   /**
    *  @return the SourceViewer configuration for syntax highlighting for the rule language, or null when none found
    */
   Optional<SourceViewerConfiguration> sourceViewerConfiguration(String ruleLanguage);
+
+  /**
+   *  @return the SourceViewer and its document requiring 
+   */
+  Optional<IDocumentPartitioner> documentPartitioner(String ruleLanguage);
 }

@@ -185,4 +185,8 @@ public class StringUtils {
       throw new IllegalStateException("Should never happen", e);
     }
   }
+
+  public static String xmlDecode(String toDecode) {
+    return toDecode.replace("&quot;", "\"").replace("&apos;", "\'").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
+  }
 }

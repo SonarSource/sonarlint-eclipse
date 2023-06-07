@@ -30,6 +30,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
@@ -37,13 +38,13 @@ import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.core.rule.ISourceViewerConfigurationProvider;
+import org.sonarlint.eclipse.core.rule.ISyntaxHighlightingProvider;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 /**
  * Responsible for checking at runtime if CDT plugin is installed.
  */
-public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFileLanguageProvider, ISourceViewerConfigurationProvider {
+public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFileLanguageProvider, ISyntaxHighlightingProvider {
 
   @Nullable
   private final CdtUtils cdtUtils;
@@ -117,4 +118,11 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
     return Optional.empty();
   }
 
+  @Override
+  public Optional<IDocumentPartitioner> documentPartitioner(String ruleLanguage) {
+    if (isCdtPresent() && (ruleLanguage.equals(Language.C.getLanguageKey()) || ruleLanguage.equals(Language.CPP.getLanguageKey()))) {
+      // return Optional.of(cdtUtils.documentPartitioner());
+    }
+    return Optional.empty();
+  }
 }
