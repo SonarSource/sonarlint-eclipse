@@ -134,7 +134,7 @@ public class RuleDescriptionPanel extends Composite {
 
       var middle = currentHTML.substring(matcherStart.end(), matcherEnd.start()).trim();
       if (!middle.isEmpty() && !middle.isBlank()) {
-        var snippetElement = new SourceViewer(parent, null, SWT.NONE);
+        var snippetElement = new SourceViewer(parent, null, SWT.BORDER);
         var gridData = new GridData();
         gridData.horizontalAlignment = SWT.FILL;
         gridData.grabExcessHorizontalSpace = true;
