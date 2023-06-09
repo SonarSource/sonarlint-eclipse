@@ -35,6 +35,7 @@ import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Color;
@@ -89,8 +90,9 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
     try {
       browser = new Browser(this, SWT.NONE);
       addLinkListener(browser);
-      browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-      browser.setJavascriptEnabled(false);
+      var browserLayoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+      browser.setLayoutData(browserLayoutData);
+      browser.setJavascriptEnabled(true);
       // Cancel opening of new windows
       browser.addOpenWindowListener(event -> event.required = true);
       // Replace browser's built-in context menu with none
@@ -119,10 +121,17 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
             scheduledFuture.cancel(true);
           }
           scheduledFuture = scheduler.schedule(
-            () -> browser.getDisplay().asyncExec(() -> SonarLintWebView.this.setVisible(true)),
+            () -> browser.getDisplay().asyncExec(() -> {
+              updateBrowserHeightHint(browserLayoutData);
+              SonarLintWebView.this.setVisible(true);
+            }),
             300, TimeUnit.MILLISECONDS);
         }
       });
+
+      browser.addProgressListener(ProgressListener.completedAdapter(event -> {
+        updateBrowserHeightHint(browserLayoutData);
+      }));
 
     } catch (SWTError e) {
       // Browser is probably not available but it will be partially initialized
@@ -134,6 +143,12 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
       new Label(parent, SWT.WRAP).setText("Unable to create SWT Browser:\n " + e.getMessage());
     }
     reload();
+  }
+
+  private void updateBrowserHeightHint(GridData browserLayoutData) {
+    var height = (Double) browser.evaluate("return document.body.scrollHeight;"); //$NON-NLS-1$
+    browserLayoutData.heightHint = height.intValue();
+    browser.requestLayout();
   }
 
   @Override
@@ -220,6 +235,7 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
   private String css() {
     var fontSizePt = defaultFont.getFontData()[0].getHeight();
     return "<style type=\"text/css\">"
+      + "html, body {overflow-y:hidden;}"
       + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: " + fontSizePt + UNIT + "; "
       + "color: " + hexColor(this.foreground) + ";background-color: " + hexColor(this.background)
       + ";}"
@@ -283,6 +299,7 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
 
   private void reload() {
     browser.setText("<!doctype html><html><head>" + css() + "</head><body>" + htmlBody + "</body></html>");
+    browser.requestLayout();
   }
 
   public static String escapeHTML(String s) {
