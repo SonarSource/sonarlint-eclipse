@@ -25,6 +25,9 @@ import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -57,15 +60,25 @@ public class RuleDetailsPanel extends Composite {
   private final boolean useEditorFontSize;
   @Nullable
   private Group ruleParamsPanel;
+  private final Composite scrolledContent;
+  private final ScrolledComposite scrollComposite;
 
   public RuleDetailsPanel(Composite parent, boolean useEditorFontSize) {
     super(parent, SWT.NONE);
+    setLayout(new GridLayout(1, false));
+
+    scrollComposite = new ScrolledComposite(this, SWT.V_SCROLL);
+    scrollComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    scrollComposite.setExpandHorizontal(true);
+    scrollComposite.setExpandVertical(true);
+
+    scrolledContent = new Composite(scrollComposite, SWT.NONE);
+    scrolledContent.setLayout(new GridLayout(1, false));
+    scrollComposite.setContent(scrolledContent);
+
     this.useEditorFontSize = useEditorFontSize;
 
-    var layout = new GridLayout(1, false);
-    setLayout(layout);
-
-    ruleNameLabel = new Label(this, SWT.NONE);
+    ruleNameLabel = new Label(scrolledContent, SWT.NONE);
     ruleNameLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
     var nameLabelFont = FontDescriptor.createFrom(ruleNameLabel.getFont())
       .setStyle(SWT.BOLD)
@@ -74,9 +87,26 @@ public class RuleDetailsPanel extends Composite {
     ruleNameLabel.setFont(nameLabelFont);
     ruleNameLabel.addDisposeListener(e -> nameLabelFont.dispose());
 
-    ruleHeaderPanel = new RuleHeaderPanel(this);
+    ruleHeaderPanel = new RuleHeaderPanel(scrolledContent);
     ruleHeaderPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 
+    updateScrollCompositeMinSize();
+    scrollComposite.addControlListener(new ControlListener() {
+
+      @Override
+      public void controlMoved(ControlEvent e) {
+      }
+
+      @Override
+      public void controlResized(ControlEvent e) {
+        updateScrollCompositeMinSize();
+      }
+    });
+  }
+
+  private void updateScrollCompositeMinSize() {
+    final var width = scrollComposite.getClientArea().width;
+    scrollComposite.setMinSize(scrolledContent.computeSize(width, SWT.DEFAULT));
   }
 
   public void updateRule(GetStandaloneRuleDescriptionResponse getStandaloneRuleDescriptionResponse) {
@@ -89,6 +119,7 @@ public class RuleDetailsPanel extends Composite {
     updateHtmlDescription(getStandaloneRuleDescriptionResponse.getDescription(), ruleDefinition.getLanguage().getLanguageKey());
 
     requestLayout();
+    updateScrollCompositeMinSize();
   }
 
   public void updateRule(GetEffectiveRuleDetailsResponse getEffectiveRuleDetailsResponse) {
@@ -103,6 +134,7 @@ public class RuleDetailsPanel extends Composite {
     updateParameters(details);
 
     requestLayout();
+    updateScrollCompositeMinSize();
   }
 
   private void updateParameters(EffectiveRuleDetailsDto details) {
@@ -110,7 +142,7 @@ public class RuleDetailsPanel extends Composite {
       ruleParamsPanel.dispose();
     }
     if (!details.getParams().isEmpty()) {
-      ruleParamsPanel = new Group(this, SWT.NONE);
+      ruleParamsPanel = new Group(scrolledContent, SWT.NONE);
       ruleParamsPanel.setText("Parameters");
       ruleParamsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 
@@ -153,7 +185,7 @@ public class RuleDetailsPanel extends Composite {
     if (ruleDescriptionPanel != null && !ruleDescriptionPanel.isDisposed()) {
       ruleDescriptionPanel.dispose();
     }
-    ruleDescriptionPanel = new RuleDescriptionPanel(this, useEditorFontSize);
+    ruleDescriptionPanel = new RuleDescriptionPanel(scrolledContent, useEditorFontSize);
     ruleDescriptionPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     ruleDescriptionPanel.updateRule(description, languageKey);
   }
