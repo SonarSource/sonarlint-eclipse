@@ -132,7 +132,9 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
       browser.addProgressListener(ProgressListener.completedAdapter(event -> {
         updateBrowserHeightHint(browserLayoutData);
       }));
-
+      // This is to avoid the browser to capture mouse wheel events, and so preventing to scroll the parent scrollable
+      browser.setCapture(false);
+      browser.setEnabled(false);
     } catch (SWTError e) {
       // Browser is probably not available but it will be partially initialized
       for (var c : parent.getChildren()) {
