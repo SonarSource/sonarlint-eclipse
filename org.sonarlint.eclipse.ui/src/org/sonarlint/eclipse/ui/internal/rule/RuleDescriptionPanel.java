@@ -179,13 +179,14 @@ public class RuleDescriptionPanel extends Composite {
       }
     }
 
-    var snippetElement = new SourceViewer(parent, null, SWT.BORDER);
+    var snippetElement = new SourceViewer(parent, null, SWT.BORDER | SWT.H_SCROLL);
     var gridData = new GridData();
     gridData.horizontalAlignment = SWT.FILL;
     gridData.grabExcessHorizontalSpace = true;
+    gridData.horizontalIndent = 10;
     snippetElement.getTextWidget().setLayoutData(gridData);
 
-    Document content = new Document(html);
+    var content = new Document(html);
     if (sourceViewerConfigurationNullable != null && documentPartitionerNullable != null) {
       content.setDocumentPartitioner(
         sourceViewerConfigurationNullable.getConfiguredDocumentPartitioning(snippetElement),
