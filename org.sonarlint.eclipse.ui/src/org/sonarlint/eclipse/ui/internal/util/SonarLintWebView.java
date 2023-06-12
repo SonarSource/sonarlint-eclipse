@@ -33,8 +33,6 @@ import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.browser.LocationAdapter;
-import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -89,7 +87,7 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
     this.useEditorFontSize = useEditorFontSize;
     try {
       browser = new Browser(this, SWT.NONE);
-      addLinkListener(browser);
+      BrowserUtils.addLinkListener(browser);
       var browserLayoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
       browser.setLayoutData(browserLayoutData);
       browser.setJavascriptEnabled(true);
@@ -212,28 +210,6 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
     return changed;
   }
 
-  private static void addLinkListener(Browser browser) {
-    browser.addLocationListener(new LocationAdapter() {
-      @Override
-      public void changing(LocationEvent event) {
-        var loc = event.location;
-
-        if ("about:blank".equals(loc)) { //$NON-NLS-1$
-          /*
-           * Using the Browser.setText API triggers a location change to "about:blank".
-           * XXX: remove this code once https://bugs.eclipse.org/bugs/show_bug.cgi?id=130314 is fixed
-           */
-          // input set with setText
-          return;
-        }
-
-        event.doit = false;
-
-        BrowserUtils.openExternalBrowser(loc);
-      }
-    });
-  }
-
   private String css() {
     var fontSizePt = defaultFont.getFontData()[0].getHeight();
     return "<style type=\"text/css\">"
@@ -302,21 +278,6 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
   private void reload() {
     browser.setText("<!doctype html><html><head>" + css() + "</head><body>" + htmlBody + "</body></html>");
     browser.requestLayout();
-  }
-
-  public static String escapeHTML(String s) {
-    var out = new StringBuilder(Math.max(16, s.length()));
-    for (var i = 0; i < s.length(); i++) {
-      var c = s.charAt(i);
-      if (c > 127 || c == '"' || c == '<' || c == '>' || c == '&') {
-        out.append("&#");
-        out.append((int) c);
-        out.append(';');
-      } else {
-        out.append(c);
-      }
-    }
-    return out.toString();
   }
 
   private static String hexColor(@Nullable Color color, RGB defaultColor) {
