@@ -30,6 +30,9 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -39,6 +42,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -51,23 +55,31 @@ import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.rule.RuleDescriptionPanel;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
-import org.sonarlint.eclipse.ui.internal.util.SonarLintWebView;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
 import org.sonarsource.sonarlint.core.clientapi.client.hotspot.HotspotDetailsDto;
 
 public class HotspotsView extends ViewPart {
-
-  private static final String NO_SECURITY_HOTSPOTS_SELECTED = "<em>No security hotspots selected<em>";
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.HotspotsView";
+
   private PageBook book;
   private Control hotspotsPage;
   private TableViewer hotspotViewer;
   private SashForm splitter;
 
-  private SonarLintWebView riskDescriptionBrowser;
-  private SonarLintWebView vulnerabilityDescriptionBrowser;
-  private SonarLintWebView fixRecommendationsBrowser;
+  private ScrolledComposite riskDescriptionScrolledComposite;
+  private ScrolledComposite vulnerabilityDescriptionScrolledComposite;
+  private ScrolledComposite fixRecommendationsScrolledComposite;
+
+  private Composite riskDescriptionScrolledContent;
+  private Composite vulnerabilityDescriptionScrolledContent;
+  private Composite fixRecommendationsScrolledContent;
+
+  private Control riskDescriptionContent;
+  private Control vulnerabilityDescriptionContent;
+  private Control fixRecommendationsContent;
 
   @Override
   public void createPartControl(Composite parent) {
@@ -77,7 +89,6 @@ public class HotspotsView extends ViewPart {
     var noHotspotsMessage = createNoHotspotsMessage(toolkit);
     hotspotsPage = createHotspotsPage(toolkit);
     book.showPage(noHotspotsMessage);
-
   }
 
   private Control createNoHotspotsMessage(FormToolkit kit) {
@@ -113,31 +124,77 @@ public class HotspotsView extends ViewPart {
 
     createHotspotTable();
 
-    final var tabFolder = new TabFolder(splitter, SWT.NONE);
+    var tabFolder = new TabFolder(splitter, SWT.NONE);
 
     var riskDescriptionTab = new TabItem(tabFolder, SWT.NONE);
     riskDescriptionTab.setText("What's the risk?");
     riskDescriptionTab.setToolTipText("Risk decription");
-    riskDescriptionBrowser = new SonarLintWebView(tabFolder, true);
-    riskDescriptionTab.setControl(riskDescriptionBrowser);
+    riskDescriptionScrolledComposite = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
+    riskDescriptionScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    riskDescriptionScrolledComposite.setExpandHorizontal(true);
+    riskDescriptionScrolledComposite.setExpandVertical(true);
+    riskDescriptionScrolledContent = new Composite(riskDescriptionScrolledComposite, SWT.NONE);
+    riskDescriptionScrolledContent.setLayout(new GridLayout(1, false));
+    riskDescriptionScrolledComposite.setContent(riskDescriptionScrolledContent);
+    riskDescriptionTab.setControl(riskDescriptionScrolledComposite);
 
     var vulnerabilityDescriptionTab = new TabItem(tabFolder, SWT.NONE);
     vulnerabilityDescriptionTab.setText("Are you at risk?");
     vulnerabilityDescriptionTab.setToolTipText("Vulnerability decription");
-    vulnerabilityDescriptionBrowser = new SonarLintWebView(tabFolder, true);
-    vulnerabilityDescriptionTab.setControl(vulnerabilityDescriptionBrowser);
+    vulnerabilityDescriptionScrolledComposite = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
+    vulnerabilityDescriptionScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    vulnerabilityDescriptionScrolledComposite.setExpandHorizontal(true);
+    vulnerabilityDescriptionScrolledComposite.setExpandVertical(true);
+    vulnerabilityDescriptionScrolledContent = new Composite(vulnerabilityDescriptionScrolledComposite, SWT.NONE);
+    vulnerabilityDescriptionScrolledContent.setLayout(new GridLayout(1, false));
+    vulnerabilityDescriptionScrolledComposite.setContent(vulnerabilityDescriptionScrolledContent);
+    vulnerabilityDescriptionTab.setControl(vulnerabilityDescriptionScrolledComposite);
 
     var fixRecommendationsTab = new TabItem(tabFolder, SWT.NONE);
     fixRecommendationsTab.setText("How can you fix it?");
     fixRecommendationsTab.setToolTipText("Recommendations");
-    fixRecommendationsBrowser = new SonarLintWebView(tabFolder, true);
-    fixRecommendationsTab.setControl(fixRecommendationsBrowser);
+    fixRecommendationsScrolledComposite = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
+    fixRecommendationsScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    fixRecommendationsScrolledComposite.setExpandHorizontal(true);
+    fixRecommendationsScrolledComposite.setExpandVertical(true);
+    fixRecommendationsScrolledContent = new Composite(fixRecommendationsScrolledComposite, SWT.NONE);
+    fixRecommendationsScrolledContent.setLayout(new GridLayout(1, false));
+    fixRecommendationsScrolledComposite.setContent(fixRecommendationsScrolledContent);
+    fixRecommendationsTab.setControl(fixRecommendationsScrolledComposite);
+
+    updateScrollCompositeMinSize();
+    var listener = new ControlListener() {
+      @Override
+      public void controlMoved(ControlEvent e) {
+      }
+
+      @Override
+      public void controlResized(ControlEvent e) {
+        updateScrollCompositeMinSize();
+      }
+    };
+    riskDescriptionScrolledComposite.addControlListener(listener);
+    vulnerabilityDescriptionScrolledComposite.addControlListener(listener);
+    fixRecommendationsScrolledComposite.addControlListener(listener);
+
+    clearRule();
 
     return form;
   }
 
-  private static String wrapInDiv(String content) {
-    return "<div class=\"rule-desc\">" + content + "</div>";
+  private void updateScrollCompositeMinSize() {
+    riskDescriptionScrolledComposite.setMinSize(
+      riskDescriptionScrolledContent.computeSize(
+        riskDescriptionScrolledComposite.getClientArea().width, SWT.DEFAULT));
+    riskDescriptionScrolledComposite.requestLayout();
+    vulnerabilityDescriptionScrolledComposite.setMinSize(
+      vulnerabilityDescriptionScrolledContent.computeSize(
+        vulnerabilityDescriptionScrolledComposite.getClientArea().width, SWT.DEFAULT));
+    vulnerabilityDescriptionScrolledComposite.requestLayout();
+    fixRecommendationsScrolledComposite.setMinSize(
+      fixRecommendationsScrolledContent.computeSize(
+        fixRecommendationsScrolledComposite.getClientArea().width, SWT.DEFAULT));
+    fixRecommendationsScrolledComposite.requestLayout();
   }
 
   @Nullable
@@ -161,9 +218,7 @@ public class HotspotsView extends ViewPart {
 
     // Deselect line when clicking on a blank space in the table
     table.addListener(SWT.MouseDown, event -> {
-
       var item = table.getItem(new Point(event.x, event.y));
-
       if (item == null) {
         // No table item at the click location?
         hotspotViewer.setSelection(StructuredSelection.EMPTY);
@@ -173,13 +228,9 @@ public class HotspotsView extends ViewPart {
     hotspotViewer.addPostSelectionChangedListener(event -> {
       var hotspot = getSelectedHotspot();
       if (hotspot == null) {
-        riskDescriptionBrowser.setHtmlBody(NO_SECURITY_HOTSPOTS_SELECTED);
-        vulnerabilityDescriptionBrowser.setHtmlBody(NO_SECURITY_HOTSPOTS_SELECTED);
-        fixRecommendationsBrowser.setHtmlBody(NO_SECURITY_HOTSPOTS_SELECTED);
+        clearRule();
       } else {
-        riskDescriptionBrowser.setHtmlBody(wrapInDiv(hotspot.getRule().getRiskDescription()));
-        vulnerabilityDescriptionBrowser.setHtmlBody(wrapInDiv(hotspot.getRule().getVulnerabilityDescription()));
-        fixRecommendationsBrowser.setHtmlBody(wrapInDiv(hotspot.getRule().getFixRecommendations()));
+        updateRule(hotspot);
       }
     });
 
@@ -189,7 +240,6 @@ public class HotspotsView extends ViewPart {
     colPriority.getColumn().setText("Priority");
     colPriority.getColumn().setResizable(true);
     colPriority.setLabelProvider(new ColumnLabelProvider() {
-
       @Override
       public Image getImage(Object element) {
         switch (((HotspotAndMarker) element).hotspot.getRule().getVulnerabilityProbability()) {
@@ -288,6 +338,68 @@ public class HotspotsView extends ViewPart {
     hotspotViewer.setContentProvider(ArrayContentProvider.getInstance());
   }
 
+  private void clearRule() {
+    final var NO_SECURITY_HOTSPOTS_SELECTED = "No security hotspots selected";
+
+    if (riskDescriptionContent != null && !riskDescriptionContent.isDisposed()) {
+      riskDescriptionContent.dispose();
+    }
+    riskDescriptionContent = new Label(riskDescriptionScrolledContent, SWT.NONE);
+    riskDescriptionContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    ((Label) riskDescriptionContent).setText(NO_SECURITY_HOTSPOTS_SELECTED);
+
+    if (vulnerabilityDescriptionContent != null && !vulnerabilityDescriptionContent.isDisposed()) {
+      vulnerabilityDescriptionContent.dispose();
+    }
+    vulnerabilityDescriptionContent = new Label(vulnerabilityDescriptionScrolledContent, SWT.NONE);
+    vulnerabilityDescriptionContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    ((Label) vulnerabilityDescriptionContent).setText(NO_SECURITY_HOTSPOTS_SELECTED);
+
+    if (fixRecommendationsContent != null && !fixRecommendationsContent.isDisposed()) {
+      fixRecommendationsContent.dispose();
+    }
+    fixRecommendationsContent = new Label(fixRecommendationsScrolledContent, SWT.NONE);
+    fixRecommendationsContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    ((Label) fixRecommendationsContent).setText(NO_SECURITY_HOTSPOTS_SELECTED);
+
+    // None of the labels is really "scrollable", therefore only update the contents!
+    riskDescriptionContent.requestLayout();
+    vulnerabilityDescriptionContent.requestLayout();
+    fixRecommendationsContent.requestLayout();
+  }
+
+  private void updateRule(HotspotDetailsDto details) {
+    // HotspotRule does not contain the language but it can be derived from the rule key
+    var rule = details.getRule();
+    var languageKey = rule.getKey().split(":")[0];
+
+    if (riskDescriptionContent != null && !riskDescriptionContent.isDisposed()) {
+      riskDescriptionContent.dispose();
+    }
+    riskDescriptionContent = new RuleDescriptionPanel(riskDescriptionScrolledContent, languageKey, true);
+    riskDescriptionContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    ((RuleDescriptionPanel) riskDescriptionContent).updateMonolithicRule(
+      new RuleMonolithicDescriptionDto(rule.getRiskDescription()));
+
+    if (vulnerabilityDescriptionContent != null && !vulnerabilityDescriptionContent.isDisposed()) {
+      vulnerabilityDescriptionContent.dispose();
+    }
+    vulnerabilityDescriptionContent = new RuleDescriptionPanel(vulnerabilityDescriptionScrolledContent, languageKey, true);
+    vulnerabilityDescriptionContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    ((RuleDescriptionPanel) vulnerabilityDescriptionContent).updateMonolithicRule(
+      new RuleMonolithicDescriptionDto(rule.getVulnerabilityDescription()));
+
+    if (fixRecommendationsContent != null && !fixRecommendationsContent.isDisposed()) {
+      fixRecommendationsContent.dispose();
+    }
+    fixRecommendationsContent = new RuleDescriptionPanel(fixRecommendationsScrolledContent, languageKey, true);
+    fixRecommendationsContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    ((RuleDescriptionPanel) fixRecommendationsContent).updateMonolithicRule(
+      new RuleMonolithicDescriptionDto(rule.getFixRecommendations()));
+
+    updateScrollCompositeMinSize();
+  }
+
   public void openHotspot(HotspotDetailsDto hotspot, @Nullable IMarker marker) {
     clearMarkers();
 
@@ -352,5 +464,4 @@ public class HotspotsView extends ViewPart {
       book.setFocus();
     }
   }
-
 }
