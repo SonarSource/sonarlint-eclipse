@@ -185,9 +185,9 @@ public class RuleDetailsPanel extends Composite {
     if (ruleDescriptionPanel != null && !ruleDescriptionPanel.isDisposed()) {
       ruleDescriptionPanel.dispose();
     }
-    ruleDescriptionPanel = new RuleDescriptionPanel(scrolledContent, useEditorFontSize);
+    ruleDescriptionPanel = new RuleDescriptionPanel(scrolledContent, languageKey, useEditorFontSize);
     ruleDescriptionPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    ruleDescriptionPanel.updateRule(description, languageKey);
+    ruleDescriptionPanel.updateRule(description);
   }
 
   public void displayLoadingIndicator() {

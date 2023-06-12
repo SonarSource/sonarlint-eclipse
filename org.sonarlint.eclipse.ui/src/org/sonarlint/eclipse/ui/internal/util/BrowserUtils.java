@@ -21,12 +21,18 @@ package org.sonarlint.eclipse.ui.internal.util;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.LocationAdapter;
+import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 
-public class BrowserUtils {
+public final class BrowserUtils {
+  private BrowserUtils() {
+    // utility class
+  }
 
   public static void openExternalBrowser(String url) {
     Display.getDefault().asyncExec(() -> {
@@ -38,8 +44,25 @@ public class BrowserUtils {
     });
   }
 
-  private BrowserUtils() {
-    // utility class
-  }
+  public static void addLinkListener(Browser browser) {
+    browser.addLocationListener(new LocationAdapter() {
+      @Override
+      public void changing(LocationEvent event) {
+        var loc = event.location;
 
+        if ("about:blank".equals(loc)) { //$NON-NLS-1$
+          /*
+           * Using the Browser.setText API triggers a location change to "about:blank".
+           * XXX: remove this code once https://bugs.eclipse.org/bugs/show_bug.cgi?id=130314 is fixed
+           */
+          // input set with setText
+          return;
+        }
+
+        event.doit = false;
+
+        openExternalBrowser(loc);
+      }
+    });
+  }
 }
