@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -34,10 +33,13 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -85,9 +87,13 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     SonarLintLogger.get().removeLogListener(listener);
   }
 
+  @Before
+  public void clean() throws BackingStoreException {
+    ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).removeNode();
+  }
+
   @After
   public void cleanup() {
-    SonarLintGlobalConfiguration.saveRulesConfig(Collections.emptyList());
     SonarLintMarkerUpdater.deleteAllMarkersFromReport();
   }
 
