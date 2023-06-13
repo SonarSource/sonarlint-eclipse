@@ -125,7 +125,6 @@ public class HotspotsView extends ViewPart {
     createHotspotTable();
 
     var tabFolder = new TabFolder(splitter, SWT.NONE);
-    tabFolder.setLayout(new GridLayout(1, false));
 
     var riskDescriptionTab = new TabItem(tabFolder, SWT.NONE);
     riskDescriptionTab.setText("What's the risk?");
@@ -187,12 +186,15 @@ public class HotspotsView extends ViewPart {
     riskDescriptionScrolledComposite.setMinSize(
       riskDescriptionScrolledContent.computeSize(
         riskDescriptionScrolledComposite.getClientArea().width, SWT.DEFAULT));
+    riskDescriptionScrolledComposite.requestLayout();
     vulnerabilityDescriptionScrolledComposite.setMinSize(
       vulnerabilityDescriptionScrolledContent.computeSize(
         vulnerabilityDescriptionScrolledComposite.getClientArea().width, SWT.DEFAULT));
+    vulnerabilityDescriptionScrolledComposite.requestLayout();
     fixRecommendationsScrolledComposite.setMinSize(
       fixRecommendationsScrolledContent.computeSize(
         fixRecommendationsScrolledComposite.getClientArea().width, SWT.DEFAULT));
+    fixRecommendationsScrolledComposite.requestLayout();
   }
 
   @Nullable
@@ -360,7 +362,10 @@ public class HotspotsView extends ViewPart {
     fixRecommendationsContent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     ((Label) fixRecommendationsContent).setText(NO_SECURITY_HOTSPOTS_SELECTED);
 
-    updateScrollCompositeMinSize();
+    // None of the labels is really "scrollable", therefore only update the contents!
+    riskDescriptionContent.requestLayout();
+    vulnerabilityDescriptionContent.requestLayout();
+    fixRecommendationsContent.requestLayout();
   }
 
   private void updateRule(HotspotDetailsDto details) {
