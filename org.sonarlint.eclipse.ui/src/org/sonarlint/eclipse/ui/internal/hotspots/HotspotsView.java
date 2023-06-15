@@ -339,7 +339,7 @@ public class HotspotsView extends ViewPart {
   }
 
   private void clearRule() {
-    final var NO_SECURITY_HOTSPOTS_SELECTED = "No security hotspots selected";
+    final var NO_SECURITY_HOTSPOTS_SELECTED = "No Security Hotspots selected";
 
     if (riskDescriptionContent != null && !riskDescriptionContent.isDisposed()) {
       riskDescriptionContent.dispose();
