@@ -69,14 +69,14 @@ public class RuleDescriptionPanel extends Composite {
   }
 
   public void updateMonolithicRule(RuleMonolithicDescriptionDto description) {
-    HTMLUtils.parseIntoElements(description.getHtmlContent(), this, languageKey, this.useEditorFontSize);
+    HTMLUtils.parseIntoElements2(description.getHtmlContent(), this, languageKey, this.useEditorFontSize);
   }
 
   public void updateSplitRule(RuleSplitDescriptionDto description) {
     var intro = description.getIntroductionHtmlContent();
     if (StringUtils.isNotBlank(intro)) {
       // introduction (optional)
-      HTMLUtils.parseIntoElements(intro, this, languageKey, this.useEditorFontSize);
+      HTMLUtils.parseIntoElements2(intro, this, languageKey, this.useEditorFontSize);
     }
 
     // tab view
@@ -91,7 +91,7 @@ public class RuleDescriptionPanel extends Composite {
       var content = tab.getContent();
       if (content.isLeft()) {
         // tab description
-        HTMLUtils.parseIntoElements(content.getLeft().getHtmlContent(), tabContent, languageKey,
+        HTMLUtils.parseIntoElements2(content.getLeft().getHtmlContent(), tabContent, languageKey,
           this.useEditorFontSize);
       } else {
         // context view
@@ -108,7 +108,7 @@ public class RuleDescriptionPanel extends Composite {
             contextualTabFolder.setSelection(contextualTabItem);
           }
 
-          HTMLUtils.parseIntoElements(contextualTab.getHtmlContent(), contextualTabContent, languageKey,
+          HTMLUtils.parseIntoElements2(contextualTab.getHtmlContent(), contextualTabContent, languageKey,
             this.useEditorFontSize);
           contextualTabItem.setControl(contextualTabContent);
         }
