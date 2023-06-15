@@ -53,7 +53,7 @@ public class RuleDescriptionView extends WorkbenchView {
     return new DefaultLabel(getCTabItem(), 5);
   }
 
-  public Browser getTopBrowser() {
+  public Browser getFirstBrowser() {
     // Browser can take a while to render
     new WaitUntil(new WidgetIsFound(org.eclipse.swt.browser.Browser.class, getCTabItem().getControl()),
       TimePeriod.DEFAULT, false);
@@ -65,11 +65,11 @@ public class RuleDescriptionView extends WorkbenchView {
   }
 
   public String getFlatTextContent() {
-    new WaitUntil(new PageIsLoaded(getTopBrowser()));
+    new WaitUntil(new PageIsLoaded(getFirstBrowser()));
 
     return getRuleName().getText() + "\n"
       + getRuleType().getText() + " " + getRuleSeverity().getText() + " " + getRuleKey().getText() + "\n"
-      + getTopBrowser().getText();
+      + getFirstBrowser().getText();
   }
 
 }

@@ -113,7 +113,7 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
   @Override
   public Optional<SourceViewerConfiguration> sourceViewerConfiguration(String ruleLanguage) {
     if (isCdtPresent() && (ruleLanguage.equals(Language.C.getLanguageKey()) || ruleLanguage.equals(Language.CPP.getLanguageKey()))) {
-      return Optional.of(cdtUtils.sourceViewerConfiguration());
+      return Optional.of(CdtUiUtils.sourceViewerConfiguration());
     }
     return Optional.empty();
   }
@@ -121,7 +121,7 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
   @Override
   public Optional<IDocumentPartitioner> documentPartitioner(String ruleLanguage) {
     if (isCdtPresent() && (ruleLanguage.equals(Language.C.getLanguageKey()) || ruleLanguage.equals(Language.CPP.getLanguageKey()))) {
-      // return Optional.of(cdtUtils.documentPartitioner());
+      return Optional.of(CdtUiUtils.documentPartitioner());
     }
     return Optional.empty();
   }
