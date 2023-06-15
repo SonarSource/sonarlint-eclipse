@@ -19,28 +19,17 @@
  */
 package org.sonarlint.eclipse.pdt.internal;
 
-//import org.eclipse.jdt.internal.ui.JavaPlugin;
-//import org.eclipse.jdt.internal.ui.text.FastJavaPartitionScanner;
-//import org.eclipse.jdt.ui.text.IJavaPartitions;
-//import org.eclipse.jdt.ui.text.JavaSourceViewerConfiguration;
 import org.eclipse.jface.text.IDocumentPartitioner;
-import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.php.internal.core.documentModel.partitioner.PHPStructuredTextPartitioner;
+import org.eclipse.php.internal.ui.editor.configuration.PHPStructuredTextViewerConfiguration;
 
 public class PdtUiUtils {
   public static SourceViewerConfiguration sourceViewerConfiguration() {
-    //var tools = JavaPlugin.getDefault().getJavaTextTools();
-
-    //return new JavaSourceViewerConfiguration(tools.getColorManager(),
-    //  JavaPlugin.getDefault().getCombinedPreferenceStore(), null, null);
-    return null;
+    return (SourceViewerConfiguration) new PHPStructuredTextViewerConfiguration();
   }
 
   public static IDocumentPartitioner documentPartitioner() {
-    //return new FastPartitioner(new FastJavaPartitionScanner(), new String[] {
-    //  IJavaPartitions.JAVA_SINGLE_LINE_COMMENT, IJavaPartitions.JAVA_MULTI_LINE_COMMENT, IJavaPartitions.JAVA_DOC,
-    //  IJavaPartitions.JAVA_STRING, IJavaPartitions.JAVA_CHARACTER, IJavaPartitions.JAVA_MULTI_LINE_STRING
-    //});
-    return null;
+    return (IDocumentPartitioner) new PHPStructuredTextPartitioner();
   }
 }

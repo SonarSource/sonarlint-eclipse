@@ -16,7 +16,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.annotation;resolution:=optional,
  org.sonarlint.eclipse.ui,
  org.eclipse.ui.ide,
- org.eclipse.swt
+ org.eclipse.swt,
+ org.eclipse.wst.html.core,
+ org.eclipse.wst.html.ui
 Import-Package: org.eclipse.ui.texteditor,
  org.eclipse.jface.preference
 Export-Package: org.sonarlint.eclipse.pdt.internal;x-friends:="org.sonarlint.eclipse.core.tests"

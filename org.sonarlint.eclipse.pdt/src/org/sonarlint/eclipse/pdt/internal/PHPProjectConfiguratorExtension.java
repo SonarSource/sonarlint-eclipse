@@ -19,35 +19,17 @@
  */
 package org.sonarlint.eclipse.pdt.internal;
 
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Optional;
-import java.util.Set;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
-import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
-import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.rule.ISyntaxHighlightingProvider;
-import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 import org.sonarsource.sonarlint.core.commons.Language;
 
-public class PHPProjectConfiguratorExtension
-  implements IAnalysisConfigurator, ISonarLintFileAdapterParticipant, ISyntaxHighlightingProvider {
-  private final boolean pdtPresent;
+public class PHPProjectConfiguratorExtension implements ISyntaxHighlightingProvider {
   private final boolean pdtUiPresent;
 
   public PHPProjectConfiguratorExtension() {
-    pdtPresent = isPdtPresent();
     pdtUiPresent = isPdtUiPresent();
-  }
-
-  private static boolean isPdtPresent() {
-    return isClassPresentAtRuntime("org.eclipse.php.internal.core.PHPCorePlugin");
   }
 
   private static boolean isPdtUiPresent() {
@@ -61,25 +43,6 @@ public class PHPProjectConfiguratorExtension
     } catch (ClassNotFoundException e) {
       return false;
     }
-  }
-
-  @Override
-  public Set<Language> whitelistedLanguages() {
-    if (pdtPresent) {
-      return EnumSet.of(Language.PHP);
-    }
-    return Collections.emptySet();
-  }
-
-  @Override
-  public boolean canConfigure(ISonarLintProject project) {
-    return pdtPresent && project.getResource() instanceof IProject
-      && PdtUtils.hasPHPNature((IProject) project.getResource());
-  }
-  
-  @Override
-  public void configure(IPreAnalysisContext context, IProgressMonitor monitor) {
-    // TODO: Implement!
   }
 
   @Override
