@@ -1,37 +1,54 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
 <target name="sonarlint-its-commons" sequenceNumber="2">
-  <locations>
-    <location includeSource="true" missingManifest="error" type="Maven">
-      <dependencies>
-        <dependency>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-          <version>2.11.0</version>
-          <type>jar</type>
-        </dependency>
-        <dependency>
-          <groupId>org.sonarsource.orchestrator</groupId>
-          <artifactId>sonar-orchestrator-osgi</artifactId>
-          <version>3.40.0.183</version>
-          <type>jar</type>
-        </dependency>
-        <dependency>
-          <groupId>com.google.code.gson</groupId>
-          <artifactId>gson</artifactId>
-          <version>2.10.1</version>
-        </dependency>
-      </dependencies>
-    </location>
-    <location includeDependencyDepth="infinite" includeDependencyScopes="compile,runtime" includeSource="true" missingManifest="error" type="Maven">
-      <dependencies>
-        <dependency>
-          <groupId>org.assertj</groupId>
-          <artifactId>assertj-core</artifactId>
-          <version>3.24.2</version>
-          <type>jar</type>
-        </dependency>
-      </dependencies>
-    </location>
-  </locations>
+	<locations>
+		<location includeSource="true" missingManifest="error" type="Maven">
+			<dependencies>
+				<dependency>
+					<groupId>commons-io</groupId>
+					<artifactId>commons-io</artifactId>
+					<version>2.11.0</version>
+					<type>jar</type>
+				</dependency>
+				<dependency>
+					<groupId>org.sonarsource.orchestrator</groupId>
+					<artifactId>sonar-orchestrator-osgi</artifactId>
+					<version>3.40.0.183</version>
+					<type>jar</type>
+				</dependency>
+				<dependency>
+					<groupId>com.google.code.gson</groupId>
+					<artifactId>gson</artifactId>
+					<version>2.10.1</version>
+				</dependency>
+				<dependency>
+					<groupId>org.awaitility</groupId>
+					<artifactId>awaitility</artifactId>
+					<version>4.2.0</version>
+				</dependency>
+				<dependency>
+					<groupId>org.awaitility</groupId>
+					<artifactId>awaitility</artifactId>
+					<version>4.2.0</version>
+				</dependency>
+				<dependency>
+					<groupId>org.hamcrest</groupId>
+					<artifactId>hamcrest</artifactId>
+					<version>2.1</version>
+				</dependency>
+			</dependencies>
+		</location>
+		<location includeDependencyDepth="infinite"
+			includeDependencyScopes="compile,runtime" includeSource="true"
+			missingManifest="error" type="Maven">
+			<dependencies>
+				<dependency>
+					<groupId>org.assertj</groupId>
+					<artifactId>assertj-core</artifactId>
+					<version>3.24.2</version>
+					<type>jar</type>
+				</dependency>
+			</dependencies>
+		</location>
+	</locations>
 </target>

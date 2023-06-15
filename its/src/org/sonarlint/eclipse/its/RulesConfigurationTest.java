@@ -30,6 +30,7 @@ import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 
 public class RulesConfigurationTest extends AbstractSonarLintTest {
 
@@ -48,10 +49,10 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     doAndWaitForSonarLintAnalysisJob(() -> onTheFlyView.getIssues().get(1).deactivateRule());
 
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
+      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9)));
 
     doAndWaitForSonarLintAnalysisJob(this::restoreDefaultRulesConfiguration);
 
@@ -140,22 +141,22 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
   static void checkIssueChanged() {
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .filteredOn(m -> "org.sonarlint.eclipse.onTheFlyIssueAnnotationType".equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
         tuple("Replace this use of System.out or System.err by a logger.", 9),
-        tuple("Refactor this method to reduce its Cognitive Complexity from 24 to the 10 allowed.", 12));
+        tuple("Refactor this method to reduce its Cognitive Complexity from 24 to the 10 allowed.", 12)));
   }
 
   void checkIssueIsDefault() {
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .filteredOn(m -> "org.sonarlint.eclipse.onTheFlyIssueAnnotationType".equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
         tuple("Replace this use of System.out or System.err by a logger.", 9),
-        tuple("Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.", 12));
+        tuple("Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.", 12)));
   }
 
 }
