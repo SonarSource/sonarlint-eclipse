@@ -100,11 +100,12 @@ public class SonarLintUtils {
    *  Enabled language should be consistent with https://www.sonarsource.com/products/sonarlint/features/eclipse!
    *  Exceptions are: - C/C++ only available with CDT (see CProjectConfiguratorExtension.whitelistedLanguages)
    *                  - Java/JSP only available with JDT (see JavaProjectConfiguratorExtension.whitelistedLanguages)
+   *                  - PHP obly available with PDT (PHPProjectConfiguratorExtension.whitelistedLanguages)
    */
   public static Set<Language> getEnabledLanguages() {
     var enabledLanguages = EnumSet.of(Language.ABAP, Language.APEX, Language.CSS, Language.COBOL, Language.HTML,
-      Language.JS, Language.KOTLIN, Language.PHP, Language.PLI, Language.PLSQL, Language.PYTHON, Language.RPG,
-      Language.RUBY, Language.SCALA, Language.SECRETS, Language.TSQL, Language.TS, Language.XML);
+      Language.JS, Language.KOTLIN, Language.PLI, Language.PLSQL, Language.PYTHON, Language.RPG, Language.RUBY,
+      Language.SCALA, Language.SECRETS, Language.TSQL, Language.TS, Language.XML);
     var configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
     for (var configurator : configurators) {
       enabledLanguages.addAll(configurator.whitelistedLanguages());
