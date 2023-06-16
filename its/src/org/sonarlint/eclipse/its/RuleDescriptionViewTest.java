@@ -33,6 +33,7 @@ import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 
 public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
@@ -89,7 +90,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     ruleDescriptionView.open();
 
     new WaitUntil(new RuleDescriptionViewIsLoaded(ruleDescriptionView));
-    assertThat(ruleDescriptionView.getFlatTextContent()).contains("Classes should not depend on an excessive number of classes (aka Monster Class)");
+    await().untilAsserted(() -> assertThat(ruleDescriptionView.getFlatTextContent()).contains("Classes should not depend on an excessive number of classes (aka Monster Class)"));
 
     assertThat(ruleDescriptionView.getSections().getTabItemLabels()).containsExactly("Why is this an issue?", "How can I fix it?", "More Info");
   }
