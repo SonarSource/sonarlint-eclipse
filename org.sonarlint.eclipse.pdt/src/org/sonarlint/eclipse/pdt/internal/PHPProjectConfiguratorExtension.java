@@ -60,4 +60,12 @@ public class PHPProjectConfiguratorExtension implements ISyntaxHighlightingProvi
     }
     return Optional.empty();
   }
+
+  @Override
+  public Optional<Boolean> requireStructuredTextViewer(String ruleLanguage) {
+    if (pdtUiPresent && ruleLanguage.equals(Language.PHP.getLanguageKey())) {
+      return Optional.of(Boolean.valueOf(true));
+    }
+    return Optional.empty();
+  }
 }

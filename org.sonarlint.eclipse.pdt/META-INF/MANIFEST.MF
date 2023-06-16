@@ -17,10 +17,15 @@ Require-Bundle: org.eclipse.core.runtime,
  org.sonarlint.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.swt,
+ org.eclipse.wst.sse.ui,
  org.eclipse.wst.html.core,
+ org.eclipse.wst.html.ui,
+ org.eclipse.wst.sse.core
+Import-Package: org.eclipse.jface.preference,
+ org.eclipse.php.internal.ui.editor.configuration,
+ org.eclipse.ui.editors.text,
+ org.eclipse.ui.texteditor,
  org.eclipse.wst.html.ui
-Import-Package: org.eclipse.ui.texteditor,
- org.eclipse.jface.preference
 Export-Package: org.sonarlint.eclipse.pdt.internal;x-friends:="org.sonarlint.eclipse.core.tests"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy

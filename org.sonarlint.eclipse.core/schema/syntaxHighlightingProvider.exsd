@@ -55,7 +55,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.sonarlint.eclipse.core.internal.rule.ISyntaxHighlightingProvider"/>
+                  <meta.attribute kind="java" basedOn=":org.sonarlint.eclipse.core.rule.ISyntaxHighlightingProvider"/>
                </appInfo>
             </annotation>
          </attribute>

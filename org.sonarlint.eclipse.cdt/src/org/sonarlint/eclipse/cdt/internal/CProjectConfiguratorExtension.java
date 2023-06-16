@@ -125,4 +125,12 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
     }
     return Optional.empty();
   }
+
+  @Override
+  public Optional<Boolean> requireStructuredTextViewer(String ruleLanguage) {
+    if (isCdtPresent() && (ruleLanguage.equals(Language.C.getLanguageKey()) || ruleLanguage.equals(Language.CPP.getLanguageKey()))) {
+      return Optional.of(Boolean.valueOf(false));
+    }
+    return Optional.empty();
+  }
 }

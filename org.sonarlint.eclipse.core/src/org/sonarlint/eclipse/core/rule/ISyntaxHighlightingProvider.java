@@ -40,4 +40,9 @@ public interface ISyntaxHighlightingProvider {
    *  @return the SourceViewer and its document requiring 
    */
   Optional<IDocumentPartitioner> documentPartitioner(String ruleLanguage);
+
+  /**
+   *  @return whether the language requires a structured text editor to be used (e.g. XML/HTML/PHP)
+   */
+  Optional<Boolean> requireStructuredTextViewer(String ruleLanguage);
 }

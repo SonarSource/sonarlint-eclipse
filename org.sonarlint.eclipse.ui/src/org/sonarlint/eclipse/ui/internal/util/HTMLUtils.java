@@ -27,6 +27,7 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.wst.sse.ui.internal.StructuredTextViewer;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
@@ -88,6 +89,7 @@ public final class HTMLUtils {
   private static void createSourceViewer(String html, Composite parent, String languageKey) {
     // Configure the syntax highlighting based on the rule language key and if a configuration and document partitioner
     // is provided by any plug-in via the extension mechanism.
+    // INFO: Some languages require a StructuredTextViewer (subclass of SourceViewer)
     // INFO: Configuration must extend of org.eclipse.jface.text.source.SourceViewerConfiguration
     // INFO: Document partitioner must implement org.eclipse.jface.text.IDocumentPartitioner
     var configurationProviders = SonarLintExtensionTracker.getInstance().getSyntaxHighlightingProvider();
@@ -109,7 +111,19 @@ public final class HTMLUtils {
       }
     }
 
-    var snippetElement = new SourceViewer(parent, null, SWT.BORDER | SWT.H_SCROLL);
+    boolean requireStructuredTextViewer = false;
+    for (var configurationProvider : configurationProviders) {
+      var requireStructuredTextViewerOptional = configurationProvider.requireStructuredTextViewer(languageKey);
+      if (requireStructuredTextViewerOptional.isPresent()) {
+        requireStructuredTextViewer = requireStructuredTextViewerOptional.get();
+        break;
+      }
+    }
+
+    SourceViewer snippetElement = requireStructuredTextViewer
+      ? new StructuredTextViewer(parent, null, null, false, SWT.BORDER | SWT.H_SCROLL)
+      : new SourceViewer(parent, null, SWT.BORDER | SWT.H_SCROLL);
+
     var gridData = new GridData();
     gridData.horizontalAlignment = SWT.FILL;
     gridData.grabExcessHorizontalSpace = true;
@@ -117,7 +131,8 @@ public final class HTMLUtils {
     snippetElement.getTextWidget().setLayoutData(gridData);
 
     var content = new Document(html);
-    if (sourceViewerConfigurationNullable != null && documentPartitionerNullable != null) {
+    if (!requireStructuredTextViewer
+      && sourceViewerConfigurationNullable != null && documentPartitionerNullable != null) {
       content.setDocumentPartitioner(
         sourceViewerConfigurationNullable.getConfiguredDocumentPartitioning(snippetElement),
         documentPartitionerNullable);
@@ -125,11 +140,12 @@ public final class HTMLUtils {
       documentPartitionerNullable.connect(content);
     }
 
+    snippetElement.setDocument(content);
+    snippetElement.setEditable(false);
+
+    // SourceViewerConfiguration must be applied after the document is
     if (sourceViewerConfigurationNullable != null) {
       snippetElement.configure(sourceViewerConfigurationNullable);
     }
-
-    snippetElement.setDocument(content);
-    snippetElement.setEditable(false);
   }
 }

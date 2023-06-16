@@ -26,10 +26,10 @@ import org.eclipse.php.internal.ui.editor.configuration.PHPStructuredTextViewerC
 
 public class PdtUiUtils {
   public static SourceViewerConfiguration sourceViewerConfiguration() {
-    return (SourceViewerConfiguration) new PHPStructuredTextViewerConfiguration();
+    return new PHPStructuredTextViewerConfiguration();
   }
 
   public static IDocumentPartitioner documentPartitioner() {
-    return (IDocumentPartitioner) new PHPStructuredTextPartitioner();
+    return new PHPStructuredTextPartitioner();
   }
 }

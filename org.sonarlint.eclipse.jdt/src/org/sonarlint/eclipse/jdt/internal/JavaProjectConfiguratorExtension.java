@@ -130,4 +130,12 @@ public class JavaProjectConfiguratorExtension
     }
     return Optional.empty();
   }
+
+  @Override
+  public Optional<Boolean> requireStructuredTextViewer(String ruleLanguage) {
+    if (jdtUiPresent && ruleLanguage.equals(Language.JAVA.getLanguageKey())) {
+      return Optional.of(Boolean.valueOf(false));
+    }
+    return Optional.empty();
+  }
 }
