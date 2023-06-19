@@ -9,7 +9,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
-    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@7f21146bc8cc4fcd3b860eaa0df704d1efba7dd0 # future 5.0.8
+    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@v5
     with:
       publishToBinaries: true
       slackChannel: team-sonarlint-intelliclipse-notifs
