@@ -76,13 +76,11 @@ import org.sonarsource.sonarlint.core.serverapi.EndpointParams;
 import org.sonarsource.sonarlint.core.serverapi.ServerApi;
 import org.sonarsource.sonarlint.core.serverapi.ServerApiHelper;
 import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
-import org.sonarsource.sonarlint.core.serverapi.hotspot.GetSecurityHotspotRequestParams;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspotDetails;
 import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
 import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
 import org.sonarsource.sonarlint.core.serverconnection.issues.ServerIssue;
 import org.sonarsource.sonarlint.core.serverconnection.issues.ServerTaintIssue;
-import org.sonarsource.sonarlint.core.serverconnection.smartnotifications.ServerNotificationsRegistry;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -393,10 +391,12 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     return new SonarLintHttpClientOkHttpImpl(withProxy.build());
   }
 
+  /** SLE-658: Should be replaced with "ConnectionService.checkSmartNotificationsSupported" after SLCORE-458 (9.0) */
   public static boolean checkNotificationsSupported(String url, @Nullable String organization, String username, String password) {
-    var withProxy = buildOkHttpClientWithProxyAndCredentials(url, username, password);
-
-    return ServerNotificationsRegistry.isSupported(createEndpointParams(url, organization), new SonarLintHttpClientOkHttpImpl(withProxy.build()));
+    return new ServerApi(
+      new ServerApiHelper(createEndpointParams(url, organization),
+      new SonarLintHttpClientOkHttpImpl(buildOkHttpClientWithProxyAndCredentials(url, username, password).build())))
+      .developers().isSupported();
   }
 
   private static EndpointParams createEndpointParams(String url, @Nullable String organization) {
@@ -413,19 +413,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
   private static String credentials(@Nullable String username, @Nullable String password) {
     return Credentials.basic(StringUtils.defaultString(username, ""), StringUtils.defaultString(password, ""));
-  }
-
-  public boolean checkNotificationsSupported() {
-    if (isSonarCloud()) {
-      return true;
-    }
-    try {
-      return ServerNotificationsRegistry.isSupported(createEndpointParams(), buildClientWithProxyAndCredentials());
-    } catch (Exception e) {
-      // Maybe the server is temporarily unavailable
-      SonarLintLogger.get().debug("Unable to check for if notifications are supported for server '" + getHost() + "'", e);
-      return false;
-    }
   }
 
   public EndpointParams createEndpointParams() {
@@ -526,7 +513,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   @Override
   public Optional<ServerHotspotDetails> getServerHotspot(String hotspotKey, String projectKey) {
     var serverApi = new ServerApi(createEndpointParams(), buildClientWithProxyAndCredentials());
-    return serverApi.hotspot().fetch(new GetSecurityHotspotRequestParams(hotspotKey, projectKey));
+    return serverApi.hotspot().fetch(hotspotKey);
   }
 
   @Override

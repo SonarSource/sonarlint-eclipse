@@ -89,51 +89,55 @@ public class SonarLintBackendService {
     var sqConnections = buildSqConnectionDtos();
     var scConnections = buildScConnectionDtos();
 
-    backend.initialize(new InitializeParams(
-      new HostInfoDto(getIdeName()),
-      "eclipse",
-      StoragePathManager.getStorageDir(),
-      StoragePathManager.getDefaultWorkDir(),
-      Set.copyOf(embeddedPluginPaths),
-      embeddedPlugins,
-      SonarLintUtils.getEnabledLanguages(),
-      SonarLintUtils.getEnabledLanguages(),
-      false,
-      sqConnections,
-      scConnections,
-      null,
-      true,
-      SonarLintGlobalConfiguration.buildStandaloneRulesConfig(),
-      true,
-      false,
-      false));
+    try {
+      backend.initialize(new InitializeParams(
+        new HostInfoDto(getIdeName()),
+        "eclipse",
+        StoragePathManager.getStorageDir(),
+        StoragePathManager.getDefaultWorkDir(),
+        Set.copyOf(embeddedPluginPaths),
+        embeddedPlugins,
+        SonarLintUtils.getEnabledLanguages(),
+        SonarLintUtils.getEnabledLanguages(),
+        false,
+        sqConnections,
+        scConnections,
+        null,
+        true,
+        SonarLintGlobalConfiguration.buildStandaloneRulesConfig(),
+        true,
+        false,
+        false)).thenRun(() -> {
+          SonarLintCorePlugin.getServersManager().addServerLifecycleListener(new IConnectedEngineFacadeLifecycleListener() {
+            @Override
+            public void connectionRemoved(IConnectedEngineFacade facade) {
+              didUpdateConnections();
+            }
 
-    SonarLintCorePlugin.getServersManager().addServerLifecycleListener(new IConnectedEngineFacadeLifecycleListener() {
-      @Override
-      public void connectionRemoved(IConnectedEngineFacade facade) {
-        didUpdateConnections();
-      }
+            @Override
+            public void connectionChanged(IConnectedEngineFacade facade) {
+              didUpdateConnections();
+            }
 
-      @Override
-      public void connectionChanged(IConnectedEngineFacade facade) {
-        didUpdateConnections();
-      }
+            @Override
+            public void connectionAdded(IConnectedEngineFacade facade) {
+              didUpdateConnections();
+            }
 
-      @Override
-      public void connectionAdded(IConnectedEngineFacade facade) {
-        didUpdateConnections();
-      }
+            private void didUpdateConnections() {
+              var sqConnections = buildSqConnectionDtos();
+              var scConnections = buildScConnectionDtos();
+              backend.getConnectionService().didUpdateConnections(new DidUpdateConnectionsParams(sqConnections, scConnections));
+            }
+          });
 
-      private void didUpdateConnections() {
-        var sqConnections = buildSqConnectionDtos();
-        var scConnections = buildScConnectionDtos();
-        backend.getConnectionService().didUpdateConnections(new DidUpdateConnectionsParams(sqConnections, scConnections));
-      }
-    });
+          ResourcesPlugin.getWorkspace().addResourceChangeListener(CONFIG_SCOPE_CHANGE_LISTENER);
 
-    ResourcesPlugin.getWorkspace().addResourceChangeListener(CONFIG_SCOPE_CHANGE_LISTENER);
-
-    CONFIG_SCOPE_CHANGE_LISTENER.init();
+          CONFIG_SCOPE_CHANGE_LISTENER.init();
+        }).get();
+    } catch (InterruptedException | ExecutionException e) {
+      throw new IllegalStateException("Unable to initialize the SonarLint Backend", e);
+    }
   }
 
   private static List<SonarQubeConnectionConfigurationDto> buildSqConnectionDtos() {
