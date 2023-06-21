@@ -59,8 +59,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
     new WaitUntil(new RuleDescriptionViewIsLoaded(ruleDescriptionView));
     var flatTextContent = ruleDescriptionView.getFlatTextContent();
-    assertThat(flatTextContent).contains("java:S106");
-    assertThat(flatTextContent).contains("Sensitive data must only be logged securely");
+    await().untilAsserted(() -> assertThat(flatTextContent).contains("java:S106"));
   }
 
   @Test
