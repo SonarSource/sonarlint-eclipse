@@ -72,7 +72,7 @@ public class PeriodicStoragesSynchronizerJob extends Job {
     }
   }
 
-  private static boolean isBoundToConnection(ISonarLintFile f, IConnectedEngineFacade facade) {
+  public static boolean isBoundToConnection(ISonarLintFile f, IConnectedEngineFacade facade) {
     SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(f.getProject());
     return config.isBound() && facade.getId().equals(config.getProjectBinding().get().connectionId());
   }

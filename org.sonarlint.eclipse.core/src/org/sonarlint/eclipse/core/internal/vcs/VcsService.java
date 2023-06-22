@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.StorageSynchronizerJob;
 import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -134,6 +135,7 @@ public class VcsService {
           var previousElectedBranch = electedServerBranchCache.get(project);
           var newElectedBranch = electBestMatchingBranch(facade, project);
           if (!newElectedBranch.equals(previousElectedBranch)) {
+            SonarLintBackendService.get().branchChanged(project, newElectedBranch);
             electedServerBranchCache.put(project, newElectedBranch);
             projectsToSync.add(project);
           }

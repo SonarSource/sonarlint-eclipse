@@ -34,13 +34,17 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.serverconnection.DownloadException;
 import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
 
-public class TaintIssuesUpdateJob extends Job {
+/**
+ *  Job to update taint issues after synchronization while also fetching them from the server in contrast to
+ *  {@link TaintIssuesUpdateOnFileOpenedJob}, where it was already fetched before!
+ */
+public class TaintIssuesUpdateOnFileOpenedJob extends Job {
   private final ProjectBinding projectBinding;
   private final Collection<ISonarLintIssuable> issuables;
   private final ISonarLintProject project;
   private final ConnectedEngineFacade engineFacade;
 
-  public TaintIssuesUpdateJob(ConnectedEngineFacade engineFacade,
+  public TaintIssuesUpdateOnFileOpenedJob(ConnectedEngineFacade engineFacade,
     ISonarLintProject project,
     Collection<ISonarLintIssuable> issuables, ProjectBinding projectBinding) {
     super("Fetch server taint issues for " + project.getName());
@@ -85,5 +89,4 @@ public class TaintIssuesUpdateJob extends Job {
       SonarLintLogger.get().info(e.getMessage());
     }
   }
-
 }

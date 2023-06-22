@@ -19,31 +19,24 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding.actions;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.AbstractAnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
+import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class AnalysisJobsScheduler {
 
@@ -56,7 +49,7 @@ public class AnalysisJobsScheduler {
    * Use null for project parameter to analyze open files in all projects.
    */
   public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType, Predicate<ISonarLintFile> filter) {
-    var filesByProject = collectOpenedFiles(project, filter);
+    var filesByProject = PlatformUtils.collectOpenedFiles(project, filter);
 
     for (var entry : filesByProject.entrySet()) {
       var aProject = entry.getKey();
@@ -78,45 +71,6 @@ public class AnalysisJobsScheduler {
 
   public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType) {
     scheduleAnalysisOfOpenFiles(project, triggerType, f -> true);
-  }
-
-  private static Map<ISonarLintProject, List<FileWithDocument>> collectOpenedFiles(@Nullable ISonarLintProject project, Predicate<ISonarLintFile> filter) {
-    if (!PlatformUI.isWorkbenchRunning()) {
-      // headless tests
-      return Map.of();
-    }
-    var filesByProject = new HashMap<ISonarLintProject, List<FileWithDocument>>();
-    for (var win : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-      for (var page : win.getPages()) {
-        for (var ref : page.getEditorReferences()) {
-          collectOpenedFile(project, filesByProject, ref, filter);
-        }
-      }
-    }
-    return filesByProject;
-  }
-
-  private static void collectOpenedFile(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
-    IEditorReference ref, Predicate<ISonarLintFile> filter) {
-    // Be careful to not trigger editor activation
-    var editor = ref.getEditor(false);
-    if (editor == null) {
-      return;
-    }
-    var input = editor.getEditorInput();
-    if (input instanceof IFileEditorInput) {
-      var file = ((IFileEditorInput) input).getFile();
-      var sonarFile = Adapters.adapt(file, ISonarLintFile.class);
-      if (sonarFile != null && (project == null || sonarFile.getProject().equals(project)) && filter.test(sonarFile)) {
-        filesByProject.putIfAbsent(sonarFile.getProject(), new ArrayList<>());
-        if (editor instanceof ITextEditor) {
-          var doc = ((ITextEditor) editor).getDocumentProvider().getDocument(input);
-          filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, doc));
-        } else {
-          filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, null));
-        }
-      }
-    }
   }
 
   public static void scheduleAnalysisOfOpenFiles(List<ISonarLintProject> projects, TriggerType triggerType) {
