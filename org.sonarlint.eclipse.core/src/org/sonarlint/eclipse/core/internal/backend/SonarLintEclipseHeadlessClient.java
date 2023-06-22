@@ -20,30 +20,41 @@
 package org.sonarlint.eclipse.core.internal.backend;
 
 import java.io.IOException;
+import java.net.Proxy;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.http.SonarLintHttpClientOkHttpImpl;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
+import org.sonarsource.sonarlint.core.clientapi.client.connection.GetCredentialsParams;
+import org.sonarsource.sonarlint.core.clientapi.client.connection.GetCredentialsResponse;
 import org.sonarsource.sonarlint.core.clientapi.client.fs.FindFileByNamesInScopeParams;
 import org.sonarsource.sonarlint.core.clientapi.client.fs.FindFileByNamesInScopeResponse;
 import org.sonarsource.sonarlint.core.clientapi.client.fs.FoundFileDto;
-import org.sonarsource.sonarlint.core.commons.http.HttpClient;
+import org.sonarsource.sonarlint.core.clientapi.client.http.ProxyDto;
+import org.sonarsource.sonarlint.core.clientapi.client.http.SelectProxiesParams;
+import org.sonarsource.sonarlint.core.clientapi.client.http.SelectProxiesResponse;
+import org.sonarsource.sonarlint.core.clientapi.common.TokenDto;
+import org.sonarsource.sonarlint.core.clientapi.common.UsernamePasswordDto;
 
 /**
  * Headless part of the client
@@ -89,19 +100,48 @@ public abstract class SonarLintEclipseHeadlessClient implements SonarLintClient 
     return projectOpt;
   }
 
-  @Nullable
   @Override
-  public HttpClient getHttpClient(String connectionId) {
-    var connectionOpt = SonarLintCorePlugin.getServersManager().findById(connectionId);
+  public CompletableFuture<GetCredentialsResponse> getCredentials(GetCredentialsParams params) {
+    var connectionOpt = SonarLintCorePlugin.getServersManager().findById(params.getConnectionId());
     if (connectionOpt.isEmpty()) {
-      return null;
+      return CompletableFuture.failedFuture(new IllegalArgumentException("Unable to find connection with id: " + params.getConnectionId()));
     }
-    return ((ConnectedEngineFacade) connectionOpt.get()).buildClientWithProxyAndCredentials();
+    var engineFacade = connectionOpt.get();
+    if (!engineFacade.hasAuth()) {
+      return CompletableFuture.completedFuture(new GetCredentialsResponse((Either<TokenDto, UsernamePasswordDto>) null));
+    }
+    return CompletableFuture.supplyAsync(() -> {
+      @Nullable
+      String username;
+      @Nullable
+      String password;
+      try {
+        username = ConnectedEngineFacadeManager.getUsername(engineFacade);
+        password = ConnectedEngineFacadeManager.getPassword(engineFacade);
+      } catch (StorageException e) {
+        throw new IllegalStateException("Unable to read server credentials from storage: " + e.getMessage(), e);
+      }
+      if (StringUtils.isNotBlank(password)) {
+        return new GetCredentialsResponse(new UsernamePasswordDto(username, password));
+      } else {
+        return new GetCredentialsResponse(new TokenDto(username));
+      }
+    });
   }
 
   @Override
-  public HttpClient getHttpClientNoAuth(String forUrl) {
-    var withProxy = SonarLintUtils.withProxy(forUrl, SonarLintCorePlugin.getOkHttpClient());
-    return new SonarLintHttpClientOkHttpImpl(withProxy.build());
+  public CompletableFuture<SelectProxiesResponse> selectProxies(SelectProxiesParams params) {
+    return CompletableFuture.supplyAsync(() -> {
+      var proxyService = SonarLintCorePlugin.getInstance().getProxyService();
+      if (proxyService == null) {
+        return new SelectProxiesResponse(List.of());
+      }
+      var proxyDataForHost = proxyService.select(URI.create(params.getUri()));
+      return new SelectProxiesResponse(Arrays.asList(proxyDataForHost).stream()
+        .map(proxyData -> {
+          var proxyType = IProxyData.SOCKS_PROXY_TYPE.equals(proxyData.getType()) ? Proxy.Type.SOCKS : Proxy.Type.HTTP;
+          return new ProxyDto(proxyType, proxyData.getHost(), proxyData.getPort());
+        }).collect(Collectors.toList()));
+    });
   }
 }

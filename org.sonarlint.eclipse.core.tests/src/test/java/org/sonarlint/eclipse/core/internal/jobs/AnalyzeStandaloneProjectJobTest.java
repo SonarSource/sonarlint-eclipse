@@ -44,6 +44,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
@@ -51,6 +52,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
+import org.sonarlint.eclipse.ui.internal.backend.SonarLintEclipseClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -59,6 +61,16 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   private static LogListener listener;
   private static IProject project;
+
+  @BeforeClass
+  public static void startBackend() {
+    SonarLintBackendService.get().init(new SonarLintEclipseClient());
+  }
+
+  @AfterClass
+  public static void stopBackend() {
+    SonarLintBackendService.get().stop();
+  }
 
   @BeforeClass
   public static void addLogListener() throws IOException, CoreException {
@@ -156,7 +168,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   @Test
   public void analyze_report_should_only_triggers_two_events_for_all_marker_operations_when_clear_report() throws Exception {
-    DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
+    var slProject = new DefaultSonarLintProjectAdapter(project);
     var file1ToAnalyze = prepareFile1(project, slProject);
     var file2ToAnalyze = prepareFile2(project, slProject);
 

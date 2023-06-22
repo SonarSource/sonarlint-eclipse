@@ -19,15 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal;
 
-import java.util.List;
-import okhttp3.OkHttpClient;
-import okhttp3.Protocol;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -38,7 +36,6 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacad
 import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.AbstractSonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
-import org.sonarlint.eclipse.core.internal.http.UserAgentInterceptor;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
@@ -49,7 +46,6 @@ import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerRegistry;
 import org.sonarlint.eclipse.core.internal.tracking.PersistentIssueTrackerCache;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
 import org.sonarlint.eclipse.core.internal.utils.NodeJsManager;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -81,16 +77,10 @@ public class SonarLintCorePlugin extends Plugin {
 
   private NodeJsManager nodeJsManager;
 
-  private final OkHttpClient okhttpClient;
-
   public SonarLintCorePlugin() {
     plugin = this;
     proxyTracker = new ServiceTracker<>(FrameworkUtil.getBundle(this.getClass()).getBundleContext(), IProxyService.class, null);
     proxyTracker.open();
-    okhttpClient = new OkHttpClient.Builder()
-      .protocols(List.of(Protocol.HTTP_1_1))
-      .addNetworkInterceptor(new UserAgentInterceptor("SonarLint Eclipse " + SonarLintUtils.getPluginVersion()))
-      .build();
   }
 
   public static SonarLintCorePlugin getInstance() {
@@ -177,6 +167,7 @@ public class SonarLintCorePlugin extends Plugin {
     return sonarlint;
   }
 
+  @Nullable
   public IProxyService getProxyService() {
     return proxyTracker.getService();
   }
@@ -203,10 +194,6 @@ public class SonarLintCorePlugin extends Plugin {
 
   public static NodeJsManager getNodeJsManager() {
     return getInstance().nodeJsManager;
-  }
-
-  public static OkHttpClient getOkHttpClient() {
-    return getInstance().okhttpClient;
   }
 
   public static synchronized ConnectedEngineFacadeManager getServersManager() {

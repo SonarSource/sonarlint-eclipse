@@ -22,9 +22,8 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -36,6 +35,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
@@ -44,19 +44,27 @@ import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.ConnectionStorageUpdateJob;
+import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
-import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.BindingsView;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
-import org.sonarsource.sonarlint.core.serverapi.exception.UnsupportedServerException;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.check.CheckSmartNotificationsSupportedParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.common.TransientSonarCloudConnectionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.common.TransientSonarQubeConnectionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.org.ListUserOrganizationsParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.validate.ValidateConnectionParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.validate.ValidateConnectionResponse;
+import org.sonarsource.sonarlint.core.clientapi.common.TokenDto;
+import org.sonarsource.sonarlint.core.clientapi.common.UsernamePasswordDto;
 
 public class ServerConnectionWizard extends Wizard implements INewWizard, IPageChangingListener {
 
@@ -324,9 +332,11 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
           monitor.beginTask("Check if notifications are supported", IProgressMonitor.UNKNOWN);
           try {
-            model
-              .setNotificationsSupported(
-                ConnectedEngineFacade.checkNotificationsSupported(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword()));
+            var future = SonarLintBackendService.get().getBackend().getConnectionService()
+              .checkSmartNotificationsSupported(new CheckSmartNotificationsSupportedParams(modelToTransientConnectionDto()));
+            var response = JobUtils.waitForFuture(monitor, future);
+
+            model.setNotificationsSupported(response.isSuccess());
           } finally {
             monitor.done();
           }
@@ -346,11 +356,11 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
 
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+          monitor.beginTask("Fetch organizations", IProgressMonitor.UNKNOWN);
           try {
-            var userOrgs = ConnectedEngineFacade.listUserOrganizations(model.getServerUrl(), model.getUsername(), model.getPassword(), monitor);
-            model.setUserOrgs(userOrgs);
-          } catch (UnsupportedServerException e) {
-            model.setUserOrgs(null);
+            var future = SonarLintBackendService.get().getBackend().getConnectionService().listUserOrganizations(new ListUserOrganizationsParams(modelToCredentialDto()));
+            var response = JobUtils.waitForFuture(monitor, future);
+            model.setUserOrgs(response.getUserOrganizations());
           } finally {
             monitor.done();
           }
@@ -370,29 +380,53 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
 
   private boolean testConnection(@Nullable String organization) {
     var currentPage = getContainer().getCurrentPage();
-    IStatus status;
+    var response = new AtomicReference<ValidateConnectionResponse>();
     try {
-      var testJob = new ServerConnectionTestJob(model.getServerUrl(), organization, model.getUsername(), model.getPassword());
-      getContainer().run(true, true, testJob);
-      status = testJob.getStatus();
+      getContainer().run(true, true, new IRunnableWithProgress() {
+
+        @Override
+        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+          monitor.beginTask(organization == null ? "Testing connection" : "Testing access to the organization", IProgressMonitor.UNKNOWN);
+          try {
+            var params = new ValidateConnectionParams(modelToTransientConnectionDto());
+            var future = SonarLintBackendService.get().getBackend().getConnectionService().validateConnection(params);
+            response.set(JobUtils.waitForFuture(monitor, future));
+          } finally {
+            monitor.done();
+          }
+        }
+      });
     } catch (InterruptedException canceled) {
+      ((WizardPage) currentPage).setMessage(null, IMessageProvider.NONE);
       return false;
     } catch (InvocationTargetException e) {
       SonarLintLogger.get().error(message(e), e);
-      status = new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error + " " + message(e), e);
-    }
-
-    var message = status.getMessage();
-    if (status.getSeverity() == IStatus.CANCEL) {
-      ((WizardPage) currentPage).setMessage(null, IMessageProvider.NONE);
-      return false;
-    }
-    if (status.getSeverity() != IStatus.OK) {
-      ((WizardPage) currentPage).setMessage(message, IMessageProvider.ERROR);
+      ((WizardPage) currentPage).setMessage(Messages.ServerLocationWizardPage_msg_error + " " + message(e), IMessageProvider.ERROR);
       return false;
     }
 
-    return true;
+    if (!response.get().isSuccess()) {
+      ((WizardPage) currentPage).setMessage(response.get().getMessage(), IMessageProvider.ERROR);
+      return false;
+    } else {
+      ((WizardPage) currentPage).setMessage("Successfully connected!", IMessageProvider.ERROR);
+      return true;
+    }
+  }
+
+  private Either<TransientSonarQubeConnectionDto, TransientSonarCloudConnectionDto> modelToTransientConnectionDto() {
+    var credentials = modelToCredentialDto();
+    if (model.getConnectionType() == ConnectionType.SONARCLOUD) {
+      return Either.forRight(new TransientSonarCloudConnectionDto(model.getOrganization(), credentials));
+    } else {
+      return Either.forLeft(new TransientSonarQubeConnectionDto(model.getServerUrl(), credentials));
+    }
+  }
+
+  private Either<TokenDto, UsernamePasswordDto> modelToCredentialDto() {
+    var credentials = model.getAuthMethod() == AuthMethod.TOKEN ? Either.<TokenDto, UsernamePasswordDto>forLeft(new TokenDto(model.getUsername()))
+      : Either.<TokenDto, UsernamePasswordDto>forRight(new UsernamePasswordDto(model.getUsername(), model.getPassword()));
+    return credentials;
   }
 
   private static String message(Exception e) {

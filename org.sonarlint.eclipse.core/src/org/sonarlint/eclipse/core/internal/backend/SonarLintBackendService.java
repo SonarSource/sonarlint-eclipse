@@ -108,7 +108,8 @@ public class SonarLintBackendService {
         SonarLintGlobalConfiguration.buildStandaloneRulesConfig(),
         true,
         false,
-        true)).thenRun(() -> {
+        true,
+        "SonarLint Eclipse " + SonarLintUtils.getPluginVersion())).thenRun(() -> {
           SonarLintCorePlugin.getServersManager().addServerLifecycleListener(new IConnectedEngineFacadeLifecycleListener() {
             @Override
             public void connectionRemoved(IConnectedEngineFacade facade) {
@@ -154,7 +155,7 @@ public class SonarLintBackendService {
       .map(c -> new SonarCloudConnectionConfigurationDto(c.getId(), c.getOrganization(), c.areNotificationsDisabled()))
       .collect(toList());
   }
-  
+
   /** Provide the Backend with the information on a changed VCS branch for further actions, e.g. synchronizing with SQ / SC */
   public void branchChanged(ISonarLintProject project, String newActiveBranchName) {
     getBackend()

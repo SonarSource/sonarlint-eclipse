@@ -28,16 +28,19 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry.EclipseTelemetryAttributesProvider;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
+import org.sonarlint.eclipse.ui.internal.backend.SonarLintEclipseClient;
 import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryHttpClient;
@@ -57,6 +60,16 @@ public class SonarLintTelemetryTest extends SonarTestCase {
   private static IProject project;
   private static SonarLintProjectConfiguration configuration;
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID);
+
+  @BeforeClass
+  public static void startBackend() {
+    SonarLintBackendService.get().init(new SonarLintEclipseClient());
+  }
+
+  @AfterClass
+  public static void stopBackend() {
+    SonarLintBackendService.get().stop();
+  }
 
   @BeforeClass
   public static void setUp() throws Exception {
