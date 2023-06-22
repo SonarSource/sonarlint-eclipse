@@ -44,8 +44,6 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.jgit;resolution:=optional,
  org.eclipse.egit.core;resolution:=optional,
  org.eclipse.egit.ui;resolution:=optional,
- com.squareup.okhttp3;bundle-version="4.10.0",
- com.squareup.okio;bundle-version="3.0.0",
  org.eclipse.text
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11

@@ -28,7 +28,7 @@ import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
-import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.org.OrganizationDto;
 
 public class OrganizationProvider implements IContentProposalProvider {
 
@@ -50,7 +50,7 @@ public class OrganizationProvider implements IContentProposalProvider {
       }
     } else {
       var organizationsIndex = model.getUserOrgsIndex();
-      Map<ServerOrganization, Double> filtered = organizationsIndex != null ? organizationsIndex.search(contents) : Collections.emptyMap();
+      var filtered = organizationsIndex != null ? organizationsIndex.search(contents) : Collections.<OrganizationDto, Double>emptyMap();
       if (filtered.isEmpty()) {
         parentPage.setMessage("No results", IMessageProvider.INFORMATION);
       } else {
@@ -58,7 +58,7 @@ public class OrganizationProvider implements IContentProposalProvider {
       }
       filtered.entrySet()
         .stream()
-        .sorted(Comparator.comparing(Map.Entry<ServerOrganization, Double>::getValue).reversed()
+        .sorted(Comparator.comparing(Map.Entry<OrganizationDto, Double>::getValue).reversed()
           .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)))
         .map(Map.Entry::getKey)
         .forEach(o -> list.add(new ContentProposal(o.getKey(), o.getName(), toDescription(o))));
@@ -66,7 +66,7 @@ public class OrganizationProvider implements IContentProposalProvider {
     return list.toArray(new IContentProposal[list.size()]);
   }
 
-  private static String toDescription(ServerOrganization org) {
+  private static String toDescription(OrganizationDto org) {
     var sb = new StringBuilder();
     sb.append("Name: ").append(org.getName()).append("\n");
     sb.append("Key: ").append(org.getKey()).append("\n");

@@ -42,8 +42,8 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
 import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
-import org.sonarsource.sonarlint.core.clientapi.backend.authentication.HelpGenerateUserTokenParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.authentication.HelpGenerateUserTokenResponse;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.auth.HelpGenerateUserTokenParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.auth.HelpGenerateUserTokenResponse;
 
 public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 
@@ -133,7 +133,7 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
       monitor.beginTask("Token generation", IProgressMonitor.UNKNOWN);
       try {
         var params = new HelpGenerateUserTokenParams(serverUrl, isSonarCloud);
-        var future = SonarLintBackendService.get().getBackend().getAuthenticationHelperService().helpGenerateUserToken(params);
+        var future = SonarLintBackendService.get().getBackend().getConnectionService().helpGenerateUserToken(params);
         this.response = JobUtils.waitForFuture(monitor, future);
       } finally {
         monitor.done();

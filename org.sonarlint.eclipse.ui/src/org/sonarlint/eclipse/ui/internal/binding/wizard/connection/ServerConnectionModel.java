@@ -34,7 +34,7 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ModelObject;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
-import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.org.OrganizationDto;
 
 public class ServerConnectionModel extends ModelObject {
 
@@ -65,8 +65,8 @@ public class ServerConnectionModel extends ModelObject {
   private String organization;
   private String username;
   private String password;
-  private List<ServerOrganization> userOrgs;
-  private TextSearchIndex<ServerOrganization> userOrgsIndex;
+  private List<OrganizationDto> userOrgs;
+  private TextSearchIndex<OrganizationDto> userOrgsIndex;
   private boolean notificationsSupported;
   private boolean notificationsDisabled;
 
@@ -181,7 +181,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   @Nullable
-  public List<ServerOrganization> getUserOrgs() {
+  public List<OrganizationDto> getUserOrgs() {
     return userOrgs;
   }
 
@@ -189,24 +189,24 @@ public class ServerConnectionModel extends ModelObject {
     return userOrgs != null && userOrgs.size() > 1;
   }
 
-  public void setUserOrgs(@Nullable List<ServerOrganization> userOrgs) {
-    this.userOrgs = userOrgs;
-    var index = new TextSearchIndex<ServerOrganization>();
-    for (var org : userOrgs) {
+  public void setUserOrgs(List<OrganizationDto> list) {
+    this.userOrgs = list;
+    var index = new TextSearchIndex<OrganizationDto>();
+    for (var org : list) {
       index.index(org, org.getKey() + " " + org.getName());
     }
-    suggestOrganization(userOrgs);
+    suggestOrganization(list);
     this.userOrgsIndex = index;
   }
 
-  private void suggestOrganization(@Nullable List<ServerOrganization> userOrgs) {
+  private void suggestOrganization(@Nullable List<OrganizationDto> userOrgs) {
     if (!isEdit() && userOrgs != null && userOrgs.size() == 1) {
       setOrganization(userOrgs.get(0).getKey());
     }
   }
 
   @Nullable
-  public TextSearchIndex<ServerOrganization> getUserOrgsIndex() {
+  public TextSearchIndex<OrganizationDto> getUserOrgsIndex() {
     return userOrgsIndex;
   }
 
@@ -249,7 +249,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   public void setNotificationsEnabled(boolean value) {
-    boolean old = !this.notificationsDisabled;
+    var old = !this.notificationsDisabled;
     this.notificationsDisabled = !value;
     firePropertyChange(PROPERTY_NOTIFICATIONS_ENABLED, old, !this.notificationsDisabled);
   }
