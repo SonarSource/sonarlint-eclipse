@@ -44,7 +44,6 @@ import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.ProjectSelectionDialog;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
@@ -295,7 +294,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
       if (!openedFiles.isEmpty() && openedFiles.containsKey(project) && !openedFiles.get(project).isEmpty()) {
         var files = openedFiles.get(project).stream()
           .filter(Objects::nonNull)
-          .map(file -> (ISonarLintIssuable) file.getFile())
+          .map(file -> file.getFile())
           .collect(Collectors.toList());
         if (!files.isEmpty()) {
           var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);

@@ -37,13 +37,13 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
  *  {@link TaintIssuesUpdateOnFileOpenedJob}, because the information was just fetched!
  */
 public class TaintIssuesUpdateAfterSyncJob extends Job {
-  private final Collection<ISonarLintIssuable> issuables;
+  private final Collection<ISonarLintFile> issuables;
   private final ISonarLintProject project;
   private final ConnectedEngineFacade engineFacade;
 
   public TaintIssuesUpdateAfterSyncJob(ConnectedEngineFacade engineFacade,
     ISonarLintProject project,
-    Collection<ISonarLintIssuable> issuables) {
+    Collection<ISonarLintFile> issuables) {
     super("Fetch synced taint issues for " + project.getName());
     this.engineFacade = engineFacade;
     setPriority(DECORATE);
@@ -58,10 +58,8 @@ public class TaintIssuesUpdateAfterSyncJob extends Job {
         if (monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
         }
-        if (issuable instanceof ISonarLintFile) {
-          SonarLintMarkerUpdater.refreshMarkersForTaint((ISonarLintFile) issuable,
-            VcsService.getServerBranch(project), engineFacade);
-        }
+        SonarLintMarkerUpdater.refreshMarkersForTaint((ISonarLintFile) issuable,
+          VcsService.getServerBranch(project), engineFacade);
       }
       return Status.OK_STATUS;
     } catch (Throwable t) {
