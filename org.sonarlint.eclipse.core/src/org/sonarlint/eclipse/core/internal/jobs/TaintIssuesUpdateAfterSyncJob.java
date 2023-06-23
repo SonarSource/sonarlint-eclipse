@@ -29,7 +29,6 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
@@ -58,8 +57,7 @@ public class TaintIssuesUpdateAfterSyncJob extends Job {
         if (monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
         }
-        SonarLintMarkerUpdater.refreshMarkersForTaint((ISonarLintFile) issuable,
-          VcsService.getServerBranch(project), engineFacade);
+        SonarLintMarkerUpdater.refreshMarkersForTaint(issuable, VcsService.getServerBranch(project), engineFacade);
       }
       return Status.OK_STATUS;
     } catch (Throwable t) {

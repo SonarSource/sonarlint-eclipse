@@ -79,7 +79,7 @@ public class BackendProgressJobScheduler {
   }
   
   /** This job is only an IDE frontend for a job running in the SonarLintBackend */
-  private class BackendProgressJob extends Job {
+  private static class BackendProgressJob extends Job {
     private Object waitMonitor = new Object();
     private AtomicReference<String> message;
     private AtomicInteger percentage = new AtomicInteger(0);
