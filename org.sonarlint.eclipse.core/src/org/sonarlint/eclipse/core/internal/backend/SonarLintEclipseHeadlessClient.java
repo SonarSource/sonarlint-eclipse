@@ -43,8 +43,6 @@ import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
 import org.sonarsource.sonarlint.core.clientapi.client.fs.FindFileByNamesInScopeParams;
 import org.sonarsource.sonarlint.core.clientapi.client.fs.FindFileByNamesInScopeResponse;
 import org.sonarsource.sonarlint.core.clientapi.client.fs.FoundFileDto;
-import org.sonarsource.sonarlint.core.clientapi.client.progress.ReportProgressParams;
-import org.sonarsource.sonarlint.core.clientapi.client.progress.StartProgressParams;
 import org.sonarsource.sonarlint.core.commons.http.HttpClient;
 
 /**
@@ -105,16 +103,5 @@ public abstract class SonarLintEclipseHeadlessClient implements SonarLintClient 
   public HttpClient getHttpClientNoAuth(String forUrl) {
     var withProxy = SonarLintUtils.withProxy(forUrl, SonarLintCorePlugin.getOkHttpClient());
     return new SonarLintHttpClientOkHttpImpl(withProxy.build());
-  }
-
-  // INFO: Not yet implemented
-  @Override
-  public CompletableFuture<Void> startProgress(StartProgressParams params) {
-    return null;
-  }
-  
-  //INFO: Not yet implemented
-  @Override
-  public void reportProgress(ReportProgressParams params) {
   }
 }

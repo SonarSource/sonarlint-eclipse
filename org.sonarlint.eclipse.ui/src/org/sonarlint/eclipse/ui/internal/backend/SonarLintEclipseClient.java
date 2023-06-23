@@ -41,8 +41,8 @@ import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessClien
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
-import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateOnFileOpenedJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -53,7 +53,7 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
 import org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView;
-import org.sonarlint.eclipse.ui.internal.job.PeriodicStoragesSynchronizerJob;
+import org.sonarlint.eclipse.ui.internal.job.BackendProgressJobScheduler;
 import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
@@ -72,6 +72,8 @@ import org.sonarsource.sonarlint.core.clientapi.client.host.GetHostInfoResponse;
 import org.sonarsource.sonarlint.core.clientapi.client.hotspot.HotspotDetailsDto;
 import org.sonarsource.sonarlint.core.clientapi.client.hotspot.ShowHotspotParams;
 import org.sonarsource.sonarlint.core.clientapi.client.message.ShowMessageParams;
+import org.sonarsource.sonarlint.core.clientapi.client.progress.ReportProgressParams;
+import org.sonarsource.sonarlint.core.clientapi.client.progress.StartProgressParams;
 import org.sonarsource.sonarlint.core.clientapi.client.smartnotification.ShowSmartNotificationParams;
 import org.sonarsource.sonarlint.core.clientapi.client.sync.DidSynchronizeConfigurationScopeParams;
 import org.sonarsource.sonarlint.core.commons.TextRange;
@@ -260,7 +262,27 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
     Display.getDefault().asyncExec(() -> new DeveloperNotificationPopup(connectionOpt.get(), params, connectionOpt.get().isSonarCloud()).open());
   }
+  
+  /** Start IDE progress bar for backend jobs running out of IDE scope */
+  @Override
+  public CompletableFuture<Void> startProgress(StartProgressParams params) {
+    return BackendProgressJobScheduler.get().startProgress(params);
+  }
+  
+  /** Update / finish IDE progress bar for backend jobs running out of IDE scope */
+  @Override
+  public void reportProgress(ReportProgressParams params) {
+    if (params.getNotification().isLeft()) {
+      BackendProgressJobScheduler.get().update(params.getTaskId(), params.getNotification().getLeft());
+    } else {
+      BackendProgressJobScheduler.get().complete(params.getTaskId());
+    }
+  }
 
+  /**
+   *  After synchronization of the backend, the taint vulnerabilities view should be updated with the remote findings
+   *  and also an analysis of the opened files should be triggered.
+   */
   @Override
   public void didSynchronizeConfigurationScopes(DidSynchronizeConfigurationScopeParams params) {
     params.getConfigurationScopeIds().stream()
@@ -285,7 +307,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
             
             // also schedule analyze of opened files based on synced information
             AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE,
-              f -> PeriodicStoragesSynchronizerJob.isBoundToConnection(f, connection));
+              f -> SonarLintUtils.isBoundToConnection(f, connection));
           }
         }
       }

@@ -155,6 +155,7 @@ public class SonarLintBackendService {
       .collect(toList());
   }
   
+  /** Provide the Backend with the information on a changed VCS branch for further actions, e.g. synchronizing with SQ / SC */
   public void branchChanged(ISonarLintProject project, String newActiveBranchName) {
     getBackend()
       .getSonarProjectBranchService()
