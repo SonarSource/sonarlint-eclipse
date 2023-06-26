@@ -62,7 +62,7 @@ public class TaintIssuesUpdateAfterSyncJob extends Job {
       return Status.OK_STATUS;
     } catch (Throwable t) {
       // note: without catching Throwable, any exceptions raised in the thread will not be visible
-      SonarLintLogger.get().error("Error while fetching synced taint issues", t);
+      SonarLintLogger.get().error("Error while refreshing synced taint issues", t);
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, t.getMessage());
     }
   }
