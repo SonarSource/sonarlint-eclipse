@@ -57,31 +57,34 @@ public class BackendProgressJobScheduler {
       return CompletableFuture.failedFuture(new IllegalArgumentException(errorMessage));
     }
     
-    var jobStartFuture = new CompletableFuture<Void>();
-    var job = new BackendProgressJob(params, jobStartFuture);
-    jobPool.put(taskId, job);
-    job.schedule();
+    var jobAdded = jobPool.computeIfAbsent(taskId, k -> {
+      var jobStartFuture = new CompletableFuture<Void>();
+      var job = new BackendProgressJob(params, jobStartFuture);
+      job.schedule();
+      return job;
+    });
     
-    return jobStartFuture;
+    return jobAdded.getJobStartFuture();
   }
   
   /** Update the progress bar IDE job */
   public void update(String taskId, ProgressUpdateNotification notification) {
-    if (!jobPool.containsKey(taskId)) {
+    var job = jobPool.get(taskId);
+    if (job == null) {
       SonarLintLogger.get().debug("Job with ID " + taskId + " is unknown, skip reporting it");
       return;
     }
-    jobPool.get(taskId).update(notification);
+    job.update(notification);
   }
   
   /** Complete the progress bar IDE job */
   public void complete(String taskId) {
-    if (!jobPool.containsKey(taskId)) {
+    var job = jobPool.remove(taskId);
+    if (job == null) {
       SonarLintLogger.get().debug("Job with ID " + taskId + " is unknown, skip reporting it");
       return;
     }
-    jobPool.get(taskId).complete();
-    jobPool.remove(taskId);
+    job.complete();
   }
   
   /** This job is only an IDE frontend for a job running in the SonarLintBackend */
@@ -98,6 +101,10 @@ public class BackendProgressJobScheduler {
       
       this.jobStartFuture = jobStartFuture;
       this.message = new AtomicReference<>(params.getMessage());
+    }
+    
+    public CompletableFuture<Void> getJobStartFuture() {
+      return this.jobStartFuture;
     }
 
     @Override

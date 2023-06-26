@@ -32,7 +32,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.jobs.StorageSynchronizerJob;
 import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -122,7 +121,6 @@ public class VcsService {
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-      List<ISonarLintProject> projectsToSync = new ArrayList<>();
       affectedProjects.forEach(project -> {
         var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
         if (bindingOpt.isEmpty()) {
@@ -137,13 +135,9 @@ public class VcsService {
           if (!newElectedBranch.equals(previousElectedBranch)) {
             SonarLintBackendService.get().branchChanged(project, newElectedBranch);
             electedServerBranchCache.put(project, newElectedBranch);
-            projectsToSync.add(project);
           }
         }
       });
-      if (!projectsToSync.isEmpty()) {
-        new StorageSynchronizerJob(projectsToSync).schedule();
-      }
       return Status.OK_STATUS;
     }
 
