@@ -38,8 +38,8 @@ import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
  *  possibilities for the user.
  */
 public class BackendProgressJobScheduler {
-  private ConcurrentHashMap<String, BackendProgressJob> jobPool = new ConcurrentHashMap<>();
   private static final BackendProgressJobScheduler INSTANCE = new BackendProgressJobScheduler();
+  private ConcurrentHashMap<String, BackendProgressJob> jobPool = new ConcurrentHashMap<>();
   
   private BackendProgressJobScheduler() {
   }
@@ -52,18 +52,23 @@ public class BackendProgressJobScheduler {
   public CompletableFuture<Void> startProgress(StartProgressParams params) {
     var taskId = params.getTaskId();
     if (jobPool.containsKey(taskId)) {
-      var errorMessage = "";
-      SonarLintLogger.get().error(errorMessage);
+      var errorMessage = "Job with ID " + taskId + " is already active, skip reporting it";
+      SonarLintLogger.get().debug(errorMessage);
       return CompletableFuture.failedFuture(new IllegalArgumentException(errorMessage));
     }
     
-    return null;
+    var jobStartFuture = new CompletableFuture<Void>();
+    var job = new BackendProgressJob(params, jobStartFuture);
+    jobPool.put(taskId, job);
+    job.schedule();
+    
+    return jobStartFuture;
   }
   
   /** Update the progress bar IDE job */
   public void update(String taskId, ProgressUpdateNotification notification) {
     if (!jobPool.containsKey(taskId)) {
-      SonarLintLogger.get().error("");
+      SonarLintLogger.get().debug("Job with ID " + taskId + " is unknown, skip reporting it");
       return;
     }
     jobPool.get(taskId).update(notification);
@@ -72,7 +77,7 @@ public class BackendProgressJobScheduler {
   /** Complete the progress bar IDE job */
   public void complete(String taskId) {
     if (!jobPool.containsKey(taskId)) {
-      SonarLintLogger.get().error("");
+      SonarLintLogger.get().debug("Job with ID " + taskId + " is unknown, skip reporting it");
       return;
     }
     jobPool.get(taskId).complete();
@@ -81,35 +86,34 @@ public class BackendProgressJobScheduler {
   /** This job is only an IDE frontend for a job running in the SonarLintBackend */
   private static class BackendProgressJob extends Job {
     private Object waitMonitor = new Object();
+    private CompletableFuture<Void> jobStartFuture;
     private AtomicReference<String> message;
     private AtomicInteger percentage = new AtomicInteger(0);
     private AtomicBoolean complete = new AtomicBoolean(false);
     
-    public BackendProgressJob(StartProgressParams params) {
+    public BackendProgressJob(StartProgressParams params, CompletableFuture<Void> jobStartFuture) {
       super(params.getTitle());
       setPriority(DECORATE);
       
+      this.jobStartFuture = jobStartFuture;
       this.message = new AtomicReference<>(params.getMessage());
     }
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-      try {
-        monitor.setTaskName(message.get());
-        monitor.worked(percentage.get());
-        
-        while (!complete.get()) {
-          synchronized(waitMonitor) {
-            monitor.setTaskName(message.get());
-            monitor.worked(percentage.get());
-          }
+      monitor.setTaskName(message.get());
+      monitor.worked(percentage.get());
+      jobStartFuture.complete(null);
+      
+      while (!complete.get()) {
+        synchronized(waitMonitor) {
+          monitor.setTaskName(message.get());
+          monitor.worked(percentage.get());
         }
-        
-        monitor.done();
-        return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
-      } finally {
-        schedule();
       }
+      
+      monitor.done();
+      return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
     }
     
     public void update(ProgressUpdateNotification notification) {

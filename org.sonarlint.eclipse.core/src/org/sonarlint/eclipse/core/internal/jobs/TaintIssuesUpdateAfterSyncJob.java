@@ -43,7 +43,7 @@ public class TaintIssuesUpdateAfterSyncJob extends Job {
   public TaintIssuesUpdateAfterSyncJob(ConnectedEngineFacade engineFacade,
     ISonarLintProject project,
     Collection<ISonarLintFile> issuables) {
-    super("Fetch synced taint issues for " + project.getName());
+    super("Refresh synced taint issues for " + project.getName());
     this.engineFacade = engineFacade;
     setPriority(DECORATE);
     this.project = project;

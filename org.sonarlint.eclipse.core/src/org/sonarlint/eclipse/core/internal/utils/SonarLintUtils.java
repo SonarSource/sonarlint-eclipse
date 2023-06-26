@@ -36,7 +36,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.defaultString;
@@ -127,8 +127,8 @@ public class SonarLintUtils {
     };
   }
   
-  /***/
-  public static boolean isBoundToConnection(ISonarLintFile f, IConnectedEngineFacade facade) {
+  /** Check whether a file is bound to SQ / SC via its project */
+  public static boolean isBoundToConnection(ISonarLintIssuable f, IConnectedEngineFacade facade) {
     SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(f.getProject());
     return config.isBound()
       && config.getProjectBinding().isPresent()

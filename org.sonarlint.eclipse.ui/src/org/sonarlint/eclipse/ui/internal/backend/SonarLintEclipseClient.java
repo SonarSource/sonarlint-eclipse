@@ -291,23 +291,20 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
       .collect(Collectors.toSet())
       .forEach(project -> {
       var openedFiles = PlatformUtils.collectOpenedFiles(project, f -> true);
-      if (!openedFiles.isEmpty() && openedFiles.containsKey(project) && !openedFiles.get(project).isEmpty()) {
-        var files = openedFiles.get(project).stream()
-          .filter(Objects::nonNull)
-          .map(file -> file.getFile())
-          .collect(Collectors.toList());
-        if (!files.isEmpty()) {
-          var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
-          if (bindingOpt.isPresent()) {
-            var connection = (ConnectedEngineFacade) bindingOpt.get().getEngineFacade();
-            
-            // present taint vulnerabilities without re-fetching them from the server
-            new TaintIssuesUpdateAfterSyncJob(connection, project, files).schedule();
-            
-            // also schedule analyze of opened files based on synced information
-            AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE,
-              f -> SonarLintUtils.isBoundToConnection(f, connection));
-          }
+      if (!openedFiles.isEmpty() && openedFiles.containsKey(project)) {
+        var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+        if (bindingOpt.isPresent()) {
+          var connection = (ConnectedEngineFacade) bindingOpt.get().getEngineFacade();
+          
+          // present taint vulnerabilities without re-fetching them from the server
+          var files = openedFiles.get(project).stream()
+            .map(file -> file.getFile())
+            .collect(Collectors.toList());
+          new TaintIssuesUpdateAfterSyncJob(connection, project, files).schedule();
+          
+          // also schedule analyze of opened files based on synced information
+          AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE,
+            f -> SonarLintUtils.isBoundToConnection(f, connection));
         }
       }
     });
