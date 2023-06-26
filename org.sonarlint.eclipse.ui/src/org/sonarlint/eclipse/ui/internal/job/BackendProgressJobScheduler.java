@@ -81,6 +81,7 @@ public class BackendProgressJobScheduler {
       return;
     }
     jobPool.get(taskId).complete();
+    jobPool.remove(taskId);
   }
   
   /** This job is only an IDE frontend for a job running in the SonarLintBackend */
