@@ -104,5 +104,4 @@ public abstract class SonarLintEclipseHeadlessClient implements SonarLintClient 
     var withProxy = SonarLintUtils.withProxy(forUrl, SonarLintCorePlugin.getOkHttpClient());
     return new SonarLintHttpClientOkHttpImpl(withProxy.build());
   }
-
 }

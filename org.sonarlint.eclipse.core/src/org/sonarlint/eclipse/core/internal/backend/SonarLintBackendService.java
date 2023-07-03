@@ -44,6 +44,7 @@ import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
 import org.sonarsource.sonarlint.core.clientapi.backend.HostInfoDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.InitializeParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.branch.DidChangeActiveSonarProjectBranchParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.DidUpdateConnectionsParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarCloudConnectionConfigurationDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarQubeConnectionConfigurationDto;
@@ -107,7 +108,7 @@ public class SonarLintBackendService {
         SonarLintGlobalConfiguration.buildStandaloneRulesConfig(),
         true,
         false,
-        false)).thenRun(() -> {
+        true)).thenRun(() -> {
           SonarLintCorePlugin.getServersManager().addServerLifecycleListener(new IConnectedEngineFacadeLifecycleListener() {
             @Override
             public void connectionRemoved(IConnectedEngineFacade facade) {
@@ -152,6 +153,14 @@ public class SonarLintBackendService {
       .filter(IConnectedEngineFacade::isSonarCloud)
       .map(c -> new SonarCloudConnectionConfigurationDto(c.getId(), c.getOrganization(), c.areNotificationsDisabled()))
       .collect(toList());
+  }
+  
+  /** Provide the Backend with the information on a changed VCS branch for further actions, e.g. synchronizing with SQ / SC */
+  public void branchChanged(ISonarLintProject project, String newActiveBranchName) {
+    getBackend()
+      .getSonarProjectBranchService()
+      .didChangeActiveSonarProjectBranch(
+        new DidChangeActiveSonarProjectBranchParams(ConfigScopeSynchronizer.getConfigScopeId(project), newActiveBranchName));
   }
 
   public SonarLintBackend getBackend() {

@@ -25,7 +25,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
-import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateJob;
+import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateOnFileOpenedJob;
 
 import static org.sonarlint.eclipse.ui.internal.util.PlatformUtils.doIfSonarLintFileInEditor;
 
@@ -35,7 +35,8 @@ public class TaintMarkersPartListener implements IPartListener2 {
     doIfSonarLintFileInEditor(partRef, (f, p) -> {
       var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(f.getProject());
       if (bindingOpt.isPresent()) {
-        new TaintIssuesUpdateJob((ConnectedEngineFacade) bindingOpt.get().getEngineFacade(), f.getProject(), List.of(f), bindingOpt.get().getProjectBinding()).schedule();
+        new TaintIssuesUpdateOnFileOpenedJob((ConnectedEngineFacade) bindingOpt.get().getEngineFacade(),
+          f.getProject(), List.of(f), bindingOpt.get().getProjectBinding()).schedule();
       }
     });
   }

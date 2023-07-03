@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.annotation.Nullable;
@@ -34,18 +35,24 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessClient;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.ProjectSelectionDialog;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
 import org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView;
+import org.sonarlint.eclipse.ui.internal.job.BackendProgressJobScheduler;
 import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
@@ -254,20 +261,52 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
     Display.getDefault().asyncExec(() -> new DeveloperNotificationPopup(connectionOpt.get(), params, connectionOpt.get().isSonarCloud()).open());
   }
-
-  // project synchronizations not yet set to be handled by sonarlint-core
+  
+  /** Start IDE progress bar for backend jobs running out of IDE scope */
   @Override
   public CompletableFuture<Void> startProgress(StartProgressParams params) {
-    return null;
+    return BackendProgressJobScheduler.get().startProgress(params);
   }
-
-  // project synchronizations not yet set to be handled by sonarlint-core
+  
+  /** Update / finish IDE progress bar for backend jobs running out of IDE scope */
   @Override
   public void reportProgress(ReportProgressParams params) {
+    if (params.getNotification().isLeft()) {
+      BackendProgressJobScheduler.get().update(params.getTaskId(), params.getNotification().getLeft());
+    } else {
+      BackendProgressJobScheduler.get().complete(params.getTaskId());
+    }
   }
 
-  // project synchronizations not yet set to be handled by sonarlint-core
+  /**
+   *  After synchronization of the backend, the taint vulnerabilities view should be updated with the remote findings
+   *  and also an analysis of the opened files should be triggered.
+   */
   @Override
   public void didSynchronizeConfigurationScopes(DidSynchronizeConfigurationScopeParams params) {
+    params.getConfigurationScopeIds().stream()
+      .map(id -> resolveProject(id))
+      .filter(Optional::isPresent)
+      .map(Optional::get)
+      .collect(Collectors.toSet())
+      .forEach(project -> {
+      var openedFiles = PlatformUtils.collectOpenedFiles(project, f -> true);
+      if (!openedFiles.isEmpty() && openedFiles.containsKey(project)) {
+        var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+        if (bindingOpt.isPresent()) {
+          var connection = (ConnectedEngineFacade) bindingOpt.get().getEngineFacade();
+          
+          // present taint vulnerabilities without re-fetching them from the server
+          var files = openedFiles.get(project).stream()
+            .map(file -> file.getFile())
+            .collect(Collectors.toList());
+          new TaintIssuesUpdateAfterSyncJob(connection, project, files).schedule();
+          
+          // also schedule analyze of opened files based on synced information
+          AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE,
+            f -> SonarLintUtils.isBoundToConnection(f, connection));
+        }
+      }
+    });
   }
 }
