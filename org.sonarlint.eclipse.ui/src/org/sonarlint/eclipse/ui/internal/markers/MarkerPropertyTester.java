@@ -21,32 +21,47 @@ package org.sonarlint.eclipse.ui.internal.markers;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.views.markers.MarkerItem;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 
-public class QuickFixPropertyTester extends PropertyTester {
+public class MarkerPropertyTester extends PropertyTester {
 
-  private static final String QUICK_FIX = "quickFix"; //$NON-NLS-1$
+  private static final String HAS_QUICK_FIX = "hasQuickFix"; //$NON-NLS-1$
+  private static final String MATCHED_ON_SERVER = "matchedOnServer"; //$NON-NLS-1$
 
   /**
    * Create a new instance of the receiver.
    */
-  public QuickFixPropertyTester() {
+  public MarkerPropertyTester() {
     super();
   }
 
   @Override
   public boolean test(Object receiver, String property, Object[] args,
     Object expectedValue) {
-    if (property.equals(QUICK_FIX)) {
-      MarkerItem markerItem = (MarkerItem) receiver;
-      IMarker marker = markerItem.getMarker();
-      // SLE-482 marker can be null for category rows when grouping by severity for example
-      if (marker != null) {
-        return !MarkerUtils.getIssueQuickFixes(marker).getQuickFixes().isEmpty();
+    var markerItem = (MarkerItem) receiver;
+    var marker = markerItem.getMarker();
+    // SLE-482 marker can be null for category rows when grouping by severity for example
+    if (marker != null) {
+      switch (property) {
+        case HAS_QUICK_FIX:
+          return !MarkerUtils.getIssueQuickFixes(marker).getQuickFixes().isEmpty();
+        case MATCHED_ON_SERVER:
+          return hasServerIssueKey(marker);
       }
     }
     return false;
+  }
+
+  private static boolean hasServerIssueKey(IMarker marker) {
+    try {
+      return marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR) != null;
+    } catch (CoreException e) {
+      SonarLintLogger.get().error("Unable to read marker attribute", e);
+      return false;
+    }
   }
 
 }
