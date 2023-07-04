@@ -24,7 +24,7 @@ import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -40,13 +40,14 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
 
   @Override
   public void updateElement(UIElement element, Map parameters) {
-    var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-    if (window != null) {
-      var selection = (IStructuredSelection) window.getSelectionService().getSelection();
-      var binding = getBinding(getSelectedMarker(selection));
-      if (binding.isPresent()) {
-        element.setIcon(binding.get().getEngineFacade().isSonarCloud() ? SonarLintImages.SONARCLOUD_16 : SonarLintImages.SONARQUBE_16);
-      }
+    var window = element.getServiceLocator().getService(IWorkbenchWindow.class);
+    if (window == null) {
+      return;
+    }
+    var selection = (IStructuredSelection) window.getSelectionService().getSelection();
+    var binding = getBinding(getSelectedMarker(selection));
+    if (binding.isPresent()) {
+      element.setIcon(binding.get().getEngineFacade().isSonarCloud() ? SonarLintImages.SONARCLOUD_16 : SonarLintImages.SONARQUBE_16);
     }
   }
 
