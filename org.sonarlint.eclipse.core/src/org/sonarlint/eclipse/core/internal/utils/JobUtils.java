@@ -26,6 +26,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.core.runtime.jobs.Job;
 
 public class JobUtils {
 
@@ -45,6 +48,61 @@ public class JobUtils {
       } catch (ExecutionException e) {
         throw new InvocationTargetException(e.getCause() != null ? e.getCause() : e);
       }
+    }
+  }
+
+  /**
+   * Run something after the job is done, regardless of result.
+   * Important: call job.schedule() after calling this method, NOT before.
+   */
+  public static void scheduleAfter(Job job, Runnable runnable) {
+    job.addJobChangeListener(new JobCompletionListener() {
+      @Override
+      public void done(IJobChangeEvent event) {
+        runnable.run();
+      }
+    });
+  }
+
+  /**
+   * Run something after the job is done, with success. Do nothing if failed.
+   * Important: call job.schedule() after calling this method, NOT before.
+   */
+  public static void scheduleAfterSuccess(Job job, Runnable runnable) {
+    job.addJobChangeListener(new JobCompletionListener() {
+      @Override
+      public void done(IJobChangeEvent event) {
+        if (event.getResult().isOK()) {
+          runnable.run();
+        }
+      }
+    });
+  }
+
+  abstract static class JobCompletionListener implements IJobChangeListener {
+    @Override
+    public void aboutToRun(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void awake(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void running(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void scheduled(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void sleeping(IJobChangeEvent event) {
+      // nothing to do
     }
   }
 
