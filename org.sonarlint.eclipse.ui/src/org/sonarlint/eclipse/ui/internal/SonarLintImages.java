@@ -21,16 +21,17 @@ package org.sonarlint.eclipse.ui.internal;
 
 import java.net.URL;
 import java.util.Locale;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 
 public final class SonarLintImages {
-
   public static final ImageDescriptor SONARWIZBAN_IMG = createImageDescriptor("sonarqube-48x200.png"); //$NON-NLS-1$
   public static final ImageDescriptor IMG_WIZBAN_NEW_SERVER = createImageDescriptor("new_server_wiz.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARLINT_CONSOLE_IMG_DESC = createImageDescriptor("sonarlint-16x16.png"); //$NON-NLS-1$
@@ -66,7 +67,6 @@ public final class SonarLintImages {
   public static final Image SONARQUBE_SERVER_ICON_IMG = createImage("logo/sonarqube-16px.png"); //$NON-NLS-1$
   public static final Image SONARQUBE_PROJECT_ICON_IMG = createImage("project-16x16.png"); //$NON-NLS-1$
   public static final Image SONARCLOUD_SERVER_ICON_IMG = createImage("logo/sonarcloud-16px.png"); //$NON-NLS-1$
-  public static final Image SONARLINT_ICON_IMG = createImage("logo/sonarlint_logo.png"); //$NON-NLS-1$
   public static final Image IMG_SONARQUBE_LOGO = createImage("logo/sonarqube-black-256px.png"); //$NON-NLS-1$
   public static final Image IMG_SONARCLOUD_LOGO = createImage("logo/sonarcloud-black-256px.png"); //$NON-NLS-1$
 
@@ -88,22 +88,31 @@ public final class SonarLintImages {
   }
 
   /**
-   * Create a composite image with both severity and type
-   * @param type can be null for the header of a groupBy severity
-   *
+   *  Create a composite image with the markers' project connection mode, issue severity and type
+   *  
+   *  @param marker used for finding the project connection mode
+   *  @param severity issue severity
+   *  @param type issue type
+   *  @return composite image if found, null otherwise
    */
   @Nullable
-  public static Image getIssueImage(String severity, @Nullable String type) {
-    var key = severity + "/" + type;
+  public static Image getIssueImage(@Nullable IMarker marker, @Nullable String markerServerKey, String severity, @Nullable String type) {
+    String mode = marker == null ? null : MarkerUtils.getProjectConnectionMode(marker, markerServerKey);
+    
+    var key = mode + "/" + severity + "/" + type;
     var imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
     var image = imageRegistry.get(key);
     if (image == null) {
+      ImageDescriptor modeImage = null;
+      if (mode != null) {
+        modeImage = createImageDescriptor(mode + "-16.png");
+      }
       var severityImage = createImageDescriptor("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
       ImageDescriptor typeImage = null;
       if (type != null) {
         typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
       }
-      imageRegistry.put(key, new CompositeSeverityTypeImage(severityImage, typeImage));
+      imageRegistry.put(key, new CompositeSeverityTypeImage(modeImage, severityImage, typeImage));
     }
     return imageRegistry.get(key);
   }
@@ -119,12 +128,14 @@ public final class SonarLintImages {
   }
 
   private static class CompositeSeverityTypeImage extends CompositeImageDescriptor {
-
+    @Nullable
+    private final ImageDescriptor mode;
     private final ImageDescriptor severity;
     @Nullable
     private final ImageDescriptor type;
 
-    public CompositeSeverityTypeImage(ImageDescriptor severity, @Nullable ImageDescriptor type) {
+    public CompositeSeverityTypeImage(@Nullable ImageDescriptor mode, ImageDescriptor severity, @Nullable ImageDescriptor type) {
+      this.mode = mode;
       this.severity = severity;
       this.type = type;
     }
@@ -132,20 +143,32 @@ public final class SonarLintImages {
     @Override
     protected void drawCompositeImage(int width, int height) {
       var severityDataProvider = createCachedImageDataProvider(severity);
-      if (type != null) {
-        var typeDataProvider = createCachedImageDataProvider(type);
-        drawImage(typeDataProvider, 0, 0);
-        drawImage(severityDataProvider, 16, 0);
+      if (mode != null) {
+        var modeDataProvider = createCachedImageDataProvider(mode);
+        if (type != null) {
+          var typeDataProvider = createCachedImageDataProvider(type);
+          drawImage(modeDataProvider, 0, 0);
+          drawImage(typeDataProvider, 16, 0);
+          drawImage(severityDataProvider, 32, 0);
+        } else {
+          drawImage(modeDataProvider, 0, 0);
+          drawImage(severityDataProvider, 16, 0);
+        }
       } else {
-        drawImage(severityDataProvider, 0, 0);
+        if (type != null) {
+          var typeDataProvider = createCachedImageDataProvider(type);
+          drawImage(typeDataProvider, 0, 0);
+          drawImage(severityDataProvider, 16, 0);
+        } else {
+          drawImage(severityDataProvider, 0, 0);
+        }
       }
     }
 
     @Override
     protected Point getSize() {
-      return new Point(32, 16);
+      return new Point(48, 16);
     }
-
   }
 
   @Nullable

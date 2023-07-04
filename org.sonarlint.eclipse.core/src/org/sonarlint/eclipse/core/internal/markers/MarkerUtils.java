@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.BadLocationException;
@@ -36,6 +37,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 
@@ -53,6 +55,10 @@ public final class MarkerUtils {
 
   public static final Set<String> SONARLINT_PRIMARY_MARKER_IDS = Set.of(
     SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, SonarLintCorePlugin.MARKER_REPORT_ID, SonarLintCorePlugin.MARKER_TAINT_ID);
+  
+  public static final String SONAR_MARKER_MODE_STANDALONE = "standalone";
+  public static final String SONAR_MARKER_MODE_SONARQUBE = "sonarqube";
+  public static final String SONAR_MARKER_MODE_SONARCLOUD = "sonarcloud";
 
   private MarkerUtils() {
   }
@@ -65,6 +71,25 @@ public final class MarkerUtils {
         }
       }
     }
+  }
+  
+  /**
+   *  Get the connection mode of a specific marker by id
+   *  
+   *  @param markerId for the marker <-> project connection
+   *  @param markerServerKey marker information from the connection, null if not on server
+   *  @return markers' corresponding project connection mode
+   */
+  public static String getProjectConnectionMode(IMarker marker, @Nullable String markerServerKey) {
+    var bindingOptional = SonarLintCorePlugin.getServersManager()
+      .resolveBinding(Adapters.adapt(marker.getResource().getProject(), ISonarLintProject.class));
+    if (bindingOptional.isEmpty() || markerServerKey == null) {
+      return SONAR_MARKER_MODE_STANDALONE;
+    }
+    if (bindingOptional.get().getEngineFacade().isSonarCloud()) {
+      return SONAR_MARKER_MODE_SONARCLOUD;
+    }
+    return SONAR_MARKER_MODE_SONARQUBE;
   }
 
   @Nullable
