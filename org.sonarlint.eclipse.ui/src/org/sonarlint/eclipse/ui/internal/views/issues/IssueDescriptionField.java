@@ -104,9 +104,11 @@ public class IssueDescriptionField extends MarkerField {
   @Nullable
   private static Image getImage(MarkerItem item) {
     if (item.getMarker() != null) {
-      return SonarLintImages.getIssueImage(
-        item.getMarker(),
-        item.getAttributeValue(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null),
+      // Get the matching status of this markers' issue (found locally / on SC or SQ)
+      var matchingStatus = MarkerUtils.getMatchingStatus(item.getMarker(),
+        item.getAttributeValue(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null));
+      
+      return SonarLintImages.getIssueImage(matchingStatus,
         item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, "major"),
         item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, "code_smell"));
     } else {
@@ -117,7 +119,7 @@ public class IssueDescriptionField extends MarkerField {
         severity = severity.substring(0, severity.indexOf(' '));
       }
       // All images of a TreeItem should have the same size
-      return SonarLintImages.getIssueImage(null, null, severity, null);
+      return SonarLintImages.getIssueImage(null, severity, null);
     }
   }
 

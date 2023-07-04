@@ -56,9 +56,12 @@ public final class MarkerUtils {
   public static final Set<String> SONARLINT_PRIMARY_MARKER_IDS = Set.of(
     SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, SonarLintCorePlugin.MARKER_REPORT_ID, SonarLintCorePlugin.MARKER_TAINT_ID);
   
-  public static final String SONAR_MARKER_MODE_STANDALONE = "standalone";
-  public static final String SONAR_MARKER_MODE_SONARQUBE = "sonarqube";
-  public static final String SONAR_MARKER_MODE_SONARCLOUD = "sonarcloud";
+  /** Matching status of an issue: Either found locally, on SonarCloud or SonarQube */
+  public enum FindingMatchingStatus {
+    NOT_MATCHED,
+    MATCHED_WITH_SQ,
+    MATCHED_WITH_SC
+  }
 
   private MarkerUtils() {
   }
@@ -74,22 +77,22 @@ public final class MarkerUtils {
   }
   
   /**
-   *  Get the connection mode of a specific marker by id
+   *  Get the matching status of a specific markers' issue by id
    *  
    *  @param markerId for the marker <-> project connection
    *  @param markerServerKey marker information from the connection, null if not on server
-   *  @return markers' corresponding project connection mode
+   *  @return specific matching status of a markers' issue
    */
-  public static String getProjectConnectionMode(IMarker marker, @Nullable String markerServerKey) {
+  public static FindingMatchingStatus getMatchingStatus(IMarker marker, @Nullable String markerServerKey) {
     var bindingOptional = SonarLintCorePlugin.getServersManager()
       .resolveBinding(Adapters.adapt(marker.getResource().getProject(), ISonarLintProject.class));
     if (bindingOptional.isEmpty() || markerServerKey == null) {
-      return SONAR_MARKER_MODE_STANDALONE;
+      return FindingMatchingStatus.NOT_MATCHED;
     }
     if (bindingOptional.get().getEngineFacade().isSonarCloud()) {
-      return SONAR_MARKER_MODE_SONARCLOUD;
+      return FindingMatchingStatus.MATCHED_WITH_SC;
     }
-    return SONAR_MARKER_MODE_SONARQUBE;
+    return FindingMatchingStatus.MATCHED_WITH_SQ;
   }
 
   @Nullable
