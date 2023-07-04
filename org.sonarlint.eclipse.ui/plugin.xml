@@ -94,10 +94,10 @@
   <extension
         point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
-            class="org.sonarlint.eclipse.ui.internal.markers.QuickFixPropertyTester"
+            class="org.sonarlint.eclipse.ui.internal.markers.MarkerPropertyTester"
             id="org.sonarlint.eclipse.ui.internal.quickFix"
             namespace="org.sonarlint.eclipse.ui"
-            properties="quickFix"
+            properties="hasQuickFix,matchedOnServer"
             type="org.eclipse.ui.views.markers.MarkerItem">
       </propertyTester>
   </extension>
@@ -599,7 +599,7 @@
          </command>
          <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
-                 mnemonic="m"
+                 mnemonic="M"
                  style="push">
                <visibleWhen
                     checkEnabled="true">
@@ -615,7 +615,7 @@
          </command>
          <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
-                 mnemonic="m"
+                 mnemonic="M"
                  style="push">
                <visibleWhen
                     checkEnabled="true">
@@ -666,7 +666,7 @@
          </command>
          <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
-                 mnemonic="m"
+                 mnemonic="M"
                  style="push">
                <visibleWhen
                     checkEnabled="true">
@@ -969,7 +969,7 @@
                      operator="or">
                   <instanceof value="org.eclipse.ui.views.markers.MarkerItem"/>
                   <test
-                        property="org.sonarlint.eclipse.ui.quickFix">
+                        property="org.sonarlint.eclipse.ui.hasQuickFix">
                   </test>
                </iterate>
                <count
@@ -981,6 +981,21 @@
       <handler
           class="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand">
+          <enabledWhen>
+            <and>
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <instanceof value="org.eclipse.ui.views.markers.MarkerItem"/>
+                  <test
+                        property="org.sonarlint.eclipse.ui.matchedOnServer">
+                  </test>
+               </iterate>
+               <count
+                     value="+">
+               </count>
+            </and>
+         </enabledWhen>
       </handler>
   </extension>
 

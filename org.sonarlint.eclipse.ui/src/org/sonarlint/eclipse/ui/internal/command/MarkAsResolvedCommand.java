@@ -19,11 +19,40 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
+import java.util.Map;
+import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.Adapters;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.commands.IElementUpdater;
+import org.eclipse.ui.menus.UIElement;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
-public class MarkAsResolvedCommand extends AbstractIssueCommand {
+public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElementUpdater {
+
+  @Override
+  public void updateElement(UIElement element, Map parameters) {
+    var window = element.getServiceLocator().getService(IWorkbenchWindow.class);
+    if (window == null) {
+      return;
+    }
+    var selection = (IStructuredSelection) window.getSelectionService().getSelection();
+    var binding = getBinding(getSelectedMarker(selection));
+    if (binding.isPresent()) {
+      element.setIcon(binding.get().getEngineFacade().isSonarCloud() ? SonarLintImages.SONARCLOUD_16 : SonarLintImages.SONARQUBE_16);
+    }
+  }
+
+  private static Optional<ResolvedBinding> getBinding(IMarker marker) {
+    var project = Adapters.adapt(marker.getResource().getProject(), ISonarLintProject.class);
+    return SonarLintCorePlugin.getServersManager().resolveBinding(project);
+  }
 
   @Override
   protected void execute(IMarker selectedMarker) {
