@@ -105,7 +105,7 @@ public class HotspotsView extends ViewPart {
     emptyMsg.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        BrowserUtils.openExternalBrowser("https://github.com/SonarSource/sonarlint-eclipse/wiki/Security-Hotspots");
+        BrowserUtils.openExternalBrowser("https://github.com/SonarSource/sonarlint-eclipse/wiki/Security-Hotspots", e.display);
       }
     });
     return form;

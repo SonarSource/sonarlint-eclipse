@@ -34,8 +34,8 @@ public final class BrowserUtils {
     // utility class
   }
 
-  public static void openExternalBrowser(String url) {
-    Display.getDefault().asyncExec(() -> {
+  public static void openExternalBrowser(String url, Display display) {
+    display.asyncExec(() -> {
       try {
         PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(url));
       } catch (PartInitException | MalformedURLException e) {
@@ -61,7 +61,7 @@ public final class BrowserUtils {
 
         event.doit = false;
 
-        openExternalBrowser(loc);
+        openExternalBrowser(loc, browser.getDisplay());
       }
     });
   }

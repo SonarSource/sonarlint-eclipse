@@ -103,7 +103,7 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
               pref.open();
             }
           } else {
-            BrowserUtils.openExternalBrowser(e.text);
+            BrowserUtils.openExternalBrowser(e.text, e.display);
           }
         }
       });

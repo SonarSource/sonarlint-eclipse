@@ -68,7 +68,7 @@ public class ConnectionTypeWizardPage extends WizardPage {
     var sonarCloudLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
     sonarCloudLabel.setText("Connect to <a>the online service</a>");
     sonarCloudLabel.setLayoutData(gd);
-    sonarCloudLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowser(SonarLintUtils.getSonarCloudUrl()));
+    sonarCloudLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowser(SonarLintUtils.getSonarCloudUrl(), e.display));
     var onPremiseLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
     onPremiseLabel.setText("Connect to a server");
     onPremiseLabel.setLayoutData(gd);
