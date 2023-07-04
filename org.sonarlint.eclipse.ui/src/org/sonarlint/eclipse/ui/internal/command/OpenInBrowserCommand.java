@@ -52,7 +52,7 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
   }
 
   @Override
-  protected void execute(IMarker selectedMarker) {
+  protected void execute(IMarker selectedMarker, IWorkbenchWindow window) {
     try {
       var binding = getBinding(selectedMarker);
       if (binding.isEmpty()) {
@@ -62,7 +62,7 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
       SonarLintCorePlugin.getTelemetry().taintVulnerabilitiesInvestigatedRemotely();
       var issueKey = (String) selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR);
       var serverIssueLink = buildLink(binding.get().getEngineFacade().getHost(), binding.get().getProjectBinding().projectKey(), issueKey);
-      BrowserUtils.openExternalBrowser(serverIssueLink);
+      BrowserUtils.openExternalBrowser(serverIssueLink, window.getShell().getDisplay());
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to open issue in browser", e);
     }
