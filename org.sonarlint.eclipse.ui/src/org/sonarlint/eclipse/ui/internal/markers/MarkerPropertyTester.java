@@ -21,9 +21,7 @@ package org.sonarlint.eclipse.ui.internal.markers;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.views.markers.MarkerItem;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 
 public class MarkerPropertyTester extends PropertyTester {
@@ -56,12 +54,7 @@ public class MarkerPropertyTester extends PropertyTester {
   }
 
   private static boolean hasServerIssueKey(IMarker marker) {
-    try {
-      return marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR) != null;
-    } catch (CoreException e) {
-      SonarLintLogger.get().error("Unable to read marker attribute", e);
-      return false;
-    }
+    return marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null) != null;
   }
 
 }
