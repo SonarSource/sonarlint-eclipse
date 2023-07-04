@@ -20,12 +20,13 @@
 package org.sonarlint.eclipse.ui.internal.command;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.sonarlint.eclipse.ui.internal.util.DeactivateRuleUtils;
 
 public class DeactivateRuleCommand extends AbstractIssueCommand {
 
   @Override
-  protected void execute(IMarker marker) {
+  protected void execute(IMarker marker, IWorkbenchWindow window) {
     DeactivateRuleUtils.deactivateRule(marker);
   }
 }

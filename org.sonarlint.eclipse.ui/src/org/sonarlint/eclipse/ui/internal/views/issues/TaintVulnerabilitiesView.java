@@ -46,7 +46,7 @@ public class TaintVulnerabilitiesView extends MarkerViewWithBottomPanel {
     var label = new Link(bottom, SWT.NONE);
     label.setText("This view displays taint vulnerabilities detected by SonarQube or SonarCloud. SonarLint does not detect those issues locally. <a>Learn more</a>");
     label.addListener(SWT.Selection, e -> {
-      BrowserUtils.openExternalBrowser("https://github.com/SonarSource/sonarlint-eclipse/wiki/Taint-Vulnerabilities");
+      BrowserUtils.openExternalBrowser("https://github.com/SonarSource/sonarlint-eclipse/wiki/Taint-Vulnerabilities", e.display);
     });
   }
 

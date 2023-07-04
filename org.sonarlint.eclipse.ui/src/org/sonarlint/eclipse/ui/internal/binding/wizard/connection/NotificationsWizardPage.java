@@ -80,7 +80,7 @@ public class NotificationsWizardPage extends WizardPage {
     notificationsLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        BrowserUtils.openExternalBrowser(e.text);
+        BrowserUtils.openExternalBrowser(e.text, e.display);
       }
     });
 

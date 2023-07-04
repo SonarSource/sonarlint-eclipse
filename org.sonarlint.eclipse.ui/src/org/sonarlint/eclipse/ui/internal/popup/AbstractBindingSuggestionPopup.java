@@ -36,7 +36,7 @@ public abstract class AbstractBindingSuggestionPopup extends AbstractSonarLintPo
 
   protected void addLearnMoreLink() {
     addLink("Learn more", e -> {
-      BrowserUtils.openExternalBrowser("https://github.com/SonarSource/sonarlint-eclipse/wiki/Connected-Mode");
+      BrowserUtils.openExternalBrowser("https://github.com/SonarSource/sonarlint-eclipse/wiki/Connected-Mode", e.display);
       close();
     });
   }

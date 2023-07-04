@@ -81,7 +81,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
   @Override
   public void openUrlInBrowser(OpenUrlInBrowserParams params) {
-    BrowserUtils.openExternalBrowser(params.getUrl());
+    BrowserUtils.openExternalBrowser(params.getUrl(), Display.getDefault());
   }
 
   @Override
