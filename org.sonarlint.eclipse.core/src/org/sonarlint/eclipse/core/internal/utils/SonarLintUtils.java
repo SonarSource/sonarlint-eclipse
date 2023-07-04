@@ -26,7 +26,6 @@ import org.eclipse.core.resources.IResource;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarsource.sonarlint.core.commons.Language;
 
@@ -34,6 +33,11 @@ public class SonarLintUtils {
 
   private SonarLintUtils() {
     // utility class, forbidden constructor
+  }
+
+  public static String getSonarCloudUrl() {
+    // For testing we need to allow changing default URL
+    return System.getProperty("sonarlint.internal.sonarcloud.url", "https://sonarcloud.io");
   }
 
   public static boolean isSonarLintFileCandidate(IResource resource) {
@@ -79,10 +83,10 @@ public class SonarLintUtils {
       return result;
     };
   }
-  
+
   /** Check whether a file is bound to SQ / SC via its project */
   public static boolean isBoundToConnection(ISonarLintIssuable f, IConnectedEngineFacade facade) {
-    SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(f.getProject());
+    var config = SonarLintCorePlugin.loadConfig(f.getProject());
     return config.isBound()
       && config.getProjectBinding().isPresent()
       && facade.getId().equals(config.getProjectBinding().get().connectionId());
