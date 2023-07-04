@@ -22,8 +22,6 @@ package org.sonarlint.eclipse.ui.internal.binding.actions;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.PlatformUI;
@@ -33,6 +31,7 @@ import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFaca
 import org.sonarlint.eclipse.core.internal.jobs.AbstractAnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
@@ -82,66 +81,11 @@ public class AnalysisJobsScheduler {
   }
 
   public static void scheduleAnalysisOfOpenFiles(Job job, List<ISonarLintProject> projects, TriggerType triggerType) {
-    scheduleAfterSuccess(job, () -> scheduleAnalysisOfOpenFiles(projects, triggerType));
-  }
-
-  /**
-   * Run something after the job is done, regardless of result.
-   * Important: call job.schedule() after calling this method, NOT before.
-   */
-  public static void scheduleAfter(Job job, Runnable runnable) {
-    job.addJobChangeListener(new JobCompletionListener() {
-      @Override
-      public void done(IJobChangeEvent event) {
-        runnable.run();
-      }
-    });
-  }
-
-  /**
-   * Run something after the job is done, with success. Do nothing if failed.
-   * Important: call job.schedule() after calling this method, NOT before.
-   */
-  public static void scheduleAfterSuccess(Job job, Runnable runnable) {
-    job.addJobChangeListener(new JobCompletionListener() {
-      @Override
-      public void done(IJobChangeEvent event) {
-        if (event.getResult().isOK()) {
-          runnable.run();
-        }
-      }
-    });
+    JobUtils.scheduleAfterSuccess(job, () -> scheduleAnalysisOfOpenFiles(projects, triggerType));
   }
 
   public static void scheduleAnalysisOfOpenFilesInBoundProjects(Job job, IConnectedEngineFacade server, TriggerType triggerType) {
     scheduleAnalysisOfOpenFiles(job, server.getBoundProjects(), triggerType);
-  }
-
-  abstract static class JobCompletionListener implements IJobChangeListener {
-    @Override
-    public void aboutToRun(IJobChangeEvent event) {
-      // nothing to do
-    }
-
-    @Override
-    public void awake(IJobChangeEvent event) {
-      // nothing to do
-    }
-
-    @Override
-    public void running(IJobChangeEvent event) {
-      // nothing to do
-    }
-
-    @Override
-    public void scheduled(IJobChangeEvent event) {
-      // nothing to do
-    }
-
-    @Override
-    public void sleeping(IJobChangeEvent event) {
-      // nothing to do
-    }
   }
 
   public static void notifyServerViewAfterBindingChange(ISonarLintProject project, @Nullable String oldServerId) {

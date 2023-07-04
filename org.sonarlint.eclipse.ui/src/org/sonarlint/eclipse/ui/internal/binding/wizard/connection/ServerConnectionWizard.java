@@ -269,7 +269,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     var job = new ConnectionStorageUpdateJob(resultServer);
 
     var boundProjects = resultServer.getBoundProjects();
-    AnalysisJobsScheduler.scheduleAfterSuccess(job, () -> AnalysisJobsScheduler.scheduleAnalysisOfOpenFilesInBoundProjects(resultServer, TriggerType.BINDING_CHANGE));
+    JobUtils.scheduleAfterSuccess(job, () -> AnalysisJobsScheduler.scheduleAnalysisOfOpenFilesInBoundProjects(resultServer, TriggerType.BINDING_CHANGE));
     job.schedule();
     var selectedProjects = model.getSelectedProjects();
     if (!skipBindingWizard) {
