@@ -55,7 +55,7 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
   }
 
   @Override
-  protected void execute(IMarker selectedMarker) {
+  protected void execute(IMarker selectedMarker, IWorkbenchWindow window) {
     var msg = new MessageBox(Display.getDefault().getActiveShell());
     msg.setText("TODO");
     msg.open();

@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
@@ -62,11 +63,11 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
   public Object execute(ExecutionEvent event) throws ExecutionException {
     var marker = getSelectedMarker((IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event));
     if (marker != null) {
-      execute(marker);
+      execute(marker, HandlerUtil.getActiveWorkbenchWindowChecked(event));
     }
     return null;
   }
 
-  protected abstract void execute(IMarker selectedMarker);
+  protected abstract void execute(IMarker selectedMarker, IWorkbenchWindow window);
 
 }
