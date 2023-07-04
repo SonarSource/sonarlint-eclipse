@@ -40,6 +40,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
+import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -67,7 +68,7 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
 
         SonarLintUiPlugin.removePostBuildListener();
         var job = new AnalyzeOpenedFiles(filesPerProject);
-        AnalysisJobsScheduler.scheduleAfter(job, SonarLintUiPlugin::addPostBuildListener);
+        JobUtils.scheduleAfter(job, SonarLintUiPlugin::addPostBuildListener);
         job.schedule();
       }
     }
