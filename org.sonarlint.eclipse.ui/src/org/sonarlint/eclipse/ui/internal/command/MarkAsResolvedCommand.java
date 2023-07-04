@@ -19,20 +19,29 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Adapters;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckStatusChangePermittedParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckStatusChangePermittedResponse;
 
 public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElementUpdater {
 
@@ -56,9 +65,50 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
 
   @Override
   protected void execute(IMarker selectedMarker, IWorkbenchWindow window) {
-    var msg = new MessageBox(Display.getDefault().getActiveShell());
-    msg.setText("TODO");
-    msg.open();
+    var checkJob = new Job("Check user permissions for setting the issue resolution") {
+
+      private CheckStatusChangePermittedResponse result;
+      private ResolvedBinding resolvedBinding;
+
+      @Override
+      protected IStatus run(IProgressMonitor monitor) {
+        var issueKey = selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
+        if (issueKey == null) {
+          return Status.error("No issue key for this marker");
+        }
+        var binding = getBinding(selectedMarker);
+        if (binding.isPresent()) {
+          resolvedBinding = binding.get();
+          try {
+            result = JobUtils.waitForFuture(monitor, SonarLintBackendService.get().getBackend().getIssueService()
+              .checkStatusChangePermitted(new CheckStatusChangePermittedParams(resolvedBinding.getProjectBinding().connectionId(), issueKey)));
+            return Status.OK_STATUS;
+          } catch (InvocationTargetException e) {
+            return new Status(Status.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
+          } catch (InterruptedException e) {
+            return new Status(Status.CANCEL, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
+          }
+
+        } else {
+          return Status.error("Project is not bound anymore");
+        }
+      }
+
+    };
+
+    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheck(checkJob.result, checkJob.resolvedBinding, window));
+
+    checkJob.schedule();
+  }
+
+  private static void afterCheck(CheckStatusChangePermittedResponse result, ResolvedBinding resolvedBinding, IWorkbenchWindow window) {
+    if (!result.isPermitted()) {
+      window.getShell().getDisplay()
+        .asyncExec(() -> MessageDialog.openError(window.getShell(), "Mark Issue as Resolved on " + (resolvedBinding.getEngineFacade().isSonarCloud() ? "SonarCloud" : "SonarQube"),
+          result.getNotPermittedReason()));
+      return;
+    }
+    window.getShell().getDisplay().asyncExec(() -> MessageDialog.openInformation(window.getShell(), "TODO", "TODO"));
   }
 
 }
