@@ -594,7 +594,15 @@
                  mnemonic="%command.correctionAssistProposals.mnemonic"
                  style="push">
                <visibleWhen
-                    checkEnabled="false">
+                    checkEnabled="true">
+              </visibleWhen>
+         </command>
+         <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
+                 mnemonic="m"
+                 style="push">
+               <visibleWhen
+                    checkEnabled="true">
               </visibleWhen>
          </command>
       </menuContribution>
@@ -604,6 +612,14 @@
                  commandId="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand"
                  style="push"
                  mnemonic="O">
+         </command>
+         <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
+                 mnemonic="m"
+                 style="push">
+               <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
          </command>
       </menuContribution>
       <menuContribution
@@ -642,14 +658,19 @@
                  style="push"
                  mnemonic="R">
          </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
-           <command
+         <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
                  icon="icons/full/marker_resolution16/disablerule.png"
                  style="push"
                  mnemonic="u">
+         </command>
+         <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
+                 mnemonic="m"
+                 style="push">
+               <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
          </command>
       </menuContribution>
 	<menuContribution locationURI="popup:sonar.menu?after=group1">
@@ -847,6 +868,12 @@
           name="Unbind project"
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
+    <command
+          description="Mark the selected finding as resolved"
+          id="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
+          name="Mark as Resolved"
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
   </extension>
 
   <extension point="org.eclipse.ui.handlers">
@@ -950,6 +977,10 @@
                </count>
             </and>
          </enabledWhen>
+      </handler>
+      <handler
+          class="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand">
       </handler>
   </extension>
 
