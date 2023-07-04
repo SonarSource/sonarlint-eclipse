@@ -54,7 +54,7 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
     addLink("Open in " + sqOrSc, e -> {
       var telemetry = SonarLintCorePlugin.getTelemetry();
       telemetry.devNotificationsClicked(notification.getCategory());
-      BrowserUtils.openExternalBrowser(notification.getLink());
+      BrowserUtils.openExternalBrowser(notification.getLink(), e.display);
       close();
     });
 
