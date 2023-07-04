@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.wizard.PojoPropertiesCompat;
@@ -68,7 +68,7 @@ public class ConnectionTypeWizardPage extends WizardPage {
     var sonarCloudLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
     sonarCloudLabel.setText("Connect to <a>the online service</a>");
     sonarCloudLabel.setLayoutData(gd);
-    sonarCloudLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowser(ConnectedEngineFacade.getSonarCloudUrl()));
+    sonarCloudLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowser(SonarLintUtils.getSonarCloudUrl()));
     var onPremiseLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
     onPremiseLabel.setText("Connect to a server");
     onPremiseLabel.setLayoutData(gd);
