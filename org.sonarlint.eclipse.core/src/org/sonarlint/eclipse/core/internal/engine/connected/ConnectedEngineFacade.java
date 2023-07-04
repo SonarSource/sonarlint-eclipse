@@ -85,11 +85,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   // Cache the project list to avoid dead lock
   private final Map<String, ServerProject> allProjectsByKey = new ConcurrentHashMap<>();
 
-  public static String getSonarCloudUrl() {
-    // For testing we need to allow changing default URL
-    return System.getProperty("sonarlint.internal.sonarcloud.url", "https://sonarcloud.io");
-  }
-
   ConnectedEngineFacade(String id) {
     this.id = id;
   }
@@ -325,7 +320,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   }
 
   private static EndpointParams createEndpointParams(String url, @Nullable String organization) {
-    return new EndpointParams(url, getSonarCloudUrl().equals(url), organization);
+    return new EndpointParams(url, SonarLintUtils.getSonarCloudUrl().equals(url), organization);
   }
 
   public EndpointParams createEndpointParams() {
@@ -376,7 +371,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
   @Override
   public boolean isSonarCloud() {
-    return getSonarCloudUrl().equals(this.host);
+    return SonarLintUtils.getSonarCloudUrl().equals(this.host);
   }
 
   @Override

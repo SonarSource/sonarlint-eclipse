@@ -27,9 +27,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ModelObject;
@@ -61,7 +61,7 @@ public class ServerConnectionModel extends ModelObject {
   private ConnectionType connectionType = ConnectionType.SONARCLOUD;
   private AuthMethod authMethod = AuthMethod.TOKEN;
   private String connectionId;
-  private String serverUrl = ConnectedEngineFacade.getSonarCloudUrl();
+  private String serverUrl = SonarLintUtils.getSonarCloudUrl();
   private String organization;
   private String username;
   private String password;
@@ -80,7 +80,7 @@ public class ServerConnectionModel extends ModelObject {
     this.edit = true;
     this.connectionId = server.getId();
     this.serverUrl = server.getHost();
-    this.connectionType = ConnectedEngineFacade.getSonarCloudUrl().equals(serverUrl) ? ConnectionType.SONARCLOUD : ConnectionType.ONPREMISE;
+    this.connectionType = SonarLintUtils.getSonarCloudUrl().equals(serverUrl) ? ConnectionType.SONARCLOUD : ConnectionType.ONPREMISE;
     this.organization = server.getOrganization();
     if (server.hasAuth()) {
       try {
@@ -110,7 +110,7 @@ public class ServerConnectionModel extends ModelObject {
     if (type == ConnectionType.ONPREMISE) {
       setServerUrl(null);
     } else {
-      setServerUrl(ConnectedEngineFacade.getSonarCloudUrl());
+      setServerUrl(SonarLintUtils.getSonarCloudUrl());
       setAuthMethod(AuthMethod.TOKEN);
     }
   }

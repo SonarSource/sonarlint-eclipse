@@ -44,6 +44,7 @@ import org.osgi.service.prefs.Preferences;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
@@ -239,7 +240,7 @@ public class ConnectedEngineFacadeManager {
     url = StringUtils.removeEnd(url, "/");
     if (ConnectedEngineFacade.OLD_SONARCLOUD_URL.equals(url)) {
       // Migration
-      url = ConnectedEngineFacade.getSonarCloudUrl();
+      url = SonarLintUtils.getSonarCloudUrl();
       connectionNode.put(URL_ATTRIBUTE, url);
     }
     update(facade,
@@ -359,7 +360,7 @@ public class ConnectedEngineFacadeManager {
       throw new IllegalStateException("There is no connection with id '" + facade.getId() + "'");
     }
 
-    IEclipsePreferences rootNode = getSonarLintPreferenceNode();
+    var rootNode = getSonarLintPreferenceNode();
     try {
       if (!rootNode.nodeExists(PREF_SERVERS)) {
         // User is probably editing a default server. So we have to make them persistent.
