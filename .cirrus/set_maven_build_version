@@ -1,0 +1,22 @@
+#!/bin/bash
+# Forked from https://github.com/SonarSource/re-ci-images/tree/master/docker/bin for using tycho-versions-plugin
+
+set -euo pipefail
+
+BUILD_ID=$1
+CURRENT_VERSION=$(maven_expression "project.version")
+RELEASE_VERSION=${CURRENT_VERSION%"-SNAPSHOT"}
+
+# In case of 2 digits, we need to add the 3rd digit (0 obviously)
+# Mandatory in order to compare versions (patch VS non patch)
+DIGIT_COUNT=$(echo ${RELEASE_VERSION//./ } | wc --words)
+if [ "$DIGIT_COUNT" -lt 3 ]; then
+    RELEASE_VERSION="$RELEASE_VERSION.0"
+fi
+NEW_VERSION="$RELEASE_VERSION.$BUILD_ID"
+
+echo "Replacing version $CURRENT_VERSION with $NEW_VERSION"
+
+mvn -B -e -V org.eclipse.tycho:tycho-versions-plugin:3.0.5:set-version -Dtycho.mode=maven -DnewVersion=$NEW_VERSION -DgenerateBackupPoms=false
+
+export PROJECT_VERSION=$NEW_VERSION
