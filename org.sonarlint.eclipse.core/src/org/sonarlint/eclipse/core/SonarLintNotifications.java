@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
@@ -69,7 +70,7 @@ public class SonarLintNotifications {
     private final String shortMsg;
     private final String longMsg;
 
-    public Notification(String title, String shortMsg, String longMsg) {
+    public Notification(String title, String shortMsg, @Nullable String longMsg) {
       this.title = title;
       this.shortMsg = shortMsg;
       this.longMsg = longMsg;
@@ -83,6 +84,7 @@ public class SonarLintNotifications {
       return shortMsg;
     }
 
+    @Nullable
     public String getLongMsg() {
       return longMsg;
     }
