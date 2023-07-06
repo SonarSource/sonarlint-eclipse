@@ -26,11 +26,11 @@ import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.FindingMatchingStatus;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 
 public final class SonarLintImages {
-
   public static final ImageDescriptor SONARWIZBAN_IMG = createImageDescriptor("sonarqube-48x200.png"); //$NON-NLS-1$
   public static final ImageDescriptor IMG_WIZBAN_NEW_SERVER = createImageDescriptor("new_server_wiz.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARLINT_CONSOLE_IMG_DESC = createImageDescriptor("sonarlint-16x16.png"); //$NON-NLS-1$
@@ -66,10 +66,10 @@ public final class SonarLintImages {
   public static final Image SONARQUBE_SERVER_ICON_IMG = createImage("logo/sonarqube-16px.png"); //$NON-NLS-1$
   public static final Image SONARQUBE_PROJECT_ICON_IMG = createImage("project-16x16.png"); //$NON-NLS-1$
   public static final Image SONARCLOUD_SERVER_ICON_IMG = createImage("logo/sonarcloud-16px.png"); //$NON-NLS-1$
-  public static final Image SONARLINT_ICON_IMG = createImage("logo/sonarlint_logo.png"); //$NON-NLS-1$
   public static final Image IMG_SONARQUBE_LOGO = createImage("logo/sonarqube-black-256px.png"); //$NON-NLS-1$
   public static final Image IMG_SONARCLOUD_LOGO = createImage("logo/sonarcloud-black-256px.png"); //$NON-NLS-1$
 
+  public static final ImageDescriptor STANDALONE_16 = createImageDescriptor("standalone-16.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARCLOUD_16 = createImageDescriptor("sonarcloud-16.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARQUBE_16 = createImageDescriptor("sonarqube-16.png"); //$NON-NLS-1$
 
@@ -86,24 +86,46 @@ public final class SonarLintImages {
 
   private SonarLintImages() {
   }
+  
+  /**
+   *  Mapping of the matching status of an issue to the specific image
+   *  
+   *  @param matchingStatus specific matching status of an issue
+   *  @return the corresponding connection mode icon (including standalone)
+   */
+  private static ImageDescriptor matchingStatusToImageDescriptor(FindingMatchingStatus matchingStatus) {
+    if (matchingStatus == FindingMatchingStatus.NOT_MATCHED) {
+      return STANDALONE_16;
+    } else if (matchingStatus == FindingMatchingStatus.MATCHED_WITH_SC) {
+      return SONARCLOUD_16;
+    }
+    return SONARQUBE_16;
+  }
 
   /**
-   * Create a composite image with both severity and type
-   * @param type can be null for the header of a groupBy severity
-   *
+   *  Create a composite image with the markers' project connection mode, issue severity and type
+   *  
+   *  @param matchingStatus matching status of an issue
+   *  @param severity issue severity
+   *  @param type issue type
+   *  @return composite image if found, null otherwise
    */
   @Nullable
-  public static Image getIssueImage(String severity, @Nullable String type) {
-    var key = severity + "/" + type;
+  public static Image getIssueImage(@Nullable FindingMatchingStatus matchingStatus, String severity, @Nullable String type) {
+    var key = matchingStatus + "/" + severity + "/" + type;
     var imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
     var image = imageRegistry.get(key);
     if (image == null) {
+      ImageDescriptor matchingStatusImage = null;
+      if (matchingStatus != null) {
+        matchingStatusImage = matchingStatusToImageDescriptor(matchingStatus);
+      }
       var severityImage = createImageDescriptor("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
       ImageDescriptor typeImage = null;
       if (type != null) {
         typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
       }
-      imageRegistry.put(key, new CompositeSeverityTypeImage(severityImage, typeImage));
+      imageRegistry.put(key, new CompositeSeverityTypeImage(matchingStatusImage, severityImage, typeImage));
     }
     return imageRegistry.get(key);
   }
@@ -119,12 +141,15 @@ public final class SonarLintImages {
   }
 
   private static class CompositeSeverityTypeImage extends CompositeImageDescriptor {
-
+    @Nullable
+    private final ImageDescriptor matchingStatus;
     private final ImageDescriptor severity;
     @Nullable
     private final ImageDescriptor type;
 
-    public CompositeSeverityTypeImage(ImageDescriptor severity, @Nullable ImageDescriptor type) {
+    public CompositeSeverityTypeImage(@Nullable ImageDescriptor matchingStatus, ImageDescriptor severity,
+      @Nullable ImageDescriptor type) {
+      this.matchingStatus = matchingStatus;
       this.severity = severity;
       this.type = type;
     }
@@ -132,20 +157,32 @@ public final class SonarLintImages {
     @Override
     protected void drawCompositeImage(int width, int height) {
       var severityDataProvider = createCachedImageDataProvider(severity);
-      if (type != null) {
-        var typeDataProvider = createCachedImageDataProvider(type);
-        drawImage(typeDataProvider, 0, 0);
-        drawImage(severityDataProvider, 16, 0);
+      if (matchingStatus != null) {
+        var matchingStatusDataProvider = createCachedImageDataProvider(matchingStatus);
+        if (type != null) {
+          var typeDataProvider = createCachedImageDataProvider(type);
+          drawImage(matchingStatusDataProvider, 0, 0);
+          drawImage(typeDataProvider, 16, 0);
+          drawImage(severityDataProvider, 32, 0);
+        } else {
+          drawImage(matchingStatusDataProvider, 0, 0);
+          drawImage(severityDataProvider, 16, 0);
+        }
       } else {
-        drawImage(severityDataProvider, 0, 0);
+        if (type != null) {
+          var typeDataProvider = createCachedImageDataProvider(type);
+          drawImage(typeDataProvider, 0, 0);
+          drawImage(severityDataProvider, 16, 0);
+        } else {
+          drawImage(severityDataProvider, 0, 0);
+        }
       }
     }
 
     @Override
     protected Point getSize() {
-      return new Point(32, 16);
+      return new Point(48, 16);
     }
-
   }
 
   @Nullable
