@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.BadLocationException;
@@ -36,6 +37,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 
@@ -53,6 +55,13 @@ public final class MarkerUtils {
 
   public static final Set<String> SONARLINT_PRIMARY_MARKER_IDS = Set.of(
     SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, SonarLintCorePlugin.MARKER_REPORT_ID, SonarLintCorePlugin.MARKER_TAINT_ID);
+  
+  /** Matching status of an issue: Either found locally, on SonarCloud or SonarQube */
+  public enum FindingMatchingStatus {
+    NOT_MATCHED,
+    MATCHED_WITH_SQ,
+    MATCHED_WITH_SC
+  }
 
   private MarkerUtils() {
   }
@@ -65,6 +74,25 @@ public final class MarkerUtils {
         }
       }
     }
+  }
+  
+  /**
+   *  Get the matching status of a specific markers' issue by id
+   *  
+   *  @param markerId for the marker <-> project connection
+   *  @param markerServerKey marker information from the connection, null if not on server
+   *  @return specific matching status of a markers' issue
+   */
+  public static FindingMatchingStatus getMatchingStatus(IMarker marker, @Nullable String markerServerKey) {
+    var bindingOptional = SonarLintCorePlugin.getServersManager()
+      .resolveBinding(Adapters.adapt(marker.getResource().getProject(), ISonarLintProject.class));
+    if (bindingOptional.isEmpty() || markerServerKey == null) {
+      return FindingMatchingStatus.NOT_MATCHED;
+    }
+    if (bindingOptional.get().getEngineFacade().isSonarCloud()) {
+      return FindingMatchingStatus.MATCHED_WITH_SC;
+    }
+    return FindingMatchingStatus.MATCHED_WITH_SQ;
   }
 
   @Nullable
