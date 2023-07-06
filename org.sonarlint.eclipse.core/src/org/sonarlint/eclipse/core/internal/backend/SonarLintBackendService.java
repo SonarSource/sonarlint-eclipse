@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -48,6 +49,9 @@ import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarQ
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.ClientInfoDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.FeatureFlagsDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.InitializeParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.AddIssueCommentParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.ChangeIssueStatusParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.IssueStatus;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionParams;
@@ -200,6 +204,18 @@ public class SonarLintBackendService {
         backend = null;
       }
     }
+  }
+
+  public CompletableFuture<Void> changeIssueStatus(ISonarLintProject project, String serverIssueKey, IssueStatus newStatus, boolean isTaint) {
+    return getBackend()
+      .getIssueService()
+      .changeStatus(new ChangeIssueStatusParams(ConfigScopeSynchronizer.getConfigScopeId(project), serverIssueKey, newStatus, isTaint));
+  }
+
+  public CompletableFuture<Void> addIssueComment(ISonarLintProject project, String serverIssueKey, String text) {
+    return getBackend()
+      .getIssueService()
+      .addComment(new AddIssueCommentParams(ConfigScopeSynchronizer.getConfigScopeId(project), serverIssueKey, text));
   }
 
 }

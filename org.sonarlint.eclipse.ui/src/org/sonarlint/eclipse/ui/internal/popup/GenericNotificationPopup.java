@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -42,7 +43,7 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
   private final String shortMsg;
   private final String longMsg;
 
-  public GenericNotificationPopup(String title, String shortMsg, String longMsg) {
+  public GenericNotificationPopup(String title, String shortMsg, @Nullable String longMsg) {
     this.title = title;
     this.shortMsg = shortMsg;
     this.longMsg = longMsg;
@@ -59,11 +60,13 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
 
     addLink("Dismiss", e -> close());
 
-    addLink("More details...", e -> {
-      var dialog = new DialogWithLink(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "SonarLint - " + title, longMsg);
-      dialog.open();
-      close();
-    });
+    if (longMsg != null) {
+      addLink("More details...", e -> {
+        var dialog = new DialogWithLink(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "SonarLint - " + title, longMsg);
+        dialog.open();
+        close();
+      });
+    }
   }
 
   private static class DialogWithLink extends Dialog {
