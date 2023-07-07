@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Adapters;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -81,6 +82,16 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
       return;
     }
     
+    String markerType;
+    try {
+      markerType = selectedMarker.getType();
+    } catch (CoreException err) {
+      window.getShell().getDisplay()
+      .asyncExec(() -> MessageDialog.openError(window.getShell(), "Mark Issue as Resolved, marker type not available",
+        err.getMessage()));
+      return;
+    }
+    
     var checkJob = new Job("Check user permissions for setting the issue resolution") {
       private CheckStatusChangePermittedResponse result;
       private ResolvedBinding resolvedBinding;
@@ -107,38 +118,41 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
 
     };
 
-    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(issueKey, checkJob.result, checkJob.resolvedBinding, window));
+    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(issueKey, markerType, checkJob.result,
+      checkJob.resolvedBinding, window));
     checkJob.schedule();
   }
 
-  private static void afterCheckSuccessful(String issueId, CheckStatusChangePermittedResponse result,
+  private static void afterCheckSuccessful(String markerId, String markerType, CheckStatusChangePermittedResponse result,
     ResolvedBinding resolvedBinding, IWorkbenchWindow window) {
+    var hostURL = resolvedBinding.getEngineFacade().getHost();
+    var isSonarCloud = resolvedBinding.getEngineFacade().isSonarCloud();
+    
     if (!result.isPermitted()) {
       window.getShell().getDisplay()
-        .asyncExec(() -> MessageDialog.openError(window.getShell(), "Mark Issue as Resolved on " + (resolvedBinding.getEngineFacade().isSonarCloud() ? "SonarCloud" : "SonarQube"),
+        .asyncExec(() -> MessageDialog.openError(window.getShell(), "Mark Issue as Resolved on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
           result.getNotPermittedReason()));
       return;
     }
     
     // run the
     window.getShell().getDisplay().asyncExec(() -> {
-      var dialog = new MarkAsResolvedDialog(window.getShell(), result.getAllowedStatuses());
+      var dialog = new MarkAsResolvedDialog(window.getShell(), result.getAllowedStatuses(), hostURL, isSonarCloud);
       if (dialog.open() == Window.OK) {
         var issueService = SonarLintBackendService.get().getBackend().getIssueService();
         
         // issue status transition
-        // TODO: Check for taint vulnerability!
         var newStatus = dialog.getFinalTransition();
         issueService.changeStatus(new ChangeIssueStatusParams(resolvedBinding.getEngineFacade().getId(),
-          issueId,
+          markerId,
           newStatus,
-          false));
+          markerType == SonarLintCorePlugin.MARKER_TAINT_ID));
         
         // (optional) issue status comment
         var comment = dialog.getFinalComment();
         if (!comment.isBlank()) {
           issueService.addComment(new AddIssueCommentParams(resolvedBinding.getEngineFacade().getId(),
-            issueId,
+            markerId,
             comment));
         }
       }

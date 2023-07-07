@@ -41,17 +41,20 @@ import org.sonarsource.sonarlint.core.clientapi.backend.issue.IssueStatus;
 
 /** Dialog for marking an issue as resolved using the possible transitions */
 public class MarkAsResolvedDialog extends Dialog {
-  final ArrayList<IssueStatusCheckBox> issueStatusCheckBoxButtons = new ArrayList<>();
+  private final ArrayList<IssueStatusCheckBox> issueStatusCheckBoxButtons = new ArrayList<>();
   private Text commentSection;
   private List<IssueStatus> transitions;
+  private String formattingHelpURL;
   
   private IssueStatus finalTransition;
   @Nullable
   private String finalComment;
 
-  public MarkAsResolvedDialog(Shell parentShell, List<IssueStatus> transitions) {
+  public MarkAsResolvedDialog(Shell parentShell, List<IssueStatus> transitions, String hostURL, boolean isSonarCloud) {
     super(parentShell);
     this.transitions = transitions;
+    
+    this.formattingHelpURL = hostURL + (isSonarCloud ? "/markdown/help" : "/formatting/help");
   }
   
   @Override
@@ -101,8 +104,7 @@ public class MarkAsResolvedDialog extends Dialog {
     gridData.grabExcessHorizontalSpace = true;
     gridData.horizontalSpan = 2;
     commentHelp.setLayoutData(gridData);
-    // TODO: Where to get this link from?
-    commentHelp.setText("<a href=\"https://next.sonarqube.com\">Formatting Help</a>: *Bold* `Code` * Bulleted point");
+    commentHelp.setText("<a href=\"" + formattingHelpURL + "\">Formatting Help</a>: *Bold* `Code` * Bulleted point");
     
     return container;
   }
