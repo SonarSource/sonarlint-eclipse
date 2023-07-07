@@ -135,7 +135,6 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
       return;
     }
     
-    // run the
     window.getShell().getDisplay().asyncExec(() -> {
       var dialog = new MarkAsResolvedDialog(window.getShell(), result.getAllowedStatuses(), hostURL, isSonarCloud);
       if (dialog.open() == Window.OK) {
@@ -146,7 +145,7 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
         issueService.changeStatus(new ChangeIssueStatusParams(resolvedBinding.getEngineFacade().getId(),
           markerId,
           newStatus,
-          markerType == SonarLintCorePlugin.MARKER_TAINT_ID));
+          markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID)));
         
         // (optional) issue status comment
         var comment = dialog.getFinalComment();

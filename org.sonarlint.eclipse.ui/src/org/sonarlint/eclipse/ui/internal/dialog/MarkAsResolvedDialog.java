@@ -25,14 +25,13 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
@@ -41,11 +40,11 @@ import org.sonarsource.sonarlint.core.clientapi.backend.issue.IssueStatus;
 
 /** Dialog for marking an issue as resolved using the possible transitions */
 public class MarkAsResolvedDialog extends Dialog {
-  private final ArrayList<IssueStatusCheckBox> issueStatusCheckBoxButtons = new ArrayList<>();
+  private final ArrayList<IssueStatusRadioButton> issueStatusRadioButtons = new ArrayList<>();
   private Text commentSection;
   private List<IssueStatus> transitions;
-  private String formattingHelpURL;
   
+  private String formattingHelpURL;
   private IssueStatus finalTransition;
   @Nullable
   private String finalComment;
@@ -53,7 +52,6 @@ public class MarkAsResolvedDialog extends Dialog {
   public MarkAsResolvedDialog(Shell parentShell, List<IssueStatus> transitions, String hostURL, boolean isSonarCloud) {
     super(parentShell);
     this.transitions = transitions;
-    
     this.formattingHelpURL = hostURL + (isSonarCloud ? "/markdown/help" : "/formatting/help");
   }
   
@@ -62,36 +60,31 @@ public class MarkAsResolvedDialog extends Dialog {
     var container = (Composite) super.createDialogArea(parent);
     container.setLayout(new GridLayout(2, true));
     
-    transitions.forEach(transition -> {
-      var checkBox = new IssueStatusCheckBox(container, transition);
-
-      checkBox.getCheckBox().setText(transition.getTitle() + "\n" + transition.getDescription());
-      var gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-      gridData.grabExcessHorizontalSpace = true;
-      gridData.horizontalSpan = 2;
-      checkBox.getCheckBox().setLayoutData(gridData);
-      
-      // listener prohibiting de-selecting check boxes and multi-selection
-      checkBox.getCheckBox().addSelectionListener(new SelectionAdapter() {
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-          checkBox.getCheckBox().setSelection(true);
-          issueStatusCheckBoxButtons.stream()
-            .filter(it -> it.getCheckBox() != checkBox.getCheckBox())
-            .forEach(it -> it.getCheckBox().setSelection(false));
-        }
-      });
-      
-      issueStatusCheckBoxButtons.add(checkBox);
-    });
-    issueStatusCheckBoxButtons.get(0).getCheckBox().setSelection(true);
-    
-    var commentTitle = new Label(container, SWT.NONE);
+    var group = new Group(container, SWT.NONE);
+    group.setLayout(new GridLayout(1, true));
     var gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
     gridData.grabExcessHorizontalSpace = true;
     gridData.horizontalSpan = 2;
+    group.setLayoutData(gridData);
+    
+    transitions.forEach(transition -> {
+      var btn = new IssueStatusRadioButton(group, transition);
+      btn.getButton().setText(transition.getTitle() + "\n" + transition.getDescription());
+      
+      var innerGridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+      innerGridData.grabExcessHorizontalSpace = true;
+      btn.getButton().setLayoutData(innerGridData);
+      
+      issueStatusRadioButtons.add(btn);
+    });
+    issueStatusRadioButtons.get(0).getButton().setSelection(true);
+    
+    var commentTitle = new Label(container, SWT.NONE);
+    gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+    gridData.grabExcessHorizontalSpace = true;
+    gridData.horizontalSpan = 2;
     commentTitle.setLayoutData(gridData);
-    commentTitle.setText("\nAdd a comment (optional)");
+    commentTitle.setText("Add a comment (optional)");
     
     commentSection = new Text(container, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
     gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -121,10 +114,15 @@ public class MarkAsResolvedDialog extends Dialog {
   }
   
   @Override
+  protected boolean isResizable() {
+    return true;
+  }
+  
+  @Override
   protected void okPressed() {
-    // INFO: At every point in time there is exactly one check box selected!
-    this.finalTransition = issueStatusCheckBoxButtons.stream()
-      .filter(it -> it.getCheckBox().getSelection())
+    // INFO: At every point in time there is exactly one radio button selected!
+    this.finalTransition = issueStatusRadioButtons.stream()
+      .filter(it -> it.getButton().getSelection())
       .findFirst()
       .get().getIssueStatus();
     this.finalComment = commentSection.getText();
@@ -142,18 +140,18 @@ public class MarkAsResolvedDialog extends Dialog {
     return this.finalComment;
   }
   
-  /** Utility class to wrap a SWT Button (CheckBox) with its corresponding IssueStatus */
-  static class IssueStatusCheckBox {
-    private final Button checkBox;
+  /** Utility class to wrap a SWT Radio Button with its corresponding IssueStatus */
+  static class IssueStatusRadioButton {
+    private final Button radioButton;
     private final IssueStatus issueStatus;
     
-    public IssueStatusCheckBox(Composite parent, IssueStatus issueStatus) {
+    public IssueStatusRadioButton(Composite parent, IssueStatus issueStatus) {
       this.issueStatus = issueStatus;
-      this.checkBox = new Button(parent, SWT.CHECK | SWT.BORDER);
+      this.radioButton = new Button(parent, SWT.RADIO | SWT.BORDER);
     }
     
-    public Button getCheckBox() {
-      return checkBox;
+    public Button getButton() {
+      return radioButton;
     }
     
     public IssueStatus getIssueStatus() {
