@@ -25,6 +25,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -36,6 +38,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.IssueStatus;
 
 /** Dialog for marking an issue as resolved using the possible transitions */
@@ -58,13 +61,11 @@ public class MarkAsResolvedDialog extends Dialog {
   @Override
   protected Control createDialogArea(Composite parent) {
     var container = (Composite) super.createDialogArea(parent);
-    container.setLayout(new GridLayout(2, true));
     
     var group = new Group(container, SWT.NONE);
     group.setLayout(new GridLayout(1, true));
     var gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
     gridData.grabExcessHorizontalSpace = true;
-    gridData.horizontalSpan = 2;
     group.setLayoutData(gridData);
     
     transitions.forEach(transition -> {
@@ -80,24 +81,24 @@ public class MarkAsResolvedDialog extends Dialog {
     issueStatusRadioButtons.get(0).getButton().setSelection(true);
     
     var commentTitle = new Label(container, SWT.NONE);
-    gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-    gridData.grabExcessHorizontalSpace = true;
-    gridData.horizontalSpan = 2;
+    gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
     commentTitle.setLayoutData(gridData);
     commentTitle.setText("Add a comment (optional)");
     
     commentSection = new Text(container, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-    gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-    gridData.grabExcessHorizontalSpace = true;
-    gridData.horizontalSpan = 2;
+    gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
     commentSection.setLayoutData(gridData);
     
     var commentHelp = new Link(container, SWT.NONE);
-    gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-    gridData.grabExcessHorizontalSpace = true;
-    gridData.horizontalSpan = 2;
+    gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
     commentHelp.setLayoutData(gridData);
     commentHelp.setText("<a href=\"" + formattingHelpURL + "\">Formatting Help</a>: *Bold* `Code` * Bulleted point");
+    commentHelp.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        BrowserUtils.openExternalBrowser(formattingHelpURL, MarkAsResolvedDialog.this.getShell().getDisplay());
+      }
+    });
     
     return container;
   }
