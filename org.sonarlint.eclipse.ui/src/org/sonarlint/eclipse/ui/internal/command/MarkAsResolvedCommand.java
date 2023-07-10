@@ -47,6 +47,7 @@ import org.sonarsource.sonarlint.core.clientapi.backend.issue.AddIssueCommentPar
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.ChangeIssueStatusParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckStatusChangePermittedParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckStatusChangePermittedResponse;
+import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 
 /**
@@ -86,6 +87,7 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
     try {
       markerType = selectedMarker.getType();
     } catch (CoreException err) {
+      SonarLintLogger.get().error("Error getting marker type", err);
       window.getShell().getDisplay()
       .asyncExec(() -> MessageDialog.openError(window.getShell(), "Mark Issue as Resolved, marker type not available",
         err.getMessage()));
