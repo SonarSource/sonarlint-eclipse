@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -28,8 +29,12 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.IssueStatus;
 
@@ -40,10 +45,15 @@ public class MarkAsResolvedJob extends Job {
   private final IssueStatus newStatus;
   private final boolean isTaint;
   private final @Nullable String comment;
+  private final ConnectedEngineFacade facade;
+  private final ISonarLintFile file;
 
-  public MarkAsResolvedJob(ISonarLintProject project, String serverIssueKey, IssueStatus newStatus, @Nullable String comment, boolean isTaint) {
+  public MarkAsResolvedJob(ISonarLintProject project, ConnectedEngineFacade facade, ISonarLintFile file, String serverIssueKey, IssueStatus newStatus, @Nullable String comment,
+    boolean isTaint) {
     super("Marking issue as resolved");
     this.project = project;
+    this.facade = facade;
+    this.file = file;
     this.serverIssueKey = serverIssueKey;
     this.newStatus = newStatus;
     this.comment = comment;
@@ -62,6 +72,12 @@ public class MarkAsResolvedJob extends Job {
       }
       SonarLintNotifications.get()
         .showNotification(new Notification("Issue marked as resolved", "The issue was successfully marked as resolved", null));
+      if (isTaint) {
+        new TaintIssuesUpdateAfterSyncJob(facade, project, List.of(file)).schedule();
+      } else {
+        var request = new AnalyzeProjectRequest(project, List.of(new FileWithDocument(file, null)), TriggerType.AFTER_RESOLVE);
+        AbstractAnalyzeProjectJob.create(request).schedule();
+      }
       return Status.OK_STATUS;
     } catch (InvocationTargetException e) {
       return new Status(Status.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
