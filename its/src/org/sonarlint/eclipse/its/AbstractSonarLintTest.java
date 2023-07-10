@@ -67,6 +67,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
 import org.osgi.service.prefs.BackingStoreException;
+import org.sonarlint.eclipse.its.reddeer.preferences.FileAssociationsPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.RuleConfigurationPreferences;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole.ShowConsoleOption;
@@ -110,6 +111,8 @@ public abstract class AbstractSonarLintTest {
     new WorkbenchShell().maximize();
     new CleanWorkspaceRequirement().fulfill();
 
+    // SLE-626: File associations must be set explicitly on macOS!
+    restoreDefaultFileAssociationConfiguration();
     restoreDefaultRulesConfiguration();
 
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SECRETS_EVER_DETECTED);
@@ -126,7 +129,8 @@ public abstract class AbstractSonarLintTest {
     });
   }
 
-  protected static int hotspotServerPort = -1;
+  // TODO: Undo this local change!
+  protected static int hotspotServerPort = 1;
   private static IJobChangeListener sonarlintItJobListener;
   protected static final AtomicInteger scheduledAnalysisJobCount = new AtomicInteger();
   private static final List<CountDownLatch> analysisJobCountDownLatch = new CopyOnWriteArrayList<>();
@@ -139,6 +143,9 @@ public abstract class AbstractSonarLintTest {
   public static final void beforeClass() throws BackingStoreException {
     System.out.println("Eclipse: " + platformVersion());
     System.out.println("GTK: " + System.getProperty("org.eclipse.swt.internal.gtk.version"));
+    
+    // SLE-626: File associations must be set explicitly on macOS!
+    setSpecificFileAssociationConfiguration();
 
     ROOT.node("servers").removeNode();
     ROOT_SECURE.node("servers").removeNode();
@@ -252,6 +259,7 @@ public abstract class AbstractSonarLintTest {
     // resource.open() waits 10s for the analysis to complete which is sometimes not enough
     resource.select();
     resource.getTreeItem().doubleClick();
+    
     new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
     // Select the file again in the explorer, else sometimes the marker view does not refresh
     resource.select();
@@ -275,6 +283,18 @@ public abstract class AbstractSonarLintTest {
       .url(server.getUrl())
       .credentials(Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD)
       .build());
+  }
+  
+  static void setSpecificFileAssociationConfiguration() {
+    var preferencePage = FileAssociationsPreferences.open();
+    preferencePage.enforceFileAssociation();
+    preferencePage.ok();
+  }
+  
+  void restoreDefaultFileAssociationConfiguration() {
+    var preferencePage = FileAssociationsPreferences.open();
+    preferencePage.resetFileAssociation();
+    preferencePage.ok();
   }
 
   void restoreDefaultRulesConfiguration() {
