@@ -67,11 +67,11 @@ public class SonarLintIssueMarker extends AbstractMarker {
 
   public void deactivateRule() {
     markerItem.select();
-    new ContextMenuItem("Deactivate rule").select();
+    new ContextMenuItem(markerItem, "Deactivate rule").select();
   }
 
   public void delete() {
     markerItem.select();
-    new ContextMenuItem("Delete").select();
+    new ContextMenuItem(markerItem, "Delete").select();
   }
 }
