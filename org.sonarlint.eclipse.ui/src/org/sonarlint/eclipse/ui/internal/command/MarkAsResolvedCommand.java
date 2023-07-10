@@ -37,11 +37,13 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.MarkAsResolvedJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.dialog.MarkAsResolvedDialog;
@@ -76,6 +78,7 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
   @Override
   protected void execute(IMarker selectedMarker, IWorkbenchWindow window) {
     var project = Adapters.adapt(selectedMarker.getResource().getProject(), ISonarLintProject.class);
+    var file = Adapters.adapt(selectedMarker.getResource(), ISonarLintFile.class);
     var issueKey = selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
     if (issueKey == null) {
       window.getShell().getDisplay()
@@ -120,12 +123,12 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
 
     };
 
-    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(project, issueKey, markerType, checkJob.result,
+    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(project, file, issueKey, markerType, checkJob.result,
       checkJob.resolvedBinding, window));
     checkJob.schedule();
   }
 
-  private static void afterCheckSuccessful(ISonarLintProject project, String issueKey, String markerType, CheckStatusChangePermittedResponse result,
+  private static void afterCheckSuccessful(ISonarLintProject project, ISonarLintFile file, String issueKey, String markerType, CheckStatusChangePermittedResponse result,
     ResolvedBinding resolvedBinding, IWorkbenchWindow window) {
     var hostURL = resolvedBinding.getEngineFacade().getHost();
     var isSonarCloud = resolvedBinding.getEngineFacade().isSonarCloud();
@@ -143,7 +146,8 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
         var newStatus = dialog.getFinalTransition();
         var comment = dialog.getFinalComment();
 
-        var job = new MarkAsResolvedJob(project, issueKey, newStatus, StringUtils.trimToNull(comment), markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID));
+        var job = new MarkAsResolvedJob(project, (ConnectedEngineFacade) resolvedBinding.getEngineFacade(), file, issueKey, newStatus, StringUtils.trimToNull(comment),
+          markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID));
         job.schedule();
 
       }
