@@ -35,19 +35,19 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeLifecycleListener;
-import org.sonarlint.eclipse.core.internal.jobs.GlobalLogOutput;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.SonarLintBackendImpl;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
-import org.sonarsource.sonarlint.core.clientapi.backend.HostInfoDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.InitializeParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.branch.DidChangeActiveSonarProjectBranchParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.DidUpdateConnectionsParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarCloudConnectionConfigurationDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarQubeConnectionConfigurationDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.initialize.ClientInfoDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.initialize.FeatureFlagsDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.initialize.InitializeParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionParams;
@@ -72,9 +72,8 @@ public class SonarLintBackendService {
   }
 
   public void init(SonarLintClient client) {
+
     SonarLintLogger.get().debug("Initializing SonarLint backend...");
-    // prepare the log output early to get traces from the backend
-    org.sonarsource.sonarlint.core.commons.log.SonarLintLogger.setTarget(new GlobalLogOutput());
 
     this.backend = new SonarLintBackendImpl(client);
 
@@ -92,24 +91,18 @@ public class SonarLintBackendService {
 
     try {
       backend.initialize(new InitializeParams(
-        new HostInfoDto(getIdeName()),
-        "eclipse",
+        new ClientInfoDto(getIdeName(), "eclipse", "SonarLint Eclipse " + SonarLintUtils.getPluginVersion()),
+        new FeatureFlagsDto(true, true, true, true, false),
         StoragePathManager.getStorageDir(),
         StoragePathManager.getDefaultWorkDir(),
         Set.copyOf(embeddedPluginPaths),
         embeddedPlugins,
         SonarLintUtils.getEnabledLanguages(),
         SonarLintUtils.getEnabledLanguages(),
-        false,
         sqConnections,
         scConnections,
         null,
-        true,
-        SonarLintGlobalConfiguration.buildStandaloneRulesConfig(),
-        true,
-        false,
-        true,
-        "SonarLint Eclipse " + SonarLintUtils.getPluginVersion())).thenRun(() -> {
+        SonarLintGlobalConfiguration.buildStandaloneRulesConfig())).thenRun(() -> {
           SonarLintCorePlugin.getServersManager().addServerLifecycleListener(new IConnectedEngineFacadeLifecycleListener() {
             @Override
             public void connectionRemoved(IConnectedEngineFacade facade) {

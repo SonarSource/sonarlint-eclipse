@@ -36,6 +36,7 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacad
 import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.AbstractSonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
+import org.sonarlint.eclipse.core.internal.jobs.GlobalLogOutput;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
@@ -78,6 +79,8 @@ public class SonarLintCorePlugin extends Plugin {
   private NodeJsManager nodeJsManager;
 
   public SonarLintCorePlugin() {
+    // prepare the log output early to get traces from the backend
+    org.sonarsource.sonarlint.core.commons.log.SonarLintLogger.setTarget(new GlobalLogOutput());
     plugin = this;
     proxyTracker = new ServiceTracker<>(FrameworkUtil.getBundle(this.getClass()).getBundleContext(), IProxyService.class, null);
     proxyTracker.open();

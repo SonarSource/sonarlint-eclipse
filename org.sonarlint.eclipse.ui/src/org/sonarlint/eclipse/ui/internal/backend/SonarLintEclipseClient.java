@@ -67,9 +67,9 @@ import org.sonarsource.sonarlint.core.clientapi.client.binding.AssistBindingResp
 import org.sonarsource.sonarlint.core.clientapi.client.binding.SuggestBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.client.connection.AssistCreatingConnectionParams;
 import org.sonarsource.sonarlint.core.clientapi.client.connection.AssistCreatingConnectionResponse;
-import org.sonarsource.sonarlint.core.clientapi.client.host.GetHostInfoResponse;
 import org.sonarsource.sonarlint.core.clientapi.client.hotspot.HotspotDetailsDto;
 import org.sonarsource.sonarlint.core.clientapi.client.hotspot.ShowHotspotParams;
+import org.sonarsource.sonarlint.core.clientapi.client.info.GetClientInfoResponse;
 import org.sonarsource.sonarlint.core.clientapi.client.message.ShowMessageParams;
 import org.sonarsource.sonarlint.core.clientapi.client.progress.ReportProgressParams;
 import org.sonarsource.sonarlint.core.clientapi.client.progress.StartProgressParams;
@@ -128,8 +128,8 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
   }
 
   @Override
-  public CompletableFuture<GetHostInfoResponse> getHostInfo() {
-    return CompletableFuture.completedFuture(new GetHostInfoResponse(ResourcesPlugin.getWorkspace().getRoot().getLocation().lastSegment()));
+  public CompletableFuture<GetClientInfoResponse> getClientInfo() {
+    return CompletableFuture.completedFuture(new GetClientInfoResponse(ResourcesPlugin.getWorkspace().getRoot().getLocation().lastSegment()));
   }
 
   @Override
@@ -261,13 +261,13 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
     Display.getDefault().asyncExec(() -> new DeveloperNotificationPopup(connectionOpt.get(), params, connectionOpt.get().isSonarCloud()).open());
   }
-  
+
   /** Start IDE progress bar for backend jobs running out of IDE scope */
   @Override
   public CompletableFuture<Void> startProgress(StartProgressParams params) {
     return BackendProgressJobScheduler.get().startProgress(params);
   }
-  
+
   /** Update / finish IDE progress bar for backend jobs running out of IDE scope */
   @Override
   public void reportProgress(ReportProgressParams params) {
