@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
-<target name="sonarlint-eclipse-build-commons" sequenceNumber="3">
+<target name="sonarlint-eclipse-build-commons" sequenceNumber="4">
   <locations>
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.slf4j.api" version="0.0.0"/>
@@ -17,7 +17,7 @@
 			  <dependency>
 				  <groupId>org.sonarsource.sonarlint.core</groupId>
 				  <artifactId>sonarlint-core-osgi</artifactId>
-				  <version>9.0.0.74108</version>
+				  <version>9.0.0.74161</version>
 				  <type>jar</type>
 			  </dependency>
 		  </dependencies>

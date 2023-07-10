@@ -268,6 +268,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var rootProject = new PydevPackageExplorer().getProject("python");
     rootProject.getTreeItem().select();
     doAndWaitForSonarLintAnalysisJob(() -> {
+      // TODO: Use PyDev Python editor!
       open(rootProject.getResource("src", "root", "nested", "example.py"));
 
       new WaitUntil(new ShellIsAvailable("Default Eclipse preferences for PyDev"));
@@ -299,7 +300,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource)
       .contains(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.php"));
 
-    // SLE-342
+    // SLE-34
+    // INFO: Files with ".inc" suffix are opened in a C/C++ Editor by default but recognized by SonarLint as PHP source code!
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("foo.inc"));
 
     assertThat(onTheFlyView.getIssues())

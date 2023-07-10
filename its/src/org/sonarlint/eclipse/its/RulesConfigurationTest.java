@@ -33,7 +33,6 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.awaitility.Awaitility.await;
 
 public class RulesConfigurationTest extends AbstractSonarLintTest {
-
   @Test
   public void deactivate_rule() {
     new JavaPerspective().open();
