@@ -27,7 +27,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -45,50 +44,52 @@ import org.sonarsource.sonarlint.core.clientapi.backend.issue.IssueStatus;
 public class MarkAsResolvedDialog extends Dialog {
   private final ArrayList<IssueStatusRadioButton> issueStatusRadioButtons = new ArrayList<>();
   private Text commentSection;
-  private List<IssueStatus> transitions;
-  
-  private String formattingHelpURL;
+  private final List<IssueStatus> transitions;
+
+  private final String formattingHelpURL;
   private IssueStatus finalTransition;
   @Nullable
   private String finalComment;
+  private final boolean isSonarCloud;
 
   public MarkAsResolvedDialog(Shell parentShell, List<IssueStatus> transitions, String hostURL, boolean isSonarCloud) {
     super(parentShell);
     this.transitions = transitions;
+    this.isSonarCloud = isSonarCloud;
     this.formattingHelpURL = hostURL + (isSonarCloud ? "/markdown/help" : "/formatting/help");
   }
-  
+
   @Override
   protected Control createDialogArea(Composite parent) {
     var container = (Composite) super.createDialogArea(parent);
-    
+
     var group = new Group(container, SWT.NONE);
     group.setLayout(new GridLayout(1, true));
     var gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
     gridData.grabExcessHorizontalSpace = true;
     group.setLayoutData(gridData);
-    
+
     transitions.forEach(transition -> {
       var btn = new IssueStatusRadioButton(group, transition);
       btn.getButton().setText(transition.getTitle() + "\n" + transition.getDescription());
-      
+
       var innerGridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
       innerGridData.grabExcessHorizontalSpace = true;
       btn.getButton().setLayoutData(innerGridData);
-      
+
       issueStatusRadioButtons.add(btn);
     });
     issueStatusRadioButtons.get(0).getButton().setSelection(true);
-    
+
     var commentTitle = new Label(container, SWT.NONE);
     gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
     commentTitle.setLayoutData(gridData);
     commentTitle.setText("Add a comment (optional)");
-    
+
     commentSection = new Text(container, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
     gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
     commentSection.setLayoutData(gridData);
-    
+
     var commentHelp = new Link(container, SWT.NONE);
     gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
     commentHelp.setLayoutData(gridData);
@@ -99,26 +100,29 @@ public class MarkAsResolvedDialog extends Dialog {
         BrowserUtils.openExternalBrowser(formattingHelpURL, MarkAsResolvedDialog.this.getShell().getDisplay());
       }
     });
-    
+
     return container;
   }
-  
+
   @Override
   protected void createButtonsForButtonBar(Composite parent) {
     createButton(parent, IDialogConstants.OK_ID, "Mark as resolved", true);
     createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
   }
-  
+
   @Override
-  protected Point getInitialSize() {
-    return new Point(600, 300);
+  protected void configureShell(Shell newShell) {
+    super.configureShell(newShell);
+
+    newShell.setText("Mark Issue as Resolved on " + (isSonarCloud ? "SonarCloud" : "SonarQube"));
+    newShell.setMinimumSize(500, 300);
   }
-  
+
   @Override
   protected boolean isResizable() {
     return true;
   }
-  
+
   @Override
   protected void okPressed() {
     // INFO: At every point in time there is exactly one radio button selected!
@@ -127,34 +131,34 @@ public class MarkAsResolvedDialog extends Dialog {
       .findFirst()
       .get().getIssueStatus();
     this.finalComment = commentSection.getText();
-    
+
     super.okPressed();
   }
-  
+
   /** After finishing the dialog we can use this for invoking SQ / SC API */
   public IssueStatus getFinalTransition() {
     return this.finalTransition;
   }
-  
+
   /** After finishing the dialog we can use this for invoking SQ / SC API */
   public String getFinalComment() {
     return this.finalComment;
   }
-  
+
   /** Utility class to wrap a SWT Radio Button with its corresponding IssueStatus */
   static class IssueStatusRadioButton {
     private final Button radioButton;
     private final IssueStatus issueStatus;
-    
+
     public IssueStatusRadioButton(Composite parent, IssueStatus issueStatus) {
       this.issueStatus = issueStatus;
-      this.radioButton = new Button(parent, SWT.RADIO | SWT.BORDER);
+      this.radioButton = new Button(parent, SWT.RADIO);
     }
-    
+
     public Button getButton() {
       return radioButton;
     }
-    
+
     public IssueStatus getIssueStatus() {
       return issueStatus;
     }
