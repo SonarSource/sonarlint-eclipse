@@ -24,12 +24,14 @@ import java.util.Map;
 import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Adapters;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
@@ -40,11 +42,19 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.dialog.MarkAsResolvedDialog;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.AddIssueCommentParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.ChangeIssueStatusParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckStatusChangePermittedParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckStatusChangePermittedResponse;
+import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
+
+/**
+ *  Command invoked on issues matched from SonarQube / SonarCloud to resolve an issue based on server configuration
+ *  and user authentication. Not available on issues only found locally!
+ */
 public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElementUpdater {
-
   @Override
   public void updateElement(UIElement element, Map parameters) {
     var window = element.getServiceLocator().getService(IWorkbenchWindow.class);
@@ -58,6 +68,7 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
     }
   }
 
+  /** Check for issue binding: Either SonarQube or SonarCloud */
   private static Optional<ResolvedBinding> getBinding(IMarker marker) {
     var project = Adapters.adapt(marker.getResource().getProject(), ISonarLintProject.class);
     return SonarLintCorePlugin.getServersManager().resolveBinding(project);
@@ -65,17 +76,30 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
 
   @Override
   protected void execute(IMarker selectedMarker, IWorkbenchWindow window) {
+    var issueKey = selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
+    if (issueKey == null) {
+      window.getShell().getDisplay()
+      .asyncExec(() -> MessageDialog.openError(window.getShell(), "Mark Issue as Resolved", "No issue key available"));
+      return;
+    }
+    
+    String markerType;
+    try {
+      markerType = selectedMarker.getType();
+    } catch (CoreException err) {
+      SonarLintLogger.get().error("Error getting marker type", err);
+      window.getShell().getDisplay()
+      .asyncExec(() -> MessageDialog.openError(window.getShell(), "Mark Issue as Resolved, marker type not available",
+        err.getMessage()));
+      return;
+    }
+    
     var checkJob = new Job("Check user permissions for setting the issue resolution") {
-
       private CheckStatusChangePermittedResponse result;
       private ResolvedBinding resolvedBinding;
 
       @Override
       protected IStatus run(IProgressMonitor monitor) {
-        var issueKey = selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
-        if (issueKey == null) {
-          return Status.error("No issue key for this marker");
-        }
         var binding = getBinding(selectedMarker);
         if (binding.isPresent()) {
           resolvedBinding = binding.get();
@@ -84,9 +108,9 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
               .checkStatusChangePermitted(new CheckStatusChangePermittedParams(resolvedBinding.getProjectBinding().connectionId(), issueKey)));
             return Status.OK_STATUS;
           } catch (InvocationTargetException e) {
-            return new Status(Status.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
+            return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
           } catch (InterruptedException e) {
-            return new Status(Status.CANCEL, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
+            return new Status(IStatus.CANCEL, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
           }
 
         } else {
@@ -96,19 +120,43 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
 
     };
 
-    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheck(checkJob.result, checkJob.resolvedBinding, window));
-
+    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(issueKey, markerType, checkJob.result,
+      checkJob.resolvedBinding, window));
     checkJob.schedule();
   }
 
-  private static void afterCheck(CheckStatusChangePermittedResponse result, ResolvedBinding resolvedBinding, IWorkbenchWindow window) {
+  private static void afterCheckSuccessful(String markerId, String markerType, CheckStatusChangePermittedResponse result,
+    ResolvedBinding resolvedBinding, IWorkbenchWindow window) {
+    var hostURL = resolvedBinding.getEngineFacade().getHost();
+    var isSonarCloud = resolvedBinding.getEngineFacade().isSonarCloud();
+    
     if (!result.isPermitted()) {
       window.getShell().getDisplay()
-        .asyncExec(() -> MessageDialog.openError(window.getShell(), "Mark Issue as Resolved on " + (resolvedBinding.getEngineFacade().isSonarCloud() ? "SonarCloud" : "SonarQube"),
+        .asyncExec(() -> MessageDialog.openError(window.getShell(), "Mark Issue as Resolved on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
           result.getNotPermittedReason()));
       return;
     }
-    window.getShell().getDisplay().asyncExec(() -> MessageDialog.openInformation(window.getShell(), "TODO", "TODO"));
+    
+    window.getShell().getDisplay().asyncExec(() -> {
+      var dialog = new MarkAsResolvedDialog(window.getShell(), result.getAllowedStatuses(), hostURL, isSonarCloud);
+      if (dialog.open() == Window.OK) {
+        var issueService = SonarLintBackendService.get().getBackend().getIssueService();
+        
+        // issue status transition
+        var newStatus = dialog.getFinalTransition();
+        issueService.changeStatus(new ChangeIssueStatusParams(resolvedBinding.getEngineFacade().getId(),
+          markerId,
+          newStatus,
+          markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID)));
+        
+        // (optional) issue status comment
+        var comment = dialog.getFinalComment();
+        if (!comment.isBlank()) {
+          issueService.addComment(new AddIssueCommentParams(resolvedBinding.getEngineFacade().getId(),
+            markerId,
+            comment));
+        }
+      }
+    });
   }
-
 }
