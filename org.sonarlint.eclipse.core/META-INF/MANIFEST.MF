@@ -45,5 +45,6 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.egit.core;resolution:=optional,
  org.eclipse.egit.ui;resolution:=optional,
  org.eclipse.text
+Import-Package: org.eclipse.jface.util
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11

@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.utils;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import org.eclipse.jface.util.Util;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
@@ -29,6 +30,7 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacad
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.NodeJsHelper;
 import org.sonarsource.sonarlint.core.commons.Version;
+import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 
 /**
@@ -75,6 +77,11 @@ public class NodeJsManager {
       this.nodeInit = true;
       this.nodeJsPath = helper.getNodeJsPath();
       this.nodeJsVersion = helper.getNodeJsVersion();
+      
+      if (Util.isMac()) {
+        SonarLintLogger.get().warn(
+          "Automatically detecting Node.js on macOS does not work when added to $PATH from user shell configuration!");
+      }
     }
   }
 
