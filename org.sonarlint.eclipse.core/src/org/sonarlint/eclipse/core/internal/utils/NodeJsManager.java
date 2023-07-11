@@ -30,8 +30,18 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarsource.sonarlint.core.NodeJsHelper;
 import org.sonarsource.sonarlint.core.commons.Version;
 
-public class NodeJsManager {
 
+/**
+ *  Disclaimer on macOS:
+ *  We try to detect a Node.js installation via the macOS built-in "path_helper" (resides in: /usr/libexec) utility.
+ *  This causes an issue with automatically detecting a Node.js installation when it is added to $PATH from the user
+ *  shell configuration (e.g. .bashrc for Bash, .zprofile for Zsh) and due to running the command from within Eclipse,
+ *  the underlying shell spawned via {@link NodeJsHelper#computePathEnvForMacOs} has an incomplete $PATH variable.
+ *  Therefore integration tests running in such an environment will fail as we assume Node.js to be found on $PATH!
+ *  
+ *  For further information, see <a href="https://gist.github.com/Linerre/f11ad4a6a934dcf01ee8415c9457e7b2">here</a>!
+ */
+public class NodeJsManager {
   private boolean nodeInit = false;
   @Nullable
   private Path nodeJsPath;
