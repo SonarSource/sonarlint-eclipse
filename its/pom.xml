@@ -17,7 +17,7 @@
   <name>SonarLint for Eclipse Integration Tests</name>
 
   <properties>
-    <tycho.version>3.0.5</tycho.version>
+    <tycho.version>4.0.0</tycho.version>
     <license.title>SonarLint for Eclipse ITs</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -82,6 +82,11 @@
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-ds-plugin</artifactId>
+          <version>${tycho.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-bnd-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
       </plugins>
