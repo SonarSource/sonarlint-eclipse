@@ -196,9 +196,10 @@ public class SonarLintBackendService {
         Platform.getLog(SonarLintBackendService.class).error("Unable to stop the SonartLint backend", e);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
+      } finally {
+        backend = null;
       }
     }
-    backend = null;
   }
 
 }
