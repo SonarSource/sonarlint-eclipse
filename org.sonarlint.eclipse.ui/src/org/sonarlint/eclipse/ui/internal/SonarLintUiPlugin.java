@@ -155,12 +155,14 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     logListener = new SonarLintConsoleLogger();
     SonarLintLogger.get().addLogListener(logListener);
 
+    notifListener = new PopupNotification();
+    SonarLintNotifications.get().addNotificationListener(notifListener);
+
+    SonarLintBackendService.get().init(new SonarLintEclipseClient());
+
     addPostBuildListener();
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_VCS_CACHE_CLEANER);
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_FLOW_LOCATION_SERVICE);
-
-    notifListener = new PopupNotification();
-    SonarLintNotifications.get().addNotificationListener(notifListener);
 
     prefListener = event -> {
       if (event.getProperty().equals(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY)) {
@@ -252,8 +254,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     @Override
     public IStatus run(IProgressMonitor monitor) {
       SonarLintLogger.get().info("Starting SonarLint for Eclipse " + SonarLintUtils.getPluginVersion());
-
-      SonarLintBackendService.get().init(new SonarLintEclipseClient());
 
       AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
 
