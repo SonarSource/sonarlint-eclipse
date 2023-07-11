@@ -130,7 +130,8 @@ public abstract class AbstractSonarLintTest {
     });
   }
 
-  protected static int hotspotServerPort = -1;
+  // TODO: Undo this local change!
+  protected static int hotspotServerPort = 1;
   private static IJobChangeListener sonarlintItJobListener;
   protected static final AtomicInteger scheduledAnalysisJobCount = new AtomicInteger();
   private static final List<CountDownLatch> analysisJobCountDownLatch = new CopyOnWriteArrayList<>();
@@ -149,6 +150,9 @@ public abstract class AbstractSonarLintTest {
   public static final void beforeClass() throws BackingStoreException {
     System.out.println("Eclipse: " + platformVersion());
     System.out.println("GTK: " + System.getProperty("org.eclipse.swt.internal.gtk.version"));
+    
+    // SLE-626: File associations must be set explicitly on macOS!
+    setSpecificFileAssociationConfiguration();
 
     ROOT.node("servers").removeNode();
     ROOT_SECURE.node("servers").removeNode();
