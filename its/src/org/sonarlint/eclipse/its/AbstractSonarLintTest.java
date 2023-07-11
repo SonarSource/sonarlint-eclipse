@@ -61,6 +61,7 @@ import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.shell.WorkbenchShell;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
@@ -129,8 +130,7 @@ public abstract class AbstractSonarLintTest {
     });
   }
 
-  // TODO: Undo this local change!
-  protected static int hotspotServerPort = 1;
+  protected static int hotspotServerPort = -1;
   private static IJobChangeListener sonarlintItJobListener;
   protected static final AtomicInteger scheduledAnalysisJobCount = new AtomicInteger();
   private static final List<CountDownLatch> analysisJobCountDownLatch = new CopyOnWriteArrayList<>();
@@ -138,14 +138,17 @@ public abstract class AbstractSonarLintTest {
   private static final List<String> sonarlintJobFamilies = List.of(
     "org.sonarlint.eclipse.projectJob",
     "org.sonarlint.eclipse.projectsJob");
+  
+  @Before
+  public final void before() {
+    // SLE-626: File associations must be set explicitly on macOS!
+    setSpecificFileAssociationConfiguration();
+  }
 
   @BeforeClass
   public static final void beforeClass() throws BackingStoreException {
     System.out.println("Eclipse: " + platformVersion());
     System.out.println("GTK: " + System.getProperty("org.eclipse.swt.internal.gtk.version"));
-    
-    // SLE-626: File associations must be set explicitly on macOS!
-    setSpecificFileAssociationConfiguration();
 
     ROOT.node("servers").removeNode();
     ROOT_SECURE.node("servers").removeNode();
