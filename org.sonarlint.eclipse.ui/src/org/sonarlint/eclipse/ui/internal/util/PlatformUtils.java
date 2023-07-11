@@ -86,6 +86,10 @@ public final class PlatformUtils {
 
   @Nullable
   public static IEditorPart findEditor(ISonarLintFile file) {
+    if (!PlatformUI.isWorkbenchRunning()) {
+      // Likely in headless tests
+      return null;
+    }
     var workbench = PlatformUI.getWorkbench();
     if (workbench == null) {
       return null;
@@ -151,7 +155,7 @@ public final class PlatformUtils {
       var input = editorPart.getEditorInput();
       if (input instanceof IFileEditorInput) {
         var file = ((IFileEditorInput) input).getFile();
-        ISonarLintFile slFile = Adapters.adapt(file, ISonarLintFile.class);
+        var slFile = Adapters.adapt(file, ISonarLintFile.class);
         if (slFile != null) {
           consumer.accept(slFile, editorPart);
         }

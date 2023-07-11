@@ -18,7 +18,7 @@
     <!-- Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=397015 -->
     <sonar.sources></sonar.sources>
     <sonar.tests>src</sonar.tests>
-    <tycho.testArgLine>-Dsonarlint.telemetry.disabled=true "-Djava.io.tmpdir=${project.build.directory}/work"</tycho.testArgLine>
+    <tycho.testArgLine>"-Djava.io.tmpdir=${project.build.directory}/work"</tycho.testArgLine>
   </properties>
 
   <build>

@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jgit.events.ListenerHandle;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -36,6 +37,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.branch.GitUtils;
 
 abstract class AbstractEGitVcsFacade implements VcsFacade {
+  private ListenerHandle listenerHandle;
 
   private static final SonarLintLogger LOG = SonarLintLogger.get();
 
@@ -63,8 +65,9 @@ abstract class AbstractEGitVcsFacade implements VcsFacade {
   }
 
   @Override
-  public void addHeadRefsChangeListener(Consumer<List<ISonarLintProject>> listener) {
-    Repository.getGlobalListenerList().addRefsChangedListener(event -> {
+  public synchronized void addHeadRefsChangeListener(Consumer<List<ISonarLintProject>> listener) {
+    removeHeadRefsChangeListener();
+    listenerHandle = Repository.getGlobalListenerList().addRefsChangedListener(event -> {
       List<ISonarLintProject> affectedProjects = new ArrayList<>();
       ProjectsProviderUtils.allProjects().forEach(p -> getRepo(p.getResource()).ifPresent(repo -> {
         var repoDir = repo.getDirectory();
@@ -76,6 +79,13 @@ abstract class AbstractEGitVcsFacade implements VcsFacade {
         listener.accept(affectedProjects);
       }
     });
+  }
+
+  @Override
+  public synchronized void removeHeadRefsChangeListener() {
+    if (listenerHandle != null) {
+      listenerHandle.remove();
+    }
   }
 
 }

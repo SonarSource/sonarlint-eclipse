@@ -32,6 +32,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.BindingConfigurationDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.DidUpdateBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.ConfigurationScopeDto;
@@ -41,6 +42,12 @@ import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.DidRemoveCo
 import static java.util.stream.Collectors.toList;
 
 public class ConfigScopeSynchronizer implements IResourceChangeListener {
+
+  private final SonarLintBackend backend;
+
+  ConfigScopeSynchronizer(SonarLintBackend backend) {
+    this.backend = backend;
+  }
 
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
@@ -54,20 +61,20 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
       var addedScopes = projectsToAdd.stream()
         .map(ConfigScopeSynchronizer::toConfigScopeDto)
         .collect(toList());
-      SonarLintBackendService.get().getBackend().getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(addedScopes));
-      projectsToAdd.forEach(p -> SonarLintProjectConfigurationManager.registerPreferenceChangeListenerForBindingProperties(p, ConfigScopeSynchronizer::projectPreferencesChanged));
+      backend.getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(addedScopes));
+      projectsToAdd.forEach(p -> SonarLintProjectConfigurationManager.registerPreferenceChangeListenerForBindingProperties(p, this::projectPreferencesChanged));
     } else if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
       var project = Adapters.adapt(event.getResource(), ISonarLintProject.class);
       if (project != null) {
         SonarLintLogger.get().debug("Project about to be closed: " + project.getName());
-        SonarLintBackendService.get().getBackend().getConfigurationService()
+        backend.getConfigurationService()
           .didRemoveConfigurationScope(new DidRemoveConfigurationScopeParams(getConfigScopeId(project)));
       }
     } else if (event.getType() == IResourceChangeEvent.PRE_DELETE) {
       var project = Adapters.adapt(event.getResource(), ISonarLintProject.class);
       if (project != null) {
         SonarLintLogger.get().debug("Project about to be deleted: " + project.getName());
-        SonarLintBackendService.get().getBackend().getConfigurationService()
+        backend.getConfigurationService()
           .didRemoveConfigurationScope(new DidRemoveConfigurationScopeParams(getConfigScopeId(project)));
       }
     }
@@ -91,13 +98,13 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
       .filter(ISonarLintProject::isOpen)
       .map(ConfigScopeSynchronizer::toConfigScopeDto)
       .collect(toList());
-    SonarLintBackendService.get().getBackend().getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(initialConfigScopes));
-    allProjects.forEach(p -> SonarLintProjectConfigurationManager.registerPreferenceChangeListenerForBindingProperties(p, ConfigScopeSynchronizer::projectPreferencesChanged));
+    backend.getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(initialConfigScopes));
+    allProjects.forEach(p -> SonarLintProjectConfigurationManager.registerPreferenceChangeListenerForBindingProperties(p, this::projectPreferencesChanged));
   }
 
-  private static void projectPreferencesChanged(ISonarLintProject project) {
+  private void projectPreferencesChanged(ISonarLintProject project) {
     SonarLintLogger.get().debug("Project binding preferences changed: " + project.getName());
-    SonarLintBackendService.get().getBackend().getConfigurationService()
+    backend.getConfigurationService()
       .didUpdateBinding(new DidUpdateBindingParams(getConfigScopeId(project), toBindingDto(project)));
   }
 

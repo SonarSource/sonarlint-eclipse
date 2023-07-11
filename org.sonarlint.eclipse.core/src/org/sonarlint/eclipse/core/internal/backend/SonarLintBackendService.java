@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.backend;
 
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -33,18 +32,14 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeLifecycleListener;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.SonarLintBackendImpl;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
 import org.sonarsource.sonarlint.core.clientapi.backend.branch.DidChangeActiveSonarProjectBranchParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.DidUpdateConnectionsParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarCloudConnectionConfigurationDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarQubeConnectionConfigurationDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.ClientInfoDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.FeatureFlagsDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.InitializeParams;
@@ -55,15 +50,16 @@ import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleD
 import org.sonarsource.sonarlint.core.commons.Language;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toList;
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.defaultString;
 
 public class SonarLintBackendService {
 
   private static final SonarLintBackendService INSTANCE = new SonarLintBackendService();
 
-  private static final ConfigScopeSynchronizer CONFIG_SCOPE_CHANGE_LISTENER = new ConfigScopeSynchronizer();
-
+  @Nullable
+  private static ConfigScopeSynchronizer configScopeSynchronizer;
+  @Nullable
+  private static ConnectionSynchronizer connectionSynchronizer;
   @Nullable
   private SonarLintBackend backend;
 
@@ -71,7 +67,10 @@ public class SonarLintBackendService {
     return INSTANCE;
   }
 
-  public void init(SonarLintClient client) {
+  public synchronized void init(SonarLintClient client) {
+    if (backend != null) {
+      throw new IllegalStateException("Backend is already initialized");
+    }
 
     SonarLintLogger.get().debug("Initializing SonarLint backend...");
 
@@ -86,8 +85,8 @@ public class SonarLintBackendService {
     embeddedPlugins.put(Language.XML.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedXmlPlugin(), "XML plugin not found"));
     embeddedPlugins.put(Language.SECRETS.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedSecretsPlugin(), "Secrets plugin not found"));
 
-    var sqConnections = buildSqConnectionDtos();
-    var scConnections = buildScConnectionDtos();
+    var sqConnections = ConnectionSynchronizer.buildSqConnectionDtos();
+    var scConnections = ConnectionSynchronizer.buildScConnectionDtos();
 
     try {
       backend.initialize(new InitializeParams(
@@ -102,51 +101,20 @@ public class SonarLintBackendService {
         sqConnections,
         scConnections,
         null,
-        SonarLintGlobalConfiguration.buildStandaloneRulesConfig())).thenRun(() -> {
-          SonarLintCorePlugin.getServersManager().addServerLifecycleListener(new IConnectedEngineFacadeLifecycleListener() {
-            @Override
-            public void connectionRemoved(IConnectedEngineFacade facade) {
-              didUpdateConnections();
-            }
-
-            @Override
-            public void connectionChanged(IConnectedEngineFacade facade) {
-              didUpdateConnections();
-            }
-
-            @Override
-            public void connectionAdded(IConnectedEngineFacade facade) {
-              didUpdateConnections();
-            }
-
-            private void didUpdateConnections() {
-              var sqConnections = buildSqConnectionDtos();
-              var scConnections = buildScConnectionDtos();
-              backend.getConnectionService().didUpdateConnections(new DidUpdateConnectionsParams(sqConnections, scConnections));
-            }
-          });
-
-          ResourcesPlugin.getWorkspace().addResourceChangeListener(CONFIG_SCOPE_CHANGE_LISTENER);
-
-          CONFIG_SCOPE_CHANGE_LISTENER.init();
-        }).get();
+        SonarLintGlobalConfiguration.buildStandaloneRulesConfig())).get();
     } catch (InterruptedException | ExecutionException e) {
       throw new IllegalStateException("Unable to initialize the SonarLint Backend", e);
     }
-  }
+    connectionSynchronizer = new ConnectionSynchronizer(backend);
+    SonarLintCorePlugin.getServersManager().addServerLifecycleListener(connectionSynchronizer);
 
-  private static List<SonarQubeConnectionConfigurationDto> buildSqConnectionDtos() {
-    return SonarLintCorePlugin.getServersManager().getServers().stream()
-      .filter(c -> !c.isSonarCloud())
-      .map(c -> new SonarQubeConnectionConfigurationDto(c.getId(), c.getHost(), c.areNotificationsDisabled()))
-      .collect(toList());
-  }
+    configScopeSynchronizer = new ConfigScopeSynchronizer(backend);
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(configScopeSynchronizer);
 
-  private static List<SonarCloudConnectionConfigurationDto> buildScConnectionDtos() {
-    return SonarLintCorePlugin.getServersManager().getServers().stream()
-      .filter(IConnectedEngineFacade::isSonarCloud)
-      .map(c -> new SonarCloudConnectionConfigurationDto(c.getId(), c.getOrganization(), c.areNotificationsDisabled()))
-      .collect(toList());
+    VcsService.installBranchChangeListener();
+
+    configScopeSynchronizer.init();
+
   }
 
   /** Provide the Backend with the information on a changed VCS branch for further actions, e.g. synchronizing with SQ / SC */
@@ -187,17 +155,25 @@ public class SonarLintBackendService {
       .get();
   }
 
-  public void stop() {
-    ResourcesPlugin.getWorkspace().removeResourceChangeListener(CONFIG_SCOPE_CHANGE_LISTENER);
-    if (backend != null) {
+  public synchronized void stop() {
+    VcsService.removeBranchChangeListener();
+    if (configScopeSynchronizer != null) {
+      ResourcesPlugin.getWorkspace().removeResourceChangeListener(configScopeSynchronizer);
+      configScopeSynchronizer = null;
+    }
+    if (connectionSynchronizer != null) {
+      SonarLintCorePlugin.getServersManager().removeServerLifecycleListener(connectionSynchronizer);
+      connectionSynchronizer = null;
+    }
+    var backendLocalCopy = backend;
+    backend = null;
+    if (backendLocalCopy != null) {
       try {
-        backend.shutdown().get(10, TimeUnit.SECONDS);
+        backendLocalCopy.shutdown().get(10, TimeUnit.SECONDS);
       } catch (ExecutionException | TimeoutException e) {
         Platform.getLog(SonarLintBackendService.class).error("Unable to stop the SonartLint backend", e);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-      } finally {
-        backend = null;
       }
     }
   }
