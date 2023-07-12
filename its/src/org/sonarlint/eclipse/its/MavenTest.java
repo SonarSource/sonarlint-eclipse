@@ -29,9 +29,9 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 
 public class MavenTest extends AbstractSonarLintTest {
-
   @Test
   public void shouldNotAnalyzeResourcesInNestedModules() {
     new JavaPerspective().open();
@@ -50,25 +50,24 @@ public class MavenTest extends AbstractSonarLintTest {
     rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open();
     assertThat(scheduledAnalysisJobCount.get()).isEqualTo(previousAnalysisJobCount);
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers()).isEmpty();
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers()).isEmpty());
     defaultEditor.close();
 
     openFileAndWaitForAnalysisCompletion(sampleModule1Project.getResource("src/main/java", "hello", "Hello1.java"));
-    defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
+    var defaultEditor2 = new DefaultEditor();
+    await().untilAsserted(() -> assertThat(defaultEditor2.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
+      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9)));
     defaultEditor.close();
 
     if (!platformVersion().toString().startsWith("4.4") && !platformVersion().toString().startsWith("4.5")) {
       // Issues on pom.xml
       openFileAndWaitForAnalysisCompletion(rootProject.getResource("pom.xml"));
-      defaultEditor = new DefaultEditor();
-      assertThat(defaultEditor.getMarkers())
+      var defaultEditor3 = new DefaultEditor();
+      await().untilAsserted(() -> assertThat(defaultEditor3.getMarkers())
         .extracting(Marker::getText, Marker::getLineNumber)
-        .containsExactly(tuple("Replace \"pom.name\" with \"project.name\".", 11));
+        .containsExactly(tuple("Replace \"pom.name\" with \"project.name\".", 11)));
       defaultEditor.close();
     }
   }
-
 }

@@ -37,9 +37,9 @@ import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 
 public class FileExclusionsTest extends AbstractSonarLintTest {
-
   @Test
   public void should_exclude_file() throws Exception {
     new JavaPerspective().open();
@@ -53,8 +53,8 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
 
     var sonarlintIssues = issuesView.getIssues();
 
-    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription)
-      .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger."));
+    await().untilAsserted(() -> assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription)
+      .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger.")));
 
     new JavaEditor("Hello.java").close();
 
@@ -105,5 +105,4 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
 
     preferenceDialog.cancel();
   }
-
 }

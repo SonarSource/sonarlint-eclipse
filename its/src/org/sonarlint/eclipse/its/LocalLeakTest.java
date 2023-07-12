@@ -28,9 +28,9 @@ import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 
 public class LocalLeakTest extends AbstractSonarLintTest {
-
   @Test
   public void shouldComputeLocalLeak() {
     new JavaPerspective().open();
@@ -48,19 +48,18 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     var sonarlintIssues = issuesView.getIssues();
 
-    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
-      .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", ""));
+    await().untilAsserted(() -> assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
+      .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", "")));
 
     // Change content
     var javaEditor = new JavaEditor("Hello.java");
     javaEditor.insertText(7, 43, "\nSystem.out.println(\"Hello1\");");
     doAndWaitForSonarLintAnalysisJob(() -> javaEditor.save());
 
-    sonarlintIssues = issuesView.getIssues();
-
-    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
+    var sonarlintIssues2 = issuesView.getIssues();
+    await().untilAsserted(() -> assertThat(sonarlintIssues2).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
       .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", ""),
-        tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", "few seconds ago"));
+        tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", "few seconds ago")));
   }
 
   @Test
@@ -77,19 +76,18 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     var sonarlintIssues = issuesView.getIssues();
 
-    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
-      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""));
+    await().untilAsserted(() -> assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
+      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", "")));
 
     // Change content
     var textEditor = new TextEditor("hello.js");
     textEditor.insertText(2, 17, "\nlet i;");
     doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 
-    sonarlintIssues = issuesView.getIssues();
-
-    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
+    var sonarlintIssues2 = issuesView.getIssues();
+    await().untilAsserted(() -> assertThat(sonarlintIssues2).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
       .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
-        tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
+        tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago")));
 
     // Insert content that should crash analyzer
     var beforeCrash = textEditor.getText();
@@ -97,22 +95,19 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 
     // Issues are still there
-    sonarlintIssues = issuesView.getIssues();
-
-    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
+    var sonarlintIssues3 = issuesView.getIssues();
+    await().untilAsserted(() -> assertThat(sonarlintIssues3).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
       .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
-        tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
+        tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago")));
 
     // Fix parsing issue
     textEditor.setText(beforeCrash);
     doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 
-    sonarlintIssues = issuesView.getIssues();
-
-    assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
+    var sonarlintIssues4 = issuesView.getIssues();
+    await().untilAsserted(() -> assertThat(sonarlintIssues4).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
       .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
-        tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
+        tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago")));
 
   }
-
 }

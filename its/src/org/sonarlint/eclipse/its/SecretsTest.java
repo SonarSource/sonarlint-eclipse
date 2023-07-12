@@ -32,9 +32,9 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 
 public class SecretsTest extends AbstractSonarLintTest {
-
   @Test
   public void shouldFindSecretsInTextFiles() {
     new JavaPerspective().open();
@@ -43,10 +43,10 @@ public class SecretsTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("secret"));
 
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
-        tuple("Make sure this AWS Secret Access Key is not disclosed.", 3));
+        tuple("Make sure this AWS Secret Access Key is not disclosed.", 3)));
 
     var notificationShell = new DefaultShell("SonarLint - Secret(s) detected");
     new DefaultLink(notificationShell, "Dismiss").click();
@@ -60,10 +60,10 @@ public class SecretsTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
 
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
-        tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
+        tuple("Make sure this AWS Secret Access Key is not disclosed.", 4)));
 
     var notificationShell = new DefaultShell("SonarLint - Secret(s) detected");
     new DefaultLink(notificationShell, "Dismiss").click();
@@ -83,9 +83,8 @@ public class SecretsTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("secret.txt"));
 
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
-      .isEmpty();
+      .isEmpty());
   }
-
 }

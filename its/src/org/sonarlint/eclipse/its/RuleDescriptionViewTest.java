@@ -36,7 +36,6 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.awaitility.Awaitility.await;
 
 public class RuleDescriptionViewTest extends AbstractSonarLintTest {
-
   @Test
   public void openRuleDescription() {
     new JavaPerspective().open();
@@ -50,9 +49,9 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(project.getResource("src", "hello", "Hello.java"));
 
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
+      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9)));
 
     onTheFlyView.selectItem(0);
     ruleDescriptionView.open();
@@ -80,10 +79,10 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(project.getResource("src", "hello", "MonsterClass.java"));
 
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .contains(
-        tuple("Split this “Monster Class” into smaller and more specialized ones to reduce its dependencies on other classes from 3 to the maximum authorized 2 or less.", 3));
+        tuple("Split this “Monster Class” into smaller and more specialized ones to reduce its dependencies on other classes from 3 to the maximum authorized 2 or less.", 3)));
 
     onTheFlyView.getIssues(new MarkerDescriptionMatcher(CoreMatchers.containsString("Monster Class"))).get(0).select();
     ruleDescriptionView.open();
@@ -93,5 +92,4 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
     assertThat(ruleDescriptionView.getSections().getTabItemLabels()).containsExactly("Why is this an issue?", "How can I fix it?", "More Info");
   }
-
 }

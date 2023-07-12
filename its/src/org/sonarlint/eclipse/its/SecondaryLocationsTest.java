@@ -29,9 +29,9 @@ import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 public class SecondaryLocationsTest extends AbstractSonarLintTest {
-
   private static OnTheFlyView onTheFlyView;
   private static IssueLocationsView locationsView;
   private static Project rootProject;
@@ -51,9 +51,9 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     openAndAnalyzeFile("SimpleIssue.java");
 
     var issueTitle = "Complete the task associated to this TODO comment.";
-    assertThat(onTheFlyView.getIssues())
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues())
       .extracting(SonarLintIssueMarker::getDescription)
-      .containsOnly(issueTitle);
+      .containsOnly(issueTitle));
     onTheFlyView.selectItem(0);
 
     var flowItems = locationsView.getTree().getItems();
@@ -70,9 +70,9 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     var helloEditor = openAndAnalyzeFile("SingleFlow.java");
 
     var issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
-    assertThat(onTheFlyView.getIssues())
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues())
       .extracting(SonarLintIssueMarker::getDescription)
-      .containsOnly(issueTitle + " [+5 locations]");
+      .containsOnly(issueTitle + " [+5 locations]"));
     onTheFlyView.selectItem(0);
 
     var flowItems = locationsView.getTree().getItems();
@@ -92,9 +92,9 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     openAndAnalyzeFile("HighlightOnly.java");
 
     var issueTitle = "Remove these useless parentheses.";
-    assertThat(onTheFlyView.getIssues())
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues())
       .extracting(SonarLintIssueMarker::getDescription)
-      .containsOnly(issueTitle + " [+1 location]");
+      .containsOnly(issueTitle + " [+1 location]"));
     onTheFlyView.selectItem(0);
 
     var allItems = locationsView.getTree().getItems();
@@ -110,9 +110,9 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     var helloEditor = openAndAnalyzeFile("MultiFlows.java");
 
     var issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
-    assertThat(onTheFlyView.getIssues())
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues())
       .extracting(SonarLintIssueMarker::getDescription)
-      .containsOnly(issueTitle + " [+2 flows]");
+      .containsOnly(issueTitle + " [+2 flows]"));
     onTheFlyView.selectItem(0);
 
     var allItems = locationsView.getTree().getItems();
@@ -146,9 +146,9 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     var cognitiveComplexityEditor = openAndAnalyzeFile("CognitiveComplexity.java");
 
     var issueTitle = "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.";
-    assertThat(onTheFlyView.getIssues())
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues())
       .extracting(SonarLintIssueMarker::getDescription)
-      .containsOnly(issueTitle + " [+15 locations]");
+      .containsOnly(issueTitle + " [+15 locations]"));
     onTheFlyView.selectItem(0);
 
     var allItems = locationsView.getTree().getItems();

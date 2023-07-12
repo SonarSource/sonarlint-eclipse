@@ -64,11 +64,11 @@ import org.sonarqube.ws.client.setting.SetRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
-
   @ClassRule
   public static OrchestratorRule orchestrator;
 
@@ -228,10 +228,10 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
 
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
-        tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
+        tuple("Make sure this AWS Secret Access Key is not disclosed.", 4)));
 
     var notificationShell = new DefaultShell("SonarLint - Secret(s) detected");
     new DefaultLink(notificationShell, "Dismiss").click();
@@ -250,10 +250,10 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(file);
 
     var defaultEditor = new TextEditor();
-    assertThat(defaultEditor.getMarkers())
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
-        tuple("Replace this use of System.out or System.err by a logger.", 9));
+        tuple("Replace this use of System.out or System.err by a logger.", 9)));
 
     var qualityProfile = getQualityProfile(JAVA_SIMPLE_PROJECT_KEY, "SonarLint IT Java");
     deactivateRule(qualityProfile, "S106");
@@ -264,7 +264,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
       defaultEditor.save();
     });
 
-    assertThat(defaultEditor.getMarkers()).isEmpty();
+    await().untilAsserted(() -> assertThat(defaultEditor.getMarkers()).isEmpty());
   }
 
   private static void createConnectionAndBindProject(String projectKey) {
@@ -347,5 +347,4 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     // Starting from SonarJava 6.0 (embedded in SQ 8.2), rule repository has been changed
     return orchestrator.getServer().version().isGreaterThanOrEquals(8, 2) ? ("java:" + key) : ("squid:" + key);
   }
-
 }

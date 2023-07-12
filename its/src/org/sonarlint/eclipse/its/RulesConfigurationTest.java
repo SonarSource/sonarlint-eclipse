@@ -33,7 +33,6 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.awaitility.Awaitility.await;
 
 public class RulesConfigurationTest extends AbstractSonarLintTest {
-
   @Test
   public void deactivate_rule() {
     new JavaPerspective().open();
@@ -158,5 +157,4 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
         tuple("Replace this use of System.out or System.err by a logger.", 9),
         tuple("Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.", 12)));
   }
-
 }
