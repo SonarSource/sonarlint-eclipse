@@ -39,4 +39,8 @@ public interface VcsFacade {
 
   }
 
+  default void removeHeadRefsChangeListener() {
+
+  }
+
 }

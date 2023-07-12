@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.its;
 
-import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.container.Server;
 import java.io.File;
 import java.util.List;
@@ -284,8 +283,7 @@ public abstract class AbstractSonarLintTest {
     return Platform.getBundle("org.eclipse.platform").getVersion();
   }
 
-  protected static WsClient newAdminWsClient(Orchestrator orchestrator) {
-    var server = orchestrator.getServer();
+  protected static WsClient newAdminWsClient(Server server) {
     return WsClientFactories.getDefault().newClient(HttpConnector.newBuilder()
       .url(server.getUrl())
       .credentials(Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD)

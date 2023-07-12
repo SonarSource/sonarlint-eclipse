@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.vcs;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -106,6 +105,10 @@ public class VcsService {
 
   public static void installBranchChangeListener() {
     getFacade().addHeadRefsChangeListener(projects -> new BranchChangeJob(projects).schedule());
+  }
+
+  public static void removeBranchChangeListener() {
+    getFacade().removeHeadRefsChangeListener();
   }
 
   private static class BranchChangeJob extends Job {

@@ -20,8 +20,8 @@
 package org.sonarlint.eclipse.its;
 
 import com.google.gson.Gson;
-import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.container.Server;
+import com.sonar.orchestrator.junit4.OrchestratorRule;
 import com.sonar.orchestrator.locator.URLLocation;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -70,11 +70,11 @@ import static org.junit.Assert.fail;
 public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
   @ClassRule
-  public static Orchestrator orchestrator;
+  public static OrchestratorRule orchestrator;
 
   static {
     try {
-      orchestrator = Orchestrator.builderEnv()
+      orchestrator = OrchestratorRule.builderEnv()
         .defaultForceAuthentication()
         .useDefaultAdminCredentialsForBuilds(true)
         .keepBundledPlugins()
@@ -102,7 +102,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
   @BeforeClass
   public static void prepare() {
-    adminWsClient = newAdminWsClient(orchestrator);
+    adminWsClient = newAdminWsClient(orchestrator.getServer());
     adminWsClient.settings().set(SetRequest.builder().setKey("sonar.forceAuthentication").setValue("true").build());
     adminWsClient.projects()
       .create(CreateRequest.builder()

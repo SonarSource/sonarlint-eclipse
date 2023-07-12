@@ -22,34 +22,21 @@ package org.sonarlint.eclipse.core.internal.preferences;
 import java.util.HashMap;
 import java.util.List;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarlint.eclipse.ui.internal.backend.SonarLintEclipseClient;
+import org.sonarlint.eclipse.tests.common.SonarTestCase;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-public class SonarLintGlobalConfigurationTest {
-
-  @BeforeClass
-  public static void startBackend() {
-    SonarLintBackendService.get().init(new SonarLintEclipseClient());
-  }
-
-  @AfterClass
-  public static void stopBackend() {
-    SonarLintBackendService.get().stop();
-  }
+public class SonarLintGlobalConfigurationTest extends SonarTestCase {
 
   @Before
   public void clean() throws BackingStoreException {

@@ -58,6 +58,10 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class SonarTestCase {
 
+  static {
+    System.setProperty("sonarlint.telemetry.disabled", "true");
+  }
+
   protected static final IProgressMonitor MONITOR = new NullProgressMonitor();
   protected static IWorkspace workspace;
 
