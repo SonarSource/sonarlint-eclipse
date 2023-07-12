@@ -19,9 +19,9 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
@@ -110,9 +110,10 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
             result = JobUtils.waitForFuture(monitor, SonarLintBackendService.get().getBackend().getIssueService()
               .checkStatusChangePermitted(new CheckStatusChangePermittedParams(resolvedBinding.getProjectBinding().connectionId(), issueKey)));
             return Status.OK_STATUS;
-          } catch (InvocationTargetException e) {
-            return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
+          } catch (ExecutionException e) {
+            return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getCause() != null ? e.getCause().getMessage() : e.getMessage(), e);
           } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             return new Status(IStatus.CANCEL, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
           }
 

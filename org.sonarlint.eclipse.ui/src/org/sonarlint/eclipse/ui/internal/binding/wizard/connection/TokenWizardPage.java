@@ -134,7 +134,7 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
       try {
         var params = new HelpGenerateUserTokenParams(serverUrl, isSonarCloud);
         var future = SonarLintBackendService.get().getBackend().getConnectionService().helpGenerateUserToken(params);
-        this.response = JobUtils.waitForFuture(monitor, future);
+        this.response = JobUtils.waitForFutureInIRunnableWithProgress(monitor, future);
       } finally {
         monitor.done();
       }
