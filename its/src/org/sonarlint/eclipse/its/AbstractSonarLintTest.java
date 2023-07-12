@@ -60,12 +60,14 @@ import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.shell.WorkbenchShell;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
 import org.osgi.service.prefs.BackingStoreException;
+import org.sonarlint.eclipse.its.reddeer.preferences.FileAssociationsPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.RuleConfigurationPreferences;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole.ShowConsoleOption;
@@ -109,6 +111,8 @@ public abstract class AbstractSonarLintTest {
     new WorkbenchShell().maximize();
     new CleanWorkspaceRequirement().fulfill();
 
+    // File associations must be set explicitly on macOS!
+    restoreDefaultFileAssociationConfiguration();
     restoreDefaultRulesConfiguration();
 
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SECRETS_EVER_DETECTED);
@@ -133,6 +137,12 @@ public abstract class AbstractSonarLintTest {
   private static final List<String> sonarlintJobFamilies = List.of(
     "org.sonarlint.eclipse.projectJob",
     "org.sonarlint.eclipse.projectsJob");
+  
+  @Before
+  public final void before() {
+    // File associations must be set explicitly on macOS!
+    setSpecificFileAssociationConfiguration();
+  }
 
   @BeforeClass
   public static final void beforeClass() throws BackingStoreException {
@@ -273,6 +283,18 @@ public abstract class AbstractSonarLintTest {
       .url(server.getUrl())
       .credentials(Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD)
       .build());
+  }
+  
+  static void setSpecificFileAssociationConfiguration() {
+    var preferencePage = FileAssociationsPreferences.open();
+    preferencePage.enforceFileAssociation();
+    preferencePage.ok();
+  }
+
+  void restoreDefaultFileAssociationConfiguration() {
+    var preferencePage = FileAssociationsPreferences.open();
+    preferencePage.resetFileAssociation();
+    preferencePage.ok();
   }
 
   void restoreDefaultRulesConfiguration() {
