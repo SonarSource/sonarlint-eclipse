@@ -32,7 +32,25 @@ import org.eclipse.core.runtime.jobs.Job;
 
 public class JobUtils {
 
-  public static <T> T waitForFuture(IProgressMonitor monitor, CompletableFuture<T> future) throws InterruptedException, InvocationTargetException {
+  /**
+   * Wait for Future in a IRunnableWithProgress, throwing InterruptedException on cancellation, and InvocationTargetException on other exception, as specified
+   * @see IRunnableWithProgress
+   * @throws InterruptedException
+   * @throws InvocationTargetException
+   */
+  public static <T> T waitForFutureInIRunnableWithProgress(IProgressMonitor monitor, CompletableFuture<T> future) throws InterruptedException, InvocationTargetException {
+    try {
+      return waitForFuture(monitor, future);
+    } catch (CancellationException e) {
+      var newEx = new InterruptedException("Operation cancelled");
+      newEx.addSuppressed(e);
+      throw newEx;
+    } catch (ExecutionException e) {
+      throw new InvocationTargetException(e.getCause() != null ? e.getCause() : e);
+    }
+  }
+
+  public static <T> T waitForFuture(IProgressMonitor monitor, CompletableFuture<T> future) throws InterruptedException, ExecutionException {
     while (true) {
       if (monitor.isCanceled()) {
         future.cancel(true);
@@ -41,12 +59,6 @@ public class JobUtils {
         return future.get(100, TimeUnit.MILLISECONDS);
       } catch (TimeoutException t) {
         continue;
-      } catch (InterruptedException e) {
-        throw new InterruptedException("Interrupted");
-      } catch (CancellationException e) {
-        throw new InterruptedException("Operation cancelled");
-      } catch (ExecutionException e) {
-        throw new InvocationTargetException(e.getCause() != null ? e.getCause() : e);
       }
     }
   }

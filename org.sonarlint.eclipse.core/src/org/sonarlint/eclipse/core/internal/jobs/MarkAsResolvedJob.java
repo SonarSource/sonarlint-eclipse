@@ -19,8 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -79,10 +79,11 @@ public class MarkAsResolvedJob extends Job {
         AbstractAnalyzeProjectJob.create(request).schedule();
       }
       return Status.OK_STATUS;
-    } catch (InvocationTargetException e) {
-      return new Status(Status.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
+    } catch (ExecutionException e) {
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getCause() != null ? e.getCause().getMessage() : e.getMessage(), e);
     } catch (InterruptedException e) {
-      return new Status(Status.CANCEL, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
+      Thread.currentThread().interrupt();
+      return new Status(IStatus.CANCEL, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
     }
 
   }

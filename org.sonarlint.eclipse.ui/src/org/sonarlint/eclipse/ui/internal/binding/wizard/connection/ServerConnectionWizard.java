@@ -334,7 +334,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
           try {
             var future = SonarLintBackendService.get().getBackend().getConnectionService()
               .checkSmartNotificationsSupported(new CheckSmartNotificationsSupportedParams(modelToTransientConnectionDto()));
-            var response = JobUtils.waitForFuture(monitor, future);
+            var response = JobUtils.waitForFutureInIRunnableWithProgress(monitor, future);
 
             model.setNotificationsSupported(response.isSuccess());
           } finally {
@@ -359,7 +359,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
           monitor.beginTask("Fetch organizations", IProgressMonitor.UNKNOWN);
           try {
             var future = SonarLintBackendService.get().getBackend().getConnectionService().listUserOrganizations(new ListUserOrganizationsParams(modelToCredentialDto()));
-            var response = JobUtils.waitForFuture(monitor, future);
+            var response = JobUtils.waitForFutureInIRunnableWithProgress(monitor, future);
             model.setUserOrgs(response.getUserOrganizations());
           } finally {
             monitor.done();
@@ -390,7 +390,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
           try {
             var params = new ValidateConnectionParams(modelToTransientConnectionDto());
             var future = SonarLintBackendService.get().getBackend().getConnectionService().validateConnection(params);
-            response.set(JobUtils.waitForFuture(monitor, future));
+            response.set(JobUtils.waitForFutureInIRunnableWithProgress(monitor, future));
           } finally {
             monitor.done();
           }
