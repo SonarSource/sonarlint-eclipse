@@ -28,7 +28,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -67,6 +71,8 @@ public class SonarLintBackendService {
   @Nullable
   private SonarLintBackend backend;
 
+  private Job initJob;
+
   public static SonarLintBackendService get() {
     return INSTANCE;
   }
@@ -76,48 +82,57 @@ public class SonarLintBackendService {
       throw new IllegalStateException("Backend is already initialized");
     }
 
-    SonarLintLogger.get().debug("Initializing SonarLint backend...");
+    initJob = new Job("Backend initialization") {
 
-    this.backend = new SonarLintBackendImpl(client);
+      @Override
+      protected IStatus run(IProgressMonitor monitor) {
+        SonarLintLogger.get().debug("Initializing SonarLint backend...");
 
-    var embeddedPluginPaths = PluginPathHelper.getEmbeddedPluginPaths();
-    embeddedPluginPaths.stream().forEach(p -> SonarLintLogger.get().debug("  - " + p));
+        backend = new SonarLintBackendImpl(client);
 
-    Map<String, Path> embeddedPlugins = new HashMap<>();
-    embeddedPlugins.put(Language.JS.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedJsPlugin(), "JS/TS plugin not found"));
-    embeddedPlugins.put(Language.HTML.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedHtmlPlugin(), "HTML plugin not found"));
-    embeddedPlugins.put(Language.XML.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedXmlPlugin(), "XML plugin not found"));
-    embeddedPlugins.put(Language.SECRETS.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedSecretsPlugin(), "Secrets plugin not found"));
+        var embeddedPluginPaths = PluginPathHelper.getEmbeddedPluginPaths();
+        embeddedPluginPaths.stream().forEach(p -> SonarLintLogger.get().debug("  - " + p));
 
-    var sqConnections = ConnectionSynchronizer.buildSqConnectionDtos();
-    var scConnections = ConnectionSynchronizer.buildScConnectionDtos();
+        Map<String, Path> embeddedPlugins = new HashMap<>();
+        embeddedPlugins.put(Language.JS.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedJsPlugin(), "JS/TS plugin not found"));
+        embeddedPlugins.put(Language.HTML.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedHtmlPlugin(), "HTML plugin not found"));
+        embeddedPlugins.put(Language.XML.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedXmlPlugin(), "XML plugin not found"));
+        embeddedPlugins.put(Language.SECRETS.getPluginKey(), requireNonNull(PluginPathHelper.findEmbeddedSecretsPlugin(), "Secrets plugin not found"));
 
-    try {
-      backend.initialize(new InitializeParams(
-        new ClientInfoDto(getIdeName(), "eclipse", "SonarLint Eclipse " + SonarLintUtils.getPluginVersion()),
-        new FeatureFlagsDto(true, true, true, true, false),
-        StoragePathManager.getStorageDir(),
-        StoragePathManager.getDefaultWorkDir(),
-        Set.copyOf(embeddedPluginPaths),
-        embeddedPlugins,
-        SonarLintUtils.getEnabledLanguages(),
-        SonarLintUtils.getEnabledLanguages(),
-        sqConnections,
-        scConnections,
-        null,
-        SonarLintGlobalConfiguration.buildStandaloneRulesConfig())).get();
-    } catch (InterruptedException | ExecutionException e) {
-      throw new IllegalStateException("Unable to initialize the SonarLint Backend", e);
-    }
-    connectionSynchronizer = new ConnectionSynchronizer(backend);
-    SonarLintCorePlugin.getServersManager().addServerLifecycleListener(connectionSynchronizer);
+        var sqConnections = ConnectionSynchronizer.buildSqConnectionDtos();
+        var scConnections = ConnectionSynchronizer.buildScConnectionDtos();
 
-    configScopeSynchronizer = new ConfigScopeSynchronizer(backend);
-    ResourcesPlugin.getWorkspace().addResourceChangeListener(configScopeSynchronizer);
+        try {
+          backend.initialize(new InitializeParams(
+            new ClientInfoDto(getIdeName(), "eclipse", "SonarLint Eclipse " + SonarLintUtils.getPluginVersion()),
+            new FeatureFlagsDto(true, true, true, true, false),
+            StoragePathManager.getStorageDir(),
+            StoragePathManager.getDefaultWorkDir(),
+            Set.copyOf(embeddedPluginPaths),
+            embeddedPlugins,
+            SonarLintUtils.getEnabledLanguages(),
+            SonarLintUtils.getEnabledLanguages(),
+            sqConnections,
+            scConnections,
+            null,
+            SonarLintGlobalConfiguration.buildStandaloneRulesConfig())).get();
+        } catch (InterruptedException | ExecutionException e) {
+          throw new IllegalStateException("Unable to initialize the SonarLint Backend", e);
+        }
+        connectionSynchronizer = new ConnectionSynchronizer(backend);
+        SonarLintCorePlugin.getServersManager().addServerLifecycleListener(connectionSynchronizer);
 
-    VcsService.installBranchChangeListener();
+        configScopeSynchronizer = new ConfigScopeSynchronizer(backend);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(configScopeSynchronizer);
 
-    configScopeSynchronizer.init();
+        VcsService.installBranchChangeListener();
+
+        configScopeSynchronizer.init();
+
+        return Status.OK_STATUS;
+      }
+    };
+    initJob.schedule();
 
   }
 
@@ -130,6 +145,12 @@ public class SonarLintBackendService {
   }
 
   public SonarLintBackend getBackend() {
+    try {
+      requireNonNull(initJob, "SonarLintBackendService has not been initialized").join();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      Platform.getLog(SonarLintBackendService.class).error("Interrupted!", e);
+    }
     return requireNonNull(backend, "SonarLintBackendService has not been initialized");
   }
 
