@@ -20,9 +20,11 @@
 package org.sonarlint.eclipse.its;
 
 import com.google.gson.Gson;
+import com.sonar.orchestrator.build.MavenBuild;
 import com.sonar.orchestrator.container.Server;
 import com.sonar.orchestrator.junit4.OrchestratorRule;
 import com.sonar.orchestrator.locator.URLLocation;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -35,14 +37,18 @@ import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.core.condition.WidgetIsFound;
 import org.eclipse.reddeer.core.matcher.WithTextMatcher;
+import org.eclipse.reddeer.eclipse.ui.markers.matcher.MarkerDescriptionMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
+import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.swt.widgets.Label;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,12 +58,16 @@ import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView.Binding;
+import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
+import org.sonarlint.eclipse.its.reddeer.wizards.MarkIssueAsDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
 import org.sonarqube.ws.QualityProfiles.SearchWsResponse.QualityProfile;
 import org.sonarqube.ws.client.PostRequest;
 import org.sonarqube.ws.client.WsClient;
+import org.sonarqube.ws.client.permission.AddGroupWsRequest;
+import org.sonarqube.ws.client.permission.RemoveGroupWsRequest;
 import org.sonarqube.ws.client.project.CreateRequest;
 import org.sonarqube.ws.client.qualityprofile.SearchWsRequest;
 import org.sonarqube.ws.client.setting.SetRequest;
@@ -66,9 +76,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.awaitility.Awaitility.await;
 
 public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
-
   @ClassRule
   public static OrchestratorRule orchestrator;
 
@@ -97,17 +107,16 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
   private static WsClient adminWsClient;
 
-  private static final String PROJECT_NAME = "secret-java";
+  private static final String SECRET_JAVA_PROJECT_NAME = "secret-java";
   private static final String JAVA_SIMPLE_PROJECT_KEY = "java-simple";
+  private static final String MAVEN2_PROJECT_KEY = "maven2";
+
+  private static final String INSUFFICIENT_PERMISSION_USER = "iHaveNoRights";
 
   @BeforeClass
   public static void prepare() {
     adminWsClient = newAdminWsClient(orchestrator.getServer());
     adminWsClient.settings().set(SetRequest.builder().setKey("sonar.forceAuthentication").setValue("true").build());
-    adminWsClient.projects()
-      .create(CreateRequest.builder()
-        .setName(PROJECT_NAME)
-        .setKey(PROJECT_NAME).build());
     adminWsClient.projects()
       .create(CreateRequest.builder()
         .setName(JAVA_SIMPLE_PROJECT_KEY)
@@ -208,7 +217,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     var statusConnection = (HttpURLConnection) new URL(String.format("http://localhost:%d/sonarlint/api/status", hotspotServerPort)).openConnection();
     statusConnection.setConnectTimeout(1000);
     statusConnection.connect();
-    int code = statusConnection.getResponseCode();
+    var code = statusConnection.getResponseCode();
     assertThat(code).isEqualTo(200);
     try (var inputStream = statusConnection.getInputStream(); var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
       var response = new Gson().fromJson(reader, Status.class);
@@ -220,10 +229,15 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldFindSecretsInConnectedMode() {
-    new JavaPerspective().open();
-    var rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", PROJECT_NAME);
+    adminWsClient.projects()
+      .create(CreateRequest.builder()
+        .setName(SECRET_JAVA_PROJECT_NAME)
+        .setKey(SECRET_JAVA_PROJECT_NAME).build());
 
-    createConnectionAndBindProject(PROJECT_NAME);
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", SECRET_JAVA_PROJECT_NAME);
+
+    createConnectionAndBindProject(SECRET_JAVA_PROJECT_NAME);
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
 
@@ -267,7 +281,101 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     assertThat(defaultEditor.getMarkers()).isEmpty();
   }
 
+  // integration test for the "Mark issue as ..." dialog without and then with permission
+  @Test
+  public void test_MarkIssueAs_Dialog() {
+    var issueMatcher = new MarkerDescriptionMatcher(CoreMatchers.containsString("System.out"));
+
+    // 1) Create project on SonarQube
+    adminWsClient.projects()
+      .create(CreateRequest.builder()
+        .setName(MAVEN2_PROJECT_KEY)
+        .setKey(MAVEN2_PROJECT_KEY).build());
+    orchestrator.getServer().associateProjectToQualityProfile(MAVEN2_PROJECT_KEY, "java", "SonarLint IT Java");
+
+    // 2) Import project into workspace
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("java/maven2", MAVEN2_PROJECT_KEY);
+
+    var onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+
+    // 3) Run SonarQube analysis
+    orchestrator.executeBuild(MavenBuild.create(new File("projects", "java/maven2/pom.xml"))
+      .setCleanPackageSonarGoals()
+      .setProperty("sonar.login", Server.ADMIN_LOGIN)
+      .setProperty("sonar.password", Server.ADMIN_PASSWORD)
+      .setProperty("sonar.projectKey", MAVEN2_PROJECT_KEY));
+
+    // 4) Add new user to SonarQube
+    adminWsClient.users().create(org.sonarqube.ws.client.user.CreateRequest.builder()
+      .setLogin(INSUFFICIENT_PERMISSION_USER)
+      .setPassword(INSUFFICIENT_PERMISSION_USER)
+      .setName(INSUFFICIENT_PERMISSION_USER)
+      .build());
+
+    // 5) Remove user rights from project
+    adminWsClient.permissions().removeGroup(new RemoveGroupWsRequest()
+      .setProjectKey(MAVEN2_PROJECT_KEY)
+      .setGroupName("sonar-users")
+      .setPermission("issueadmin"));
+
+    // 6) Remove connections and reconnect with user
+    cleanBindings();
+    createConnectionAndBindProject(MAVEN2_PROJECT_KEY, INSUFFICIENT_PERMISSION_USER,
+      INSUFFICIENT_PERMISSION_USER);
+    
+    // 7) Remove binding suggestion notification
+    var notificationShell = new DefaultShell("SonarLint Binding Suggestion");
+    new DefaultLink(notificationShell, "Don't ask again").click();
+
+    // 8) Open first file and try to open the "Mark issue as ..." dialog
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src/main/java", "hello", "Hello.java"));
+    
+    await().until(onTheFlyView.getIssues(issueMatcher)::size, findings -> findings > 0);
+    onTheFlyView.getIssues(issueMatcher).get(0).select();
+    new ContextMenuItem("Mark Issue as...").select();
+
+    var s = new DefaultShell("Mark Issue as Resolved on SonarQube");
+    new PushButton(s, "OK").click();
+
+    // 9) Assert marker is still available
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(issueMatcher))
+      .extracting(i -> i.getDescription())
+      .containsOnly("Replace this use of System.out or System.err by a logger."));
+
+    // 10) Add user rights from project
+    adminWsClient.permissions().addGroup(new AddGroupWsRequest()
+      .setProjectKey(MAVEN2_PROJECT_KEY)
+      .setGroupName("sonar-users")
+      .setPermission("issueadmin"));
+
+    // 11) Open second file, open the "Mark issue as ..." dialog, resolve and leave comment
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src/main/java", "hello", "Hello2.java"));
+
+    await().until(onTheFlyView.getIssues(issueMatcher)::size, findings -> findings > 0);
+    onTheFlyView.getIssues(issueMatcher).get(0).select();
+    new ContextMenuItem("Mark Issue as...").select();
+
+    var dialog = new MarkIssueAsDialog();
+    dialog.selectFalsePositive();
+    dialog.selectWontFix();
+    dialog.setComment("Wasn't sure, started with 'False Positiv' but settled on 'Won't Fix'!");
+    dialog.ok();
+    
+    // 12) Remove marked as resolved notification
+    var notificationShell2 = new DefaultShell("SonarLint - Issue marked as resolved");
+    new DefaultLink(notificationShell2, "Dismiss").click();
+
+    // 13) Assert marker is gone
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(issueMatcher)).isEmpty());
+  }
+
   private static void createConnectionAndBindProject(String projectKey) {
+    createConnectionAndBindProject(projectKey, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
+  }
+
+  private static void createConnectionAndBindProject(String projectKey, String username, String password) {
     var wizard = new ServerConnectionWizard();
     wizard.open();
     new ServerConnectionWizard.ServerTypePage(wizard).selectSonarQube();
@@ -282,8 +390,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     wizard.next();
 
     var authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
-    authenticationPage.setUsername(Server.ADMIN_LOGIN);
-    authenticationPage.setPassword(Server.ADMIN_PASSWORD);
+    authenticationPage.setUsername(username);
+    authenticationPage.setPassword(password);
     wizard.next();
 
     // as login can take time, wait for the next page to appear

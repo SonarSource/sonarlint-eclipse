@@ -869,9 +869,9 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Mark the selected issue as resolved"
+          description="Change the issue status"
           id="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
-          name="Mark Issue as Resolved..."
+          name="Mark Issue as..."
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
   </extension>
