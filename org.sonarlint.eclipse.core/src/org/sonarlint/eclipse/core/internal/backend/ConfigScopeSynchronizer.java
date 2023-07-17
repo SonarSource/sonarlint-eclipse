@@ -33,6 +33,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
+import org.sonarsource.sonarlint.core.clientapi.backend.branch.DidChangeActiveSonarProjectBranchParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.BindingConfigurationDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.DidUpdateBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.ConfigurationScopeDto;
@@ -99,7 +100,16 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
       .map(ConfigScopeSynchronizer::toConfigScopeDto)
       .collect(toList());
     backend.getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(initialConfigScopes));
-    allProjects.forEach(p -> SonarLintProjectConfigurationManager.registerPreferenceChangeListenerForBindingProperties(p, this::projectPreferencesChanged));
+    allProjects.forEach(p -> {
+      SonarLintProjectConfigurationManager.registerPreferenceChangeListenerForBindingProperties(p, this::projectPreferencesChanged);
+    });
+  }
+
+  void branchChanged(ISonarLintProject project, String newActiveBranchName) {
+    backend
+      .getSonarProjectBranchService()
+      .didChangeActiveSonarProjectBranch(
+        new DidChangeActiveSonarProjectBranchParams(ConfigScopeSynchronizer.getConfigScopeId(project), newActiveBranchName));
   }
 
   private void projectPreferencesChanged(ISonarLintProject project) {

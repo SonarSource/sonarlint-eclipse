@@ -119,4 +119,8 @@ public interface IConnectedEngineFacade {
   ProjectBranches getServerBranches(String projectKey);
 
   void subscribeForEventsForBoundProjects();
+
+  void addServerEventListener(IServerEventListener listener);
+
+  void removeServerEventListener(IServerEventListener listener);
 }

@@ -75,8 +75,10 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
   protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
     IProgressMonitor monitor) {
     if (triggerType.shouldUpdateProjectIssuesSync(rawIssuesPerResource.size())) {
-      SonarLintLogger.get().debug("Download engineFacade issues for project " + getProject().getName());
-      engineFacade.downloadServerIssues(binding.projectKey(), VcsService.getServerBranch(getProject()), monitor);
+      VcsService.getServerBranch(getProject()).ifPresent(b -> {
+        SonarLintLogger.get().debug("Download server issues for project " + getProject().getName());
+        engineFacade.downloadServerIssues(binding.projectKey(), b, monitor);
+      });
     }
     super.trackIssues(docPerFile, rawIssuesPerResource, triggerType, monitor);
     if (triggerType.shouldUpdateFileIssuesAsync()) {
@@ -106,11 +108,15 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
   private Collection<Trackable> trackServerIssuesSync(ConnectedEngineFacade engineFacade, ISonarLintFile file, Collection<Trackable> tracked, boolean updateServerIssues,
     IProgressMonitor monitor) {
     List<ServerIssue> serverIssues;
-    String serverBranch = VcsService.getServerBranch(getProject());
-    if (updateServerIssues) {
-      serverIssues = ServerIssueUpdater.fetchServerIssues(engineFacade, binding, serverBranch, file, monitor);
+    var serverBranch = VcsService.getServerBranch(getProject());
+    if (serverBranch.isPresent()) {
+      if (updateServerIssues) {
+        serverIssues = ServerIssueUpdater.fetchServerIssues(engineFacade, binding, serverBranch.get(), file, monitor);
+      } else {
+        serverIssues = engineFacade.getServerIssues(binding, serverBranch.get(), file.getProjectRelativePath());
+      }
     } else {
-      serverIssues = engineFacade.getServerIssues(binding, serverBranch, file.getProjectRelativePath());
+      serverIssues = List.of();
     }
     Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
     return IssueTracker.matchAndTrackServerIssues(serverIssuesTrackable, tracked);

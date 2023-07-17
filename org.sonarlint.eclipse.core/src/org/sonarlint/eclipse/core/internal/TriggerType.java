@@ -28,7 +28,8 @@ public enum TriggerType {
   BINDING_CHANGE("Binding change", ServerIssueUpdateStrategy.PER_FILE_ASYNC),
   STANDALONE_CONFIG_CHANGE("Standalone config change", ServerIssueUpdateStrategy.NO_UPDATE),
   QUICK_FIX("Quick fix", ServerIssueUpdateStrategy.NO_UPDATE),
-  AFTER_RESOLVE("After resolve", ServerIssueUpdateStrategy.NO_UPDATE);
+  AFTER_RESOLVE("After resolve", ServerIssueUpdateStrategy.NO_UPDATE),
+  SERVER_EVENT("Server Event", ServerIssueUpdateStrategy.NO_UPDATE);
 
   /**
    * Magic number to decide if issues should be fetched per file or once for the entire project

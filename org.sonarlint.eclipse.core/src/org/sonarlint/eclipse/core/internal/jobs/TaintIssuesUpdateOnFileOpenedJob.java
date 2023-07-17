@@ -64,9 +64,10 @@ public class TaintIssuesUpdateOnFileOpenedJob extends Job {
         }
         if (issuable instanceof ISonarLintFile) {
           var file = ((ISonarLintFile) issuable);
-          String branchName = VcsService.getServerBranch(project);
-          fetchServerTaintIssues(engineFacade, projectBinding, branchName, file, monitor);
-          SonarLintMarkerUpdater.refreshMarkersForTaint(file, branchName, engineFacade);
+          VcsService.getServerBranch(project).ifPresent(b -> {
+            fetchServerTaintIssues(engineFacade, projectBinding, b, file, monitor);
+            SonarLintMarkerUpdater.refreshMarkersForTaint(file, b, engineFacade);
+          });
         }
       }
       return Status.OK_STATUS;

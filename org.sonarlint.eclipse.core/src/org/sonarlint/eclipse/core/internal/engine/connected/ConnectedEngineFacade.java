@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.engine.connected;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -81,6 +80,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   @Nullable
   private ConnectedSonarLintEngine wrappedEngine;
   private final List<IConnectedEngineFacadeListener> facadeListeners = new ArrayList<>();
+  private final List<IServerEventListener> serverEventListeners = new ArrayList<>();
   private boolean notificationsDisabled;
   // Cache the project list to avoid dead lock
   private final Map<String, ServerProject> allProjectsByKey = new ConcurrentHashMap<>();
@@ -357,6 +357,16 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   }
 
   @Override
+  public void addServerEventListener(IServerEventListener listener) {
+    serverEventListeners.add(listener);
+  }
+
+  @Override
+  public void removeServerEventListener(IServerEventListener listener) {
+    serverEventListeners.remove(listener);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof ConnectedEngineFacade)) {
       return false;
@@ -426,10 +436,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
   @Override
   public void manualSync(Set<String> projectKeysToUpdate, IProgressMonitor monitor) {
-    doWithEngine(engine -> {
-      sync(projectKeysToUpdate, monitor, engine);
-      updateAllProjectIssuesForCurrentBranch(projectKeysToUpdate, monitor, engine);
-    });
+    doWithEngine(engine -> sync(projectKeysToUpdate, monitor, engine));
   }
 
   private void sync(Set<String> projectKeysToUpdate, IProgressMonitor monitor, ConnectedSonarLintEngine engine) {
@@ -441,45 +448,21 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     updateProjectList(monitor);
   }
 
-  private void updateAllProjectIssuesForCurrentBranch(Set<String> projectKeys, IProgressMonitor monitor, ConnectedSonarLintEngine engine) {
-    for (var projectKey : projectKeys) {
-      var boundProjects = getBoundProjects(projectKey);
-
-      Set<String> activeBranches = new HashSet<>();
-      for (var project : boundProjects) {
-        activeBranches.add(VcsService.getServerBranch(project));
-      }
-
-      activeBranches.forEach(b -> engine.downloadAllServerIssues(createEndpointParams(),
-        SonarLintBackendService.get().getBackend().getHttpClient(getId()), projectKey, b,
-        new WrappedProgressMonitor(monitor, "Synchronize issues for connection '" + getId() + "'")));
-
-    }
-  }
-
   @Override
   public void autoSync(Set<String> projectKeys, IProgressMonitor monitor) {
     doWithEngine(engine -> {
       sync(projectKeys, monitor, engine);
-      syncProjectIssuesForCurrentBranch(projectKeys, monitor, engine);
+      rematchBranches(projectKeys, monitor, engine);
     });
   }
 
-  private void syncProjectIssuesForCurrentBranch(Set<String> projectKeys, IProgressMonitor monitor, ConnectedSonarLintEngine engine) {
+  private void rematchBranches(Set<String> projectKeys, IProgressMonitor monitor, ConnectedSonarLintEngine engine) {
     for (var projectKey : projectKeys) {
       var boundProjects = getBoundProjects(projectKey);
 
-      Set<String> activeBranches = new HashSet<>();
       for (var project : boundProjects) {
-        activeBranches.add(VcsService.getServerBranch(project));
+        VcsService.getServerBranch(project).ifPresent(b -> SonarLintBackendService.get().branchChanged(project, b));
       }
-
-      activeBranches.forEach(b -> {
-        engine.syncServerIssues(createEndpointParams(), SonarLintBackendService.get().getBackend().getHttpClient(getId()), projectKey, b,
-          new WrappedProgressMonitor(monitor, "Synchronize issues for connection '" + getId() + "'"));
-        engine.syncServerTaintIssues(createEndpointParams(), SonarLintBackendService.get().getBackend().getHttpClient(getId()), projectKey, b,
-          new WrappedProgressMonitor(monitor, "Synchronize taint issues for connection '" + getId() + "'"));
-      });
 
     }
   }
@@ -488,6 +471,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   public void subscribeForEventsForBoundProjects() {
     if (wrappedEngine != null) {
       wrappedEngine.subscribeForEvents(createEndpointParams(), SonarLintBackendService.get().getBackend().getHttpClient(getId()), getBoundProjectKeys(), e -> {
+        serverEventListeners.forEach(l -> l.eventReceived(this, e));
       }, null);
     }
   }
