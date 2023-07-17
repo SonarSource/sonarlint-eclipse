@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.engine.connected;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -436,7 +437,18 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
 
   @Override
   public void manualSync(Set<String> projectKeysToUpdate, IProgressMonitor monitor) {
-    doWithEngine(engine -> sync(projectKeysToUpdate, monitor, engine));
+    doWithEngine(engine -> {
+      sync(projectKeysToUpdate, monitor, engine);
+      projectKeysToUpdate.forEach(projectKey -> {
+        var eclipseProjects = getBoundProjects(projectKey);
+        Set<String> branchesToSync = new HashSet<>();
+        eclipseProjects.forEach(p -> VcsService.getServerBranch(p).ifPresent(branchesToSync::add));
+        branchesToSync.forEach(b -> {
+          SonarLintLogger.get().debug("Download server issues for project '" + projectKey + "' on branch '" + b + "'");
+          downloadServerIssues(projectKey, b, monitor);
+        });
+      });
+    });
   }
 
   private void sync(Set<String> projectKeysToUpdate, IProgressMonitor monitor, ConnectedSonarLintEngine engine) {
@@ -444,16 +456,14 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
       new WrappedProgressMonitor(monitor, "Synchronize projects storage for connection '" + getId() + "'"));
     // Force recompute of best server branch
     VcsService.clearVcsCache();
+    rematchBranches(projectKeysToUpdate, monitor, engine);
 
     updateProjectList(monitor);
   }
 
   @Override
-  public void autoSync(Set<String> projectKeys, IProgressMonitor monitor) {
-    doWithEngine(engine -> {
-      sync(projectKeys, monitor, engine);
-      rematchBranches(projectKeys, monitor, engine);
-    });
+  public void scheduledSync(Set<String> projectKeys, IProgressMonitor monitor) {
+    doWithEngine(engine -> sync(projectKeys, monitor, engine));
   }
 
   private void rematchBranches(Set<String> projectKeys, IProgressMonitor monitor, ConnectedSonarLintEngine engine) {
