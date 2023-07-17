@@ -229,7 +229,7 @@ mend_scan_task:
     - build
   <<: *ONLY_MAIN_BRANCHES
   eks_container:
-    <<: *CONTAINER_DEFINITION
+    <<: *BUILDER_CONTAINER_DEFINITION
     cpu: 4
     memory: 8G
   env:
