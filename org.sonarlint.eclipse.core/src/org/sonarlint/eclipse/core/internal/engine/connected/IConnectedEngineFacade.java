@@ -112,7 +112,7 @@ public interface IConnectedEngineFacade {
 
   List<ISonarLintFile> getServerFileExclusions(ProjectBinding binding, Collection<ISonarLintFile> files, Predicate<ISonarLintFile> testFilePredicate);
 
-  void autoSync(Set<String> projectKeys, IProgressMonitor monitor);
+  void scheduledSync(Set<String> projectKeys, IProgressMonitor monitor);
 
   void manualSync(Set<String> projectKeysToUpdate, IProgressMonitor monitor);
 

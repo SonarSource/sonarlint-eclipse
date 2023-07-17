@@ -55,7 +55,7 @@ public class PeriodicStoragesSynchronizerJob extends Job {
 
         try {
           var boundProjectKeys = connection.getBoundProjectKeys();
-          connection.autoSync(boundProjectKeys, serverMonitor);
+          connection.scheduledSync(boundProjectKeys, serverMonitor);
           AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.BINDING_CHANGE, f -> isBoundToConnection(f, connection));
           // TODO Refresh taints
         } catch (Exception e) {
