@@ -44,7 +44,6 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.SonarLintBackendImpl;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
-import org.sonarsource.sonarlint.core.clientapi.backend.branch.DidChangeActiveSonarProjectBranchParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.ClientInfoDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.FeatureFlagsDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.InitializeParams;
@@ -125,9 +124,9 @@ public class SonarLintBackendService {
         configScopeSynchronizer = new ConfigScopeSynchronizer(backend);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(configScopeSynchronizer);
 
-        VcsService.installBranchChangeListener();
-
         configScopeSynchronizer.init();
+
+        VcsService.installBranchChangeListener();
 
         return Status.OK_STATUS;
       }
@@ -138,10 +137,7 @@ public class SonarLintBackendService {
 
   /** Provide the Backend with the information on a changed VCS branch for further actions, e.g. synchronizing with SQ / SC */
   public void branchChanged(ISonarLintProject project, String newActiveBranchName) {
-    getBackend()
-      .getSonarProjectBranchService()
-      .didChangeActiveSonarProjectBranch(
-        new DidChangeActiveSonarProjectBranchParams(ConfigScopeSynchronizer.getConfigScopeId(project), newActiveBranchName));
+    configScopeSynchronizer.branchChanged(project, newActiveBranchName);
   }
 
   public SonarLintBackend getBackend() {

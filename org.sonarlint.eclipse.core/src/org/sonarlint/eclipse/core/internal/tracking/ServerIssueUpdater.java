@@ -90,16 +90,17 @@ public class ServerIssueUpdater {
           if (monitor.isCanceled()) {
             return Status.CANCEL_STATUS;
           }
-          if (issuable instanceof ISonarLintFile) {
-            var file = ((ISonarLintFile) issuable);
-            var issueTracker = issueTrackerRegistry.getOrCreate(project);
-            String branchName = VcsService.getServerBranch(project);
-            var serverIssues = fetchServerIssues(engineFacade, projectBinding, branchName, (ISonarLintFile) issuable, monitor);
-            Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
-            Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(file, serverIssuesTrackable);
-            issueTracker.updateCache(file, tracked);
-            trackedIssues.put(issuable, tracked);
-          }
+          VcsService.getServerBranch(project).ifPresent(b -> {
+            if (issuable instanceof ISonarLintFile) {
+              var file = ((ISonarLintFile) issuable);
+              var issueTracker = issueTrackerRegistry.getOrCreate(project);
+              var serverIssues = fetchServerIssues(engineFacade, projectBinding, b, (ISonarLintFile) issuable, monitor);
+              Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
+              var tracked = issueTracker.matchAndTrackServerIssues(file, serverIssuesTrackable);
+              issueTracker.updateCache(file, tracked);
+              trackedIssues.put(issuable, tracked);
+            }
+          });
         }
         if (!trackedIssues.isEmpty()) {
           new AsyncServerMarkerUpdaterJob(project, trackedIssues, docPerFile, triggerType).schedule();

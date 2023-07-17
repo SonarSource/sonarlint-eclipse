@@ -57,7 +57,7 @@ public class TaintIssuesUpdateAfterSyncJob extends Job {
         if (monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
         }
-        SonarLintMarkerUpdater.refreshMarkersForTaint(issuable, VcsService.getServerBranch(project), engineFacade);
+        VcsService.getServerBranch(project).ifPresent(b -> SonarLintMarkerUpdater.refreshMarkersForTaint(issuable, b, engineFacade));
       }
       return Status.OK_STATUS;
     } catch (Throwable t) {
