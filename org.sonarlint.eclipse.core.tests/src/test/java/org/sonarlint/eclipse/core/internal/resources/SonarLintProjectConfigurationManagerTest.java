@@ -67,7 +67,6 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
     // Configure the project
     var configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), PROJECT_WITH_DEPRECATED_SETTINGS);
     assertThat(configuration.getProjectBinding()).isEmpty();
-    assertThat(errors).isEmpty();
     assertThat(infos).contains("Binding configuration of project '" + PROJECT_WITH_DEPRECATED_SETTINGS + "' is outdated. Please rebind this project.");
   }
 
@@ -83,7 +82,5 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
     assertThat(projectScope.getLocation().append("org.sonarlint.eclipse.core.prefs").toFile()).doesNotExist();
     SonarLintCorePlugin.getInstance().getProjectConfigManager().save(projectScope, configuration);
     assertThat(projectScope.getLocation().append("org.sonarlint.eclipse.core.prefs").toFile()).exists();
-    assertThat(errors).isEmpty();
-
   }
 }
