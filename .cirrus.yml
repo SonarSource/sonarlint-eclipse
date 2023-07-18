@@ -287,4 +287,4 @@ dogfood_task:
     jfrog rt cp \
       sonarsource-public-builds/org/sonarsource/sonarlint/eclipse/org.sonarlint.eclipse.site/${PROJECT_VERSION}/org.sonarlint.eclipse.site-${PROJECT_VERSION}.zip \
       sonarlint-eclipse-dogfood/org.sonarlint.eclipse.site-dogfood.zip \
-      --url "${ARTIFACTORY_URL}" --access-token "${ARTIFACTORY_API_KEY}" --build-name "$CIRRUS_REPO_NAME" --build-number "$BUILD_NUMBER"
+      --url "${ARTIFACTORY_URL}" --access-token "${ARTIFACTORY_API_KEY}" --build "${CIRRUS_REPO_NAME}/${BUILD_NUMBER}"
