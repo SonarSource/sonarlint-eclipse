@@ -271,7 +271,7 @@ public class BindingsView extends CommonNavigator {
       } else if (event.getDelta() != null) {
         try {
           event.getDelta().accept((IResourceDelta delta) -> {
-            if (delta.getKind() == IResourceDelta.CHANGED) {
+            if (delta.getKind() == IResourceDelta.CHANGED && (delta.getResource().getType() & IResource.ROOT) != 0) {
               // INFO: With adding "IResourceDelta.ADDED" to the mask we can also update the binding view when
               //       importing a project. Therefore the user can see if a newly imported project is already
               //       correctly binded.
