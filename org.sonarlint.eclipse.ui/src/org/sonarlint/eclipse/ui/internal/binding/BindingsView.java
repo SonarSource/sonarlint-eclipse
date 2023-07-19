@@ -74,7 +74,9 @@ public class BindingsView extends CommonNavigator {
 
   private IConnectedEngineFacadeLifecycleListener serverResourceListener;
   private IConnectedEngineFacadeListener serverListener;
+  
   private IResourceChangeListener projectListener;
+  private volatile boolean shouldRefresh = false;
 
   public BindingsView() {
     super();
@@ -263,29 +265,38 @@ public class BindingsView extends CommonNavigator {
     
     // add listener for when project is opened / closed / deleted
     projectListener = event -> {
-      if (event.getBuildKind() == IResourceChangeEvent.PRE_CLOSE
-        || event.getBuildKind() == IResourceChangeEvent.PRE_DELETE) {
+      if (event.getType() == IResourceChangeEvent.PRE_CLOSE
+        || event.getType() == IResourceChangeEvent.PRE_DELETE) {
+        shouldRefresh = true;
+      } else if (event.getDelta() != null) {
+        try {
+          event.getDelta().accept((IResourceDelta delta) -> {
+            if (delta.getKind() == IResourceDelta.CHANGED) {
+              // INFO: With adding "IResourceDelta.ADDED" to the mask we can also update the binding view when
+              //       importing a project. Therefore the user can see if a newly imported project is already
+              //       correctly binded.
+              for (var child : delta.getAffectedChildren(IResourceDelta.CHANGED)) {
+                var resource = child.getResource();
+                
+                if (((resource.getType() & IResource.PROJECT) != 0) 
+                  && resource.getProject().isOpen()
+                  && ((child.getFlags() & IResourceDelta.OPEN) != 0)) {
+                  shouldRefresh = true;
+                  return true;
+                }
+              }
+            }
+            
+            return false;
+          });
+        } catch (CoreException err) {
+          SonarLintLogger.get().error("Error while updating the SonarLint Bindings after opening a project", err);
+        }
+      }
+      
+      if (shouldRefresh) {
         refreshView();
-        return;
-      }
-      
-      if (event.getDelta() == null) {
-        return;
-      }
-      
-      try {
-        event.getDelta().accept((IResourceDelta delta) -> {
-          var rsrc = delta.getResource();
-          if (((rsrc.getType() & IResource.PROJECT) != 0) 
-            && rsrc.getProject().isOpen()
-            && delta.getKind() == IResourceDelta.CHANGED
-            && ((delta.getFlags() & IResourceDelta.OPEN) != 0)) {
-            refreshView();
-          }
-          return true;
-        });
-      } catch (CoreException err) {
-        SonarLintLogger.get().error("Error while updating the SonarLint Bindings after opening a project", err);
+        shouldRefresh = false;
       }
     };
     ResourcesPlugin.getWorkspace().addResourceChangeListener(projectListener);
