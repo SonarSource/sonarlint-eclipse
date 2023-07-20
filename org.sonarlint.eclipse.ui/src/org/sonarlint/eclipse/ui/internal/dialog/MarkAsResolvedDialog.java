@@ -71,7 +71,7 @@ public class MarkAsResolvedDialog extends Dialog {
 
     transitions.forEach(transition -> {
       var btn = new IssueStatusRadioButton(group, transition);
-      btn.getButton().setText(transition.getTitle() + "\n" + transition.getDescription());
+      btn.getButton().setText(transition.getTitle() + " - " + transition.getDescription());
 
       var innerGridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
       innerGridData.grabExcessHorizontalSpace = true;
