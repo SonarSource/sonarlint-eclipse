@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -74,9 +75,7 @@ public class BindingsView extends CommonNavigator {
 
   private IConnectedEngineFacadeLifecycleListener serverResourceListener;
   private IConnectedEngineFacadeListener serverListener;
-  
   private IResourceChangeListener projectListener;
-  private volatile boolean shouldRefresh = false;
 
   public BindingsView() {
     super();
@@ -265,9 +264,11 @@ public class BindingsView extends CommonNavigator {
     
     // add listener for when project is opened / closed / deleted
     projectListener = event -> {
+      var shouldRefresh = new AtomicBoolean(false);
+      
       if (event.getType() == IResourceChangeEvent.PRE_CLOSE
         || event.getType() == IResourceChangeEvent.PRE_DELETE) {
-        shouldRefresh = true;
+        shouldRefresh.set(true);
       } else if (event.getDelta() != null) {
         try {
           event.getDelta().accept((IResourceDelta delta) -> {
@@ -281,7 +282,7 @@ public class BindingsView extends CommonNavigator {
                 if (((resource.getType() & IResource.PROJECT) != 0) 
                   && resource.getProject().isOpen()
                   && ((child.getFlags() & IResourceDelta.OPEN) != 0)) {
-                  shouldRefresh = true;
+                  shouldRefresh.set(true);
                   return true;
                 }
               }
@@ -294,9 +295,8 @@ public class BindingsView extends CommonNavigator {
         }
       }
       
-      if (shouldRefresh) {
+      if (shouldRefresh.get()) {
         refreshView();
-        shouldRefresh = false;
       }
     };
     ResourcesPlugin.getWorkspace().addResourceChangeListener(projectListener);
