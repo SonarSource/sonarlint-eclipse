@@ -19,6 +19,13 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -51,6 +58,7 @@ import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFaca
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
+import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 /**
  * A view of connections, their modules, and status.
@@ -67,6 +75,7 @@ public class BindingsView extends CommonNavigator {
 
   private IConnectedEngineFacadeLifecycleListener serverResourceListener;
   private IConnectedEngineFacadeListener serverListener;
+  private IResourceChangeListener projectListener;
 
   public BindingsView() {
     super();
@@ -252,7 +261,52 @@ public class BindingsView extends CommonNavigator {
     for (var server : SonarLintCorePlugin.getServersManager().getServers()) {
       server.addConnectedEngineListener(serverListener);
     }
-
+    
+    // add listener for when project is opened / closed / deleted
+    projectListener = event -> {
+      var shouldRefresh = new AtomicBoolean(false);
+      
+      if (event.getType() == IResourceChangeEvent.PRE_CLOSE
+        || event.getType() == IResourceChangeEvent.PRE_DELETE) {
+        shouldRefresh.set(true);
+      } else if (event.getDelta() != null) {
+        try {
+          event.getDelta().accept((IResourceDelta delta) -> {
+            if (delta.getKind() == IResourceDelta.CHANGED && (delta.getResource().getType() & IResource.ROOT) != 0) {
+              // INFO: With adding "IResourceDelta.ADDED" to the mask we can also update the binding view when
+              //       importing a project. Therefore the user can see if a newly imported project is already
+              //       correctly binded.
+              for (var child : delta.getAffectedChildren(IResourceDelta.CHANGED)) {
+                var resource = child.getResource();
+                
+                if (((resource.getType() & IResource.PROJECT) != 0) 
+                  && resource.getProject().isOpen()
+                  && ((child.getFlags() & IResourceDelta.OPEN) != 0)) {
+                  shouldRefresh.set(true);
+                  return true;
+                }
+              }
+            }
+            
+            return false;
+          });
+        } catch (CoreException err) {
+          SonarLintLogger.get().error("Error while updating the SonarLint Bindings after opening a project", err);
+        }
+      }
+      
+      if (shouldRefresh.get()) {
+        refreshView();
+      }
+    };
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(projectListener);
+  }
+  
+  private void refreshView() {
+    refreshConnectionState();
+    for (var server : SonarLintCorePlugin.getServersManager().getServers()) {
+      refreshConnectionContent(server);
+    }
   }
 
   protected void addServer(final IConnectedEngineFacade server) {
@@ -272,6 +326,7 @@ public class BindingsView extends CommonNavigator {
   @Override
   public void dispose() {
     SonarLintCorePlugin.getServersManager().removeServerLifecycleListener(serverResourceListener);
+    ResourcesPlugin.getWorkspace().removeResourceChangeListener(projectListener);
     super.dispose();
   }
 
