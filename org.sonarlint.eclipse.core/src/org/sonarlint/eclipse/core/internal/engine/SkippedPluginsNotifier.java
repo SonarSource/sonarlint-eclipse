@@ -40,7 +40,13 @@ public class SkippedPluginsNotifier {
   }
 
   public static void notifyForSkippedPlugins(Collection<PluginDetails> allPlugins, @Nullable String connectionId) {
-    var skippedPlugins = allPlugins.stream().filter(p -> p.skipReason().isPresent() && !(p.skipReason().get() instanceof SkipReason.UnsatisfiedRuntimeRequirement))
+    var skippedPlugins = allPlugins.stream()
+      .filter(p -> p.skipReason().isPresent())
+      // UnsatisfiedRuntimeRequirement will be reported lazily after the first analysis of the same language.
+      // See AnalysisRequirementNotifications
+      .filter(p -> !(p.skipReason().get() instanceof SkipReason.UnsatisfiedRuntimeRequirement))
+      // Language enabling is not under user control, so no need to signal it
+      .filter(p -> !(p.skipReason().get() instanceof SkipReason.LanguagesNotEnabled))
       .collect(toList());
     if (!skippedPlugins.isEmpty()) {
       var skippedLanguages = skippedPlugins.stream()

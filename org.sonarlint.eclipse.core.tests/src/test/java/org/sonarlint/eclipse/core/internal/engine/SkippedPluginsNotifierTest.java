@@ -28,8 +28,8 @@ import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.internal.NotificationListener;
-import org.sonarlint.eclipse.core.internal.engine.SkippedPluginsNotifier;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
+import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.plugin.commons.SkipReason;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,6 +62,13 @@ public class SkippedPluginsNotifierTest {
   @Test
   public void dontNotifyIfNoSkippedPlugins() {
     List<PluginDetails> plugins = List.of(new PluginDetails("plugin1", "Plugin 1", "1.0", null));
+    SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
+    assertThat(notifications).isEmpty();
+  }
+
+  @Test
+  public void dontNotifyIfSkippedPlugin_LanguageNotEnabled() {
+    List<PluginDetails> plugins = List.of(new PluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.LanguagesNotEnabled(List.of(Language.ABAP))));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
     assertThat(notifications).isEmpty();
   }
