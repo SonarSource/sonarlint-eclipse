@@ -167,12 +167,12 @@ qa_task:
       -Dtarget.platform=${TARGET_PLATFORM} -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/staged-repository" -Dsonar.runtimeVersion=${SQ_VERSION} \
       -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
     mv it-coverage.exec it-coverage-${TARGET_PLATFORM}.exec
-  stop_recording_script: |
-    pkill -SIGINT -f ffmpeg
-    while pgrep ffmpeg >/dev/null; do sleep 1; done
-    /etc/init.d/xvfb stop
   cleanup_before_cache_script: cleanup_maven_repository
   always:
+    stop_recording_script: |
+      pkill -SIGINT -f ffmpeg
+      while pgrep ffmpeg >/dev/null; do sleep 1; done
+      /etc/init.d/xvfb stop
     test_recording_artifacts:
       path: "${CIRRUS_WORKING_DIR}/recording_${TARGET_PLATFORM}.mp4"
     log_artifacts:
