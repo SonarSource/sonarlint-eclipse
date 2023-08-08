@@ -268,7 +268,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       return console;
     }
     // no console found, so create a new one
-    console = new SonarLintConsole(SonarLintImages.SONARLINT_CONSOLE_IMG_DESC);
+    console = new SonarLintConsole(SonarLintImages.SONARLINT_16);
     return console;
   }
 

@@ -1015,6 +1015,9 @@
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.UnbindProjectsCommand"
       icon="icons/full/menu16/disconnect_co.png" />
+    <image
+      commandId="org.sonarlint.eclipse.ui.internal.command.ExcludeCommand"
+      icon="icons/exclude.png" />
   </extension>
 
    <extension
@@ -1044,7 +1047,7 @@
               colorPreferenceValue="30,144,255"
               highlightPreferenceKey="org.sonarlint.eclipse.ui.issue.highlight"
               highlightPreferenceValue="false"
-              icon="icons/sonarlint-16x16.png"
+              icon="icons/logo/sonarlint-16px.png"
               isGoToNextNavigationTarget="true"
               isGoToNextNavigationTargetKey="org.sonarlint.eclipse.issue.next"
               isGoToPreviousNavigationTarget="true"
@@ -1069,7 +1072,7 @@
               colorPreferenceValue="242,222,222"
               highlightPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.highlight"
               highlightPreferenceValue="false"
-              icon="icons/sonarlint-16x16.png"
+              icon="icons/logo/sonarlint-16px.png"
               isGoToNextNavigationTarget="true"
               isGoToNextNavigationTargetKey="org.sonarlint.eclipse.issueFlow.next"
               isGoToPreviousNavigationTarget="true"
@@ -1152,7 +1155,7 @@
         point="org.eclipse.ui.console.consoleFactories">
      <consoleFactory
            class="org.sonarlint.eclipse.ui.internal.console.SonarLintConsoleFactory"
-           icon="icons/sonarlint-16x16.png"
+           icon="icons/logo/sonarlint-16px.png"
            label="%consoleFactory.label">
      </consoleFactory>
   </extension>
@@ -1172,7 +1175,7 @@
      <menuContribution
            locationURI="popup:org.eclipse.ui.popup.any?after=additions">
         <menu
-              icon="icons/sonarlint-16x16.png"
+              icon="icons/logo/sonarlint-16px.png"
               id="sonar.menu"
               label="%sonar.menu.label">
            <separator
