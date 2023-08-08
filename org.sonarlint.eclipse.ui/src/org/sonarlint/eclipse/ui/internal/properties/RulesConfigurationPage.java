@@ -19,7 +19,10 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,13 +31,14 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
+import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
 
@@ -66,8 +70,14 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     return pageComponent;
   }
 
-  private static Collection<StandaloneRuleDetails> loadRuleDetails() {
-    return SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getAllRuleDetails();
+  private static List<RuleDefinitionDto> loadRuleDetails() {
+    try {
+      return new ArrayList<>(SonarLintBackendService.get().getStandaloneRules().get().getRulesByKey().values());
+    } catch (Exception err) {
+      SonarLintLogger.get().error("Loading all standalone rules for the configuration page failed", err);
+    }
+    
+    return Collections.emptyList();
   }
 
   @Override

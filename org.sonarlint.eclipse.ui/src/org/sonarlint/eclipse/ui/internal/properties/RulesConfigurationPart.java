@@ -66,14 +66,12 @@ import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.job.DisplayGlobalConfigurationRuleDescriptionJob;
 import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 // Inspired by: http://www.vogella.com/tutorials/EclipseJFaceTree/article.html
 public class RulesConfigurationPart {
-
-  private final Supplier<Collection<StandaloneRuleDetails>> allRuleDetailsSupplier;
+  private final Supplier<List<RuleDefinitionDto>> allRuleDefinitionSupplier;
   private final Map<String, RuleConfig> initialRuleConfigs;
 
   // Lazy-loaded
@@ -86,8 +84,8 @@ public class RulesConfigurationPart {
   private Composite paramPanel;
   SashForm horizontalSplitter;
 
-  public RulesConfigurationPart(Supplier<Collection<StandaloneRuleDetails>> allRuleDetailsSupplier, Collection<RuleConfig> initialConfig) {
-    this.allRuleDetailsSupplier = allRuleDetailsSupplier;
+  public RulesConfigurationPart(Supplier<List<RuleDefinitionDto>> allRuleDefinitionSupplier, Collection<RuleConfig> initialConfig) {
+    this.allRuleDefinitionSupplier = allRuleDefinitionSupplier;
     initialRuleConfigs = initialConfig.stream()
       .collect(Collectors.toMap(RuleConfig::getKey, it -> it));
     filter = new RuleDetailsWrapperFilter();
@@ -124,8 +122,8 @@ public class RulesConfigurationPart {
 
   // Visible for testing
   public void loadRules() {
-    ruleDetailsWrappersByLanguage = allRuleDetailsSupplier.get().stream()
-      .sorted(Comparator.comparing(RuleDetails::getKey))
+    ruleDetailsWrappersByLanguage = allRuleDefinitionSupplier.get().stream()
+      .sorted(Comparator.comparing(RuleDefinitionDto::getKey))
       .map(rd -> new RuleDetailsWrapper(rd, initialRuleConfigs.getOrDefault(rd.getKey(), new RuleConfig(rd.getKey(), rd.isActiveByDefault()))))
       .collect(Collectors.groupingBy(w -> w.ruleDetails.getLanguage(), Collectors.toList()));
   }
@@ -221,7 +219,7 @@ public class RulesConfigurationPart {
 
       // Update global configuration rule description asynchronous
       new DisplayGlobalConfigurationRuleDescriptionJob(wrapper.ruleDetails.getKey(), ruleDetailsPanel).schedule();
-      if (wrapper.ruleDetails.paramDetails().isEmpty()) {
+      if (wrapper.ruleDetails.getParamsByKey().values().isEmpty()) {
         paramPanel = emptyRuleParam();
       } else {
         paramPanel = new RuleParameterPanel(paramPanelParent, SWT.NONE, wrapper.ruleDetails, wrapper.ruleConfig);
@@ -396,10 +394,10 @@ public class RulesConfigurationPart {
   }
 
   private static class RuleDetailsWrapper {
-    private final StandaloneRuleDetails ruleDetails;
+    private final RuleDefinitionDto ruleDetails;
     private RuleConfig ruleConfig;
 
-    RuleDetailsWrapper(StandaloneRuleDetails ruleDetails, RuleConfig ruleConfig) {
+    RuleDetailsWrapper(RuleDefinitionDto ruleDetails, RuleConfig ruleConfig) {
       this.ruleDetails = ruleDetails;
       this.ruleConfig = ruleConfig;
     }
