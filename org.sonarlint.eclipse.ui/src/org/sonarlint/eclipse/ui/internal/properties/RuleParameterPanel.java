@@ -35,18 +35,17 @@ import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParamType;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleParamDefinitionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleParamType;
 
 public class RuleParameterPanel extends Composite {
-
   private final Link defaultLink;
-  private final StandaloneRuleDetails selectedRuleMetadata;
+  private final RuleDefinitionDto selectedRuleMetadata;
   private final RuleConfig selectedRuleConfig;
   private Composite paramInputsContainer;
 
-  public RuleParameterPanel(Composite parent, int style, StandaloneRuleDetails selectedRuleMetadata, RuleConfig selectedRuleConfig) {
+  public RuleParameterPanel(Composite parent, int style, RuleDefinitionDto selectedRuleMetadata, RuleConfig selectedRuleConfig) {
     super(parent, style);
     this.selectedRuleMetadata = selectedRuleMetadata;
     this.selectedRuleConfig = selectedRuleConfig;
@@ -87,26 +86,26 @@ public class RuleParameterPanel extends Composite {
     var layout = new GridLayout();
     layout.numColumns = 2;
     paramInputsContainer.setLayout(layout);
-
-    selectedRuleMetadata.paramDetails().forEach(it -> addParamInput(paramInputsContainer, it));
+    
+    selectedRuleMetadata.getParamsByKey().values().forEach(it -> addParamInput(paramInputsContainer, it));
 
     sc.setMinSize(paramInputsContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
   }
 
   public void setDefaultLinkVisibility() {
-    var allParamAreDefault = selectedRuleMetadata.paramDetails().stream()
-      .allMatch(param -> !selectedRuleConfig.getParams().containsKey(param.key())
-        || Objects.equals(param.defaultValue(), selectedRuleConfig.getParams().get(param.key())));
+    var allParamAreDefault = selectedRuleMetadata.getParamsByKey().values().stream()
+      .allMatch(param -> !selectedRuleConfig.getParams().containsKey(param.getKey())
+        || Objects.equals(param.getDefaultValue(), selectedRuleConfig.getParams().get(param.getKey())));
     defaultLink.setVisible(!allParamAreDefault);
   }
 
-  void addParamInput(Composite parent, StandaloneRuleParam ruleParam) {
+  void addParamInput(Composite parent, RuleParamDefinitionDto ruleParam) {
     var ruleParameterLabel = new Label(parent, SWT.NONE);
     var layoutData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
     ruleParameterLabel.setLayoutData(layoutData);
-    ruleParameterLabel.setText(ruleParam.name());
+    ruleParameterLabel.setText(ruleParam.getName());
 
-    StandaloneRuleParamType rp = ruleParam.type();
+    RuleParamType rp = ruleParam.getType();
     switch (rp) {
       case BOOLEAN:
         addCheckboxInput(parent, ruleParam);
@@ -125,49 +124,49 @@ public class RuleParameterPanel extends Composite {
         addStringInput(parent, ruleParam);
         break;
       default:
-        SonarLintLogger.get().error("Unknown rule parameter type: " + rp + " for rule " + ruleParam.key());
+        SonarLintLogger.get().error("Unknown rule parameter type: " + rp + " for rule " + ruleParam.getKey());
     }
   }
 
-  private void addTextInput(Composite parent, StandaloneRuleParam ruleParam) {
+  private void addTextInput(Composite parent, RuleParamDefinitionDto ruleParam) {
     var ruleParameterInput = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
     var layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
     ruleParameterInput.setLayoutData(layoutData);
     configureInput(ruleParam, ruleParameterInput);
   }
 
-  private void addStringInput(Composite parent, StandaloneRuleParam ruleParam) {
+  private void addStringInput(Composite parent, RuleParamDefinitionDto ruleParam) {
     var ruleParameterInput = new Text(parent, SWT.SINGLE | SWT.BORDER);
     var layoutData = new GridData(SWT.FILL, SWT.NONE, true, false);
     ruleParameterInput.setLayoutData(layoutData);
     configureInput(ruleParam, ruleParameterInput);
   }
 
-  private void configureInput(StandaloneRuleParam ruleParam, Text ruleParameterInput) {
-    ruleParameterInput.setToolTipText(ruleParam.description());
-    ruleParameterInput.setText(StringUtils.trimToEmpty(selectedRuleConfig.getParams().getOrDefault(ruleParam.key(), ruleParam.defaultValue())));
+  private void configureInput(RuleParamDefinitionDto ruleParam, Text ruleParameterInput) {
+    ruleParameterInput.setToolTipText(ruleParam.getDescription());
+    ruleParameterInput.setText(StringUtils.trimToEmpty(selectedRuleConfig.getParams().getOrDefault(ruleParam.getKey(), ruleParam.getDefaultValue())));
     ruleParameterInput.addModifyListener(e -> {
       var text = ((Text) e.widget).getText();
       if (!StringUtils.isEmpty(text)) {
-        selectedRuleConfig.getParams().put(ruleParam.key(), text);
+        selectedRuleConfig.getParams().put(ruleParam.getKey(), text);
       } else {
-        selectedRuleConfig.getParams().remove(ruleParam.key());
+        selectedRuleConfig.getParams().remove(ruleParam.getKey());
       }
       setDefaultLinkVisibility();
     });
     ruleParameterInput.setEnabled(selectedRuleConfig.isActive());
   }
 
-  private void addIntegerInput(Composite parent, StandaloneRuleParam ruleParam) {
+  private void addIntegerInput(Composite parent, RuleParamDefinitionDto ruleParam) {
     var ruleParameterInput = new Spinner(parent, SWT.WRAP);
     var layoutData = new GridData(SWT.FILL, SWT.NONE, false, false);
-    ruleParameterInput.setToolTipText(ruleParam.description());
+    ruleParameterInput.setToolTipText(ruleParam.getDescription());
     ruleParameterInput.setLayoutData(layoutData);
     ruleParameterInput.setMinimum(Integer.MIN_VALUE);
     ruleParameterInput.setMaximum(Integer.MAX_VALUE);
-    ruleParameterInput.setSelection(asInteger(selectedRuleConfig.getParams().getOrDefault(ruleParam.key(), ruleParam.defaultValue())));
+    ruleParameterInput.setSelection(asInteger(selectedRuleConfig.getParams().getOrDefault(ruleParam.getKey(), ruleParam.getDefaultValue())));
     ruleParameterInput.addModifyListener(e -> {
-      selectedRuleConfig.getParams().put(ruleParam.key(), String.valueOf(((Spinner) e.widget).getSelection()));
+      selectedRuleConfig.getParams().put(ruleParam.getKey(), String.valueOf(((Spinner) e.widget).getSelection()));
       setDefaultLinkVisibility();
     });
     ruleParameterInput.setEnabled(selectedRuleConfig.isActive());
@@ -184,15 +183,14 @@ public class RuleParameterPanel extends Composite {
     }
   }
 
-  private void addCheckboxInput(Composite parent, StandaloneRuleParam ruleParam) {
+  private void addCheckboxInput(Composite parent, RuleParamDefinitionDto ruleParam) {
     var ruleParameterInput = new Button(parent, SWT.CHECK);
-    ruleParameterInput.setToolTipText(ruleParam.description());
-    ruleParameterInput.setSelection("true".equals(selectedRuleConfig.getParams().getOrDefault(ruleParam.key(), ruleParam.defaultValue())));
+    ruleParameterInput.setToolTipText(ruleParam.getDescription());
+    ruleParameterInput.setSelection("true".equals(selectedRuleConfig.getParams().getOrDefault(ruleParam.getKey(), ruleParam.getDefaultValue())));
     ruleParameterInput.addListener(SWT.Selection, e -> {
-      selectedRuleConfig.getParams().put(ruleParam.key(), String.valueOf(((Button) e.widget).getSelection()));
+      selectedRuleConfig.getParams().put(ruleParam.getKey(), String.valueOf(((Button) e.widget).getSelection()));
       setDefaultLinkVisibility();
     });
     ruleParameterInput.setEnabled(selectedRuleConfig.isActive());
   }
-
 }

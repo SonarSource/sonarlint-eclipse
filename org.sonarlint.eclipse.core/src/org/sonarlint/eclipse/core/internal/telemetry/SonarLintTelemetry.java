@@ -42,7 +42,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
 import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.telemetry.InternalDebug;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClientAttributesProvider;
@@ -170,11 +170,16 @@ public class SonarLintTelemetry {
     }
 
     private static Set<String> defaultEnabledRuleKeys() {
-      return SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade()
-        .getAllRuleDetails().stream()
-        .filter(StandaloneRuleDetails::isActiveByDefault)
-        .map(StandaloneRuleDetails::getKey)
-        .collect(Collectors.toSet());
+      try {
+        return SonarLintBackendService.get().getStandaloneRules().get().getRulesByKey().values().stream()
+          .filter(RuleDefinitionDto::isActiveByDefault)
+          .map(RuleDefinitionDto::getKey)
+          .collect(Collectors.toSet());
+      } catch (Exception err) {
+        SonarLintLogger.get().error("Loading all standalone rules for telemetry failed", err);
+      }
+      
+      return Collections.emptySet();
     }
 
     @Override
