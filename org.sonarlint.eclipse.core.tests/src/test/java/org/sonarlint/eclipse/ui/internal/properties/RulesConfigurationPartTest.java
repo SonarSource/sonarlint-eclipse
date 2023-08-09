@@ -22,7 +22,7 @@ package org.sonarlint.eclipse.ui.internal.properties;
 import java.util.List;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
 import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 
@@ -32,7 +32,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class RulesConfigurationPartTest {
-
   private static final RuleKey ACTIVE = mockRuleKey("ACTIVE");
   private static final RuleKey ACTIVE_EXCLUDED = mockRuleKey("ACTIVE_EXCLUDED");
   private static final RuleKey INACTIVE = mockRuleKey("INACTIVE");
@@ -52,9 +51,9 @@ public class RulesConfigurationPartTest {
   private static RuleKey mockRuleKey(String key) {
     return new RuleKey("squid", key);
   }
-
-  private StandaloneRuleDetails mockRuleDetails(RuleKey ruleKey, boolean activeByDefault) {
-    var ruleDetails = mock(StandaloneRuleDetails.class);
+  
+  private RuleDefinitionDto mockRuleDetails(RuleKey ruleKey, boolean activeByDefault) {
+    var ruleDetails = mock(RuleDefinitionDto.class);
     when(ruleDetails.getKey()).thenReturn(ruleKey.toString());
     when(ruleDetails.isActiveByDefault()).thenReturn(activeByDefault);
     when(ruleDetails.getLanguage()).thenReturn(Language.JAVA);

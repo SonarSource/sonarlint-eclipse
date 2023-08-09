@@ -54,6 +54,7 @@ import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDe
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionResponse;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.ListAllStandaloneRulesDefinitionsResponse;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 import static java.util.Objects.requireNonNull;
@@ -157,6 +158,11 @@ public class SonarLintBackendService {
       ideName = defaultString(product.getName(), "Eclipse");
     }
     return ideName;
+  }
+  
+  /** Get all the rules available in standalone mode */
+  public CompletableFuture<ListAllStandaloneRulesDefinitionsResponse> getStandaloneRules() {
+    return getBackend().getRulesService().listAllStandaloneRulesDefinitions();
   }
 
   /** Get the rules details (global configuration) */

@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.engine;
 
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Function;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -34,18 +33,13 @@ import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneSonarLintEngine;
 import org.sonarsource.sonarlint.core.commons.Language;
 
-import static java.util.Collections.emptySet;
-
 public class StandaloneEngineFacade {
-
   @Nullable
   private StandaloneSonarLintEngine wrappedEngine;
 
@@ -89,21 +83,10 @@ public class StandaloneEngineFacade {
     }).orElseThrow(() -> new IllegalStateException("SonarLint Engine not available"));
   }
 
-  @Nullable
-  public RuleDetails getRuleDescription(String ruleKey) {
-    return withEngine(engine -> engine.getRuleDetails(ruleKey).orElse(null)).orElse(null);
-  }
-
-  public Collection<StandaloneRuleDetails> getAllRuleDetails() {
-    return withEngine(StandaloneSonarLintEngine::getAllRuleDetails)
-      .orElse(emptySet());
-  }
-
   public synchronized void stop() {
     if (wrappedEngine != null) {
       wrappedEngine.stop();
       wrappedEngine = null;
     }
   }
-
 }

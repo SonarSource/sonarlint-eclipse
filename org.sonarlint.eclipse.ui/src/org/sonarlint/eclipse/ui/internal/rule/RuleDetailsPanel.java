@@ -25,6 +25,7 @@ import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -110,31 +111,38 @@ public class RuleDetailsPanel extends Composite {
   }
 
   public void updateRule(GetStandaloneRuleDescriptionResponse getStandaloneRuleDescriptionResponse) {
-    var ruleDefinition = getStandaloneRuleDescriptionResponse.getRuleDefinition();
+    try {
+      var ruleDefinition = getStandaloneRuleDescriptionResponse.getRuleDefinition();
 
-    ruleNameLabel.setText(ruleDefinition.getName());
-    ruleNameLabel.requestLayout();
-    ruleHeaderPanel.updateRule(ruleDefinition.getKey(), ruleDefinition.getType(), ruleDefinition.getDefaultSeverity());
+      ruleNameLabel.setText(ruleDefinition.getName());
+      ruleNameLabel.requestLayout();
+      ruleHeaderPanel.updateRule(ruleDefinition.getKey(), ruleDefinition.getType(), ruleDefinition.getDefaultSeverity());
 
-    updateHtmlDescription(getStandaloneRuleDescriptionResponse.getDescription(), ruleDefinition.getLanguage().getLanguageKey());
+      updateHtmlDescription(getStandaloneRuleDescriptionResponse.getDescription(), ruleDefinition.getLanguage().getLanguageKey());
 
-    requestLayout();
-    updateScrollCompositeMinSize();
+      requestLayout();
+      updateScrollCompositeMinSize();
+    } catch (SWTException ignored) {
+      // There might be a race condition between the background job running late and the view already being closed
+    }
   }
 
   public void updateRule(GetEffectiveRuleDetailsResponse getEffectiveRuleDetailsResponse) {
-    var details = getEffectiveRuleDetailsResponse.details();
+    try {
+      var details = getEffectiveRuleDetailsResponse.details();
 
-    ruleNameLabel.setText(details.getName());
-    ruleNameLabel.requestLayout();
-    ruleHeaderPanel.updateRule(details.getKey(), details.getType(), details.getSeverity());
+      ruleNameLabel.setText(details.getName());
+      ruleNameLabel.requestLayout();
+      ruleHeaderPanel.updateRule(details.getKey(), details.getType(), details.getSeverity());
 
-    updateHtmlDescription(details.getDescription(), details.getLanguage().getLanguageKey());
+      updateHtmlDescription(details.getDescription(), details.getLanguage().getLanguageKey());
+      updateParameters(details);
 
-    updateParameters(details);
-
-    requestLayout();
-    updateScrollCompositeMinSize();
+      requestLayout();
+      updateScrollCompositeMinSize();
+    } catch (SWTException ignored) {
+      // There might be a race condition between the background job running late and the view already being closed
+    }
   }
 
   private void updateParameters(EffectiveRuleDetailsDto details) {
