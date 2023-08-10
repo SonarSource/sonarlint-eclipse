@@ -19,23 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint.Issues.Issue;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarsource.sonarlint.core.analysis.api.Flow;
-import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
-import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
-import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
-import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
-import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public class ProtobufIssueTrackable implements Trackable {
-
   private final Issue issue;
 
   public ProtobufIssueTrackable(Issue issue) {
@@ -52,11 +42,6 @@ public class ProtobufIssueTrackable implements Trackable {
   @Override
   public Long getMarkerId() {
     return issue.getMarkerId() == 0 ? null : issue.getMarkerId();
-  }
-
-  @Override
-  public void setMarkerId(Long id) {
-    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -107,54 +92,7 @@ public class ProtobufIssueTrackable implements Trackable {
   }
 
   @Override
-  public IssueSeverity getRawSeverity() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public RuleType getType() {
     return RuleType.valueOf(issue.getType());
-  }
-
-  @Override
-  public RuleType getRawType() {
-    throw new UnsupportedOperationException();
-  }
-  
-  @Override
-  public CleanCodeAttribute getCleanCodeAttribute() {
-    // TODO: Change when protobuf files updated!
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Map<SoftwareQuality, ImpactSeverity> getImpacts() {
-    // TODO: Change when protobuf files updated!
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Map<SoftwareQuality, ImpactSeverity> getRawImpacts() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public TextRange getTextRange() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public List<Flow> getFlows() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public List<QuickFix> getQuickFix() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Optional<String> getRuleDescriptionContextKey() {
-    throw new UnsupportedOperationException();
   }
 }

@@ -27,6 +27,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.FindingMatchingStatus;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 
@@ -62,10 +63,6 @@ public final class SonarLintImages {
   public static final Image IMG_HOTSPOT_HIGH = createImage("priority/high.png"); //$NON-NLS-1$
   public static final Image IMG_HOTSPOT_MEDIUM = createImage("priority/medium.png"); //$NON-NLS-1$
   public static final Image IMG_HOTSPOT_LOW = createImage("priority/low.png"); //$NON-NLS-1$
-  
-  public static final Image IMG_IMPACT_HIGH = createImage("impact/high.png"); //$NON-NLS-1$
-  public static final Image IMG_IMPACT_MEDIUM = createImage("impact/medium.png"); //$NON-NLS-1$
-  public static final Image IMG_IMPACT_LOW = createImage("impact/low.png"); //$NON-NLS-1$
 
   public static final Image SONARQUBE_SERVER_ICON_IMG = createImage("logo/sonarqube-16px.png"); //$NON-NLS-1$
   public static final Image SONARQUBE_PROJECT_ICON_IMG = createImage("project-16x16.png"); //$NON-NLS-1$
@@ -132,6 +129,11 @@ public final class SonarLintImages {
   @Nullable
   public static Image getTypeImage(RuleType type) {
     return createImage("type/" + type.name().toLowerCase(Locale.ENGLISH) + ".png");
+  }
+  
+  @Nullable
+  public static Image getImpactImage(ImpactSeverity impact) {
+    return createImage("impact/" + impact.name() + ".png");
   }
 
   private static class CompositeSeverityTypeImage extends CompositeImageDescriptor {

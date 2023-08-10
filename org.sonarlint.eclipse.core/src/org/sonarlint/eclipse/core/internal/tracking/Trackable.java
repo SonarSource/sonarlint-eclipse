@@ -33,11 +33,14 @@ import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public interface Trackable {
-
   @Nullable
-  Long getMarkerId();
-
-  void setMarkerId(@Nullable Long id);
+  default Long getMarkerId() {
+    throw new UnsupportedOperationException();
+  }
+  
+  default void setMarkerId(@Nullable Long id) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * The line index, starting with 1. Null means that
@@ -74,7 +77,9 @@ public interface Trackable {
   /**
    * Original severity reported by the analyzer
    */
-  IssueSeverity getRawSeverity();
+  default IssueSeverity getRawSeverity() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Can be overriden by server side issue in connected mode
@@ -84,24 +89,39 @@ public interface Trackable {
   /**
    * Original type reported by the analyzer
    */
-  RuleType getRawType();
+  default RuleType getRawType() {
+    throw new UnsupportedOperationException();
+  }
   
   /** New CCT clean code attribute / category which cannot be overwritten */
-  CleanCodeAttribute getCleanCodeAttribute();
+  default CleanCodeAttribute getCleanCodeAttribute() {
+    throw new UnsupportedOperationException();
+  }
   
   /** New CCT impacts can be overridden by analyzer */
-  Map<SoftwareQuality, ImpactSeverity> getImpacts();
+  default Map<SoftwareQuality, ImpactSeverity> getImpacts() {
+    throw new UnsupportedOperationException();
+  }
   
   /** New CCT impacts as originally specified in the rule */
-  Map<SoftwareQuality, ImpactSeverity> getRawImpacts();
+  default Map<SoftwareQuality, ImpactSeverity> getRawImpacts() {
+    throw new UnsupportedOperationException();
+  }
 
   @Nullable
-  TextRange getTextRange();
+  default TextRange getTextRange() {
+    throw new UnsupportedOperationException();
+  }
 
-  List<Flow> getFlows();
+  default List<Flow> getFlows() {
+    throw new UnsupportedOperationException();
+  }
 
-  List<QuickFix> getQuickFix();
+  default List<QuickFix> getQuickFix() {
+    throw new UnsupportedOperationException();
+  }
 
-  Optional<String> getRuleDescriptionContextKey();
-
+  default Optional<String> getRuleDescriptionContextKey() {
+    throw new UnsupportedOperationException();
+  }
 }

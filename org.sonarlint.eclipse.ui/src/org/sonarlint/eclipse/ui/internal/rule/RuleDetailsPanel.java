@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.rule;
 
+import java.util.Map;
 import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.FontDescriptor;
@@ -39,11 +40,16 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.AbstractRuleDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.EffectiveRuleDetailsDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionResponse;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleSplitDescriptionDto;
+import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
+import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 
 /**
  *  Panel containing the rule title, details and description
@@ -111,32 +117,32 @@ public class RuleDetailsPanel extends Composite {
   }
 
   public void updateRule(GetStandaloneRuleDescriptionResponse getStandaloneRuleDescriptionResponse) {
-    try {
-      var ruleDefinition = getStandaloneRuleDescriptionResponse.getRuleDefinition();
-
-      ruleNameLabel.setText(ruleDefinition.getName());
-      ruleNameLabel.requestLayout();
-      ruleHeaderPanel.updateRule(ruleDefinition.getKey(), ruleDefinition.getType(), ruleDefinition.getDefaultSeverity());
-
-      updateHtmlDescription(getStandaloneRuleDescriptionResponse.getDescription(), ruleDefinition.getLanguage().getLanguageKey());
-
-      requestLayout();
-      updateScrollCompositeMinSize();
-    } catch (SWTException ignored) {
-      // There might be a race condition between the background job running late and the view already being closed
-    }
+    var orig = getStandaloneRuleDescriptionResponse.getRuleDefinition();
+    var fake = new RuleDefinitionDto(orig.getKey(), orig.getName(), orig.getSeverity(), orig.getType(),
+      CleanCodeAttribute.COMPLETE, Map.of(SoftwareQuality.SECURITY, ImpactSeverity.HIGH, SoftwareQuality.MAINTAINABILITY, ImpactSeverity.MEDIUM, SoftwareQuality.RELIABILITY, ImpactSeverity.LOW),
+      orig.getParamsByKey(), orig.isActiveByDefault(), orig.getLanguage());
+    
+    updateRule(fake,
+      getStandaloneRuleDescriptionResponse.getDescription());
   }
 
   public void updateRule(GetEffectiveRuleDetailsResponse getEffectiveRuleDetailsResponse) {
+    var details = getEffectiveRuleDetailsResponse.details();
+    updateRule(details, details.getDescription());
+  }
+  
+  private void updateRule(AbstractRuleDto ruleInformation, Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
     try {
-      var details = getEffectiveRuleDetailsResponse.details();
-
-      ruleNameLabel.setText(details.getName());
+      ruleNameLabel.setText(ruleInformation.getName());
       ruleNameLabel.requestLayout();
-      ruleHeaderPanel.updateRule(details.getKey(), details.getType(), details.getSeverity());
+      
+      ruleHeaderPanel.updateRule(ruleInformation);
 
-      updateHtmlDescription(details.getDescription(), details.getLanguage().getLanguageKey());
-      updateParameters(details);
+      updateHtmlDescription(description, ruleInformation.getLanguage().getLanguageKey());
+      
+      if (ruleInformation instanceof EffectiveRuleDetailsDto) {
+        updateParameters((EffectiveRuleDetailsDto) ruleInformation);
+      }
 
       requestLayout();
       updateScrollCompositeMinSize();

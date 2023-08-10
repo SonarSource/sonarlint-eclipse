@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.rule;
 
+import java.util.ArrayList;
 import java.util.Locale;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
@@ -28,49 +29,101 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarsource.sonarlint.core.commons.IssueSeverity;
-import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.clientapi.backend.rules.AbstractRuleDto;
+import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 
-/** Rule header containing all information excluding the title and description */
+/**
+ *  Rule header containing all information excluding the title and description:
+ *  
+ *  Old Clean Code Taxonomy:
+ *  - rule type                           [label 1 & 2]
+ *  - rule severity                       [label 3 & 4]
+ *  
+ *  New Clean Code Taxonomy:
+ *  - clean code attribute                [label 1]
+ *  - software quality impact             [label 2 & 3]
+ *  - software quality impact (optional)  [label 4 & 5]
+ *  - software quality impact (optional)  [label 6 & 7]
+ *  
+ *  The rule key is shown in the old and new Clean Code Taxonomy!
+ */
 public class RuleHeaderPanel extends Composite {
-  private final Label ruleTypeIcon;
-  private final Label ruleTypeLabel;
-  private final Label ruleSeverityIcon;
-  private final Label ruleSeverityLabel;
+  private final Label label1;
+  private final Label label2;
+  private final Label label3;
+  private final Label label4;
+  private final Label label5;
+  private final Label label6;
+  private final Label label7;
   private final Label ruleKeyLabel;
 
   public RuleHeaderPanel(Composite parent) {
     super(parent, SWT.NONE);
-    setLayout(new GridLayout(5, false));
-
-    ruleTypeIcon = new Label(this, SWT.NONE);
-
-    ruleTypeLabel = new Label(this, SWT.NONE);
-
-    ruleSeverityIcon = new Label(this, SWT.NONE);
-
-    ruleSeverityLabel = new Label(this, SWT.LEFT);
-
+    setLayout(new GridLayout(8, false));
+    
+    label1 = new Label(this, SWT.NONE);
+    label2 = new Label(this, SWT.NONE);
+    label3 = new Label(this, SWT.NONE);
+    label4 = new Label(this, SWT.NONE);
+    label5 = new Label(this, SWT.NONE);
+    label6 = new Label(this, SWT.NONE);
+    label7 = new Label(this, SWT.LEFT);
     ruleKeyLabel = new Label(this, SWT.LEFT);
     ruleKeyLabel.setLayoutData(new GridData(SWT.END, SWT.FILL, true, true));
   }
 
   public void clearRule() {
-    ruleTypeIcon.setImage(null);
-    ruleTypeLabel.setText("");
+    label1.setImage(null);
+    label1.setText("");
+    label2.setImage(null);
+    label2.setText("");
+    label3.setImage(null);
+    label3.setText("");
+    label4.setImage(null);
+    label4.setText("");
+    label5.setText("");
+    label6.setImage(null);
+    label7.setText("");
     ruleKeyLabel.setText("");
-    ruleSeverityIcon.setImage(null);
-    ruleSeverityLabel.setText("");
     layout();
   }
-
+  
   /** Updating the panel requires each element to adjust to the grid again */
-  public void updateRule(String ruleKey, RuleType type, IssueSeverity severity) {
-    ruleTypeIcon.setImage(SonarLintImages.getTypeImage(type));
-    ruleTypeLabel.setText(clean(type.toString()));
-    ruleKeyLabel.setText(ruleKey);
-    ruleSeverityIcon.setImage(SonarLintImages.getSeverityImage(severity));
-    ruleSeverityLabel.setText(clean(severity.toString()));
+  public void updateRule(AbstractRuleDto ruleInformation) {
+    clearRule();
+    
+    var attributeOptional = ruleInformation.getCleanCodeAttribute();
+    var impacts = ruleInformation.getDefaultImpacts();
+    if (attributeOptional.isEmpty() || impacts.isEmpty()) {
+      // old CCT
+      var type = ruleInformation.getType();
+      label1.setImage(SonarLintImages.getTypeImage(type));
+      label2.setText(clean(type.toString()));
+      
+      var severity = ruleInformation.getSeverity();
+      label3.setImage(SonarLintImages.getSeverityImage(severity));
+      label4.setText(clean(severity.toString()));
+    } else {
+      // new CCT
+      var attribute = attributeOptional.get();
+      label1.setText(clean(attribute.getAttributeCategory().name()) + " | Not " + clean(attribute.name()));
+      
+      var keys = new ArrayList<SoftwareQuality>(impacts.keySet());
+      label2.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(0))));
+      label3.setText(clean(impacts.get(keys.get(0)).toString()));
+      
+      if (keys.size() > 1) {
+        label4.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(1))));
+        label5.setText(clean(impacts.get(keys.get(1)).toString()));
+        
+        if (keys.size() > 2) {
+          label6.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(2))));
+          label7.setText(clean(impacts.get(keys.get(2)).toString()));
+        }
+      }
+    }
+    
+    ruleKeyLabel.setText(ruleInformation.getKey());
     layout();
   }
 
