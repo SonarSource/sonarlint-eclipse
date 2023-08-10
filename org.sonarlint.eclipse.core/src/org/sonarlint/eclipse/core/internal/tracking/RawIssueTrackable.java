@@ -20,13 +20,17 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 
 import static org.sonarlint.eclipse.core.internal.tracking.DigestUtils.digest;
@@ -113,6 +117,21 @@ public class RawIssueTrackable implements Trackable {
   @Override
   public RuleType getRawType() {
     return issue.getType();
+  }
+  
+  @Override
+  public CleanCodeAttribute getCleanCodeAttribute() {
+    return issue.getCleanCodeAttribute();
+  }
+
+  @Override
+  public Map<SoftwareQuality, ImpactSeverity> getImpacts() {
+    return issue.getImpacts();
+  }
+
+  @Override
+  public Map<SoftwareQuality, ImpactSeverity> getRawImpacts() {
+    return issue.getImpacts();
   }
 
   @Override

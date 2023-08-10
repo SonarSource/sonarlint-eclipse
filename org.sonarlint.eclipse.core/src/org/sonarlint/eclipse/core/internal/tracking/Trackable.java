@@ -20,12 +20,16 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
+import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public interface Trackable {
@@ -81,6 +85,15 @@ public interface Trackable {
    * Original type reported by the analyzer
    */
   RuleType getRawType();
+  
+  /** New CCT clean code attribute / category which cannot be overwritten */
+  CleanCodeAttribute getCleanCodeAttribute();
+  
+  /** New CCT impacts can be overridden by analyzer */
+  Map<SoftwareQuality, ImpactSeverity> getImpacts();
+  
+  /** New CCT impacts as originally specified in the rule */
+  Map<SoftwareQuality, ImpactSeverity> getRawImpacts();
 
   @Nullable
   TextRange getTextRange();

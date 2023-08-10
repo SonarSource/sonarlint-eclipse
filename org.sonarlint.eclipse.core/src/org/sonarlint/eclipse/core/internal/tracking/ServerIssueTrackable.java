@@ -20,12 +20,16 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
+import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 import org.sonarsource.sonarlint.core.serverconnection.issues.LineLevelServerIssue;
 import org.sonarsource.sonarlint.core.serverconnection.issues.RangeLevelServerIssue;
@@ -123,6 +127,23 @@ public class ServerIssueTrackable implements Trackable {
 
   @Override
   public RuleType getRawType() {
+    throw new UnsupportedOperationException();
+  }
+  
+  @Override
+  public CleanCodeAttribute getCleanCodeAttribute() {
+    // TODO: Change when protobuf files updated!
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Map<SoftwareQuality, ImpactSeverity> getImpacts() {
+    // TODO: Change when protobuf files updated!
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Map<SoftwareQuality, ImpactSeverity> getRawImpacts() {
     throw new UnsupportedOperationException();
   }
 
