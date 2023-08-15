@@ -19,10 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -38,7 +41,12 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
+import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public final class MarkerUtils {
@@ -47,6 +55,8 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_ISSUE_SEVERITY_ATTR = "sonarseverity";
   public static final String SONAR_MARKER_ISSUE_TYPE_ATTR = "issuetype";
   public static final String SONAR_MARKER_CREATION_DATE_ATTR = "creationdate";
+  public static final String SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR = "sonarattribute";
+  public static final String SONAR_MARKER_ISSUE_IMPACTS_ATTR = "sonarimpacts";
 
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
   public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocations";
@@ -74,6 +84,51 @@ public final class MarkerUtils {
         }
       }
     }
+  }
+  
+  @Nullable
+  public static RuleType decodeRuleType(@Nullable String encoded) {
+    return encoded == null ? null : RuleType.valueOf(encoded);
+  }
+  
+  @Nullable
+  public static IssueSeverity decodeSeverity(@Nullable String encoded) {
+    return encoded == null ? null : IssueSeverity.valueOf(encoded);
+  }
+  
+  /** As markers can only store String / Integer / Boolean the actual attribute must be encoded for storage */
+  @Nullable
+  public static String encodeCleanCodeAttribute(@Nullable CleanCodeAttribute decoded) {
+    return decoded == null ? null : decoded.name(); 
+  }
+  
+  @Nullable
+  public static CleanCodeAttribute decodeCleanCodeAttribute(@Nullable String encoded) {
+    return encoded == null ? null : CleanCodeAttribute.valueOf(encoded);
+  }
+  
+  /** As markers can only store String / Integer / Boolean the actual impacts must be encoded for storage */
+  @Nullable
+  public static String encodeImpacts(@Nullable Map<SoftwareQuality, ImpactSeverity> decoded) {
+    if (decoded == null || decoded.size() == 0) {
+      return null;
+    }
+    
+    var mapAsString = new StringBuilder();
+    for (var entry : decoded.entrySet()) {
+      mapAsString.append(entry.getKey() + "=" + entry.getValue().name() + ",");
+    }
+    return mapAsString.delete(mapAsString.length()-1, mapAsString.length()).toString();
+  }
+  
+  public static Map<SoftwareQuality, ImpactSeverity> decodeImpacts(@Nullable String encoded) {
+    if (encoded == null) {
+      return Collections.emptyMap();
+    }
+    
+    return Arrays.stream(encoded.split(","))
+      .map(entry -> entry.split("="))
+      .collect(Collectors.toMap(entry -> SoftwareQuality.valueOf(entry[0]), entry -> ImpactSeverity.valueOf(entry[1])));
   }
   
   /**

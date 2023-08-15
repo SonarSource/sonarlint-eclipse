@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.rule;
 
-import java.util.Map;
 import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.FontDescriptor;
@@ -42,14 +41,8 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.AbstractRuleDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.EffectiveRuleDetailsDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionResponse;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleSplitDescriptionDto;
-import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
-import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
-import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 
 /**
  *  Panel containing the rule title, details and description
@@ -102,6 +95,7 @@ public class RuleDetailsPanel extends Composite {
 
       @Override
       public void controlMoved(ControlEvent e) {
+        // The control cannot be moved
       }
 
       @Override
@@ -115,23 +109,8 @@ public class RuleDetailsPanel extends Composite {
     final var width = scrollComposite.getClientArea().width;
     scrollComposite.setMinSize(scrolledContent.computeSize(width, SWT.DEFAULT));
   }
-
-  public void updateRule(GetStandaloneRuleDescriptionResponse getStandaloneRuleDescriptionResponse) {
-    var orig = getStandaloneRuleDescriptionResponse.getRuleDefinition();
-    var fake = new RuleDefinitionDto(orig.getKey(), orig.getName(), orig.getSeverity(), orig.getType(),
-      CleanCodeAttribute.COMPLETE, Map.of(SoftwareQuality.SECURITY, ImpactSeverity.HIGH, SoftwareQuality.MAINTAINABILITY, ImpactSeverity.MEDIUM, SoftwareQuality.RELIABILITY, ImpactSeverity.LOW),
-      orig.getParamsByKey(), orig.isActiveByDefault(), orig.getLanguage());
-    
-    updateRule(fake,
-      getStandaloneRuleDescriptionResponse.getDescription());
-  }
-
-  public void updateRule(GetEffectiveRuleDetailsResponse getEffectiveRuleDetailsResponse) {
-    var details = getEffectiveRuleDetailsResponse.details();
-    updateRule(details, details.getDescription());
-  }
   
-  private void updateRule(AbstractRuleDto ruleInformation, Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
+  public void updateRule(AbstractRuleDto ruleInformation, Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
     try {
       ruleNameLabel.setText(ruleInformation.getName());
       ruleNameLabel.requestLayout();

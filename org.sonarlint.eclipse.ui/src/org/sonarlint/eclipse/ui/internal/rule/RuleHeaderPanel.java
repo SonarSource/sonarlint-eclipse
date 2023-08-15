@@ -106,19 +106,20 @@ public class RuleHeaderPanel extends Composite {
     } else {
       // new CCT
       var attribute = attributeOptional.get();
-      label1.setText(clean(attribute.getAttributeCategory().name()) + " | Not " + clean(attribute.name()));
+      label1.setText(
+        clean(attribute.getAttributeCategory().getIssueLabel()) + " | " + clean(attribute.getIssueLabel()));
       
       var keys = new ArrayList<SoftwareQuality>(impacts.keySet());
       label2.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(0))));
-      label3.setText(clean(impacts.get(keys.get(0)).toString()));
+      label3.setText(clean(keys.get(0).getDisplayLabel()));
       
       if (keys.size() > 1) {
         label4.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(1))));
-        label5.setText(clean(impacts.get(keys.get(1)).toString()));
+        label5.setText(clean(impacts.get(keys.get(1)).getDisplayLabel()));
         
         if (keys.size() > 2) {
           label6.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(2))));
-          label7.setText(clean(impacts.get(keys.get(2)).toString()));
+          label7.setText(clean(impacts.get(keys.get(2)).getDisplayLabel()));
         }
       }
     }

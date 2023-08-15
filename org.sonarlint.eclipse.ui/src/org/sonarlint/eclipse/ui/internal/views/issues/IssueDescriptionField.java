@@ -30,6 +30,7 @@ import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 
 /**
  * Each rule in Sonar has severity, so it seems logical to combine rule name and severity in one field.
@@ -108,10 +109,27 @@ public class IssueDescriptionField extends MarkerField {
       var matchingStatus = MarkerUtils.getMatchingStatus(item.getMarker(),
         item.getAttributeValue(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null));
       
-      return SonarLintImages.getIssueImage(matchingStatus,
-        item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, "major"),
-        item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, "code_smell"));
+      // We have to check if we want to display an old or new CCT issue
+      var cleanCodeAttribute = MarkerUtils.decodeCleanCodeAttribute(
+        item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR, null));
+      var impacts = MarkerUtils.decodeImpacts(
+        item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_IMPACTS_ATTR, null));
+      if (cleanCodeAttribute == null || impacts.isEmpty()) {
+        return SonarLintImages.getIssueImage(matchingStatus,
+          item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, "major"),
+          item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, "code_smell"));
+      }
+      
+      var highestImpact = impacts.values().contains(ImpactSeverity.HIGH)
+        ? ImpactSeverity.HIGH
+        : (impacts.values().contains(ImpactSeverity.MEDIUM)
+          ? ImpactSeverity.MEDIUM
+          : ImpactSeverity.LOW);
+      
+      return SonarLintImages.getIssueImage(matchingStatus, highestImpact.name());
     } else {
+      // TODO: Fix with new CCT!
+      
       // If there is no marker maybe we have a groupBy item
       // GroupBy severity
       var severity = item.getAttributeValue(IMarker.MESSAGE, "");
