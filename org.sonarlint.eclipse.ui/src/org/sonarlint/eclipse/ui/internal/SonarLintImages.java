@@ -96,7 +96,7 @@ public final class SonarLintImages {
   /**
    *  Create a composite image with the markers' project connection mode, issue severity and type
    *  
-   *  @param matchingStatus matching status of an issue
+   *  @param matchingStatus matching status of an issue (nullable when grouped)
    *  @param severity issue severity
    *  @param type issue type
    *  @return composite image if found, null otherwise
@@ -116,7 +116,30 @@ public final class SonarLintImages {
       if (type != null) {
         typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
       }
-      imageRegistry.put(key, new CompositeSeverityTypeImage(matchingStatusImage, severityImage, typeImage));
+      imageRegistry.put(key, new CompositeIssueImage(matchingStatusImage, severityImage, typeImage));
+    }
+    return imageRegistry.get(key);
+  }
+  
+  /**
+   *  Create a composite image for the new clean code taxonomy with the markers' connection mode and highest impact
+   *  
+   *  @param matchingStatus matching status of an issue (nullable when grouped)
+   *  @param impact highest issue impact
+   *  @return composite image if found, null otherwise
+   */
+  @Nullable
+  public static Image getIssueImage(@Nullable FindingMatchingStatus matchingStatus, String impact) {
+    var key = matchingStatus + "/" + impact;
+    var imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
+    var image = imageRegistry.get(key);
+    if (image == null) {
+      ImageDescriptor matchingStatusImage = null;
+      if (matchingStatus != null) {
+        matchingStatusImage = matchingStatusToImageDescriptor(matchingStatus);
+      }
+      var impactImage = createImageDescriptor("impact/" + impact.toLowerCase(Locale.ENGLISH) + ".png");
+      imageRegistry.put(key, new CompositeIssueImage(matchingStatusImage, impactImage, null));
     }
     return imageRegistry.get(key);
   }
@@ -136,27 +159,32 @@ public final class SonarLintImages {
     return createImage("impact/" + impact.name() + ".png");
   }
 
-  private static class CompositeSeverityTypeImage extends CompositeImageDescriptor {
+  /**
+   *  Due to Eclipse platform restrictions on the composite marker images: Even though the number of icons on the old
+   *  and new CCT differ, we can't display them without "empty" icons. When the old CCT will be removed at some point
+   *  the composite image will be correctly displayed at last!
+   */
+  private static class CompositeIssueImage extends CompositeImageDescriptor {
     @Nullable
     private final ImageDescriptor matchingStatus;
-    private final ImageDescriptor severity;
+    private final ImageDescriptor requiredPart;
     @Nullable
-    private final ImageDescriptor type;
+    private final ImageDescriptor optionalPart;
 
-    public CompositeSeverityTypeImage(@Nullable ImageDescriptor matchingStatus, ImageDescriptor severity,
-      @Nullable ImageDescriptor type) {
+    public CompositeIssueImage(@Nullable ImageDescriptor matchingStatus, ImageDescriptor requiredPart,
+      @Nullable ImageDescriptor optionalPart) {
       this.matchingStatus = matchingStatus;
-      this.severity = severity;
-      this.type = type;
+      this.requiredPart = requiredPart;
+      this.optionalPart = optionalPart;
     }
 
     @Override
     protected void drawCompositeImage(int width, int height) {
-      var severityDataProvider = createCachedImageDataProvider(severity);
+      var severityDataProvider = createCachedImageDataProvider(requiredPart);
       if (matchingStatus != null) {
         var matchingStatusDataProvider = createCachedImageDataProvider(matchingStatus);
-        if (type != null) {
-          var typeDataProvider = createCachedImageDataProvider(type);
+        if (optionalPart != null) {
+          var typeDataProvider = createCachedImageDataProvider(optionalPart);
           drawImage(matchingStatusDataProvider, 0, 0);
           drawImage(typeDataProvider, 16, 0);
           drawImage(severityDataProvider, 32, 0);
@@ -165,8 +193,8 @@ public final class SonarLintImages {
           drawImage(severityDataProvider, 16, 0);
         }
       } else {
-        if (type != null) {
-          var typeDataProvider = createCachedImageDataProvider(type);
+        if (optionalPart != null) {
+          var typeDataProvider = createCachedImageDataProvider(optionalPart);
           drawImage(typeDataProvider, 0, 0);
           drawImage(severityDataProvider, 16, 0);
         } else {

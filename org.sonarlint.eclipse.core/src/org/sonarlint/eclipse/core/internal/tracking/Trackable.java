@@ -94,23 +94,26 @@ public interface Trackable {
   }
   
   /** New CCT clean code attribute / category which cannot be overwritten */
+  @Nullable
   default CleanCodeAttribute getCleanCodeAttribute() {
-    throw new UnsupportedOperationException();
+    return null;
   }
   
   /** New CCT impacts can be overridden by analyzer */
+  @Nullable
   default Map<SoftwareQuality, ImpactSeverity> getImpacts() {
-    throw new UnsupportedOperationException();
+    return null;
   }
   
   /** New CCT impacts as originally specified in the rule */
+  @Nullable
   default Map<SoftwareQuality, ImpactSeverity> getRawImpacts() {
-    throw new UnsupportedOperationException();
+    return null;
   }
 
   @Nullable
   default TextRange getTextRange() {
-    throw new UnsupportedOperationException();
+    return null;
   }
 
   default List<Flow> getFlows() {
