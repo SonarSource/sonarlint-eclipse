@@ -44,17 +44,11 @@ import org.sonarsource.sonarlint.core.clientapi.backend.rules.EffectiveRuleDetai
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleSplitDescriptionDto;
 
-/**
- *  Panel containing the rule title, details and description
- *
- *  | Rule title                                                         |  -> {@link Label}
- *  | Type icon | Type label | Severity icon | Severity label | Rule key |  -> {@link RuleHeaderPanel}
- *  | Rule description                                                   |  -> {@link RuleDescriptionPanel}
- */
+/** Panel containing the rule title, details and description */
 public class RuleDetailsPanel extends Composite {
-
   private final Label ruleNameLabel;
-  private final RuleHeaderPanel ruleHeaderPanel;
+  @Nullable
+  private AbstractRuleHeaderPanel ruleHeaderPanel;
   @Nullable
   private RuleDescriptionPanel ruleDescriptionPanel;
   private final boolean useEditorFontSize;
@@ -87,12 +81,8 @@ public class RuleDetailsPanel extends Composite {
     ruleNameLabel.setFont(nameLabelFont);
     ruleNameLabel.addDisposeListener(e -> nameLabelFont.dispose());
 
-    ruleHeaderPanel = new RuleHeaderPanel(scrolledContent);
-    ruleHeaderPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-
     updateScrollCompositeMinSize();
     scrollComposite.addControlListener(new ControlListener() {
-
       @Override
       public void controlMoved(ControlEvent e) {
         // The control cannot be moved
@@ -114,8 +104,8 @@ public class RuleDetailsPanel extends Composite {
     try {
       ruleNameLabel.setText(ruleInformation.getName());
       ruleNameLabel.requestLayout();
-      
-      ruleHeaderPanel.updateRule(ruleInformation);
+
+      updateHeader(ruleInformation);
 
       updateHtmlDescription(description, ruleInformation.getLanguage().getLanguageKey());
       
@@ -128,6 +118,33 @@ public class RuleDetailsPanel extends Composite {
     } catch (SWTException ignored) {
       // There might be a race condition between the background job running late and the view already being closed
     }
+  }
+  
+  private void updateHtmlDescription(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description, String languageKey) {
+    if (ruleDescriptionPanel != null && !ruleDescriptionPanel.isDisposed()) {
+      ruleDescriptionPanel.dispose();
+    }
+    ruleDescriptionPanel = new RuleDescriptionPanel(scrolledContent, languageKey, useEditorFontSize);
+    ruleDescriptionPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    ruleDescriptionPanel.updateRule(description);
+  }
+  
+  private void updateHeader(AbstractRuleDto ruleInformation) {
+    if (ruleHeaderPanel != null && !ruleDescriptionPanel.isDisposed()) {
+      ruleHeaderPanel.dispose();
+    }
+    
+    var attributeOptional = ruleInformation.getCleanCodeAttribute();
+    var impacts = ruleInformation.getDefaultImpacts();
+    
+    if (attributeOptional.isPresent() && !impacts.isEmpty()) {
+      ruleHeaderPanel = new RuleHeaderPanel(scrolledContent);
+    } else {
+      ruleHeaderPanel = new LegacyRuleHeaderPanel(scrolledContent);
+    }
+    ruleHeaderPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+    
+    ruleHeaderPanel.updateRule(ruleInformation);
   }
 
   private void updateParameters(EffectiveRuleDetailsDto details) {
@@ -174,15 +191,6 @@ public class RuleDetailsPanel extends Composite {
     }
   }
 
-  private void updateHtmlDescription(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description, String languageKey) {
-    if (ruleDescriptionPanel != null && !ruleDescriptionPanel.isDisposed()) {
-      ruleDescriptionPanel.dispose();
-    }
-    ruleDescriptionPanel = new RuleDescriptionPanel(scrolledContent, languageKey, useEditorFontSize);
-    ruleDescriptionPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    ruleDescriptionPanel.updateRule(description);
-  }
-
   public void displayLoadingIndicator() {
     ruleNameLabel.setText("Loading...");
     ruleNameLabel.requestLayout();
@@ -191,11 +199,13 @@ public class RuleDetailsPanel extends Composite {
   public void clearRule() {
     ruleNameLabel.setText("No rules selected");
     ruleNameLabel.requestLayout();
-    ruleHeaderPanel.clearRule();
+    
+    if (ruleHeaderPanel != null && !ruleDescriptionPanel.isDisposed()) {
+      ruleHeaderPanel.dispose();
+    }
 
     if (ruleDescriptionPanel != null && !ruleDescriptionPanel.isDisposed()) {
       ruleDescriptionPanel.dispose();
     }
   }
-
 }

@@ -20,119 +20,62 @@
 package org.sonarlint.eclipse.ui.internal.rule;
 
 import java.util.ArrayList;
-import java.util.Locale;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.AbstractRuleDto;
 import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 
-/**
- *  Rule header containing all information excluding the title and description:
- *  
- *  Old Clean Code Taxonomy:
- *  - rule type                           [label 1 & 2]
- *  - rule severity                       [label 3 & 4]
- *  
- *  New Clean Code Taxonomy:
- *  - clean code attribute                [label 1]
- *  - software quality impact             [label 2 & 3]
- *  - software quality impact (optional)  [label 4 & 5]
- *  - software quality impact (optional)  [label 6 & 7]
- *  
- *  The rule key is shown in the old and new Clean Code Taxonomy!
- */
-public class RuleHeaderPanel extends Composite {
-  private final Label label1;
-  private final Label label2;
-  private final Label label3;
-  private final Label label4;
-  private final Label label5;
-  private final Label label6;
-  private final Label label7;
+/** Rule header for the new CCT */
+public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
+  private final Label ruleCleanCodeAttributeLabel;
+  private final Label firstImpactSeverityIcon;
+  private final Label firstSoftwareQualityLabel;
+  private final Label secondImpactSeverityIcon;
+  private final Label secondSoftwareQualityLabel;
+  private final Label thirdImpactSeverityIcon;
+  private final Label thirdSoftwareQualityLabel;
   private final Label ruleKeyLabel;
 
   public RuleHeaderPanel(Composite parent) {
-    super(parent, SWT.NONE);
-    setLayout(new GridLayout(8, false));
+    super(parent, 8);
     
-    label1 = new Label(this, SWT.NONE);
-    label2 = new Label(this, SWT.NONE);
-    label3 = new Label(this, SWT.NONE);
-    label4 = new Label(this, SWT.NONE);
-    label5 = new Label(this, SWT.NONE);
-    label6 = new Label(this, SWT.NONE);
-    label7 = new Label(this, SWT.LEFT);
+    ruleCleanCodeAttributeLabel = new Label(this, SWT.NONE);
+    firstImpactSeverityIcon = new Label(this, SWT.NONE);
+    firstSoftwareQualityLabel = new Label(this, SWT.NONE);
+    secondImpactSeverityIcon = new Label(this, SWT.NONE);
+    secondSoftwareQualityLabel = new Label(this, SWT.NONE);
+    thirdImpactSeverityIcon = new Label(this, SWT.NONE);
+    thirdSoftwareQualityLabel = new Label(this, SWT.LEFT);
     ruleKeyLabel = new Label(this, SWT.LEFT);
     ruleKeyLabel.setLayoutData(new GridData(SWT.END, SWT.FILL, true, true));
   }
-
-  public void clearRule() {
-    label1.setImage(null);
-    label1.setText("");
-    label2.setImage(null);
-    label2.setText("");
-    label3.setImage(null);
-    label3.setText("");
-    label4.setImage(null);
-    label4.setText("");
-    label5.setText("");
-    label6.setImage(null);
-    label7.setText("");
-    ruleKeyLabel.setText("");
-    layout();
-  }
   
-  /** Updating the panel requires each element to adjust to the grid again */
+  @Override
   public void updateRule(AbstractRuleDto ruleInformation) {
-    clearRule();
+    /** INFO: We assume that the Optional#isPresent() check was already done */
+    var attribute = ruleInformation.getCleanCodeAttribute().get();
+    ruleCleanCodeAttributeLabel.setText(
+      clean(attribute.getAttributeCategory().getIssueLabel()) + " | " + clean(attribute.getIssueLabel()));
     
-    var attributeOptional = ruleInformation.getCleanCodeAttribute();
     var impacts = ruleInformation.getDefaultImpacts();
-    if (attributeOptional.isEmpty() || impacts.isEmpty()) {
-      // old CCT
-      var type = ruleInformation.getType();
-      label1.setImage(SonarLintImages.getTypeImage(type));
-      label2.setText(clean(type.toString()));
+    var keys = new ArrayList<SoftwareQuality>(impacts.keySet());
+    firstImpactSeverityIcon.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(0))));
+    firstSoftwareQualityLabel.setText(clean(keys.get(0).getDisplayLabel()));
+    
+    if (keys.size() > 1) {
+      secondImpactSeverityIcon.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(1))));
+      secondSoftwareQualityLabel.setText(clean(impacts.get(keys.get(1)).getDisplayLabel()));
       
-      var severity = ruleInformation.getSeverity();
-      label3.setImage(SonarLintImages.getSeverityImage(severity));
-      label4.setText(clean(severity.toString()));
-    } else {
-      // new CCT
-      var attribute = attributeOptional.get();
-      label1.setText(
-        clean(attribute.getAttributeCategory().getIssueLabel()) + " | " + clean(attribute.getIssueLabel()));
-      
-      var keys = new ArrayList<SoftwareQuality>(impacts.keySet());
-      label2.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(0))));
-      label3.setText(clean(keys.get(0).getDisplayLabel()));
-      
-      if (keys.size() > 1) {
-        label4.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(1))));
-        label5.setText(clean(impacts.get(keys.get(1)).getDisplayLabel()));
-        
-        if (keys.size() > 2) {
-          label6.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(2))));
-          label7.setText(clean(impacts.get(keys.get(2)).getDisplayLabel()));
-        }
+      if (keys.size() > 2) {
+        thirdImpactSeverityIcon.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(2))));
+        thirdSoftwareQualityLabel.setText(clean(impacts.get(keys.get(2)).getDisplayLabel()));
       }
     }
     
     ruleKeyLabel.setText(ruleInformation.getKey());
     layout();
   }
-
-  private static String clean(@Nullable String txt) {
-    if (txt == null) {
-      return "";
-    }
-    return StringUtils.capitalize(txt.toLowerCase(Locale.ENGLISH).replace("_", " "));
-  }
-
 }

@@ -62,10 +62,14 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
     if (window == null) {
       return;
     }
-    var selection = (IStructuredSelection) window.getSelectionService().getSelection();
-    var binding = getBinding(getSelectedMarker(selection));
-    if (binding.isPresent()) {
-      element.setIcon(binding.get().getEngineFacade().isSonarCloud() ? SonarLintImages.SONARCLOUD_16 : SonarLintImages.SONARQUBE_16);
+    
+    /** When opening the context menu on no selected issue marker, this command should not be shown */
+    var marker = getSelectedMarker((IStructuredSelection) window.getSelectionService().getSelection());
+    if (marker != null) {
+      var binding = getBinding(marker);
+      if (binding.isPresent()) {
+        element.setIcon(binding.get().getEngineFacade().isSonarCloud() ? SonarLintImages.SONARCLOUD_16 : SonarLintImages.SONARQUBE_16);
+      }
     }
   }
 
