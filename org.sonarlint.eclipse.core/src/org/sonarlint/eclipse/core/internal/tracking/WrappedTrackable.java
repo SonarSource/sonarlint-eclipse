@@ -20,12 +20,16 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.eclipse.jgit.annotations.Nullable;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
+import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public class WrappedTrackable implements Trackable {
@@ -95,6 +99,21 @@ public class WrappedTrackable implements Trackable {
   @Override
   public RuleType getRawType() {
     return trackable.getRawType();
+  }
+  
+  @Override
+  public CleanCodeAttribute getCleanCodeAttribute() {
+    return trackable.getCleanCodeAttribute();
+  }
+
+  @Override
+  public Map<SoftwareQuality, ImpactSeverity> getImpacts() {
+    return trackable.getImpacts();
+  }
+
+  @Override
+  public Map<SoftwareQuality, ImpactSeverity> getRawImpacts() {
+    return trackable.getRawImpacts();
   }
 
   @Nullable

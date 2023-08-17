@@ -19,11 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.List;
-import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
-import org.sonarsource.sonarlint.core.analysis.api.Flow;
-import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 import org.sonarsource.sonarlint.core.commons.TextRange;
@@ -32,21 +28,10 @@ import org.sonarsource.sonarlint.core.serverconnection.issues.RangeLevelServerIs
 import org.sonarsource.sonarlint.core.serverconnection.issues.ServerIssue;
 
 public class ServerIssueTrackable implements Trackable {
-
   private final ServerIssue serverIssue;
 
   public ServerIssueTrackable(ServerIssue serverIssue) {
     this.serverIssue = serverIssue;
-  }
-
-  @Override
-  public Long getMarkerId() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void setMarkerId(Long id) {
-    throw new UnsupportedOperationException();
   }
 
   @Nullable
@@ -112,18 +97,8 @@ public class ServerIssueTrackable implements Trackable {
   }
 
   @Override
-  public IssueSeverity getRawSeverity() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public RuleType getType() {
     return serverIssue.getType();
-  }
-
-  @Override
-  public RuleType getRawType() {
-    throw new UnsupportedOperationException();
   }
 
   @Nullable
@@ -133,20 +108,5 @@ public class ServerIssueTrackable implements Trackable {
       return ((RangeLevelServerIssue) serverIssue).getTextRange();
     }
     return null;
-  }
-
-  @Override
-  public List<Flow> getFlows() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public List<QuickFix> getQuickFix() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Optional<String> getRuleDescriptionContextKey() {
-    throw new UnsupportedOperationException();
   }
 }

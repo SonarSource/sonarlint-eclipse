@@ -50,7 +50,7 @@ public class RuleDescriptionView extends WorkbenchView {
   }
 
   public Label getRuleKey() {
-    return new DefaultLabel(getCTabItem(), 5);
+    return new DefaultLabel(getCTabItem(), 8);
   }
 
   public Browser getFirstBrowser() {
