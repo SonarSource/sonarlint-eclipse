@@ -110,9 +110,13 @@ validate_task:
     metacity --sm-disable --replace &
     sleep 10 # give metacity some time to start
     source cirrus-env QA
-    mvn -B -e -V verify -P-deploy-sonarsource,-release,-sign
+    mvn -B -e -V verify org.jacoco:jacoco-maven-plugin:prepare-agent -P-deploy-sonarsource,-release,-sign -Pcoverage \
+      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
     /etc/init.d/xvfb stop
   cleanup_before_cache_script: cleanup_maven_repository
+  always:
+    jacoco_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/it-coverage.exec"
   on_failure:
     xvfb_log_artifacts:
       path: "${CIRRUS_WORKING_DIR}/Xvfb.out"
@@ -163,10 +167,8 @@ qa_task:
     ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording_${TARGET_PLATFORM}.mp4
   run_its_script: |
     echo "Run Maven ITs for Eclipse ${TARGET_PLATFORM} and Server ${SQ_VERSION}"
-    mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify -f its/pom.xml -Pcoverage \
-      -Dtarget.platform=${TARGET_PLATFORM} -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/staged-repository" -Dsonar.runtimeVersion=${SQ_VERSION} \
-      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
-    mv it-coverage.exec it-coverage-${TARGET_PLATFORM}.exec
+    mvn -B -e -V verify -f its/pom.xml \
+      -Dtarget.platform=${TARGET_PLATFORM} -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/staged-repository" -Dsonar.runtimeVersion=${SQ_VERSION}
   cleanup_before_cache_script: cleanup_maven_repository
   always:
     stop_recording_script: |
@@ -177,8 +179,6 @@ qa_task:
       path: "${CIRRUS_WORKING_DIR}/recording_${TARGET_PLATFORM}.mp4"
     log_artifacts:
       path: "its/build/idea-sandbox/system/log"
-    jacoco_artifacts:
-      path: "${CIRRUS_WORKING_DIR}/it-coverage*.exec"
   on_failure:
     xvfb_log_artifacts:
       path: "${CIRRUS_WORKING_DIR}/Xvfb.out"
@@ -193,7 +193,7 @@ qa_task:
 sonarqube_task:
   # name: "Run SonarQube analysis"
   depends_on:
-    - qa
+    - validate
   <<: *ONLY_IF_EXCEPT_NIGHTLY
   eks_container:
     <<: *BUILDER_CONTAINER_DEFINITION
@@ -215,7 +215,7 @@ sonarqube_task:
     unzip jacoco.zip -d ${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/
     source cirrus-env QA
     .cirrus/regular_mvn_build_deploy_analyze \
-      -P-deploy-sonarsource,-release,-sign -Dmaven.install.skip=true -Dmaven.deploy.skip=true \
+      -P-deploy-sonarsource,-release,-sign -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true \
       -Pcoverage -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
     /etc/init.d/xvfb stop
   cleanup_before_cache_script: cleanup_maven_repository
