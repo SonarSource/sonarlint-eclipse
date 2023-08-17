@@ -27,7 +27,10 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
+import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.TextRange;
+import org.sonarsource.sonarlint.core.serverapi.proto.sonarqube.ws.Common.RuleType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,6 +43,19 @@ public class MarkerUtilsTest extends SonarTestCase {
     project = importEclipseProject("SimpleProject");
     // Configure the project
     SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), "A Project");
+  }
+  
+  /** While we couldn't test this via integration tests, this must do it otherwise promotion failed due to SQ QG failing */
+  @Test
+  public void test_MarkerAttributesEncodingDecoding() {
+    assertThat(MarkerUtils.decodeRuleType(null)).isNull();
+    assertThat(MarkerUtils.decodeRuleType(RuleType.BUG.name()).name()).isEqualTo(RuleType.BUG.name());
+    assertThat(MarkerUtils.decodeSeverity(null)).isNull();
+    assertThat(MarkerUtils.decodeSeverity(IssueSeverity.BLOCKER.name()).name()).isEqualTo(IssueSeverity.BLOCKER.name());
+    assertThat(MarkerUtils.encodeCleanCodeAttribute(null)).isNull();
+    assertThat(MarkerUtils.encodeCleanCodeAttribute(CleanCodeAttribute.CLEAR)).isEqualTo(CleanCodeAttribute.CLEAR.name());
+    assertThat(MarkerUtils.decodeCleanCodeAttribute(null)).isNull();
+    assertThat(MarkerUtils.decodeCleanCodeAttribute(CleanCodeAttribute.CLEAR.name()).name()).isEqualTo(CleanCodeAttribute.CLEAR.name());
   }
 
   @Test

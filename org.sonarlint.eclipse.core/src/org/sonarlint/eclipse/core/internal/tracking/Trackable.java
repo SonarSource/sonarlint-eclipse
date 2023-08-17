@@ -20,20 +20,27 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
+import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public interface Trackable {
-
   @Nullable
-  Long getMarkerId();
-
-  void setMarkerId(@Nullable Long id);
+  default Long getMarkerId() {
+    throw new UnsupportedOperationException();
+  }
+  
+  default void setMarkerId(@Nullable Long id) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * The line index, starting with 1. Null means that
@@ -70,7 +77,9 @@ public interface Trackable {
   /**
    * Original severity reported by the analyzer
    */
-  IssueSeverity getRawSeverity();
+  default IssueSeverity getRawSeverity() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Can be overriden by server side issue in connected mode
@@ -80,15 +89,42 @@ public interface Trackable {
   /**
    * Original type reported by the analyzer
    */
-  RuleType getRawType();
+  default RuleType getRawType() {
+    throw new UnsupportedOperationException();
+  }
+  
+  /** New CCT clean code attribute / category which cannot be overwritten */
+  @Nullable
+  default CleanCodeAttribute getCleanCodeAttribute() {
+    return null;
+  }
+  
+  /** New CCT impacts can be overridden by analyzer */
+  @Nullable
+  default Map<SoftwareQuality, ImpactSeverity> getImpacts() {
+    return null;
+  }
+  
+  /** New CCT impacts as originally specified in the rule */
+  @Nullable
+  default Map<SoftwareQuality, ImpactSeverity> getRawImpacts() {
+    return null;
+  }
 
   @Nullable
-  TextRange getTextRange();
+  default TextRange getTextRange() {
+    return null;
+  }
 
-  List<Flow> getFlows();
+  default List<Flow> getFlows() {
+    throw new UnsupportedOperationException();
+  }
 
-  List<QuickFix> getQuickFix();
+  default List<QuickFix> getQuickFix() {
+    throw new UnsupportedOperationException();
+  }
 
-  Optional<String> getRuleDescriptionContextKey();
-
+  default Optional<String> getRuleDescriptionContextKey() {
+    throw new UnsupportedOperationException();
+  }
 }

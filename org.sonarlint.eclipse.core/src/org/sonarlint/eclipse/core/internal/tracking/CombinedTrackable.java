@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 
@@ -35,6 +36,8 @@ public class CombinedTrackable extends WrappedTrackable {
   private final boolean resolved;
   private final @Nullable IssueSeverity severity;
   private final RuleType type;
+  @Nullable
+  private final CleanCodeAttribute cleanCodeAttribute;
 
   public CombinedTrackable(Trackable serverIssue, Trackable currentIssue) {
     super(currentIssue);
@@ -45,6 +48,7 @@ public class CombinedTrackable extends WrappedTrackable {
     this.resolved = serverIssue.isResolved();
     this.severity = serverIssue.getSeverity() != null ? serverIssue.getSeverity() : currentIssue.getRawSeverity();
     this.type = serverIssue.getType();
+    this.cleanCodeAttribute = serverIssue.getCleanCodeAttribute();
   }
 
   @Override
@@ -70,5 +74,10 @@ public class CombinedTrackable extends WrappedTrackable {
   @Override
   public RuleType getType() {
     return type;
+  }
+  
+  @Override
+  public CleanCodeAttribute getCleanCodeAttribute() {
+    return cleanCodeAttribute;
   }
 }
