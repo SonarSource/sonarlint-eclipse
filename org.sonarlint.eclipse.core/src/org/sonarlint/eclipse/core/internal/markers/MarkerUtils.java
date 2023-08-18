@@ -50,13 +50,15 @@ import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 
 public final class MarkerUtils {
-
   public static final String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
   public static final String SONAR_MARKER_ISSUE_SEVERITY_ATTR = "sonarseverity";
   public static final String SONAR_MARKER_ISSUE_TYPE_ATTR = "issuetype";
   public static final String SONAR_MARKER_CREATION_DATE_ATTR = "creationdate";
   public static final String SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR = "sonarattribute";
   public static final String SONAR_MARKER_ISSUE_IMPACTS_ATTR = "sonarimpacts";
+  
+  // This is used for grouping and has to be set additionally to all impacts
+  public static final String SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR = "sonarhighestimpact";
 
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
   public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocations";
@@ -96,7 +98,6 @@ public final class MarkerUtils {
     return encoded == null ? null : IssueSeverity.valueOf(encoded);
   }
   
-  /** As markers can only store String / Integer / Boolean the actual attribute must be encoded for storage */
   @Nullable
   public static String encodeCleanCodeAttribute(@Nullable CleanCodeAttribute decoded) {
     return decoded == null ? null : decoded.name(); 
@@ -107,7 +108,26 @@ public final class MarkerUtils {
     return encoded == null ? null : CleanCodeAttribute.valueOf(encoded);
   }
   
-  /** As markers can only store String / Integer / Boolean the actual impacts must be encoded for storage */
+  @Nullable
+  public static String encodeHighestImpact(@Nullable Map<SoftwareQuality, ImpactSeverity> decoded) {
+    if (decoded == null || decoded.size() == 0) {
+      return null;
+    }
+    
+    if (decoded.values().contains(ImpactSeverity.HIGH)) {
+      return ImpactSeverity.HIGH.name();
+    }
+    
+    return decoded.values().contains(ImpactSeverity.MEDIUM)
+      ? ImpactSeverity.MEDIUM.name()
+      : ImpactSeverity.LOW.name();
+  }
+  
+  @Nullable
+  public static ImpactSeverity decodeHighestImpact(@Nullable String encoded) {
+    return encoded == null ? null : ImpactSeverity.valueOf(encoded);
+  }
+  
   @Nullable
   public static String encodeImpacts(@Nullable Map<SoftwareQuality, ImpactSeverity> decoded) {
     if (decoded == null || decoded.size() == 0) {
@@ -215,5 +235,4 @@ public final class MarkerUtils {
       return new MarkerQuickFixes(Collections.emptyList());
     }
   }
-
 }
