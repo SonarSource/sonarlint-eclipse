@@ -159,7 +159,7 @@
           <forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemProperties>
-			<target.platform>${target.platform}</target.platform>
+            <target.platform>${target.platform}</target.platform>
             <sonar.runtimeVersion>${sonar.runtimeVersion}</sonar.runtimeVersion>
             <org.eclipse.swt.browser.UseWebKitGTK>true</org.eclipse.swt.browser.UseWebKitGTK>
             <org.eclipse.swt.browser.DefaultType>webkit</org.eclipse.swt.browser.DefaultType>

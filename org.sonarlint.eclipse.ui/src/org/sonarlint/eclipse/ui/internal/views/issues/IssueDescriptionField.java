@@ -31,6 +31,7 @@ import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 
 /**
  * Each rule in Sonar has severity, so it seems logical to combine rule name and severity in one field.
@@ -112,32 +113,36 @@ public class IssueDescriptionField extends MarkerField {
       // We have to check if we want to display an old or new CCT issue
       var cleanCodeAttribute = MarkerUtils.decodeCleanCodeAttribute(
         item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR, null));
-      var impacts = MarkerUtils.decodeImpacts(
-        item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_IMPACTS_ATTR, null));
-      if (cleanCodeAttribute == null || impacts.isEmpty()) {
+      var highestImpact = MarkerUtils.decodeHighestImpact(
+        item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR, null));
+      if (cleanCodeAttribute == null || highestImpact == null) {
         return SonarLintImages.getIssueImage(matchingStatus,
           item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, "major"),
           item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, "code_smell"));
       }
       
-      var highestImpact = impacts.values().contains(ImpactSeverity.HIGH)
-        ? ImpactSeverity.HIGH
-        : (impacts.values().contains(ImpactSeverity.MEDIUM)
-          ? ImpactSeverity.MEDIUM
-          : ImpactSeverity.LOW);
-      
       return SonarLintImages.getIssueImage(matchingStatus, highestImpact.name());
     } else {
-      // TODO: Fix with new CCT!
+      // It is no actual marker but a groupBy item which groups the headers
+      var groupByTitle = item.getAttributeValue(IMarker.MESSAGE, "")
+        .replaceAll("\\(\\d+\\s+items?\\)", "")
+        .toUpperCase(Locale.ENGLISH)
+        .trim();
       
-      // If there is no marker maybe we have a groupBy item
-      // GroupBy severity
-      var severity = item.getAttributeValue(IMarker.MESSAGE, "");
-      if (severity.indexOf(' ') >= 0) {
-        severity = severity.substring(0, severity.indexOf(' '));
+      // As we offer multiple different grouping options (severity / impacts), we have to display
+      // the correct grouping icon!
+      if (ImpactSeverity.HIGH.name().equals(groupByTitle)
+        || ImpactSeverity.MEDIUM.name().equals(groupByTitle)
+        || ImpactSeverity.LOW.name().equals(groupByTitle)) {
+        return SonarLintImages.getIssueImage(null, groupByTitle);
+      } else if (IssueSeverity.BLOCKER.name().equals(groupByTitle)
+        || IssueSeverity.CRITICAL.name().equals(groupByTitle)
+        || IssueSeverity.MAJOR.name().equals(groupByTitle)
+        || IssueSeverity.MINOR.name().equals(groupByTitle)
+        || IssueSeverity.INFO.name().equals(groupByTitle)) {
+        return SonarLintImages.getIssueImage(null, groupByTitle, null);
       }
-      // All images of a TreeItem should have the same size
-      return SonarLintImages.getIssueImage(null, severity, null);
+      return SonarLintImages.getNotAvailableImage();
     }
   }
 
@@ -149,5 +154,4 @@ public class IssueDescriptionField extends MarkerField {
       cell.setImage(getImage(item));
     }
   }
-
 }

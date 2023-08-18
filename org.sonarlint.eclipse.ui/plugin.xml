@@ -289,35 +289,87 @@
         </markerFieldConfiguration>
 
       <markerGrouping
+            id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+            label="Impact">
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
+               label="High"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="4">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
+               label="Medium"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="3">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
+               label="Low"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="2">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.noImpactAvailable"
+               label="Impacts not available with old SonarQube connection"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="1">
+         </markerGroupingEntry>
+         <markerAttributeGrouping
+               attribute="sonarhighestimpact"
+               markerType="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem"
+               defaultGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.noImpactAvailable">
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
+                  value="HIGH">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
+                  value="MEDIUM">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
+                  value="LOW">
+            </markerAttributeMapping>
+         </markerAttributeGrouping>
+      </markerGrouping>
+
+      <markerGrouping
             id="org.sonarlint.eclipse.ui.issues.severityGrouping"
-            label="Severity">
+            label="Severity (Legacy)">
          <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
                label="Blocker"
                markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="5">
+               priority="6">
          </markerGroupingEntry>
          <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
                label="Critical"
                markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="4">
+               priority="5">
          </markerGroupingEntry>
          <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
                label="Major"
                markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="3">
+               priority="4">
          </markerGroupingEntry>
          <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
                label="Minor"
                markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="2">
+               priority="3">
          </markerGroupingEntry>
          <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
                label="Info"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="2">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.noSeverityAvailable"
+               label="Legacy severity not available anymore"
                markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
                priority="1">
          </markerGroupingEntry>
@@ -347,6 +399,7 @@
          </markerAttributeGrouping>
       </markerGrouping>
     </markerContentGenerator>
+    
     <markerContentGenerator
          id="org.sonarlint.eclipse.ui.views.issues.reportIssueMarkerGenerator"
          name="SonarLint Report Issue Marker Generator">
@@ -380,7 +433,119 @@
               name="All Issues"
               scope="ON_ANY">
         </markerFieldConfiguration>
+      
+      <markerGrouping
+            id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+            label="Impact">
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
+               label="High"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="4">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
+               label="Medium"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="3">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
+               label="Low"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="2">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.noImpactAvailable"
+               label="Impacts not available with old SonarQube connection"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="1">
+         </markerGroupingEntry>
+         <markerAttributeGrouping
+               attribute="sonarhighestimpact"
+               markerType="org.sonarlint.eclipse.core.sonarlintReportProblem"
+               defaultGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.noImpactAvailable">
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
+                  value="HIGH">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
+                  value="MEDIUM">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
+                  value="LOW">
+            </markerAttributeMapping>
+         </markerAttributeGrouping>
+      </markerGrouping>
+
+      <markerGrouping
+            id="org.sonarlint.eclipse.ui.issues.severityGrouping"
+            label="Severity (Legacy)">
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
+               label="Blocker"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="6">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
+               label="Critical"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="5">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
+               label="Major"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="4">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
+               label="Minor"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="3">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
+               label="Info"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="2">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.noSeverityAvailable"
+               label="Legacy severity not available anymore"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="1">
+         </markerGroupingEntry>
+         <markerAttributeGrouping
+               attribute="sonarseverity"
+               markerType="org.sonarlint.eclipse.core.sonarlintReportProblem">
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
+                  value="BLOCKER">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
+                  value="CRITICAL">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
+                  value="MAJOR">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
+                  value="MINOR">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
+                  value="INFO">
+            </markerAttributeMapping>
+         </markerAttributeGrouping>
+      </markerGrouping>
     </markerContentGenerator>
+    
     <markerContentGenerator
          id="org.sonarlint.eclipse.ui.views.issues.taintIssueMarkerGenerator"
          name="SonarLint Taint Vulnerabilities Marker Generator">
@@ -413,41 +578,93 @@
         </markerFieldConfiguration>
 
       <markerGrouping
+            id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+            label="Impact">
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
+               label="High"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="4">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
+               label="Medium"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="3">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
+               label="Low"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="2">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.noImpactAvailable"
+               label="Impacts not available with old SonarQube connection"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="1">
+         </markerGroupingEntry>
+         <markerAttributeGrouping
+               attribute="sonarhighestimpact"
+               markerType="org.sonarlint.eclipse.core.sonarlintTaintVulnerability"
+               defaultGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.noImpactAvailable">
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
+                  value="HIGH">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
+                  value="MEDIUM">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
+                  value="LOW">
+            </markerAttributeMapping>
+         </markerAttributeGrouping>
+      </markerGrouping>
+
+      <markerGrouping
             id="org.sonarlint.eclipse.ui.issues.severityGrouping"
-            label="Severity">
+            label="Severity (Legacy)">
          <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
                label="Blocker"
                markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="5">
+               priority="6">
          </markerGroupingEntry>
          <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
                label="Critical"
                markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="4">
+               priority="5">
          </markerGroupingEntry>
          <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
                label="Major"
                markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="3">
+               priority="4">
          </markerGroupingEntry>
          <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
                label="Minor"
                markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="2">
+               priority="3">
          </markerGroupingEntry>
          <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
                label="Info"
                markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="2">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.noSeverityAvailable"
+               label="Legacy severity not available anymore"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
                priority="1">
          </markerGroupingEntry>
          <markerAttributeGrouping
                attribute="sonarseverity"
-               markerType="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem">
+               markerType="org.sonarlint.eclipse.core.sonarlintTaintVulnerability">
             <markerAttributeMapping
                   markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
                   value="BLOCKER">
@@ -471,6 +688,7 @@
          </markerAttributeGrouping>
       </markerGrouping>
     </markerContentGenerator>
+    
     <markerField
         class="org.sonarlint.eclipse.ui.internal.views.issues.IssueDescriptionField"
         filterClass="org.eclipse.ui.internal.views.markers.DescriptionFieldFilter"

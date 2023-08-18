@@ -453,6 +453,8 @@ public class SonarLintMarkerUpdater {
       trackable.getCleanCodeAttribute());
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_IMPACTS_ATTR,
       MarkerUtils.encodeImpacts(trackable.getImpacts()));
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR,
+      MarkerUtils.encodeHighestImpact(trackable.getImpacts()));
 
     Long creationDate = trackable.getCreationDate();
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR,

@@ -143,6 +143,17 @@ public final class SonarLintImages {
     }
     return imageRegistry.get(key);
   }
+  
+  /** For issue markers where no grouping can be applied (e.g. new CCT unavailable for old SonarQube connections) */
+  public static Image getNotAvailableImage() {
+    var key = "notAvailable";
+    var imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
+    var image = imageRegistry.get(key);
+    if (image == null) {
+      imageRegistry.put(key, new CompositeIssueImage(null, createImageDescriptor("exclude.png"), null));
+    }
+    return imageRegistry.get(key);
+  }
 
   @Nullable
   public static Image getSeverityImage(IssueSeverity severity) {
