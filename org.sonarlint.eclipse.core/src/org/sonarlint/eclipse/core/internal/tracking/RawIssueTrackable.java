@@ -121,7 +121,8 @@ public class RawIssueTrackable implements Trackable {
   
   @Override
   public CleanCodeAttribute getCleanCodeAttribute() {
-    return issue.getCleanCodeAttribute();
+    var cleanCodeAttributeOptional = issue.getCleanCodeAttribute();
+    return cleanCodeAttributeOptional.isPresent() ? cleanCodeAttributeOptional.get() : null;
   }
 
   @Override
