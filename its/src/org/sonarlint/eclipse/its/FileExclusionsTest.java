@@ -54,7 +54,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     var sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription)
-      .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger."));
+      .containsOnly(tuple("Hello.java", "Replace this use of System.out by a logger."));
 
     new JavaEditor("Hello.java").close();
 

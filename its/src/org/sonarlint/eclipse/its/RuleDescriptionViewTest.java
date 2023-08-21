@@ -52,7 +52,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
+      .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
 
     onTheFlyView.selectItem(0);
     ruleDescriptionView.open();

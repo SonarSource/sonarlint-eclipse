@@ -57,7 +57,7 @@ public class MavenTest extends AbstractSonarLintTest {
     defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
+      .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
     defaultEditor.close();
 
     if (!platformVersion().toString().startsWith("4.4") && !platformVersion().toString().startsWith("4.5")) {
