@@ -23,11 +23,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 public class OnTheFlyIssuesView extends MarkerViewWithBottomPanel {
-
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.issues.IssuesView";
 
   public OnTheFlyIssuesView() {
@@ -41,8 +41,12 @@ public class OnTheFlyIssuesView extends MarkerViewWithBottomPanel {
     bottom.setLayout(bottomLayout);
     var bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     bottom.setLayoutData(bottomLayoutData);
-    var label = new Label(bottom, SWT.NONE);
-    label.setText("Issues reported \"on the fly\" by SonarLint on files you have recently opened/edited");
+    
+    var label = new Link(bottom, SWT.NONE);
+    label.setText(
+      "Issues reported \"on the fly\" by SonarLint on files you have recently opened/edited. <a>Learn more</a>");
+    label.addListener(SWT.Selection,
+      e -> BrowserUtils.openExternalBrowser("https://docs.sonarsource.com/sonarlint/eclipse/using-sonarlint/investigating-issues/#the-on-the-fly-view", e.display)
+    );
   }
-
 }
