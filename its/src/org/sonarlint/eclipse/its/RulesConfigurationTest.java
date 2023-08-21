@@ -52,7 +52,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9)));
+      .containsExactly(tuple("Replace this use of System.out by a logger.", 9)));
 
     doAndWaitForSonarLintAnalysisJob(this::restoreDefaultRulesConfiguration);
 
@@ -145,7 +145,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
       .filteredOn(m -> "org.sonarlint.eclipse.onTheFlyIssueAnnotationType".equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
-        tuple("Replace this use of System.out or System.err by a logger.", 9),
+        tuple("Replace this use of System.out by a logger.", 9),
         tuple("Refactor this method to reduce its Cognitive Complexity from 24 to the 10 allowed.", 12)));
   }
 
@@ -155,7 +155,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
       .filteredOn(m -> "org.sonarlint.eclipse.onTheFlyIssueAnnotationType".equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
-        tuple("Replace this use of System.out or System.err by a logger.", 9),
+        tuple("Replace this use of System.out by a logger.", 9),
         tuple("Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.", 12)));
   }
 

@@ -85,7 +85,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
+      .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
     defaultEditor.close();
 
     // clear marker (probably a better way to do that)
@@ -121,7 +121,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     assertThat(textEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
+      .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
 
     // Trigger manual analysis of all files
     rootProject.select();
@@ -134,8 +134,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     assertThat(items)
       .extracting(item -> item.getCell(0), item -> item.getCell(2))
       .containsExactlyInAnyOrder(
-        tuple("Hello.java", "Replace this use of System.out or System.err by a logger."),
-        tuple("Hello2.java", "Replace this use of System.out or System.err by a logger."));
+        tuple("Hello.java", "Replace this use of System.out by a logger."),
+        tuple("Hello2.java", "Replace this use of System.out by a logger."));
   }
 
   @Test
@@ -157,7 +157,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
-        tuple("Replace this use of System.out or System.err by a logger.", 12),
+        tuple("Replace this use of System.out by a logger.", 12),
         tuple("Remove this unnecessary cast to \"int\".", 16)); // Test that sonar.java.libraries is set
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "HelloTestUtil.java"));
@@ -323,7 +323,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var defaultEditor = new DefaultEditor("HelloLinked.java");
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", 13));
+      .containsOnly(tuple("Replace this use of System.out by a logger.", 13));
   }
 
   // Need RSE
@@ -361,7 +361,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", 9));
+      .containsOnly(tuple("Replace this use of System.out by a logger.", 9));
   }
 
 }

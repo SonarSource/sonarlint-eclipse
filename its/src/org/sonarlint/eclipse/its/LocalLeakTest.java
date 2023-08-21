@@ -49,7 +49,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     var sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
-      .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", ""));
+      .containsOnly(tuple("Hello.java", "Replace this use of System.out by a logger.", ""));
 
     // Change content
     var javaEditor = new JavaEditor("Hello.java");
@@ -59,8 +59,8 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
-      .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", ""),
-        tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", "few seconds ago"));
+      .containsOnly(tuple("Hello.java", "Replace this use of System.out by a logger.", ""),
+        tuple("Hello.java", "Replace this use of System.out by a logger.", "few seconds ago"));
   }
 
   @Test
