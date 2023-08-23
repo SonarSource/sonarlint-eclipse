@@ -579,15 +579,6 @@
                  icon="icons/full/marker_resolution16/disablerule.png"
                  style="push"
                  mnemonic="u">
-          <visibleWhen>
-             <with variable="activeMenuSelection">
-                <iterate ifEmpty="false">
-                    <adapt type="org.eclipse.core.resources.IMarker">
-                        <test property="org.sonarlint.eclipse.core.standalone"/>
-                    </adapt>
-                </iterate>
-             </with>
-          </visibleWhen>
          </command>
          <command
                  commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
@@ -880,14 +871,46 @@
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand">
+          <visibleWhen>
+            <and>
+                 <with variable="activeMenuSelection">
+                     <iterate ifEmpty="false">
+                         <adapt type="org.eclipse.core.resources.IMarker"/>
+                     </iterate>
+                </with>
+                <count value="1"/>
+            </and>
+         </visibleWhen>
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand">
+          <visibleWhen>
+            <and>
+                 <with variable="activeMenuSelection">
+                     <iterate ifEmpty="false">
+                       <adapt type="org.eclipse.core.resources.IMarker">
+                         <test property="org.sonarlint.eclipse.core.standalone"/>
+                       </adapt>
+                     </iterate>
+                </with>
+                <count value="1"/>
+            </and>
+         </visibleWhen>
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand">
+          <visibleWhen>
+            <and>
+                 <with variable="activeMenuSelection">
+                     <iterate ifEmpty="false">
+                         <adapt type="org.eclipse.core.resources.IMarker"/>
+                     </iterate>
+                </with>
+                <count value="1"/>
+            </and>
+         </visibleWhen>
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
