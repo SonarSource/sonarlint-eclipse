@@ -102,7 +102,7 @@ public class RuleDescriptionPanel extends Composite {
           var contextualTabItem = new TabItem(contextualTabFolder, SWT.NONE);
           contextualTabItem.setText(contextualTab.getDisplayName());
           var contextualTabContent = new Composite(contextualTabFolder, SWT.NONE);
-          tabContent.setLayout(new GridLayout(1, false));
+          contextualTabContent.setLayout(new GridLayout(1, false));
 
           if (Objects.equals(contextualDescription.getDefaultContextKey(), contextualTab.getContextKey())) {
             contextualTabFolder.setSelection(contextualTabItem);
