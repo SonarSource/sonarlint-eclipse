@@ -251,7 +251,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
-        tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
+        tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 4));
 
     var notificationShell = new DefaultShell("SonarLint - Secret(s) detected");
     new DefaultLink(notificationShell, "Dismiss").click();
