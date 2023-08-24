@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Image;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 public abstract class AbstractBindingSuggestionPopup extends AbstractSonarLintPopup {
@@ -36,7 +37,7 @@ public abstract class AbstractBindingSuggestionPopup extends AbstractSonarLintPo
 
   protected void addLearnMoreLink() {
     addLink("Learn more", e -> {
-      BrowserUtils.openExternalBrowser("https://github.com/SonarSource/sonarlint-eclipse/wiki/Connected-Mode", e.display);
+      BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_LINK, e.display);
       close();
     });
   }
