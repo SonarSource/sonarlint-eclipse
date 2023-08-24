@@ -32,7 +32,6 @@ import org.eclipse.reddeer.swt.impl.tab.DefaultTabFolder;
 import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 
 public class RuleDescriptionView extends WorkbenchView {
-
   public RuleDescriptionView() {
     super("SonarLint Rule Description");
   }
@@ -40,13 +39,21 @@ public class RuleDescriptionView extends WorkbenchView {
   public Label getRuleName() {
     return new DefaultLabel(getCTabItem(), 0);
   }
-
-  public Label getRuleType() {
+  
+  public Label getCleanCodeAttributeCategory() {
+    return new DefaultLabel(getCTabItem(), 1);
+  }
+  
+  public Label getFirstSoftwareQuality() {
     return new DefaultLabel(getCTabItem(), 2);
   }
-
-  public Label getRuleSeverity() {
+  
+  public Label getSecondSoftwareQuality() {
     return new DefaultLabel(getCTabItem(), 4);
+  }
+  
+  public Label getThirdSoftwareQuality() {
+    return new DefaultLabel(getCTabItem(), 6);
   }
 
   public Label getRuleKey() {
@@ -68,8 +75,11 @@ public class RuleDescriptionView extends WorkbenchView {
     new WaitUntil(new PageIsLoaded(getFirstBrowser()));
 
     return getRuleName().getText() + "\n"
-      + getRuleType().getText() + " " + getRuleSeverity().getText() + " " + getRuleKey().getText() + "\n"
+      + getCleanCodeAttributeCategory().getText() + " "
+      + getFirstSoftwareQuality().getText() + " "
+      + getSecondSoftwareQuality().getText() + " "
+      + getThirdSoftwareQuality().getText() + " "
+      + getRuleKey().getText() + "\n"
       + getFirstBrowser().getText();
   }
-
 }

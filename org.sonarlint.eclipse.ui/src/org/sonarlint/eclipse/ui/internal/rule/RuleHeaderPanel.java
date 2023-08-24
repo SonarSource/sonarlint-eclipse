@@ -22,33 +22,29 @@ package org.sonarlint.eclipse.ui.internal.rule;
 import java.util.ArrayList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.AbstractRuleDto;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 
 /** Rule header for the new CCT */
 public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
   private final Label ruleCleanCodeAttributeLabel;
-  private final Label firstImpactSeverityIcon;
-  private final Label firstSoftwareQualityLabel;
-  private final Label secondImpactSeverityIcon;
-  private final Label secondSoftwareQualityLabel;
-  private final Label thirdImpactSeverityIcon;
-  private final Label thirdSoftwareQualityLabel;
+  private final SoftwareQualityImpactPanel firstSoftwareQualityImpact;
+  private final SoftwareQualityImpactPanel secondSoftwareQualityImpact;
+  private final SoftwareQualityImpactPanel thirdSoftwareQualityImpact;
   private final Label ruleKeyLabel;
 
   public RuleHeaderPanel(Composite parent) {
-    super(parent, 8);
+    super(parent, 5);
     
     ruleCleanCodeAttributeLabel = new Label(this, SWT.NONE);
-    firstImpactSeverityIcon = new Label(this, SWT.NONE);
-    firstSoftwareQualityLabel = new Label(this, SWT.NONE);
-    secondImpactSeverityIcon = new Label(this, SWT.NONE);
-    secondSoftwareQualityLabel = new Label(this, SWT.NONE);
-    thirdImpactSeverityIcon = new Label(this, SWT.NONE);
-    thirdSoftwareQualityLabel = new Label(this, SWT.LEFT);
+    firstSoftwareQualityImpact= new SoftwareQualityImpactPanel(this, SWT.NONE);
+    secondSoftwareQualityImpact = new SoftwareQualityImpactPanel(this, SWT.NONE);
+    thirdSoftwareQualityImpact = new SoftwareQualityImpactPanel(this, SWT.LEFT);
     ruleKeyLabel = new Label(this, SWT.LEFT);
     ruleKeyLabel.setLayoutData(new GridData(SWT.END, SWT.FILL, true, true));
   }
@@ -59,23 +55,46 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
     var attribute = ruleInformation.getCleanCodeAttribute().get();
     ruleCleanCodeAttributeLabel.setText(
       clean(attribute.getAttributeCategory().getIssueLabel()) + " | " + clean(attribute.getIssueLabel()));
+    // TODO: Change to SLCORE provided tooltip!;
+    //firstSoftwareQualityLabel.setToolTipText(attribute.getToolTip());
     
     var impacts = ruleInformation.getDefaultImpacts();
     var keys = new ArrayList<SoftwareQuality>(impacts.keySet());
-    firstImpactSeverityIcon.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(0))));
-    firstSoftwareQualityLabel.setText(clean(keys.get(0).getDisplayLabel()));
     
+    firstSoftwareQualityImpact.updateRule(keys.get(0), impacts.get(keys.get(0)));
     if (keys.size() > 1) {
-      secondImpactSeverityIcon.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(1))));
-      secondSoftwareQualityLabel.setText(clean(impacts.get(keys.get(1)).getDisplayLabel()));
-      
+      secondSoftwareQualityImpact.updateRule(keys.get(1), impacts.get(keys.get(1)));
       if (keys.size() > 2) {
-        thirdImpactSeverityIcon.setImage(SonarLintImages.getImpactImage(impacts.get(keys.get(2))));
-        thirdSoftwareQualityLabel.setText(clean(impacts.get(keys.get(2)).getDisplayLabel()));
+        thirdSoftwareQualityImpact.updateRule(keys.get(2), impacts.get(keys.get(2)));
       }
     }
     
     ruleKeyLabel.setText(ruleInformation.getKey());
     layout();
+  }
+  
+  private static class SoftwareQualityImpactPanel extends Composite {
+    private final Label softwareQualityLabel;
+    private final Label impactSeverityIcon;
+
+    SoftwareQualityImpactPanel(Composite parent, int style) {
+      super(parent, style);
+      setLayout(new GridLayout(2, false));
+      
+      softwareQualityLabel = new Label(this, SWT.NONE);
+      impactSeverityIcon = new Label(this, SWT.LEFT);
+    }
+    
+    public void updateRule(SoftwareQuality quality, ImpactSeverity impact) {
+      softwareQualityLabel.setText(quality.getDisplayLabel());
+      // TODO: Change to SLCORE provided tooltip!
+      //softwareQualityLabel.setToolTipText(quality.getToolTip());
+      impactSeverityIcon.setImage(SonarLintImages.getImpactImage(impact));
+      impactSeverityIcon.setToolTipText(createImpactToolTip(quality, impact));
+    }
+    
+    private static String createImpactToolTip(SoftwareQuality quality, ImpactSeverity impact) {
+      return impact.getDisplayLabel() + " impact on " + quality.getDisplayLabel();
+    }
   }
 }

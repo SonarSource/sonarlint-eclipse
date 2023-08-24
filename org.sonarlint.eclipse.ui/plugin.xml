@@ -814,6 +814,11 @@
                     checkEnabled="true">
               </visibleWhen>
          </command>
+         <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.HelpOnIconsCommand"
+                 icon="icons/full/marker_resolution16/info.png"
+                 style="push">
+         </command>
       </menuContribution>
       <menuContribution
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView">
@@ -880,6 +885,11 @@
                <visibleWhen
                     checkEnabled="true">
               </visibleWhen>
+         </command>
+         <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.HelpOnIconsCommand"
+                 icon="icons/full/marker_resolution16/info.png"
+                 style="push">
          </command>
       </menuContribution>
 	<menuContribution locationURI="popup:sonar.menu?after=group1">
@@ -1014,6 +1024,11 @@
                  style="push"
                  mnemonic="R">
          </command>
+         <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.HelpOnIconsCommand"
+                 icon="icons/full/marker_resolution16/info.png"
+                 style="push">
+         </command>
       </menuContribution>
   </extension>
 
@@ -1033,6 +1048,12 @@
           description="Deactivate the rule of this issue"
           id="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
           name="Deactivate rule"
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
+    <command
+          description="SonarLint issue icons"
+          id="org.sonarlint.eclipse.ui.internal.command.HelpOnIconsCommand"
+          name="What do the icons mean?"
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
@@ -1099,6 +1120,10 @@
                 <count value="1"/>
             </and>
          </visibleWhen>
+    </handler>
+    <handler
+          class="org.sonarlint.eclipse.ui.internal.command.HelpOnIconsCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.HelpOnIconsCommand">
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
