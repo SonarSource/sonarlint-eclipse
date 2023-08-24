@@ -55,6 +55,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.ui.internal.rule.RuleDescriptionPanel;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
@@ -105,7 +106,7 @@ public class HotspotsView extends ViewPart {
     emptyMsg.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        BrowserUtils.openExternalBrowser("https://github.com/SonarSource/sonarlint-eclipse/wiki/Security-Hotspots", e.display);
+        BrowserUtils.openExternalBrowser(SonarLintDocumentation.SECURITY_HOTSPOTS_LINK, e.display);
       }
     });
     return form;
