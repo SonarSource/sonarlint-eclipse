@@ -167,7 +167,7 @@ public final class SonarLintImages {
   
   @Nullable
   public static Image getImpactImage(ImpactSeverity impact) {
-    return createImage("impact/" + impact.name() + ".png");
+    return createImage("impact/" + impact.name().toLowerCase(Locale.ENGLISH) + ".png");
   }
 
   /**
