@@ -130,7 +130,7 @@ public class RuleDetailsPanel extends Composite {
   }
   
   private void updateHeader(AbstractRuleDto ruleInformation) {
-    if (ruleHeaderPanel != null && !ruleDescriptionPanel.isDisposed()) {
+    if (ruleHeaderPanel != null && !ruleHeaderPanel.isDisposed()) {
       ruleHeaderPanel.dispose();
     }
     

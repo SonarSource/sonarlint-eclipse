@@ -55,8 +55,8 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
     var attribute = ruleInformation.getCleanCodeAttribute().get();
     ruleCleanCodeAttributeLabel.setText(
       clean(attribute.getAttributeCategory().getIssueLabel()) + " | " + clean(attribute.getIssueLabel()));
-    // TODO: Change to SLCORE provided tooltip!;
-    //firstSoftwareQualityLabel.setToolTipText(attribute.getToolTip());
+    ruleCleanCodeAttributeLabel.setToolTipText(
+      "Clean Code attributes are characteristics code needs to have to be considered clean.");
     
     var impacts = ruleInformation.getDefaultImpacts();
     var keys = new ArrayList<SoftwareQuality>(impacts.keySet());
@@ -86,15 +86,17 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
     }
     
     public void updateRule(SoftwareQuality quality, ImpactSeverity impact) {
+      var tooltip = createImpactToolTip(quality, impact);
+      
       softwareQualityLabel.setText(quality.getDisplayLabel());
-      // TODO: Change to SLCORE provided tooltip!
-      //softwareQualityLabel.setToolTipText(quality.getToolTip());
+      softwareQualityLabel.setToolTipText(tooltip);
       impactSeverityIcon.setImage(SonarLintImages.getImpactImage(impact));
-      impactSeverityIcon.setToolTipText(createImpactToolTip(quality, impact));
+      impactSeverityIcon.setToolTipText(tooltip);
     }
     
     private static String createImpactToolTip(SoftwareQuality quality, ImpactSeverity impact) {
-      return impact.getDisplayLabel() + " impact on " + quality.getDisplayLabel();
+      return "Issues found for this rule will have a " + impact.getDisplayLabel() +
+        " impact on the " + quality.getDisplayLabel() + " of your software.";
     }
   }
 }

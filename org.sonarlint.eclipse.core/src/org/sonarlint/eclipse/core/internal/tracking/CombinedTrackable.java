@@ -19,10 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 
 /**
  * Combine a server Trackable ("serverIssue") with existing issue ("currentIssue")
@@ -38,6 +41,8 @@ public class CombinedTrackable extends WrappedTrackable {
   private final RuleType type;
   @Nullable
   private final CleanCodeAttribute cleanCodeAttribute;
+  @Nullable
+  private final Map<SoftwareQuality, ImpactSeverity> impacts;
 
   public CombinedTrackable(Trackable serverIssue, Trackable currentIssue) {
     super(currentIssue);
@@ -46,9 +51,16 @@ public class CombinedTrackable extends WrappedTrackable {
     this.serverIssueKey = serverIssue.getServerIssueKey();
     this.creationDate = serverIssue.getCreationDate();
     this.resolved = serverIssue.isResolved();
-    this.severity = serverIssue.getSeverity() != null ? serverIssue.getSeverity() : currentIssue.getRawSeverity();
+    this.severity = serverIssue.getSeverity() != null
+      ? serverIssue.getSeverity()
+      : currentIssue.getRawSeverity();
     this.type = serverIssue.getType();
-    this.cleanCodeAttribute = serverIssue.getCleanCodeAttribute();
+    this.cleanCodeAttribute = serverIssue.getCleanCodeAttribute() != null
+      ? serverIssue.getCleanCodeAttribute()
+      : currentIssue.getCleanCodeAttribute();
+    this.impacts = serverIssue.getImpacts() != null
+      ? serverIssue.getImpacts()
+      : currentIssue.getImpacts();
   }
 
   @Override
@@ -79,5 +91,10 @@ public class CombinedTrackable extends WrappedTrackable {
   @Override
   public CleanCodeAttribute getCleanCodeAttribute() {
     return cleanCodeAttribute;
+  }
+  
+  @Override
+  public Map<SoftwareQuality, ImpactSeverity> getImpacts() {
+    return impacts;
   }
 }
