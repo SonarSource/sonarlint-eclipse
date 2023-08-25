@@ -58,9 +58,11 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
+import org.sonarlint.eclipse.its.reddeer.conditions.RuleDescriptionViewIsLoaded;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView.Binding;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
+import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 import org.sonarlint.eclipse.its.reddeer.wizards.MarkIssueAsDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
@@ -82,12 +84,13 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertTrue;
 
 public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
-
   private static final String S106 = "S106";
   private static final String SECRET_JAVA_PROJECT_NAME = "secret-java";
   private static final String JAVA_SIMPLE_PROJECT_KEY = "java-simple";
   private static final String MAVEN2_PROJECT_KEY = "maven2";
   private static final String INSUFFICIENT_PERMISSION_USER = "iHaveNoRights";
+  private static final MarkerDescriptionMatcher ISSUE_MATCHER = new MarkerDescriptionMatcher(
+    CoreMatchers.containsString("System.out"));
 
   @ClassRule
   public static final OrchestratorRule orchestrator = OrchestratorRule.builderEnv()
@@ -275,9 +278,13 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     var defaultEditor = new TextEditor();
     assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("Replace this use of System.out or System.err by a logger.", 9));
+      .satisfiesAnyOf(
+        list -> assertThat(list)
+          .extracting(Marker::getText, Marker::getLineNumber)
+          .containsOnly(tuple("Replace this use of System.out by a logger.", 9)),
+        list -> assertThat(list)
+          .extracting(Marker::getText, Marker::getLineNumber)
+          .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", 9)));
 
     var qualityProfile = getQualityProfile(JAVA_SIMPLE_PROJECT_KEY, "SonarLint IT Java");
     deactivateRule(qualityProfile, S106);
@@ -290,6 +297,52 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     assertThat(defaultEditor.getMarkers()).isEmpty();
   }
+  
+  /**
+   *  As we test against different SQ versions, we have to check that the grouping and the rule descriptions
+   *  work correctly on old / new CCT connections
+   */
+  @Test
+  public void check_grouping() {
+    new JavaPerspective().open();
+    var ruleDescriptionView = new RuleDescriptionView();
+    ruleDescriptionView.open();
+    var onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+    
+    var rootProject = importExistingProjectIntoWorkspace("java/java-simple", JAVA_SIMPLE_PROJECT_KEY);
+
+    createConnectionAndBindProject(JAVA_SIMPLE_PROJECT_KEY);
+
+    // Remove binding suggestion notification
+    var bindingSuggestionNotificationShell = new DefaultShell("SonarLint Binding Suggestion");
+    new DefaultLink(bindingSuggestionNotificationShell, "Don't ask again").click();
+
+    var file = rootProject.getResource("src", "hello", "Hello.java");
+    openFileAndWaitForAnalysisCompletion(file);
+    
+    await().untilAsserted(() -> assertThat(
+      onTheFlyView.getIssues(ISSUE_MATCHER)).satisfiesAnyOf(
+      list -> assertThat(list)
+        .extracting(i -> i.getDescription())
+        .containsOnly("Replace this use of System.out by a logger."),
+        list -> assertThat(list)
+        .extracting(i -> i.getDescription())
+        .containsOnly("Replace this use of System.out or System.err by a logger.")));
+    
+    var emptyMatcher = new MarkerDescriptionMatcher(CoreMatchers.containsString(""));
+    
+    onTheFlyView.groupByImpact();
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
+    onTheFlyView.groupBySeverityLegacy();
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
+    onTheFlyView.resetGrouping();
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
+    
+    ruleDescriptionView.open();
+    onTheFlyView.selectItem(0);
+    new WaitUntil(new RuleDescriptionViewIsLoaded(ruleDescriptionView));
+  }
 
   // integration test for the "Mark issue as ..." dialog without and then with permission
   @Test
@@ -297,8 +350,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     // INFO: It is flaky when running on top of the oldest Eclipse version but works fine in the other test cases,
     //       therefore it should be skipped in that particular situation!
     Assume.assumeTrue(!"oldest".equals(System.getProperty("target.platform")));
-    
-    var issueMatcher = new MarkerDescriptionMatcher(CoreMatchers.containsString("System.out"));
 
     // 1) Create project on SonarQube
     adminWsClient.projects()
@@ -345,17 +396,21 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     // 8) Open first file and try to open the "Mark issue as ..." dialog
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src/main/java", "hello", "Hello.java"));
 
-    await().until(() -> onTheFlyView.getIssues(issueMatcher), findings -> !findings.isEmpty());
-    onTheFlyView.getIssues(issueMatcher).get(0).select();
+    await().until(() -> onTheFlyView.getIssues(ISSUE_MATCHER), findings -> !findings.isEmpty());
+    onTheFlyView.getIssues(ISSUE_MATCHER).get(0).select();
     new ContextMenuItem("Mark Issue as...").select();
 
     var s = new DefaultShell("Mark Issue as Resolved on SonarQube");
     new PushButton(s, "OK").click();
 
     // 9) Assert marker is still available
-    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(issueMatcher))
-      .extracting(i -> i.getDescription())
-      .containsOnly("Replace this use of System.out or System.err by a logger."));
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(ISSUE_MATCHER)).satisfiesAnyOf(
+      list -> assertThat(list)
+        .extracting(i -> i.getDescription())
+        .containsOnly("Replace this use of System.out by a logger."),
+        list -> assertThat(list)
+        .extracting(i -> i.getDescription())
+        .containsOnly("Replace this use of System.out or System.err by a logger.")));
 
     // 10) Add user rights from project
     adminWsClient.permissions().addGroup(new AddGroupWsRequest()
@@ -367,8 +422,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     var hello2 = rootProject.getResource("src/main/java", "hello", "Hello2.java");
     openFileAndWaitForAnalysisCompletion(hello2);
 
-    await().until(() -> onTheFlyView.getIssues(issueMatcher), findings -> !findings.isEmpty());
-    onTheFlyView.getIssues(issueMatcher).get(0).select();
+    await().until(() -> onTheFlyView.getIssues(ISSUE_MATCHER), findings -> !findings.isEmpty());
+    onTheFlyView.getIssues(ISSUE_MATCHER).get(0).select();
     new ContextMenuItem("Mark Issue as...").select();
 
     var dialog = new MarkIssueAsDialog();
@@ -386,7 +441,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(hello2);
 
     // 13) Assert marker is gone
-    await().until(() -> onTheFlyView.getIssues(issueMatcher), List<SonarLintIssueMarker>::isEmpty);
+    await().until(() -> onTheFlyView.getIssues(ISSUE_MATCHER), List<SonarLintIssueMarker>::isEmpty);
   }
 
   private static void createConnectionAndBindProject(String projectKey) {
@@ -483,5 +538,4 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     bindingsView.updateAllProjectBindings();
     new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
-
 }
