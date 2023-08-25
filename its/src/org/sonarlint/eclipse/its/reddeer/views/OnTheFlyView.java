@@ -30,7 +30,10 @@ import org.eclipse.reddeer.eclipse.exception.EclipseLayerException;
 import org.eclipse.reddeer.eclipse.ui.markers.matcher.AbstractMarkerMatcher;
 import org.eclipse.reddeer.eclipse.ui.views.markers.AbstractMarkersSupportView;
 import org.eclipse.reddeer.swt.api.TreeItem;
+import org.eclipse.reddeer.swt.impl.menu.ToolItemMenuItem;
+import org.eclipse.reddeer.swt.impl.toolbar.DefaultToolItem;
 import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
+import org.eclipse.reddeer.workbench.impl.menu.WorkbenchPartMenuItem;
 import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
 
 /**
@@ -58,6 +61,21 @@ public class OnTheFlyView extends AbstractMarkersSupportView {
 
   public void selectItem(int index) {
     getIssues().get(index).select();
+  }
+  
+  public void groupByImpact() {
+    this.activate();
+    new WorkbenchPartMenuItem("Group By", "Impact").select();
+  }
+  
+  public void groupBySeverityLegacy() {
+    this.activate();
+    new WorkbenchPartMenuItem("Group By", "Severity (Legacy)").select();
+  }
+  
+  public void resetGrouping() {
+    this.activate();
+    new WorkbenchPartMenuItem("Group By", "None").select();
   }
 
   /**
