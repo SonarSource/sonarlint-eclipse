@@ -27,9 +27,7 @@ import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 public class HelpOnIconsCommand extends AbstractIssueCommand {
   @Override
   protected void execute(IMarker selectedMarker, IWorkbenchWindow window) {
-    // TODO: Change when documentation is ready
-    BrowserUtils.openExternalBrowser(
-      "https://sonar-documentations-preview.netlify.app/sonarlint/eclipse/concepts/clean-code/",
+    BrowserUtils.openExternalBrowser("https://docs.sonarsource.com/sonarlint/eclipse/concepts/clean-code",
       window.getShell().getDisplay());
   }
 }
