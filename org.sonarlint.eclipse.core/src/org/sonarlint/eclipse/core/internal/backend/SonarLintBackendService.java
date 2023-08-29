@@ -37,6 +37,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
@@ -44,6 +45,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.SonarLintBackendImpl;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
+import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.DidChangeCredentialsParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.ClientInfoDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.FeatureFlagsDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.InitializeParams;
@@ -139,6 +141,10 @@ public class SonarLintBackendService {
   /** Provide the Backend with the information on a changed VCS branch for further actions, e.g. synchronizing with SQ / SC */
   public void branchChanged(ISonarLintProject project, String newActiveBranchName) {
     configScopeSynchronizer.branchChanged(project, newActiveBranchName);
+  }
+
+  public void credentialsChanged(ConnectedEngineFacade connection) {
+    getBackend().getConnectionService().didChangeCredentials(new DidChangeCredentialsParams(connection.getId()));
   }
 
   public SonarLintBackend getBackend() {
