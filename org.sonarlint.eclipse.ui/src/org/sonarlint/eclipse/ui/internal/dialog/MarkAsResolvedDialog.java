@@ -38,21 +38,21 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
-import org.sonarsource.sonarlint.core.clientapi.backend.issue.IssueStatus;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.ResolutionStatus;
 
 /** Dialog for marking an issue as resolved using the possible transitions */
 public class MarkAsResolvedDialog extends Dialog {
   private final ArrayList<IssueStatusRadioButton> issueStatusRadioButtons = new ArrayList<>();
   private Text commentSection;
-  private final List<IssueStatus> transitions;
+  private final List<ResolutionStatus> transitions;
 
   private final String formattingHelpURL;
-  private IssueStatus finalTransition;
+  private ResolutionStatus finalTransition;
   @Nullable
   private String finalComment;
   private final boolean isSonarCloud;
 
-  public MarkAsResolvedDialog(Shell parentShell, List<IssueStatus> transitions, String hostURL, boolean isSonarCloud) {
+  public MarkAsResolvedDialog(Shell parentShell, List<ResolutionStatus> transitions, String hostURL, boolean isSonarCloud) {
     super(parentShell);
     this.transitions = transitions;
     this.isSonarCloud = isSonarCloud;
@@ -136,7 +136,7 @@ public class MarkAsResolvedDialog extends Dialog {
   }
 
   /** After finishing the dialog we can use this for invoking SQ / SC API */
-  public IssueStatus getFinalTransition() {
+  public ResolutionStatus getFinalTransition() {
     return this.finalTransition;
   }
 
@@ -148,9 +148,9 @@ public class MarkAsResolvedDialog extends Dialog {
   /** Utility class to wrap a SWT Radio Button with its corresponding IssueStatus */
   static class IssueStatusRadioButton {
     private final Button radioButton;
-    private final IssueStatus issueStatus;
+    private final ResolutionStatus issueStatus;
 
-    public IssueStatusRadioButton(Composite parent, IssueStatus issueStatus) {
+    public IssueStatusRadioButton(Composite parent, ResolutionStatus issueStatus) {
       this.issueStatus = issueStatus;
       this.radioButton = new Button(parent, SWT.RADIO);
     }
@@ -159,7 +159,7 @@ public class MarkAsResolvedDialog extends Dialog {
       return radioButton;
     }
 
-    public IssueStatus getIssueStatus() {
+    public ResolutionStatus getIssueStatus() {
       return issueStatus;
     }
   }

@@ -49,7 +49,7 @@ import org.sonarsource.sonarlint.core.clientapi.backend.initialize.FeatureFlagsD
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.InitializeParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.AddIssueCommentParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.ChangeIssueStatusParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.issue.IssueStatus;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.ResolutionStatus;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionParams;
@@ -205,7 +205,7 @@ public class SonarLintBackendService {
     }
   }
 
-  public CompletableFuture<Void> changeIssueStatus(ISonarLintProject project, String serverIssueKey, IssueStatus newStatus, boolean isTaint) {
+  public CompletableFuture<Void> changeIssueStatus(ISonarLintProject project, String serverIssueKey, ResolutionStatus newStatus, boolean isTaint) {
     return getBackend()
       .getIssueService()
       .changeStatus(new ChangeIssueStatusParams(ConfigScopeSynchronizer.getConfigScopeId(project), serverIssueKey, newStatus, isTaint));
