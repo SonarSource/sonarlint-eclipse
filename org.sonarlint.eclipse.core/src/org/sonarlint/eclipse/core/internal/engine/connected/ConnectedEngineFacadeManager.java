@@ -43,6 +43,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -266,13 +267,19 @@ public class ConnectedEngineFacadeManager {
     fireConnectionAddedEvent(facade);
   }
 
-  private static void storeCredentials(IConnectedEngineFacade server, String username, String password) {
+  /**
+   * @return true if the new credentials are different compared to what is in the secure storage
+   */
+  private static boolean storeCredentials(IConnectedEngineFacade server, String username, String password) {
     try {
       var secureConnectionsNode = getSecureConnectionsNode();
       var secureConnectionNode = secureConnectionsNode.node(getConnectionNodeName(server.getId()));
+      var previousUsername = secureConnectionNode.get(USERNAME_ATTRIBUTE, null);
+      var previousPassword = secureConnectionNode.get(PASSWORD_ATTRIBUTE, null);
       secureConnectionNode.put(USERNAME_ATTRIBUTE, username, true);
       secureConnectionNode.put(PASSWORD_ATTRIBUTE, password, true);
       secureConnectionsNode.flush();
+      return !Objects.equals(previousUsername, username) || !Objects.equals(previousPassword, password);
     } catch (StorageException | IOException e) {
       throw new IllegalStateException("Unable to store connection credentials in secure storage: " + e.getMessage(), e);
     }
@@ -375,14 +382,22 @@ public class ConnectedEngineFacadeManager {
     }
 
     addOrUpdateProperties(facade);
+    var credentialsChanged = false;
     if (facade.hasAuth()) {
-      storeCredentials(facade, username, password);
+      credentialsChanged = storeCredentials(facade, username, password);
     }
     var connectionToUpdate = (ConnectedEngineFacade) facadesByConnectionId.get(facade.getId());
     update(connectionToUpdate, facade.getHost(), facade.getOrganization(), facade.hasAuth(), facade.areNotificationsDisabled());
     connectionToUpdate.subscribeForEventsForBoundProjects();
 
     fireServerEvent(connectionToUpdate, EVENT_CHANGED);
+    if (credentialsChanged) {
+      fireCredentialsChangedEvent(connectionToUpdate);
+    }
+  }
+
+  private static void fireCredentialsChangedEvent(ConnectedEngineFacade connection) {
+    SonarLintBackendService.get().credentialsChanged(connection);
   }
 
   private void addOrUpdateProperties(IConnectedEngineFacade facade) {
