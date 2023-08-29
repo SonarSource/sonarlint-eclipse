@@ -32,6 +32,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.events.ControlAdapter;
@@ -146,9 +147,14 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
   }
 
   private void updateBrowserHeightHint(GridData browserLayoutData) {
-    var height = (Double) browser.evaluate("return document.body.scrollHeight;"); //$NON-NLS-1$
-    browserLayoutData.heightHint = height.intValue();
-    browser.requestLayout();
+    try {
+      var height = (Double) browser.evaluate("return document.body.scrollHeight;"); //$NON-NLS-1$
+      browserLayoutData.heightHint = height.intValue();
+      browser.requestLayout();
+    } catch (SWTException ignored) {
+      // When switching fast between rules, the browser evaluation takes too long and the methods
+      // afterwards try to run against a disposed widget!
+    }
   }
 
   @Override
