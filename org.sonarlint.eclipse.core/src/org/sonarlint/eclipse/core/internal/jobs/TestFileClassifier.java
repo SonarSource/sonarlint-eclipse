@@ -51,7 +51,7 @@ public class TestFileClassifier {
    * Should be called when preferences are changed.
    */
   public void reload() {
-    var allTestPattern = SonarLintGlobalConfiguration.getTestFileRegexps();
+    var allTestPattern = SonarLintGlobalConfiguration.getTestFileGlobPatterns();
     var testPatterns = allTestPattern.split(",");
     pathMatchersForTests = createMatchersForTests(testPatterns);
   }

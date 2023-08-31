@@ -65,8 +65,8 @@ public class SonarLintGlobalConfiguration {
   public static final String PREF_FILE_EXCLUSIONS = "fileExclusions"; //$NON-NLS-1$
   public static final String PREF_RULES_CONFIG = "rulesConfig"; //$NON-NLS-1$
   public static final String PREF_DEFAULT = ""; //$NON-NLS-1$
-  public static final String PREF_TEST_FILE_REGEXPS = "testFileRegexps"; //$NON-NLS-1$
-  public static final String PREF_TEST_FILE_REGEXPS_DEFAULT = ""; //$NON-NLS-1$
+  public static final String PREF_TEST_FILE_GLOB_PATTERNS = "testFileRegexps"; //$NON-NLS-1$
+  public static final String PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT = ""; //$NON-NLS-1$
   public static final String PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES = "skipConfirmAnalyzeMultipleFiles"; //$NON-NLS-1$
   public static final String PREF_NODEJS_PATH = "nodeJsPath"; //$NON-NLS-1$
   private static final String PREF_TAINT_VULNERABILITY_DISPLAYED = "taintVulnerabilityDisplayed";
@@ -76,8 +76,8 @@ public class SonarLintGlobalConfiguration {
     // Utility class
   }
 
-  public static String getTestFileRegexps() {
-    return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_TEST_FILE_REGEXPS, PREF_TEST_FILE_REGEXPS_DEFAULT, null);
+  public static String getTestFileGlobPatterns() {
+    return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_TEST_FILE_GLOB_PATTERNS, PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT, null);
   }
 
   public static int getMarkerSeverity() {

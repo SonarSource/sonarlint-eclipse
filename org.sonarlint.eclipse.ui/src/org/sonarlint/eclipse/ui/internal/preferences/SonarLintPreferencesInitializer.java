@@ -35,7 +35,7 @@ public class SonarLintPreferencesInitializer extends AbstractPreferenceInitializ
     node.putBoolean(SonarLintConsole.P_ANALYZER_OUTPUT, false);
     node.putInt(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY, SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY_DEFAULT);
     node.put(SonarLintGlobalConfiguration.PREF_EXTRA_ARGS, SonarLintGlobalConfiguration.PREF_DEFAULT);
-    node.put(SonarLintGlobalConfiguration.PREF_TEST_FILE_REGEXPS, SonarLintGlobalConfiguration.PREF_TEST_FILE_REGEXPS_DEFAULT);
+    node.put(SonarLintGlobalConfiguration.PREF_TEST_FILE_GLOB_PATTERNS, SonarLintGlobalConfiguration.PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT);
   }
 
 }

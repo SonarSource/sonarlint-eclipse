@@ -71,8 +71,8 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
         {"Warning", String.valueOf(IMarker.SEVERITY_WARNING)},
         {"Error", String.valueOf(IMarker.SEVERITY_ERROR)}},
       getFieldEditorParent()));
-    addField(new StringFieldEditor(SonarLintGlobalConfiguration.PREF_TEST_FILE_REGEXPS,
-      Messages.SonarPreferencePage_label_test_file_regexps, getFieldEditorParent()));
+    addField(new StringFieldEditor(SonarLintGlobalConfiguration.PREF_TEST_FILE_GLOB_PATTERNS,
+      Messages.SonarPreferencePage_label_test_file_glob_patterns, getFieldEditorParent()));
     addField(new NodeJsField(getFieldEditorParent()));
   }
 
@@ -129,11 +129,11 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
   @Override
   public boolean performOk() {
-    var previousTestFileRegexps = SonarLintGlobalConfiguration.getTestFileRegexps();
+    var previousTestFileGlobPatterns = SonarLintGlobalConfiguration.getTestFileGlobPatterns();
     var previousNodeJsPath = SonarLintGlobalConfiguration.getNodejsPath();
     var result = super.performOk();
     var anyPreferenceChanged = false;
-    if (!previousTestFileRegexps.equals(SonarLintGlobalConfiguration.getTestFileRegexps())) {
+    if (!previousTestFileGlobPatterns.equals(SonarLintGlobalConfiguration.getTestFileGlobPatterns())) {
       TestFileClassifier.get().reload();
       anyPreferenceChanged = true;
     }
