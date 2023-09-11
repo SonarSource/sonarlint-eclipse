@@ -20,13 +20,32 @@
 package org.sonarlint.eclipse.ui.internal.trim;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsoleConstants;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.binding.BindingsView;
+import org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView;
+import org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencePage;
+import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
+import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
+import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
+import org.sonarlint.eclipse.ui.internal.views.issues.TaintVulnerabilitiesView;
+import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
 public class StatusWidget extends WorkbenchWindowControlContribution {
 
@@ -48,7 +67,10 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
     trimComposite.setLayout(createLayout());
 
     var icon = new Label(trimComposite, SWT.CENTER);
-    icon.setImage(SonarLintImages.BALLOON_IMG);
+    icon.setImage(SonarLintImages.STATUS_IMG);
+
+    createContextMenu(icon);
+    updateToolTip(icon);
 
     return trimComposite;
   }
@@ -62,6 +84,90 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
     layout.marginLeft = 2;
     layout.marginRight = 2;
     return layout;
+  }
+
+  private static void createContextMenu(Control c) {
+    var menuMgr = new MenuManager();
+    menuMgr.setRemoveAllWhenShown(true);
+    menuMgr.addMenuListener(StatusWidget::fillMenu);
+    var menu = menuMgr.createContextMenu(c);
+    c.setMenu(menu);
+  }
+
+  private static void fillMenu(IMenuManager menuMgr) {
+    var showViewSubMenu = new MenuManager("Show View", null);
+    showViewSubMenu.add(new ShowViewAction("On-The-Fly", OnTheFlyIssuesView.ID, SonarLintImages.VIEW_ON_THE_FLY, "Display issues found by the on-the-fly analysis"));
+    showViewSubMenu.add(new ShowViewAction("Report", SonarLintReportView.ID, SonarLintImages.VIEW_REPORT, "Display issues found by manually triggered analyses"));
+    showViewSubMenu.add(new ShowViewAction("Rule Description", RuleDescriptionWebView.ID, SonarLintImages.VIEW_RULE, "Display rule description for the selected issue"));
+    showViewSubMenu.add(new ShowViewAction("Bindings", BindingsView.ID, SonarLintImages.VIEW_BINDINGS, "Allow to configure connections and bindings for SonarLint connected mode"));
+    showViewSubMenu.add(new ShowViewAction("Security Hotspots", HotspotsView.ID, SonarLintImages.VIEW_HOTSPOTS, "Show security hotspots opened from SonarQube"));
+    showViewSubMenu.add(new ShowViewAction("Issue locations", IssueLocationsView.ID, SonarLintImages.VIEW_LOCATIONS, "Show secondary locations or flows for the selected issue"));
+    showViewSubMenu.add(new ShowViewAction("Taint Vulnerabilities", TaintVulnerabilitiesView.ID, SonarLintImages.VIEW_VULNERABILITIES,
+      "Show taint vulnerabilities found by SonarQube or SonarCloud"));
+    menuMgr.add(showViewSubMenu);
+
+    menuMgr.add(new OpenGloblaSettingsAction());
+    menuMgr.add(new ShowConsoleAction());
+  }
+
+  private static void updateToolTip(Control icon) {
+    var text = "SonarLint";
+    if (!text.equals(icon.getToolTipText())) {
+      icon.setToolTipText(text);
+    }
+  }
+
+  static class ShowViewAction extends Action {
+    private final String viewId;
+
+    ShowViewAction(String label, String viewId, ImageDescriptor image, String description) {
+      super(label);
+      this.viewId = viewId;
+      setImageDescriptor(image);
+      setToolTipText(description);
+    }
+
+    @Override
+    public void run() {
+      var wbw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+      if (wbw != null) {
+        try {
+          wbw.getActivePage().showView(viewId);
+        } catch (Exception e) {
+          SonarLintLogger.get().error("Unable to open view", e);
+        }
+      }
+    }
+  }
+
+  static class OpenGloblaSettingsAction extends Action {
+
+    OpenGloblaSettingsAction() {
+      super("Preferences...");
+      setDescription("Open SonarLint Global Preferences");
+    }
+
+    @Override
+    public void run() {
+      var pref = PreferencesUtil.createPreferenceDialogOn(Display.getCurrent().getActiveShell(), SonarLintPreferencePage.ID, null, null);
+      if (pref != null) {
+        pref.open();
+      }
+    }
+  }
+
+  static class ShowConsoleAction extends Action {
+
+    ShowConsoleAction() {
+      super("Show Console");
+      setImageDescriptor(ConsolePlugin.getImageDescriptor(IConsoleConstants.IMG_VIEW_CONSOLE));
+      setDescription("Open SonarLint Logs in the Console View");
+    }
+
+    @Override
+    public void run() {
+      SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
+    }
   }
 
 }

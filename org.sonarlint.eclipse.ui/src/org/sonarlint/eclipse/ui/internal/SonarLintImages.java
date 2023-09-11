@@ -44,11 +44,19 @@ public final class SonarLintImages {
   public static final ImageDescriptor SHOW_CONSOLE = createImageDescriptor("showConsole.gif"); //$NON-NLS-1$
   public static final ImageDescriptor IMG_EXPAND_ALL = createImageDescriptor("full/tool16/expandall.png"); //$NON-NLS-1$
   public static final ImageDescriptor IMG_COLLAPSE_ALL = createImageDescriptor("full/tool16/collapseall.png"); //$NON-NLS-1$
-  
+
   public static final ImageDescriptor SONARLINT_16 = createImageDescriptor("logo/sonarlint-16px.png"); //$NON-NLS-1$
   public static final ImageDescriptor STANDALONE_16 = createImageDescriptor("logo/standalone-16px.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARCLOUD_16 = createImageDescriptor("logo/sonarcloud-16px.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARQUBE_16 = createImageDescriptor("logo/sonarqube-16px.png"); //$NON-NLS-1$
+
+  public static final ImageDescriptor VIEW_ON_THE_FLY = createImageDescriptor("full/eview16/onthefly.png"); //$NON-NLS-1$
+  public static final ImageDescriptor VIEW_BINDINGS = createImageDescriptor("full/eview16/bindings.png"); //$NON-NLS-1$
+  public static final ImageDescriptor VIEW_HOTSPOTS = createImageDescriptor("full/eview16/hotspots.png"); //$NON-NLS-1$
+  public static final ImageDescriptor VIEW_LOCATIONS = createImageDescriptor("full/eview16/locations.png"); //$NON-NLS-1$
+  public static final ImageDescriptor VIEW_REPORT = createImageDescriptor("full/eview16/report.png"); //$NON-NLS-1$
+  public static final ImageDescriptor VIEW_RULE = createImageDescriptor("full/eview16/rule.png"); //$NON-NLS-1$
+  public static final ImageDescriptor VIEW_VULNERABILITIES = createImageDescriptor("full/eview16/vulnerabilities.png"); //$NON-NLS-1$
 
   public static final Image ISSUE_ANNOTATION = createImage("full/annotation16/issue.png"); //$NON-NLS-1$
   public static final Image HOTSPOT_ANNOTATION = createImage("full/annotation16/hotspot.png"); //$NON-NLS-1$
@@ -58,7 +66,8 @@ public final class SonarLintImages {
   public static final Image RESOLUTION_DISABLE_RULE = createImage("full/marker_resolution16/disablerule.png"); //$NON-NLS-1$
   public static final Image RESOLUTION_QUICKFIX_CHANGE = createImage("full/marker_resolution16/quickfix_change.png"); //$NON-NLS-1$
   public static final Image BALLOON_IMG = createImage("logo/sonarlint-16px.png"); //$NON-NLS-1$
-  
+  public static final Image STATUS_IMG = createImage("logo/sonarlint-16px.png"); //$NON-NLS-1$
+
   public static final Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.png"); //$NON-NLS-1$
   public static final Image IMG_HOTSPOT_HIGH = createImage("priority/high.png"); //$NON-NLS-1$
   public static final Image IMG_HOTSPOT_MEDIUM = createImage("priority/medium.png"); //$NON-NLS-1$
@@ -77,10 +86,10 @@ public final class SonarLintImages {
 
   private SonarLintImages() {
   }
-  
+
   /**
    *  Mapping of the matching status of an issue to the specific image
-   *  
+   *
    *  @param matchingStatus specific matching status of an issue
    *  @return the corresponding connection mode icon (including standalone)
    */
@@ -95,7 +104,7 @@ public final class SonarLintImages {
 
   /**
    *  Create a composite image with the markers' project connection mode, issue severity and type
-   *  
+   *
    *  @param matchingStatus matching status of an issue (nullable when grouped)
    *  @param severity issue severity
    *  @param type issue type
@@ -120,10 +129,10 @@ public final class SonarLintImages {
     }
     return imageRegistry.get(key);
   }
-  
+
   /**
    *  Create a composite image for the new clean code taxonomy with the markers' connection mode and highest impact
-   *  
+   *
    *  @param matchingStatus matching status of an issue (nullable when grouped)
    *  @param impact highest issue impact
    *  @return composite image if found, null otherwise
@@ -143,7 +152,7 @@ public final class SonarLintImages {
     }
     return imageRegistry.get(key);
   }
-  
+
   /** For issue markers where no grouping can be applied (e.g. new CCT unavailable for old SonarQube connections) */
   public static Image getNotAvailableImage() {
     var key = "notAvailable";
@@ -164,7 +173,7 @@ public final class SonarLintImages {
   public static Image getTypeImage(RuleType type) {
     return createImage("type/" + type.name().toLowerCase(Locale.ENGLISH) + ".png");
   }
-  
+
   @Nullable
   public static Image getImpactImage(ImpactSeverity impact) {
     return createImage("impact/" + impact.name().toLowerCase(Locale.ENGLISH) + ".png");
