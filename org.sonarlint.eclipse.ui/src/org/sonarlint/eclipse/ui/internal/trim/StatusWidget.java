@@ -25,11 +25,14 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsoleConstants;
@@ -62,7 +65,6 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
 
   @Override
   protected Control createControl(Composite parent) {
-    // Create a composite to place the label in
     trimComposite = new Composite(parent, SWT.NONE);
     trimComposite.setLayout(createLayout());
 
@@ -75,7 +77,6 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
     return trimComposite;
   }
 
-  // Give some room around the control
   private RowLayout createLayout() {
     var type = getOrientation();
     var layout = new RowLayout(type);
@@ -92,6 +93,20 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
     menuMgr.addMenuListener(StatusWidget::fillMenu);
     var menu = menuMgr.createContextMenu(c);
     c.setMenu(menu);
+
+    alsoOpenMenuWithLeftClick(c, menu);
+  }
+
+  private static void alsoOpenMenuWithLeftClick(Control c, Menu menu) {
+    c.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseUp(MouseEvent event) {
+        super.mouseUp(event);
+        var absolutePos = ((Control) event.widget).toDisplay(event.x, event.y);
+        menu.setLocation(absolutePos);
+        menu.setVisible(true);
+      }
+    });
   }
 
   private static void fillMenu(IMenuManager menuMgr) {
