@@ -117,10 +117,4 @@ public interface IConnectedEngineFacade {
   void manualSync(Set<String> projectKeysToUpdate, IProgressMonitor monitor);
 
   ProjectBranches getServerBranches(String projectKey);
-
-  void subscribeForEventsForBoundProjects();
-
-  void addServerEventListener(IServerEventListener listener);
-
-  void removeServerEventListener(IServerEventListener listener);
 }

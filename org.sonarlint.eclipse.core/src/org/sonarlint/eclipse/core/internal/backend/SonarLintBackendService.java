@@ -107,7 +107,7 @@ public class SonarLintBackendService {
         try {
           backend.initialize(new InitializeParams(
             new ClientInfoDto(getIdeName(), "eclipse", "SonarLint Eclipse " + SonarLintUtils.getPluginVersion()),
-            new FeatureFlagsDto(true, true, true, true, false),
+            new FeatureFlagsDto(true, true, true, true, false, true),
             StoragePathManager.getStorageDir(),
             StoragePathManager.getDefaultWorkDir(),
             Set.copyOf(embeddedPluginPaths),
@@ -165,7 +165,7 @@ public class SonarLintBackendService {
     }
     return ideName;
   }
-  
+
   /** Get all the rules available in standalone mode */
   public CompletableFuture<ListAllStandaloneRulesDefinitionsResponse> getStandaloneRules() {
     return getBackend().getRulesService().listAllStandaloneRulesDefinitions();
