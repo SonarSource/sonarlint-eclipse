@@ -19,12 +19,16 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.RemoteSonarProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class BindingsViewDecorator extends LabelProvider implements ILightweightLabelDecorator {
@@ -36,8 +40,19 @@ public class BindingsViewDecorator extends LabelProvider implements ILightweight
     if (element instanceof RemoteSonarProject) {
       addSuffix(decoration, ((RemoteSonarProject) element).getProjectKey());
     } else if (element instanceof ISonarLintProject) {
-      var projectConfig = SonarLintCorePlugin.loadConfig(((ISonarLintProject) element));
-      projectConfig.getProjectBinding().ifPresent(b -> decoration.addSuffix(" /" + b.serverPathPrefix()));
+      var project = (ISonarLintProject) element;
+      var projectConfig = SonarLintCorePlugin.loadConfig(project);
+      projectConfig.getProjectBinding().ifPresent(eclipseProjectBinding -> {
+        List<String> infos = new ArrayList<>();
+        VcsService.getServerBranch(project).ifPresent(infos::add);
+        if (StringUtils.isNotBlank(eclipseProjectBinding.idePathPrefix())) {
+          infos.add("-/" + eclipseProjectBinding.idePathPrefix());
+        }
+        if (StringUtils.isNotBlank(eclipseProjectBinding.serverPathPrefix())) {
+          infos.add("+/" + eclipseProjectBinding.serverPathPrefix());
+        }
+        addSuffix(decoration, infos.stream().collect(Collectors.joining(" ")));
+      });
     }
   }
 
