@@ -26,6 +26,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 
+/** Default preferences on the workspace level */
 public class SonarLintPreferencesInitializer extends AbstractPreferenceInitializer {
 
   @Override
@@ -34,6 +35,7 @@ public class SonarLintPreferencesInitializer extends AbstractPreferenceInitializ
     node.put(SonarLintConsole.P_SHOW_CONSOLE, SonarLintConsole.P_SHOW_CONSOLE_ON_ERROR);
     node.putBoolean(SonarLintConsole.P_ANALYZER_OUTPUT, false);
     node.putInt(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY, SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY_DEFAULT);
+    node.put(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD, SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_DEFAULT);
     node.put(SonarLintGlobalConfiguration.PREF_EXTRA_ARGS, SonarLintGlobalConfiguration.PREF_DEFAULT);
     node.put(SonarLintGlobalConfiguration.PREF_TEST_FILE_GLOB_PATTERNS, SonarLintGlobalConfiguration.PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT);
   }

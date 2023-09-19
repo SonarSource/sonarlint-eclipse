@@ -61,6 +61,9 @@ public class SonarLintGlobalConfiguration {
 
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
   public static final int PREF_MARKER_SEVERITY_DEFAULT = IMarker.SEVERITY_INFO;
+  public static final String PREF_ISSUE_PERIOD = "issuePeriod"; //$NON-NLS-1$
+  public static final String PREF_ISSUE_PERIOD_DEFAULT = "newCode"; //$NON-NLS-1$
+  public static final String PREF_ISSUE_PERIOD_ALTERNATE = "allTime"; //$NON-NLS-1$
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
   public static final String PREF_FILE_EXCLUSIONS = "fileExclusions"; //$NON-NLS-1$
   public static final String PREF_RULES_CONFIG = "rulesConfig"; //$NON-NLS-1$
@@ -78,6 +81,10 @@ public class SonarLintGlobalConfiguration {
 
   public static String getTestFileGlobPatterns() {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_TEST_FILE_GLOB_PATTERNS, PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT, null);
+  }
+  
+  public static String getIssuePeriod() {
+    return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_ISSUE_PERIOD, PREF_ISSUE_PERIOD_DEFAULT, null);
   }
 
   public static int getMarkerSeverity() {

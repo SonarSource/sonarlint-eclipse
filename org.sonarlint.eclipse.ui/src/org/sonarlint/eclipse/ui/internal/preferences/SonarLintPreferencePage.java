@@ -30,8 +30,10 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringButtonFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -42,6 +44,8 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
+import org.sonarlint.eclipse.ui.internal.documentation.SonarLintDocumentation;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 /**
  * Preference page for the workspace.
@@ -74,6 +78,22 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     addField(new StringFieldEditor(SonarLintGlobalConfiguration.PREF_TEST_FILE_GLOB_PATTERNS,
       Messages.SonarPreferencePage_label_test_file_glob_patterns, getFieldEditorParent()));
     addField(new NodeJsField(getFieldEditorParent()));
+    
+    // INFO: For the label to take up all the horizontal space in the grid (the size we cannot get), we have to use a
+    //       high span as it will be set internally to the actual grid width if ours is too big: Otherwise the the
+    //       settings label from the line below would shift one row up!
+    var issuePeriodLabel = new Link(getFieldEditorParent(), SWT.NONE);
+    issuePeriodLabel.setText("This preference only applies for projects in connected mode with <a>SonarQube / SonarCloud</a>:");
+    issuePeriodLabel.setLayoutData(new GridData(SWT.LEFT, SWT.DOWN, true, false, Integer.MAX_VALUE, 1));
+    issuePeriodLabel.addListener(SWT.Selection,
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.ISSUE_PERIOD_LINK, e.display));
+    
+    addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD,
+      Messages.SonarPreferencePage_label_issue_period,
+      new String[][] {
+        {"Only on new code", SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_DEFAULT},
+        {"Since the beginning", SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALTERNATE}},
+      getFieldEditorParent()));
   }
 
   private static class NodeJsField extends StringButtonFieldEditor {
@@ -129,10 +149,14 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
   @Override
   public boolean performOk() {
+    var previousIssuePeriod = SonarLintGlobalConfiguration.getIssuePeriod();
     var previousTestFileGlobPatterns = SonarLintGlobalConfiguration.getTestFileGlobPatterns();
     var previousNodeJsPath = SonarLintGlobalConfiguration.getNodejsPath();
     var result = super.performOk();
     var anyPreferenceChanged = false;
+    if (!previousIssuePeriod.equals(SonarLintGlobalConfiguration.getIssuePeriod())) {
+      anyPreferenceChanged = true;
+    }
     if (!previousTestFileGlobPatterns.equals(SonarLintGlobalConfiguration.getTestFileGlobPatterns())) {
       TestFileClassifier.get().reload();
       anyPreferenceChanged = true;
