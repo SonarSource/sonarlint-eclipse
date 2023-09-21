@@ -94,12 +94,10 @@ public class AnalysisJobsScheduler {
     if (oldServerId != null && !Objects.equals(serverId, oldServerId)) {
       var oldServer = SonarLintCorePlugin.getServersManager().findById(oldServerId);
       oldServer.ifPresent(IConnectedEngineFacade::notifyAllListenersStateChanged);
-      oldServer.ifPresent(IConnectedEngineFacade::subscribeForEventsForBoundProjects);
     }
     if (serverId != null) {
       var server = SonarLintCorePlugin.getServersManager().findById(serverId);
       server.ifPresent(IConnectedEngineFacade::notifyAllListenersStateChanged);
-      server.ifPresent(IConnectedEngineFacade::subscribeForEventsForBoundProjects);
     }
     var labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
     if (labelProvider != null) {

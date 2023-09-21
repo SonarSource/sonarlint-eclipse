@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -67,15 +68,20 @@ import org.sonarsource.sonarlint.core.clientapi.client.binding.AssistBindingResp
 import org.sonarsource.sonarlint.core.clientapi.client.binding.SuggestBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.client.connection.AssistCreatingConnectionParams;
 import org.sonarsource.sonarlint.core.clientapi.client.connection.AssistCreatingConnectionResponse;
+import org.sonarsource.sonarlint.core.clientapi.client.event.DidReceiveServerEventParams;
 import org.sonarsource.sonarlint.core.clientapi.client.hotspot.HotspotDetailsDto;
 import org.sonarsource.sonarlint.core.clientapi.client.hotspot.ShowHotspotParams;
 import org.sonarsource.sonarlint.core.clientapi.client.info.GetClientInfoResponse;
 import org.sonarsource.sonarlint.core.clientapi.client.message.ShowMessageParams;
+import org.sonarsource.sonarlint.core.clientapi.client.message.ShowSoonUnsupportedMessageParams;
 import org.sonarsource.sonarlint.core.clientapi.client.progress.ReportProgressParams;
 import org.sonarsource.sonarlint.core.clientapi.client.progress.StartProgressParams;
 import org.sonarsource.sonarlint.core.clientapi.client.smartnotification.ShowSmartNotificationParams;
 import org.sonarsource.sonarlint.core.clientapi.client.sync.DidSynchronizeConfigurationScopeParams;
 import org.sonarsource.sonarlint.core.commons.TextRange;
+import org.sonarsource.sonarlint.core.serverapi.push.IssueChangedEvent;
+import org.sonarsource.sonarlint.core.serverapi.push.TaintVulnerabilityClosedEvent;
+import org.sonarsource.sonarlint.core.serverapi.push.TaintVulnerabilityRaisedEvent;
 
 public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
@@ -290,23 +296,64 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
       .map(Optional::get)
       .collect(Collectors.toSet())
       .forEach(project -> {
-      var openedFiles = PlatformUtils.collectOpenedFiles(project, f -> true);
-      if (!openedFiles.isEmpty() && openedFiles.containsKey(project)) {
-        var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
-        if (bindingOpt.isPresent()) {
-          var connection = (ConnectedEngineFacade) bindingOpt.get().getEngineFacade();
-          
-          // present taint vulnerabilities without re-fetching them from the server
-          var files = openedFiles.get(project).stream()
-            .map(file -> file.getFile())
-            .collect(Collectors.toList());
-          new TaintIssuesUpdateAfterSyncJob(connection, project, files).schedule();
-          
-          // also schedule analyze of opened files based on synced information
-          AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE,
-            f -> SonarLintUtils.isBoundToConnection(f, connection));
+        var openedFiles = PlatformUtils.collectOpenedFiles(project, f -> true);
+        if (!openedFiles.isEmpty() && openedFiles.containsKey(project)) {
+          var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+          if (bindingOpt.isPresent()) {
+            var connection = (ConnectedEngineFacade) bindingOpt.get().getEngineFacade();
+
+            // present taint vulnerabilities without re-fetching them from the server
+            var files = openedFiles.get(project).stream()
+              .map(file -> file.getFile())
+              .collect(Collectors.toList());
+            new TaintIssuesUpdateAfterSyncJob(connection, project, files).schedule();
+
+            // also schedule analyze of opened files based on synced information
+            AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE,
+              f -> SonarLintUtils.isBoundToConnection(f, connection));
+          }
         }
+      });
+  }
+
+  @Override
+  public void showSoonUnsupportedMessage(ShowSoonUnsupportedMessageParams params) {
+    // Not yet implemented
+  }
+
+  @Override
+  public void didReceiveServerEvent(DidReceiveServerEventParams params) {
+    var event = params.getServerEvent();
+    var connectionId = params.getConnectionId();
+    var facadeOpt = SonarLintCorePlugin.getServersManager().findById(connectionId);
+    facadeOpt.ifPresent(facade -> {
+      // FIXME Very inefficient implementation. Should be acceptable as we don't expect to have too many taint vulnerabilities
+      if (event instanceof TaintVulnerabilityClosedEvent) {
+        var projectKey = ((TaintVulnerabilityClosedEvent) event).getProjectKey();
+        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectedEngineFacade) facade, projectKey);
+      } else if (event instanceof TaintVulnerabilityRaisedEvent) {
+        var projectKey = ((TaintVulnerabilityRaisedEvent) event).getProjectKey();
+        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectedEngineFacade) facade, projectKey);
+      } else if (event instanceof IssueChangedEvent) {
+        var issueChangedEvent = (IssueChangedEvent) event;
+        var projectKey = issueChangedEvent.getProjectKey();
+        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectedEngineFacade) facade, projectKey);
       }
     });
+  }
+
+  private static void refreshTaintVulnerabilitiesForProjectsBoundToProjectKey(ConnectedEngineFacade facade, String sonarProjectKey) {
+    doWithAffectedProjects(facade, sonarProjectKey, p -> {
+      var openedFiles = PlatformUtils.collectOpenedFiles(p, f -> true);
+      var files = openedFiles.get(p).stream()
+        .map(file -> file.getFile())
+        .collect(Collectors.toList());
+      new TaintIssuesUpdateAfterSyncJob(facade, p, files).schedule();
+    });
+  }
+
+  private static void doWithAffectedProjects(ConnectedEngineFacade facade, String sonarProjectKey, Consumer<ISonarLintProject> consumer) {
+    var possiblyAffectedProjects = facade.getBoundProjects(sonarProjectKey);
+    possiblyAffectedProjects.forEach(consumer::accept);
   }
 }

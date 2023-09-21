@@ -48,8 +48,6 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeLifecycleListener;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateOnFileOpenedJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
@@ -167,30 +165,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     SonarLintNotifications.get().addNotificationListener(notifListener);
 
     SonarLintBackendService.get().init(new SonarLintEclipseClient());
-
-    var serverEventListener = new SonarLintServerEventListener();
-
-    var connectionListener = new IConnectedEngineFacadeLifecycleListener() {
-      @Override
-      public void connectionAdded(IConnectedEngineFacade server) {
-        server.addServerEventListener(serverEventListener);
-      }
-
-      @Override
-      public void connectionChanged(IConnectedEngineFacade server) {
-      }
-
-      @Override
-      public void connectionRemoved(IConnectedEngineFacade server) {
-        server.removeServerEventListener(serverEventListener);
-      }
-    };
-    SonarLintCorePlugin.getServersManager().addServerLifecycleListener(connectionListener);
-
-    // add event listeners to connections
-    for (var server : SonarLintCorePlugin.getServersManager().getServers()) {
-      server.addServerEventListener(serverEventListener);
-    }
 
     // Schedule auto-sync
     new PeriodicStoragesSynchronizerJob().schedule(Duration.ofSeconds(1).toMillis());

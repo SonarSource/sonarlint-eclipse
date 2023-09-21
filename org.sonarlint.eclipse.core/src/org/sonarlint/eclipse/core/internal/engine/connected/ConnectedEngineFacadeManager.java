@@ -388,7 +388,6 @@ public class ConnectedEngineFacadeManager {
     }
     var connectionToUpdate = (ConnectedEngineFacade) facadesByConnectionId.get(facade.getId());
     update(connectionToUpdate, facade.getHost(), facade.getOrganization(), facade.hasAuth(), facade.areNotificationsDisabled());
-    connectionToUpdate.subscribeForEventsForBoundProjects();
 
     fireServerEvent(connectionToUpdate, EVENT_CHANGED);
     if (credentialsChanged) {
@@ -490,8 +489,4 @@ public class ConnectedEngineFacadeManager {
       .setNotificationsDisabled(notificationsDisabled);
   }
 
-  public void subscribeForEvents(ISonarLintProject project) {
-    resolveBinding(project)
-      .ifPresent(b -> b.getEngineFacade().subscribeForEventsForBoundProjects());
-  }
 }

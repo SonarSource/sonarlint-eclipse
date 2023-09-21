@@ -436,10 +436,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     var notificationShell2 = new DefaultShell("SonarLint - Issue marked as resolved");
     new DefaultLink(notificationShell2, "Dismiss").click();
 
-    // Try to close reopen to make the issue disappear
-    new DefaultEditor().close();
-    openFileAndWaitForAnalysisCompletion(hello2);
-
     // 13) Assert marker is gone
     await().until(() -> onTheFlyView.getIssues(ISSUE_MATCHER), List<SonarLintIssueMarker>::isEmpty);
   }
