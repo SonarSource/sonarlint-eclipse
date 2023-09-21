@@ -20,14 +20,22 @@
 package org.sonarlint.eclipse.core.internal.utils;
 
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.commons.NewCodeDefinition;
+import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 public class SonarLintUtils {
 
@@ -90,5 +98,27 @@ public class SonarLintUtils {
     return config.isBound()
       && config.getProjectBinding().isPresent()
       && facade.getId().equals(config.getProjectBinding().get().connectionId());
+  }
+  
+  /**
+   *  Get the new code definition for a project based on the preference set. In case getting the new code period fails,
+   *  e.g. for because project is in standalone mode or the server cannot be reached, just fallback to displaying all
+   *  issues with {@link org.sonarsource.sonarlint.core.commons.NewCodeDefinition.NewCodeAlwaysNew}.
+   *  
+   *  @param project the project used for getting the connection id if possible
+   *  @param monitor for the job utilities
+   *  @return either the new code definition found or as fallback all issues from all time
+   */
+  public static NewCodeDefinition getNewCodeDefinitionWithFallback(ISonarLintProject project, IProgressMonitor monitor) {
+    var newCodeDefinition = NewCodeDefinition.withAlwaysNew();
+    if (Objects.equals(SonarLintGlobalConfiguration.getIssuePeriod(), SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_DEFAULT)) {
+      try {
+        newCodeDefinition = JobUtils.waitForFuture(monitor,
+          SonarLintBackendService.get().getNewCodeDefinition(project)).getNewCodeDefinition();
+      } catch (InterruptedException | ExecutionException e) {
+        SonarLintLogger.get().error("The new code period configuration cannot be loaded for the project " + project.getName(), e);
+      }
+    }
+    return newCodeDefinition;
   }
 }

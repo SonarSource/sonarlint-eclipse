@@ -58,6 +58,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.NewCodeDefinition;
 import org.sonarsource.sonarlint.core.serverconnection.issues.ServerTaintIssue;
 import org.sonarsource.sonarlint.core.serverconnection.issues.ServerTaintIssue.ServerIssueLocation;
 
@@ -72,7 +73,8 @@ public class SonarLintMarkerUpdater {
     taintVulnerabilitiesListener = listener;
   }
 
-  public static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument, Collection<Trackable> issues, TriggerType triggerType) {
+  public static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument,
+    Collection<Trackable> issues, TriggerType triggerType, NewCodeDefinition newCodeDefinition) {
     try {
       Set<IMarker> previousMarkersToDelete;
       if (triggerType.isOnTheFly()) {
@@ -81,7 +83,7 @@ public class SonarLintMarkerUpdater {
         previousMarkersToDelete = Collections.emptySet();
       }
 
-      createOrUpdateMarkers(file, openedDocument, issues, triggerType, previousMarkersToDelete);
+      createOrUpdateMarkers(file, openedDocument, issues, triggerType, previousMarkersToDelete, newCodeDefinition);
 
       for (var marker : previousMarkersToDelete) {
         marker.delete();
@@ -161,10 +163,11 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  public static void updateMarkersWithServerSideData(ISonarLintIssuable issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType) {
+  public static void updateMarkersWithServerSideData(ISonarLintIssuable issuable, IDocument document,
+    Collection<Trackable> issues, TriggerType triggerType, NewCodeDefinition newCodeDefinition) {
     try {
       for (var issue : issues) {
-        updateMarkerWithServerSideData(issuable, document, issue, triggerType);
+        updateMarkerWithServerSideData(issuable, document, issue, triggerType, newCodeDefinition);
       }
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
@@ -172,14 +175,15 @@ public class SonarLintMarkerUpdater {
   }
 
   private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, IDocument document, Trackable issue,
-    TriggerType triggerType)
+    TriggerType triggerType, NewCodeDefinition newCodeDefinition)
     throws CoreException {
     var markerId = issue.getMarkerId();
     IMarker marker = null;
     if (markerId != null) {
       marker = issuable.getResource().findMarker(markerId);
     }
-    if (issue.isResolved()) {
+    
+    if (!newCodeDefinition.isOnNewCode(issue.getCreationDate()) || issue.isResolved()) {
       if (marker != null) {
         // Issue is associated to a marker, means it was not marked as resolved in previous analysis, but now it is, so clear marker
         marker.delete();
@@ -195,11 +199,14 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument, Collection<Trackable> issues,
-    TriggerType triggerType, Set<IMarker> previousMarkersToDelete) throws CoreException {
+  private static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument,
+    Collection<Trackable> issues, TriggerType triggerType, Set<IMarker> previousMarkersToDelete,
+    NewCodeDefinition newCodeDefinition) throws CoreException {
     var lazyInitDocument = openedDocument.orElse(null);
     for (var issue : issues) {
-      if (!issue.isResolved()) {
+      // INFO: issue.getCreationDate() can be null, therefore we have to check that first. This issues should also be
+      //       displayed on new code period, just because we don't know any better!
+      if (issue.getCreationDate() == null || !newCodeDefinition.isOnNewCode(issue.getCreationDate()) || !issue.isResolved()) {
         lazyInitDocument = lazyInitDocument != null ? lazyInitDocument : file.getDocument();
         if (!triggerType.isOnTheFly() || issue.getMarkerId() == null || file.getResource().findMarker(issue.getMarkerId()) == null) {
           createMarker(lazyInitDocument, file, issue, triggerType);

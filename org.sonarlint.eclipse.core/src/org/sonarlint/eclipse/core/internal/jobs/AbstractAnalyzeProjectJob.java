@@ -59,6 +59,7 @@ import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -298,6 +299,10 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
 
   protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
     final IProgressMonitor monitor) {
+    if (rawIssuesPerResource.entrySet().isEmpty()) {
+      return;
+    }
+    var newCodeDefinition = SonarLintUtils.getNewCodeDefinitionWithFallback(getProject(), monitor);
 
     for (var entry : rawIssuesPerResource.entrySet()) {
       if (monitor.isCanceled()) {
@@ -315,7 +320,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
         trackables = Collections.emptyList();
       }
       var tracked = trackFileIssues(file, trackables, issueTracker, triggerType, rawIssuesPerResource.size(), monitor);
-      SonarLintMarkerUpdater.createOrUpdateMarkers(file, openedDocument, tracked, triggerType);
+      SonarLintMarkerUpdater.createOrUpdateMarkers(file, openedDocument, tracked, triggerType, newCodeDefinition);
       // Now that markerId are set, store issues in cache
       issueTracker.updateCache(file, tracked);
     }

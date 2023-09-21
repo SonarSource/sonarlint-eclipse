@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -66,7 +67,8 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
         var markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(issuable.getResource());
         try {
           getJobManager().beginRule(markerRule, monitor);
-          SonarLintMarkerUpdater.updateMarkersWithServerSideData(issuable, documentNotNull, entry.getValue(), triggerType);
+          SonarLintMarkerUpdater.updateMarkersWithServerSideData(issuable, documentNotNull, entry.getValue(),
+            triggerType, SonarLintUtils.getNewCodeDefinitionWithFallback(getProject(), monitor));
         } finally {
           getJobManager().endRule(markerRule);
         }
