@@ -26,6 +26,7 @@ public class SonarLintDocumentation {
   public static final String TAINT_VULNERABILITIES_LINK = BASE_DOCS_URL + "/using-sonarlint/taint-vulnerabilities/";
   public static final String ON_THE_FLY_VIEW_LINK = BASE_DOCS_URL + "/using-sonarlint/investigating-issues/#the-on-the-fly-view";
   public static final String REPORT_VIEW_LINK = BASE_DOCS_URL + "/using-sonarlint/investigating-issues/#the-report-view";
+  public static final String ISSUE_PERIOD_LINK = BASE_DOCS_URL + "/using-sonarlint/investigating-issues/#focusing-on-new-code";
 
   private SonarLintDocumentation() {
     // utility class
