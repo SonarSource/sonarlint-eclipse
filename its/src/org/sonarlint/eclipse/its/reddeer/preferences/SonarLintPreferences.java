@@ -38,7 +38,7 @@ public class SonarLintPreferences extends PropertyPage {
   }
 
   public void setMarkersSeverity(MarkerSeverity severity) {
-    new DefaultCombo(this, new WithLabelMatcher("Severity of SonarLint markers:")).setSelection(severity.getTextInCombo());
+    new DefaultCombo(this, new WithLabelMatcher("SonarLint markers severity:")).setSelection(severity.getTextInCombo());
   }
 
   public enum MarkerSeverity {

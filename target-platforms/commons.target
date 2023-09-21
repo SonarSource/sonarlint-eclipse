@@ -17,7 +17,7 @@
 			  <dependency>
 				  <groupId>org.sonarsource.sonarlint.core</groupId>
 				  <artifactId>sonarlint-core-osgi</artifactId>
-				  <version>9.3.0.74670</version>
+				  <version>9.3.0.74703</version>
 				  <type>jar</type>
 			  </dependency>
 		  </dependencies>

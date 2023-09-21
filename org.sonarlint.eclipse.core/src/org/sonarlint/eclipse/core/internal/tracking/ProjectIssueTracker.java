@@ -38,7 +38,7 @@ import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.clientapi.backend.tracking.ClientTrackedIssueDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.tracking.ClientTrackedFindingDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.tracking.LineWithHashDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.tracking.TextRangeWithHashDto;
 import org.sonarsource.sonarlint.core.serverconnection.IssueStorePaths;
@@ -123,7 +123,7 @@ public class ProjectIssueTracker {
 
   public synchronized void trackWithServerIssues(ProjectBinding projectBinding, Collection<ISonarLintIssuable> issuables, boolean shouldUpdateServerIssues,
     IProgressMonitor monitor) {
-    var issuesDtos = new HashMap<String, List<ClientTrackedIssueDto>>();
+    var issuesDtos = new HashMap<String, List<ClientTrackedFindingDto>>();
 
     for (var issuable : issuables) {
       if (issuable instanceof ISonarLintFile) {
@@ -157,13 +157,13 @@ public class ProjectIssueTracker {
     }
   }
 
-  private static ClientTrackedIssueDto convertFromTrackable(TrackedIssue issue) {
+  private static ClientTrackedFindingDto convertFromTrackable(TrackedIssue issue) {
     var textRange = issue.getIssueFromAnalysis().getTextRange();
     var textRangeWithHash = textRange != null
       ? new TextRangeWithHashDto(textRange.getStartLine(), textRange.getStartLineOffset(), textRange.getEndLine(), textRange.getEndLineOffset(), issue.getTextRangeHash())
       : null;
     var lineWithHash = textRange != null ? new LineWithHashDto(textRange.getStartLine(), issue.getLineHash()) : null;
-    return new ClientTrackedIssueDto(null, issue.getServerIssueKey(),
+    return new ClientTrackedFindingDto(null, issue.getServerIssueKey(),
       textRangeWithHash,
       lineWithHash, issue.getRuleKey(), issue.getMessage());
   }

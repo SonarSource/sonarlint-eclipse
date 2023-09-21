@@ -58,7 +58,7 @@ import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDe
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.ListAllStandaloneRulesDefinitionsResponse;
-import org.sonarsource.sonarlint.core.clientapi.backend.tracking.ClientTrackedIssueDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.tracking.ClientTrackedFindingDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.tracking.TrackWithServerIssuesParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.tracking.TrackWithServerIssuesResponse;
 import org.sonarsource.sonarlint.core.commons.Language;
@@ -121,7 +121,8 @@ public class SonarLintBackendService {
             sqConnections,
             scConnections,
             null,
-            SonarLintGlobalConfiguration.buildStandaloneRulesConfig())).get();
+            SonarLintGlobalConfiguration.buildStandaloneRulesConfig(),
+            true)).get();
         } catch (InterruptedException | ExecutionException e) {
           throw new IllegalStateException("Unable to initialize the SonarLint Backend", e);
         }
@@ -228,9 +229,14 @@ public class SonarLintBackendService {
   }
 
   public CompletableFuture<TrackWithServerIssuesResponse> trackWithServerIssues(ISonarLintProject project,
-    Map<String, List<ClientTrackedIssueDto>> clientTrackedIssuesByServerRelativePath,
+    Map<String, List<ClientTrackedFindingDto>> clientTrackedIssuesByServerRelativePath,
     boolean shouldFetchIssuesFromServer) {
     return getBackend().getIssueTrackingService().trackWithServerIssues(
       new TrackWithServerIssuesParams(ConfigScopeSynchronizer.getConfigScopeId(project), clientTrackedIssuesByServerRelativePath, shouldFetchIssuesFromServer));
+  }
+  
+  /** When the (workspace) preference for focusing on new code is changed, the telemetry has to be adjusted */
+  public void notifyTelemetryAfterNewCodePreferenceChanged() {
+    getBackend().getNewCodeService().didToggleFocus();
   }
 }
