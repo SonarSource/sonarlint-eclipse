@@ -19,39 +19,35 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.runtime.Adapters;
+import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
- * Registry of per-module IssueTracker instances.
+ * Registry of per-project IssueTracker instances.
  */
-public class IssueTrackerRegistry {
+public class IssueTrackerRegistry implements IResourceChangeListener {
+  private final Map<ISonarLintProject, IssueTracker> registry = new ConcurrentHashMap<>();
 
-  // Use project name as key since we don't know if ISonarLintProject instances are implementing hashcode
-  private final Map<String, IssueTracker> registry = new HashMap<>();
-  private final IssueTrackerCacheFactory cacheFactory;
-
-  public IssueTrackerRegistry(IssueTrackerCacheFactory cacheFactory) {
-    this.cacheFactory = cacheFactory;
+  public IssueTracker getOrCreate(ISonarLintProject project) {
+    return registry.computeIfAbsent(project, p -> newTracker(p));
   }
 
-  public synchronized IssueTracker getOrCreate(ISonarLintProject project) {
-    var tracker = registry.get(project.getName());
-    if (tracker == null) {
-      tracker = newTracker(project);
-      registry.put(project.getName(), tracker);
-    }
-    return tracker;
+  public Optional<IssueTracker> get(ISonarLintProject project) {
+    return Optional.ofNullable(registry.get(project));
   }
 
-  public synchronized Optional<IssueTracker> get(ISonarLintProject project) {
-    return Optional.ofNullable(registry.get(project.getName()));
-  }
-
-  private IssueTracker newTracker(ISonarLintProject project) {
-    return new IssueTracker(cacheFactory.apply(project));
+  private static IssueTracker newTracker(ISonarLintProject project) {
+    var storeBasePath = StoragePathManager.getIssuesDir(project);
+    var issueStore = new IssueStore(storeBasePath, project);
+    var trackerCache = new PersistentIssueTrackerCache(issueStore);
+    
+    return new IssueTracker(trackerCache);
   }
 
   public void shutdown() {
@@ -60,4 +56,14 @@ public class IssueTrackerRegistry {
     }
   }
 
+  @Override
+  public void resourceChanged(IResourceChangeEvent event) {
+    if (event.getType() == IResourceChangeEvent.PRE_CLOSE || event.getType() == IResourceChangeEvent.PRE_DELETE) {
+      var project = Adapters.adapt(event.getResource(), ISonarLintProject.class);
+      if (project != null) {
+        var removed = registry.remove(project);
+        removed.shutdown();
+      }
+    }
+  }
 }

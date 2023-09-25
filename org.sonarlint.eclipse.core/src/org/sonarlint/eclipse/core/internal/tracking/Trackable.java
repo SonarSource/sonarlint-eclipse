@@ -53,10 +53,10 @@ public interface Trackable {
   String getMessage();
 
   @Nullable
-  Integer getTextRangeHash();
+  String getTextRangeHash();
 
   @Nullable
-  Integer getLineHash();
+  String getLineHash();
 
   String getRuleKey();
 

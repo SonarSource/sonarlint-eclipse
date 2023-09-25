@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal;
 
 import org.eclipse.core.net.proxy.IProxyService;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
@@ -42,7 +43,6 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
-import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerCacheFactory;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerRegistry;
 import org.sonarlint.eclipse.core.internal.tracking.PersistentIssueTrackerCache;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
@@ -100,12 +100,9 @@ public class SonarLintCorePlugin extends Plugin {
   public void start(BundleContext context) throws Exception {
     super.start(context);
 
-    IssueTrackerCacheFactory factory = project -> {
-      var storeBasePath = StoragePathManager.getIssuesDir(project);
-      var issueStore = new IssueStore(storeBasePath, project);
-      return new PersistentIssueTrackerCache(issueStore);
-    };
-    issueTrackerRegistry = new IssueTrackerRegistry(factory);
+    
+    issueTrackerRegistry = new IssueTrackerRegistry();
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(issueTrackerRegistry);
 
     serverIssueUpdater = new ServerIssueUpdater(issueTrackerRegistry);
 
@@ -150,6 +147,7 @@ public class SonarLintCorePlugin extends Plugin {
     SonarLintBackendService.get().stop();
     proxyTracker.close();
 
+    ResourcesPlugin.getWorkspace().removeResourceChangeListener(issueTrackerRegistry);
     issueTrackerRegistry.shutdown();
     if (serversManager != null) {
       serversManager.stop();

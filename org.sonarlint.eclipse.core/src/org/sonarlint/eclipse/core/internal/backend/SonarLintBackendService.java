@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.backend;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -57,6 +58,9 @@ import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDe
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.ListAllStandaloneRulesDefinitionsResponse;
+import org.sonarsource.sonarlint.core.clientapi.backend.tracking.ClientTrackedIssueDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.tracking.TrackWithServerIssuesParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.tracking.TrackWithServerIssuesResponse;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 import static java.util.Objects.requireNonNull;
@@ -223,4 +227,8 @@ public class SonarLintBackendService {
       .addComment(new AddIssueCommentParams(ConfigScopeSynchronizer.getConfigScopeId(project), serverIssueKey, text));
   }
 
+  public CompletableFuture<TrackWithServerIssuesResponse> trackWithServerIssues(ISonarLintProject project, Map<String, List<ClientTrackedIssueDto>> clientTrackedIssuesByServerRelativePath,
+    boolean shouldFetchIssuesFromServer) {
+    return getBackend().getIssueTrackingService().trackWithServerIssues(new TrackWithServerIssuesParams(ConfigScopeSynchronizer.getConfigScopeId(project), clientTrackedIssuesByServerRelativePath, shouldFetchIssuesFromServer));
+  }
 }

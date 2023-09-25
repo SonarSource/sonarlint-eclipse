@@ -20,28 +20,22 @@
 package org.sonarlint.eclipse.core.internal;
 
 public enum TriggerType {
-  STARTUP("Startup", ServerIssueUpdateStrategy.PER_FILE_ASYNC),
-  EDITOR_OPEN("Editor open", ServerIssueUpdateStrategy.PER_FILE_ASYNC),
-  MANUAL("Manual trigger", ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC),
-  MANUAL_CHANGESET("Manual trigger changeset", ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC),
+  STARTUP("Startup", ServerIssueUpdateStrategy.UPDATE),
+  EDITOR_OPEN("Editor open", ServerIssueUpdateStrategy.UPDATE),
+  MANUAL("Manual trigger", ServerIssueUpdateStrategy.UPDATE),
+  MANUAL_CHANGESET("Manual trigger changeset", ServerIssueUpdateStrategy.UPDATE),
   EDITOR_CHANGE("Editor change", ServerIssueUpdateStrategy.NO_UPDATE),
-  BINDING_CHANGE("Binding change", ServerIssueUpdateStrategy.PER_FILE_ASYNC),
+  BINDING_CHANGE("Binding change", ServerIssueUpdateStrategy.UPDATE),
   STANDALONE_CONFIG_CHANGE("Standalone config change", ServerIssueUpdateStrategy.NO_UPDATE),
   QUICK_FIX("Quick fix", ServerIssueUpdateStrategy.NO_UPDATE),
   AFTER_RESOLVE("After resolve", ServerIssueUpdateStrategy.NO_UPDATE),
   SERVER_EVENT("Server Event", ServerIssueUpdateStrategy.NO_UPDATE);
 
-  /**
-   * Magic number to decide if issues should be fetched per file or once for the entire project
-   */
-  private static final int PER_FILE_THRESHOLD = 10;
-
   private final String name;
 
   private enum ServerIssueUpdateStrategy {
     NO_UPDATE,
-    PER_PROJECT_OR_PER_FILE_SYNC,
-    PER_FILE_ASYNC
+    UPDATE
   }
 
   private final ServerIssueUpdateStrategy updateStrategy;
@@ -55,16 +49,8 @@ public enum TriggerType {
     return name;
   }
 
-  public boolean shouldUpdateFileIssuesAsync() {
-    return updateStrategy == ServerIssueUpdateStrategy.PER_FILE_ASYNC;
-  }
-
-  public boolean shouldUpdateFileIssuesSync(int fileCount) {
-    return updateStrategy == ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC && fileCount < PER_FILE_THRESHOLD;
-  }
-
-  public boolean shouldUpdateProjectIssuesSync(int fileCount) {
-    return updateStrategy == ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC && fileCount >= PER_FILE_THRESHOLD;
+  public boolean shouldUpdate() {
+    return updateStrategy == ServerIssueUpdateStrategy.UPDATE;
   }
 
   public boolean isOnTheFly() {

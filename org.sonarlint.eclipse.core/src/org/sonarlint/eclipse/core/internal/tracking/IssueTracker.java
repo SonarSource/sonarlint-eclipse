@@ -60,38 +60,9 @@ public class IssueTracker {
   public synchronized void updateCache(ISonarLintFile file, Collection<Trackable> tracked) {
     cache.put(file.getProjectRelativePath(), tracked);
   }
-
-  /**
-   * "Rebase" current issues against given server issues.
-   *
-   */
-  public synchronized Collection<Trackable> matchAndTrackServerIssues(ISonarLintFile file, Collection<Trackable> serverIssues) {
-    // store issues (ProtobufIssueTrackable) are of no use since they can't be used in markers. There should have been
-    // an analysis before that set the live issues for the file (even if it is empty)
-    var current = cache.getLiveOrFail(file.getProjectRelativePath());
-    if (current.isEmpty()) {
-      // whatever is the base, if current is empty, then nothing to do
-      return Collections.emptyList();
-    }
-    return matchAndTrackServerIssues(serverIssues, current);
-  }
-
-  public static Collection<Trackable> matchAndTrackServerIssues(Collection<Trackable> serverIssues, Collection<Trackable> currentIssues) {
-    var trackedIssues = new ArrayList<Trackable>();
-    var tracking = new Tracker<>().trackServer(() -> currentIssues, () -> serverIssues);
-    for (var entry : tracking.getMatchedRaws().entrySet()) {
-      var next = new CombinedTrackable(entry.getValue(), entry.getKey());
-      trackedIssues.add(next);
-    }
-    for (var next : tracking.getUnmatchedRaws()) {
-      if (next.getServerIssueKey() != null) {
-        next = new DisconnectedTrackable(next);
-      } else if (next.getCreationDate() == null) {
-        next = new LeakedTrackable(next);
-      }
-      trackedIssues.add(next);
-    }
-    return trackedIssues;
+  
+  public Collection<Trackable> getFromLocalCache(ISonarLintFile file) {
+    return cache.getLiveOrFail(file.getProjectRelativePath());
   }
 
   public void clear() {
