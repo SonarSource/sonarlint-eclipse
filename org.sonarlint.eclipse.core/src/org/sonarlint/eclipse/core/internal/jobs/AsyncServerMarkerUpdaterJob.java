@@ -28,20 +28,19 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.tracking.Trackable;
+import org.sonarlint.eclipse.core.internal.tracking.TrackedIssue;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
-  private final Map<ISonarLintIssuable, Collection<Trackable>> issuesPerResource;
+  private final Map<ISonarLintFile, Collection<TrackedIssue>> issuesPerFile;
   private final TriggerType triggerType;
   private final Map<ISonarLintFile, IDocument> docPerFile;
 
-  public AsyncServerMarkerUpdaterJob(ISonarLintProject project, Map<ISonarLintIssuable, Collection<Trackable>> issuesPerResource, Map<ISonarLintFile, IDocument> docPerFile,
+  public AsyncServerMarkerUpdaterJob(ISonarLintProject project, Map<ISonarLintFile, Collection<TrackedIssue>> issuesPerFile, Map<ISonarLintFile, IDocument> docPerFile,
     TriggerType triggerType) {
-    super("Update SonarLint markers based on server side issues", project);
-    this.issuesPerResource = issuesPerResource;
+    super("Update SonarLint markers based on server side matching", project);
+    this.issuesPerFile = issuesPerFile;
     this.docPerFile = docPerFile;
     this.triggerType = triggerType;
   }
@@ -53,23 +52,21 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
   }
 
   private void updateMarkers(IProgressMonitor monitor) {
-    for (var entry : issuesPerResource.entrySet()) {
-      var issuable = entry.getKey();
-      if (issuable instanceof ISonarLintFile) {
-        var documentOrNull = docPerFile.get(issuable);
-        final IDocument documentNotNull;
-        if (documentOrNull == null) {
-          documentNotNull = ((ISonarLintFile) issuable).getDocument();
-        } else {
-          documentNotNull = documentOrNull;
-        }
-        var markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(issuable.getResource());
-        try {
-          getJobManager().beginRule(markerRule, monitor);
-          SonarLintMarkerUpdater.updateMarkersWithServerSideData(issuable, documentNotNull, entry.getValue(), triggerType);
-        } finally {
-          getJobManager().endRule(markerRule);
-        }
+    for (var entry : issuesPerFile.entrySet()) {
+      var slFile = entry.getKey();
+      var documentOrNull = docPerFile.get(slFile);
+      final IDocument documentNotNull;
+      if (documentOrNull == null) {
+        documentNotNull = slFile.getDocument();
+      } else {
+        documentNotNull = documentOrNull;
+      }
+      var markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(slFile.getResource());
+      try {
+        getJobManager().beginRule(markerRule, monitor);
+        SonarLintMarkerUpdater.updateMarkersWithServerSideData(slFile, documentNotNull, entry.getValue(), triggerType);
+      } finally {
+        getJobManager().endRule(markerRule);
       }
     }
   }

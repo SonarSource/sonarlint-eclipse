@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProtobufIssueTrackableTest {
 
-  private final Trackable empty = new ProtobufIssueTrackable(Issue.newBuilder().build());
+  private final TrackedIssue empty = new ProtobufMatchableIssueAdapter(Issue.newBuilder().build());
 
   @Test
   public void should_return_null_serverIssueKey_when_unset() {

@@ -11,20 +11,17 @@ message Issues {
     repeated Issue issue = 1;
 
     message Issue {
-        // used for matching
+        reserved 5, 9;
         string serverIssueKey = 1;
         string ruleKey = 2;
         int32 line = 3;
         string message = 4;
-        int32 checksum = 5;
-
-        // values carried forward
         string assignee = 6 [deprecated=true];
         int64 creationDate = 7;
         bool resolved = 8;
-        int64 markerId = 9;
         string severity = 10;
         string type = 11;
+        string textRangeDigest = 12;
     }
 }
 

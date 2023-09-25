@@ -91,7 +91,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     }
   }
 
-  private IMarker[] processTrackable(Trackable... trackables) throws CoreException {
+  private IMarker[] processTrackable(TrackedIssue... trackables) throws CoreException {
     var relativePath = "src/Findbugs.java";
     var absolutePath = project.getLocation().toString() + "/" + relativePath;
     var location = Path.fromOSString(absolutePath);
@@ -108,8 +108,8 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
    *
    * @return a mock trackable
    */
-  private Trackable newMockTrackable() {
-    var trackable = mock(Trackable.class);
+  private TrackedIssue newMockTrackable() {
+    var trackable = mock(TrackedIssue.class);
     // mandatory non-nulls
     when(trackable.getTextRange()).thenReturn(new TextRange(1, 2, 3, 4));
     when(trackable.getSeverity()).thenReturn(IssueSeverity.MAJOR);

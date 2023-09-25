@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
-import org.sonarsource.sonarlint.core.commons.TextRange;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -38,14 +37,14 @@ public class IssueTrackerTest {
 
   private final IssueTrackerCache cache = new InMemoryIssueTrackerCache();
 
-  private final IssueTracker tracker = new IssueTracker(cache);
+  private final ProjectIssueTracker tracker = new ProjectIssueTracker(cache);
 
   private ISonarLintFile file1;
 
   // note: these mock trackables are used by many test cases,
   // with their line numbers to distinguish their identities.
-  private final Trackable trackable1 = builder().line(1).build();
-  private final Trackable trackable2 = builder().line(2).build();
+  private final TrackedIssue trackable1 = builder().line(1).build();
+  private final TrackedIssue trackable2 = builder().line(2).build();
 
   static class MockTrackableBuilder {
     String ruleKey = "";
@@ -125,8 +124,8 @@ public class IssueTrackerTest {
         .rawSeverity(rawSeverity);
     }
 
-    Trackable build() {
-      var trackable = mock(Trackable.class);
+    TrackedIssue build() {
+      var trackable = mock(TrackedIssue.class);
       when(trackable.getLine()).thenReturn(line);
       when(trackable.getTextRangeHash()).thenReturn(textRangeHash);
       when(trackable.getLineHash()).thenReturn(lineHash);
@@ -174,15 +173,15 @@ public class IssueTrackerTest {
 
   @Test
   public void should_track_first_trackables_exactly() {
-    var trackables = List.of(mock(Trackable.class), mock(Trackable.class));
-    assertThat(tracker.matchAndTrackAsNew(file1, trackables)).isEqualTo(trackables);
+    var trackables = List.of(mock(TrackedIssue.class), mock(TrackedIssue.class));
+    assertThat(tracker.processRawIssues(file1, trackables)).isEqualTo(trackables);
   }
 
   @Test
   public void should_preserve_known_standalone_trackables_with_null_date() {
     var trackables = List.of(trackable1, trackable2);
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, trackables));
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, trackables));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, trackables));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, trackables));
 
     var next = cache.getCurrentTrackables(DUMMY_FILE1_PATH);
     assertThat(next).extracting(t -> t.getLine()).containsExactlyInAnyOrder(trackable1.getLine(), trackable2.getLine());
@@ -193,8 +192,8 @@ public class IssueTrackerTest {
   public void should_add_creation_date_for_leaked_trackables() {
     var start = System.currentTimeMillis();
 
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(trackable1)));
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(trackable1, trackable2)));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of(trackable1)));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of(trackable1, trackable2)));
 
     var next = cache.getCurrentTrackables(DUMMY_FILE1_PATH);
     assertThat(next).extracting(t -> t.getLine()).contains(trackable1.getLine(), trackable2.getLine());
@@ -208,8 +207,8 @@ public class IssueTrackerTest {
 
   @Test
   public void should_drop_disappeared_issues() {
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(trackable1, trackable2)));
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(trackable1)));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of(trackable1, trackable2)));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of(trackable1)));
 
     var next = cache.getCurrentTrackables(DUMMY_FILE1_PATH);
     assertThat(next).extracting(t -> t.getLine()).containsExactly(trackable1.getLine());
@@ -227,16 +226,16 @@ public class IssueTrackerTest {
       .serverIssueKey("dummy serverIssueKey")
       .creationDate(17L);
 
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(base.build())));
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(base.ruleKey(ruleKey + "x").build())));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of(base.build())));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of(base.ruleKey(ruleKey + "x").build())));
   }
 
   @Test
   public void should_treat_new_issues_as_leak_when_old_issues_disappeared() {
     var start = System.currentTimeMillis();
 
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(trackable1)));
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(trackable2)));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of(trackable1)));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of(trackable2)));
 
     var next = cache.getCurrentTrackables(DUMMY_FILE1_PATH);
     assertThat(next).extracting(t -> t.getLine()).containsExactly(trackable2.getLine());
@@ -256,12 +255,12 @@ public class IssueTrackerTest {
     var movedIssue = mockIssue();
     when(movedIssue.getStartLine()).thenReturn(newLine);
 
-    var trackable = new RawIssueTrackable(issue, mock(TextRange.class), null, lineContent);
-    var movedTrackable = new RawIssueTrackable(movedIssue, mock(TextRange.class), null, lineContent);
-    var nonMatchingTrackable = new RawIssueTrackable(mockIssue(), mock(TextRange.class), null, lineContent + "x");
+    var trackable = new RawIssueTrackable(issue, null, lineContent);
+    var movedTrackable = new RawIssueTrackable(movedIssue, null, lineContent);
+    var nonMatchingTrackable = new RawIssueTrackable(mockIssue(), null, lineContent + "x");
 
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(trackable)));
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(movedTrackable, nonMatchingTrackable)));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of(trackable)));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of(movedTrackable, nonMatchingTrackable)));
 
     assertThat(movedTrackable.getLineHash()).isEqualTo(trackable.getLineHash());
     assertThat(movedTrackable.getLineHash()).isNotEqualTo(nonMatchingTrackable.getLineHash());
@@ -283,7 +282,7 @@ public class IssueTrackerTest {
     var leak = builder().ruleKey("dummy ruleKey").line(7).textRangeHash(11).creationDate(leakCreationDate).build();
 
     // fake first analysis, trackable has a date
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of(leak)));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of(leak)));
 
     // fake server issue tracking
     cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackServerIssues(file1, List.of()));
@@ -293,11 +292,11 @@ public class IssueTrackerTest {
 
   @Test
   public void should_ignore_server_issues_when_there_are_no_local() {
-    String serverIssueKey = "dummy serverIssueKey";
-    boolean resolved = true;
-    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").serverIssueKey(serverIssueKey).resolved(resolved);
+    var serverIssueKey = "dummy serverIssueKey";
+    var resolved = true;
+    var base = builder().ruleKey("dummy ruleKey").serverIssueKey(serverIssueKey).resolved(resolved);
 
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, List.of()));
+    cache.put(DUMMY_FILE1_PATH, tracker.processRawIssues(file1, List.of()));
     cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackServerIssues(file1, List.of(base.build())));
 
     assertThat(cache.getCurrentTrackables(DUMMY_FILE1_PATH)).isEmpty();

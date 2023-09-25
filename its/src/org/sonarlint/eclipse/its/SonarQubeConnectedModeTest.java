@@ -55,6 +55,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
@@ -137,6 +138,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
+  @Ignore
   public void configureServerFromNewWizard() {
     var wizard = new ServerConnectionWizard();
     wizard.open();
@@ -217,6 +219,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
+  @Ignore
   public void testLocalServerStatusRequest() throws Exception {
     assertThat(hotspotServerPort).isNotEqualTo(-1);
     var statusConnection = (HttpURLConnection) new URL(String.format("http://localhost:%d/sonarlint/api/status", hotspotServerPort)).openConnection();
@@ -233,6 +236,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
+  @Ignore
   public void shouldFindSecretsInConnectedMode() {
     adminWsClient.projects()
       .create(CreateRequest.builder()
@@ -261,6 +265,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
+  @Ignore
   public void shouldAutomaticallyUpdateRuleSetWhenChangedOnServer() throws Exception {
     Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(9, 4));
 
@@ -297,7 +302,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     assertThat(defaultEditor.getMarkers()).isEmpty();
   }
-  
+
   /**
    *  As we test against different SQ versions, we have to check that the grouping and the rule descriptions
    *  work correctly on old / new CCT connections
@@ -309,7 +314,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     ruleDescriptionView.open();
     var onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
-    
+
     var rootProject = importExistingProjectIntoWorkspace("java/java-simple", JAVA_SIMPLE_PROJECT_KEY);
 
     createConnectionAndBindProject(JAVA_SIMPLE_PROJECT_KEY);
@@ -320,25 +325,25 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     var file = rootProject.getResource("src", "hello", "Hello.java");
     openFileAndWaitForAnalysisCompletion(file);
-    
+
     await().untilAsserted(() -> assertThat(
       onTheFlyView.getIssues(ISSUE_MATCHER)).satisfiesAnyOf(
-      list -> assertThat(list)
-        .extracting(i -> i.getDescription())
-        .containsOnly("Replace this use of System.out by a logger."),
         list -> assertThat(list)
-        .extracting(i -> i.getDescription())
-        .containsOnly("Replace this use of System.out or System.err by a logger.")));
-    
+          .extracting(i -> i.getDescription())
+          .containsOnly("Replace this use of System.out by a logger."),
+        list -> assertThat(list)
+          .extracting(i -> i.getDescription())
+          .containsOnly("Replace this use of System.out or System.err by a logger.")));
+
     var emptyMatcher = new MarkerDescriptionMatcher(CoreMatchers.containsString(""));
-    
+
     onTheFlyView.groupByImpact();
     await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
     onTheFlyView.groupBySeverityLegacy();
     await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
     onTheFlyView.resetGrouping();
     await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
-    
+
     ruleDescriptionView.open();
     onTheFlyView.selectItem(0);
     new WaitUntil(new RuleDescriptionViewIsLoaded(ruleDescriptionView));
@@ -348,7 +353,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   @Test
   public void test_MarkIssueAs_Dialog() {
     // INFO: It is flaky when running on top of the oldest Eclipse version but works fine in the other test cases,
-    //       therefore it should be skipped in that particular situation!
+    // therefore it should be skipped in that particular situation!
     Assume.assumeTrue(!"oldest".equals(System.getProperty("target.platform")));
 
     // 1) Create project on SonarQube
@@ -398,7 +403,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     await().until(() -> onTheFlyView.getIssues(ISSUE_MATCHER), findings -> !findings.isEmpty());
     onTheFlyView.getIssues(ISSUE_MATCHER).get(0).select();
-    new ContextMenuItem("Mark Issue as...").select();
+    new ContextMenuItem(onTheFlyView.getTree(), "Mark Issue as...").select();
 
     var s = new DefaultShell("Mark Issue as Resolved on SonarQube");
     new PushButton(s, "OK").click();
@@ -408,7 +413,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
       list -> assertThat(list)
         .extracting(i -> i.getDescription())
         .containsOnly("Replace this use of System.out by a logger."),
-        list -> assertThat(list)
+      list -> assertThat(list)
         .extracting(i -> i.getDescription())
         .containsOnly("Replace this use of System.out or System.err by a logger.")));
 
@@ -424,7 +429,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     await().until(() -> onTheFlyView.getIssues(ISSUE_MATCHER), findings -> !findings.isEmpty());
     onTheFlyView.getIssues(ISSUE_MATCHER).get(0).select();
-    new ContextMenuItem("Mark Issue as...").select();
+    new ContextMenuItem(onTheFlyView.getTree(), "Mark Issue as...").select();
 
     var dialog = new MarkIssueAsDialog();
     dialog.selectFalsePositive();

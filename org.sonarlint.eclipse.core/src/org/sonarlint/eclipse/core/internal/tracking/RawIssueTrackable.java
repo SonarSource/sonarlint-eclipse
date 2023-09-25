@@ -19,57 +19,34 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
-import org.sonarsource.sonarlint.core.analysis.api.Flow;
-import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
+import org.sonarlint.eclipse.core.internal.tracking.matching.MatchableIssue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
-import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
-import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
-import org.sonarsource.sonarlint.core.commons.IssueSeverity;
-import org.sonarsource.sonarlint.core.commons.RuleType;
-import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
-import org.sonarsource.sonarlint.core.commons.TextRange;
 
 import static org.sonarlint.eclipse.core.internal.tracking.DigestUtils.digest;
 
-public class RawIssueTrackable implements Trackable {
+public class RawIssueTrackable implements MatchableIssue {
 
   private final Issue issue;
   @Nullable
-  private final TextRange textRange;
+  private final String textRangeHash;
   @Nullable
-  private final Integer textRangeHash;
-  @Nullable
-  private final Integer lineHash;
+  private final String lineHash;
   @Nullable
   private Long markerId;
 
   public RawIssueTrackable(Issue issue) {
-    this(issue, null, null, null);
+    this(issue, null, null);
   }
 
-  public RawIssueTrackable(Issue issue, @Nullable TextRange textRange, @Nullable String textRangeContent, @Nullable String lineContent) {
+  public RawIssueTrackable(Issue issue, @Nullable String textRangeContent, @Nullable String lineContent) {
     this.issue = issue;
-    this.textRange = textRange;
     this.textRangeHash = textRangeContent != null ? checksum(textRangeContent) : null;
     this.lineHash = lineContent != null ? checksum(lineContent) : null;
   }
 
-  @Override
-  public Long getMarkerId() {
-    return markerId;
-  }
-
-  @Override
-  public void setMarkerId(@Nullable Long id) {
-    this.markerId = id;
-  }
-
-  private static int checksum(String content) {
-    return digest(content).hashCode();
+  private static String checksum(String content) {
+    return digest(content);
   }
 
   @Nullable
@@ -85,13 +62,8 @@ public class RawIssueTrackable implements Trackable {
   }
 
   @Override
-  public Integer getTextRangeHash() {
+  public String getTextRangeHash() {
     return textRangeHash;
-  }
-
-  @Override
-  public Integer getLineHash() {
-    return lineHash;
   }
 
   @Override
@@ -99,76 +71,12 @@ public class RawIssueTrackable implements Trackable {
     return issue.getRuleKey();
   }
 
-  @Override
-  public IssueSeverity getSeverity() {
-    return issue.getSeverity();
+  public Issue getIssueFromAnalysis() {
+    return issue;
   }
 
-  @Override
-  public IssueSeverity getRawSeverity() {
-    return issue.getSeverity();
+  public String getLineHash() {
+    return lineHash;
   }
 
-  @Override
-  public RuleType getType() {
-    return issue.getType();
-  }
-
-  @Override
-  public RuleType getRawType() {
-    return issue.getType();
-  }
-  
-  @Override
-  public CleanCodeAttribute getCleanCodeAttribute() {
-    var cleanCodeAttributeOptional = issue.getCleanCodeAttribute();
-    return cleanCodeAttributeOptional.isPresent() ? cleanCodeAttributeOptional.get() : null;
-  }
-
-  @Override
-  public Map<SoftwareQuality, ImpactSeverity> getImpacts() {
-    return issue.getImpacts();
-  }
-
-  @Override
-  public Map<SoftwareQuality, ImpactSeverity> getRawImpacts() {
-    return issue.getImpacts();
-  }
-
-  @Override
-  public TextRange getTextRange() {
-    return textRange;
-  }
-
-  @Nullable
-  @Override
-  public String getServerIssueKey() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public Long getCreationDate() {
-    return null;
-  }
-
-  @Override
-  public boolean isResolved() {
-    return false;
-  }
-
-  @Override
-  public List<Flow> getFlows() {
-    return issue.flows();
-  }
-
-  @Override
-  public List<QuickFix> getQuickFix() {
-    return issue.quickFixes();
-  }
-
-  @Override
-  public Optional<String> getRuleDescriptionContextKey() {
-    return issue.getRuleDescriptionContextKey();
-  }
 }

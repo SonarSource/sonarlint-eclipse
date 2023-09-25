@@ -51,7 +51,7 @@ import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.tracking.DigestUtils;
-import org.sonarlint.eclipse.core.internal.tracking.Trackable;
+import org.sonarlint.eclipse.core.internal.tracking.TrackedIssue;
 import org.sonarlint.eclipse.core.listener.TaintVulnerabilitiesListener;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
@@ -72,7 +72,7 @@ public class SonarLintMarkerUpdater {
     taintVulnerabilitiesListener = listener;
   }
 
-  public static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument, Collection<Trackable> issues, TriggerType triggerType) {
+  public static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument, Collection<? extends TrackedIssue> issues, TriggerType triggerType) {
     try {
       Set<IMarker> previousMarkersToDelete;
       if (triggerType.isOnTheFly()) {
@@ -161,7 +161,7 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  public static void updateMarkersWithServerSideData(ISonarLintIssuable issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType) {
+  public static void updateMarkersWithServerSideData(ISonarLintIssuable issuable, IDocument document, Collection<TrackedIssue> issues, TriggerType triggerType) {
     try {
       for (var issue : issues) {
         updateMarkerWithServerSideData(issuable, document, issue, triggerType);
@@ -171,7 +171,7 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, IDocument document, Trackable issue,
+  private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, IDocument document, TrackedIssue issue,
     TriggerType triggerType)
     throws CoreException {
     var markerId = issue.getMarkerId();
@@ -195,7 +195,7 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument, Collection<Trackable> issues,
+  private static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument, Collection<? extends TrackedIssue> issues,
     TriggerType triggerType, Set<IMarker> previousMarkersToDelete) throws CoreException {
     var lazyInitDocument = openedDocument.orElse(null);
     for (var issue : issues) {
@@ -216,7 +216,7 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void createMarker(IDocument document, ISonarLintIssuable issuable, Trackable trackable, TriggerType triggerType) throws CoreException {
+  private static void createMarker(IDocument document, ISonarLintIssuable issuable, TrackedIssue trackable, TriggerType triggerType) throws CoreException {
     var marker = issuable.getResource()
       .createMarker(triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_ID : SonarLintCorePlugin.MARKER_REPORT_ID);
     if (triggerType.isOnTheFly()) {
@@ -277,31 +277,40 @@ public class SonarLintMarkerUpdater {
     marker.setAttribute("org.eclipse.ui.views.markers.path", issuable.getResourceContainerForMarker());
   }
 
-  private static void updateMarkerAttributes(IDocument document, Trackable trackable, IMarker marker) throws CoreException {
+  private static void updateMarkerAttributes(IDocument document, TrackedIssue trackedIssue, IMarker marker) throws CoreException {
     var existingAttributes = marker.getAttributes();
 
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, trackable.getRuleDescriptionContextKey().orElse(null));
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackedIssue.getRuleKey());
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR,
+      trackedIssue.getIssueFromAnalysis().getRuleDescriptionContextKey().orElse(null));
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.SEVERITY, SonarLintGlobalConfiguration.getMarkerSeverity());
 
-    setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.MESSAGE, trackable.getMessage());
+    setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.MESSAGE, trackedIssue.getMessage());
 
     // File level issues (line == null) are displayed on line 1
-    setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.LINE_NUMBER, trackable.getLine() != null ? trackable.getLine() : 1);
+    setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.LINE_NUMBER, trackedIssue.getLine() != null ? trackedIssue.getLine() : 1);
 
-    var position = MarkerUtils.getPosition(document, trackable.getTextRange());
+    var position = MarkerUtils.getPosition(document, trackedIssue.getIssueFromAnalysis().getTextRange());
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_START, position != null ? position.getOffset() : null);
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_END, position != null ? (position.getOffset() + position.getLength()) : null);
 
-    updateServerMarkerAttributes(trackable, marker);
+    var issueFromAnalysis = trackedIssue.getIssueFromAnalysis();
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR,
+      issueFromAnalysis.getCleanCodeAttribute().orElse(null));
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_IMPACTS_ATTR,
+      MarkerUtils.encodeImpacts(issueFromAnalysis.getImpacts()));
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR,
+      MarkerUtils.encodeHighestImpact(issueFromAnalysis.getImpacts()));
+
+    updateServerMarkerAttributes(trackedIssue, marker);
   }
 
-  private static void createFlowMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, TriggerType triggerType)
+  private static void createFlowMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, TrackedIssue trackedIssue, IMarker marker, TriggerType triggerType)
     throws CoreException {
     var flowMarkerId = markerIdForFlows(triggerType);
     var flows = new ArrayList<MarkerFlow>();
     var i = 1;
-    for (var engineFlow : trackable.getFlows()) {
+    for (var engineFlow : trackedIssue.getIssueFromAnalysis().flows()) {
       var flow = new MarkerFlow(i);
       flows.add(flow);
       var locations = new ArrayList<>(engineFlow.locations());
@@ -315,13 +324,13 @@ public class SonarLintMarkerUpdater {
     marker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, new MarkerFlows(flows));
   }
 
-  private static void createQuickFixMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, TriggerType triggerType)
+  private static void createQuickFixMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, TrackedIssue trackedIssue, IMarker marker, TriggerType triggerType)
     throws CoreException {
     if (!triggerType.isOnTheFly()) {
       return;
     }
     var qfs = new ArrayList<MarkerQuickFix>();
-    for (var engineQuickFix : trackable.getQuickFix()) {
+    for (var engineQuickFix : trackedIssue.getIssueFromAnalysis().quickFixes()) {
       createQuickFix(document, issuable, qfs, engineQuickFix);
     }
     marker.setAttribute(MarkerUtils.SONAR_MARKER_QUICK_FIXES_ATTR, new MarkerQuickFixes(qfs));
@@ -439,24 +448,18 @@ public class SonarLintMarkerUpdater {
    *   - server issue key
    *   - creation date
    */
-  private static void updateServerMarkerAttributes(Trackable trackable, IMarker marker) throws CoreException {
+  private static void updateServerMarkerAttributes(TrackedIssue trackedIssue, IMarker marker) throws CoreException {
     var existingAttributes = marker.getAttributes();
 
-    setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.PRIORITY, getPriority(trackable.getSeverity()));
+    setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.PRIORITY, getPriority(trackedIssue.getSeverity()));
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR,
-      trackable.getSeverity());
+      trackedIssue.getSeverity());
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR,
-      trackable.getType());
+      trackedIssue.getType());
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR,
-      trackable.getServerIssueKey());
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR,
-      trackable.getCleanCodeAttribute());
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_IMPACTS_ATTR,
-      MarkerUtils.encodeImpacts(trackable.getImpacts()));
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR,
-      MarkerUtils.encodeHighestImpact(trackable.getImpacts()));
+      trackedIssue.getServerIssueKey());
 
-    Long creationDate = trackable.getCreationDate();
+    Long creationDate = trackedIssue.getCreationDate();
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR,
       creationDate != null ? String.valueOf(creationDate) : null);
   }

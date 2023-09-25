@@ -49,20 +49,20 @@ public class PersistentIssueTrackerCacheTest extends SonarTestCase {
   private PersistentIssueTrackerCache cache;
   private StubIssueStore stubIssueStore;
 
-  class StubIssueStore extends IssueStore {
-    private final Map<String, Collection<Trackable>> cache = new HashMap<>();
+  class StubIssueStore extends PersistentLocalIssueStore {
+    private final Map<String, Collection<TrackedIssue>> cache = new HashMap<>();
 
     public StubIssueStore(ISonarLintProject project) throws IOException {
       super(temporaryFolder.newFolder().toPath(), project);
     }
 
     @Override
-    public void save(String key, Collection<Trackable> issues) throws IOException {
+    public void save(String key, Collection<TrackedIssue> issues) throws IOException {
       cache.put(key, issues);
     }
 
     @Override
-    public Collection<Trackable> read(String key) throws IOException {
+    public Collection<TrackedIssue> read(String key) throws IOException {
       return cache.get(key);
     }
 
@@ -147,7 +147,7 @@ public class PersistentIssueTrackerCacheTest extends SonarTestCase {
   @Test
   public void should_clear_cache_and_storage_too() throws IOException {
     var file = "dummy file";
-    cache.put(file, List.of(mock(Trackable.class)));
+    cache.put(file, List.of(mock(TrackedIssue.class)));
     cache.flushAll();
 
     assertThat(cache.getCurrentTrackables(file)).isNotEmpty();

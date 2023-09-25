@@ -25,34 +25,25 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.runtime.Adapters;
-import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
  * Registry of per-project IssueTracker instances.
  */
-public class IssueTrackerRegistry implements IResourceChangeListener {
-  private final Map<ISonarLintProject, IssueTracker> registry = new ConcurrentHashMap<>();
+public class ProjectIssueTrackers implements IResourceChangeListener {
+  private final Map<ISonarLintProject, ProjectIssueTracker> registry = new ConcurrentHashMap<>();
 
-  public IssueTracker getOrCreate(ISonarLintProject project) {
-    return registry.computeIfAbsent(project, p -> newTracker(p));
+  public ProjectIssueTracker getOrCreate(ISonarLintProject project) {
+    return registry.computeIfAbsent(project, ProjectIssueTracker::new);
   }
 
-  public Optional<IssueTracker> get(ISonarLintProject project) {
+  public Optional<ProjectIssueTracker> get(ISonarLintProject project) {
     return Optional.ofNullable(registry.get(project));
   }
 
-  private static IssueTracker newTracker(ISonarLintProject project) {
-    var storeBasePath = StoragePathManager.getIssuesDir(project);
-    var issueStore = new IssueStore(storeBasePath, project);
-    var trackerCache = new PersistentIssueTrackerCache(issueStore);
-    
-    return new IssueTracker(trackerCache);
-  }
-
   public void shutdown() {
-    for (IssueTracker issueTracker : registry.values()) {
-      issueTracker.shutdown();
+    for (ProjectIssueTracker issueTracker : registry.values()) {
+      issueTracker.flushAll();
     }
   }
 
@@ -62,7 +53,7 @@ public class IssueTrackerRegistry implements IResourceChangeListener {
       var project = Adapters.adapt(event.getResource(), ISonarLintProject.class);
       if (project != null) {
         var removed = registry.remove(project);
-        removed.shutdown();
+        removed.flushAll();
       }
     }
   }

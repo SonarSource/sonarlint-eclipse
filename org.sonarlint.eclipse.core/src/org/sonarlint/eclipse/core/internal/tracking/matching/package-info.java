@@ -17,22 +17,5 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.tracking;
-
-/**
- * A new leak
- */
-public class LeakedTrackable extends WrappedTrackable {
-
-  private final Long creationDate;
-
-  public LeakedTrackable(Trackable trackable) {
-    super(trackable);
-    this.creationDate = System.currentTimeMillis();
-  }
-
-  @Override
-  public Long getCreationDate() {
-    return creationDate;
-  }
-}
+@org.eclipse.jdt.annotation.NonNullByDefault
+package org.sonarlint.eclipse.core.internal.tracking.matching;
