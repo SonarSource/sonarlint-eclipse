@@ -55,9 +55,15 @@ public class ProjectIssueTracker {
   private final ISonarLintProject project;
 
   public ProjectIssueTracker(ISonarLintProject project) {
+    this(project, new PersistentLocalIssueStore(StoragePathManager.getIssuesDir(project), project));
+  }
+
+  /**
+   * Used for testing
+   */
+  public ProjectIssueTracker(ISonarLintProject project, PersistentLocalIssueStore store) {
     this.project = project;
-    var storeBasePath = StoragePathManager.getIssuesDir(project);
-    this.store = new PersistentLocalIssueStore(storeBasePath, project);
+    this.store = store;
   }
 
   private boolean isFirstAnalysis(String file) {
@@ -94,7 +100,7 @@ public class ProjectIssueTracker {
         }
       } else {
         var previousPersistedIssues = store.read(file.getProjectRelativePath());
-        if (previousPersistedIssues == null) {
+        if (previousPersistedIssues == null || previousPersistedIssues.isEmpty()) {
           trackAllRawIssuesAsNew(file, rawIssues);
         } else {
           var trackedIssues = new ArrayList<TrackedIssue>();

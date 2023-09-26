@@ -35,10 +35,16 @@ public class RawIssueTrackable implements MatchableIssue {
   @Nullable
   private Long markerId;
 
+  /**
+   * File-level or project-level issues (no ranges)
+   */
   public RawIssueTrackable(Issue issue) {
     this(issue, null, null);
   }
 
+  /**
+   * Issue with a range location
+   */
   public RawIssueTrackable(Issue issue, @Nullable String textRangeContent, @Nullable String lineContent) {
     this.issue = issue;
     this.textRangeHash = textRangeContent != null ? checksum(textRangeContent) : null;
