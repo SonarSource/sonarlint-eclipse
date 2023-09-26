@@ -791,12 +791,18 @@
                  icon="icons/full/marker_resolution16/showrule.png"
                  style="push"
                  mnemonic="R">
+                 <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
            </command>
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
                  icon="icons/full/marker_resolution16/disablerule.png"
                  style="push"
                  mnemonic="u">
+                 <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
          </command>
          <command
                  commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
@@ -818,6 +824,9 @@
                  commandId="org.sonarlint.eclipse.ui.internal.command.HelpOnIconsCommand"
                  icon="icons/full/marker_resolution16/info.png"
                  style="push">
+                 <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
          </command>
       </menuContribution>
       <menuContribution
@@ -826,6 +835,9 @@
                  commandId="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand"
                  style="push"
                  mnemonic="O">
+                 <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
          </command>
          <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
@@ -871,12 +883,18 @@
                  icon="icons/full/marker_resolution16/showrule.png"
                  style="push"
                  mnemonic="R">
+                 <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
          </command>
          <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
                  icon="icons/full/marker_resolution16/disablerule.png"
                  style="push"
                  mnemonic="u">
+                 <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
          </command>
          <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
@@ -890,6 +908,9 @@
                  commandId="org.sonarlint.eclipse.ui.internal.command.HelpOnIconsCommand"
                  icon="icons/full/marker_resolution16/info.png"
                  style="push">
+                 <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
          </command>
       </menuContribution>
 	<menuContribution locationURI="popup:sonar.menu?after=group1">
@@ -1023,11 +1044,17 @@
                  icon="icons/full/marker_resolution16/showrule.png"
                  style="push"
                  mnemonic="R">
+                 <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
          </command>
          <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.HelpOnIconsCommand"
                  icon="icons/full/marker_resolution16/info.png"
                  style="push">
+                 <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
          </command>
       </menuContribution>
       <menuContribution locationURI="toolbar:org.eclipse.ui.trim.status">
@@ -1117,7 +1144,7 @@
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand">
-          <visibleWhen>
+          <enabledWhen>
             <and>
                  <with variable="activeMenuSelection">
                      <iterate ifEmpty="false">
@@ -1126,7 +1153,7 @@
                 </with>
                 <count value="1"/>
             </and>
-         </visibleWhen>
+         </enabledWhen>
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.HelpOnIconsCommand"
@@ -1135,7 +1162,7 @@
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand">
-          <visibleWhen>
+          <enabledWhen>
             <and>
                  <with variable="activeMenuSelection">
                      <iterate ifEmpty="false">
@@ -1146,12 +1173,12 @@
                 </with>
                 <count value="1"/>
             </and>
-         </visibleWhen>
+         </enabledWhen>
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand">
-          <visibleWhen>
+          <enabledWhen>
             <and>
                  <with variable="activeMenuSelection">
                      <iterate ifEmpty="false">
@@ -1160,7 +1187,7 @@
                 </with>
                 <count value="1"/>
             </and>
-         </visibleWhen>
+         </enabledWhen>
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
