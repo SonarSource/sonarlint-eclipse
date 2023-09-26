@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.UUID;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.sonarlint.eclipse.core.internal.tracking.matching.MatchableIssue;
@@ -32,7 +31,6 @@ import org.sonarsource.sonarlint.core.commons.RuleType;
 
 public class TrackedIssue implements MatchableIssue {
 
-  private final UUID uuid;
   private RawIssueTrackable raw;
   private boolean resolved = false;
   @Nullable
@@ -51,7 +49,6 @@ public class TrackedIssue implements MatchableIssue {
    */
   private TrackedIssue(RawIssueTrackable raw, @Nullable Long creationDate) {
     this.creationDate = creationDate;
-    this.uuid = UUID.randomUUID();
     this.raw = raw;
   }
 
@@ -81,10 +78,6 @@ public class TrackedIssue implements MatchableIssue {
       issue.serverIssueKey = persistedServerIssueKey;
     }
     return issue;
-  }
-
-  public UUID getUuid() {
-    return uuid;
   }
 
   public Issue getIssueFromAnalysis() {

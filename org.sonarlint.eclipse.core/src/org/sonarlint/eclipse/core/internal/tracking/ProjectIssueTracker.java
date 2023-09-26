@@ -40,8 +40,6 @@ import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.clientapi.backend.tracking.ClientTrackedIssueDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.tracking.LineWithHashDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.tracking.LocalOnlyIssueDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.tracking.ServerMatchedIssueDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.tracking.TextRangeWithHashDto;
 import org.sonarsource.sonarlint.core.serverconnection.IssueStorePaths;
 import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
@@ -142,16 +140,15 @@ public class ProjectIssueTracker {
       response.getIssuesByServerRelativePath()
         .forEach((serverPath, serverTrackedIssues) -> projectBinding.serverPathToIdePath(serverPath)
           .flatMap(project::find)
-          .ifPresent(slFile -> serverTrackedIssues
-            .forEach(resultIssue -> {
-              var resultUuid = resultIssue.map(ServerMatchedIssueDto::getId, LocalOnlyIssueDto::getId);
-              var trackedIssue = trackedIssuesPerRelativePath.get(slFile.getProjectRelativePath()).stream().filter(i -> i.getUuid().equals(resultUuid)).findFirst();
-              if (trackedIssue.isEmpty()) {
-                // Possibly removed in the meantime?
-                return;
-              }
-              trackedIssue.get().updateFromSlCoreMatching(resultIssue);
-            })));
+          .ifPresent(slFile -> {
+            // trackWithServerIssues is guaranteeing that the two collections have the same size and same order
+            var localIssuesTracked = trackedIssuesPerRelativePath.get(slFile.getProjectRelativePath());
+            var index = 0;
+            for (var tracked : localIssuesTracked) {
+              tracked.updateFromSlCoreMatching(serverTrackedIssues.get(index));
+              index++;
+            }
+          }));
     } catch (InterruptedException e) {
       SonarLintLogger.get().debug("Interrupted!", e);
       Thread.currentThread().interrupt();
@@ -166,7 +163,7 @@ public class ProjectIssueTracker {
       ? new TextRangeWithHashDto(textRange.getStartLine(), textRange.getStartLineOffset(), textRange.getEndLine(), textRange.getEndLineOffset(), issue.getTextRangeHash())
       : null;
     var lineWithHash = textRange != null ? new LineWithHashDto(textRange.getStartLine(), issue.getLineHash()) : null;
-    return new ClientTrackedIssueDto(issue.getUuid(), issue.getServerIssueKey(),
+    return new ClientTrackedIssueDto(null, issue.getServerIssueKey(),
       textRangeWithHash,
       lineWithHash, issue.getRuleKey(), issue.getMessage());
   }
