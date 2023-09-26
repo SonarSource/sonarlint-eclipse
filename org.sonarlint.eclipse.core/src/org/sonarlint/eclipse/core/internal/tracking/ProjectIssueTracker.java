@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -75,51 +76,51 @@ public class ProjectIssueTracker {
    */
   public synchronized void processRawIssues(ISonarLintFile file, Collection<RawIssueTrackable> rawIssues) {
     if (isFirstAnalysis(file.getProjectRelativePath())) {
+      // We have never analyzed this file before, so we start tracking all issues with an unknown creation date
       trackAllRawIssuesAsUnknownCreationDate(file, rawIssues);
     } else {
-      Collection<MatchableIssue> rawIssuesMatchable = rawIssues.stream().map(r -> r).collect(Collectors.toList());
-      if (trackedIssuesPerRelativePath.containsKey(file.getProjectRelativePath())) {
-        var previousIssues = trackedIssuesPerRelativePath.get(file.getProjectRelativePath());
-        if (previousIssues == null || previousIssues.isEmpty()) {
-          trackAllRawIssuesAsNew(file, rawIssues);
-        } else {
-          var matchingResult = IssueMatcher.matchIssues(rawIssuesMatchable, previousIssues);
-          // Deal with matching issues
-          for (var entry : matchingResult.getMatchedRaws().entrySet()) {
-            var previous = (TrackedIssue) entry.getValue();
-            var raw = (RawIssueTrackable) entry.getKey();
-            previous.updateFromFreshAnalysis(raw);
-          }
-          // New local issues compared to previous cached issues
-          for (var rawTrackable : matchingResult.getUnmatchedLefts()) {
-            previousIssues.add(TrackedIssue.asNew((RawIssueTrackable) rawTrackable));
-          }
-          for (var previouslyTracked : matchingResult.getUnmatchedRights()) {
-            previousIssues.remove(previouslyTracked);
-          }
+      var trackedIssues = trackedIssuesPerRelativePath.get(file.getProjectRelativePath());
+      if (trackedIssues != null) {
+        // We have already analyzed this file since the ProjectIssueTracker has been created
+        Collection<MatchableIssue> rawIssuesMatchable = rawIssues.stream().map(r -> r).collect(Collectors.toList());
+        var matchingResult = IssueMatcher.matchIssues(rawIssuesMatchable, trackedIssues);
+        // Update matching issues based on fresh raw issues
+        for (var entry : matchingResult.getMatchedRaws().entrySet()) {
+          var previous = (TrackedIssue) entry.getValue();
+          var raw = (RawIssueTrackable) entry.getKey();
+          previous.updateFromFreshAnalysis(raw);
+        }
+        // New raw issues compared to previous tracked issues
+        for (var rawTrackable : matchingResult.getUnmatchedLefts()) {
+          trackedIssues.add(TrackedIssue.asNew((RawIssueTrackable) rawTrackable));
+        }
+        // Previously tracked issues that are not detected anymore should be removed
+        for (var previouslyTracked : matchingResult.getUnmatchedRights()) {
+          trackedIssues.remove(previouslyTracked);
         }
       } else {
-        var previousPersistedIssues = store.read(file.getProjectRelativePath());
-        if (previousPersistedIssues == null || previousPersistedIssues.isEmpty()) {
-          trackAllRawIssuesAsNew(file, rawIssues);
-        } else {
-          var trackedIssues = new ArrayList<TrackedIssue>();
-          var matchingResult = IssueMatcher.matchIssues(rawIssuesMatchable, previousPersistedIssues);
-          // Deal with matching issues
-          for (var entry : matchingResult.getMatchedRaws().entrySet()) {
-            var cached = (ProtobufMatchableIssueAdapter) entry.getValue();
-            var raw = (RawIssueTrackable) entry.getKey();
-            var tracked = TrackedIssue.fromPersistentCache(cached, raw);
-            trackedIssues.add(tracked);
-          }
-          // New local issues compared to previous persisted issues
-          for (var rawTrackable : matchingResult.getUnmatchedLefts()) {
-            trackedIssues.add(TrackedIssue.asNew((RawIssueTrackable) rawTrackable));
-          }
-          trackedIssuesPerRelativePath.put(file.getProjectRelativePath(), trackedIssues);
-        }
+        reloadTrackingStateFromPersistentStorage(file, rawIssues);
       }
     }
+  }
+
+  private void reloadTrackingStateFromPersistentStorage(ISonarLintFile file, Collection<RawIssueTrackable> rawIssues) {
+    var previousPersistedIssues = Objects.requireNonNull(store.read(file.getProjectRelativePath()));
+    var trackedIssues = new ArrayList<TrackedIssue>();
+    Collection<MatchableIssue> rawIssuesMatchable = rawIssues.stream().map(r -> r).collect(Collectors.toList());
+    var matchingResult = IssueMatcher.matchIssues(rawIssuesMatchable, previousPersistedIssues);
+    // Deal with matching issues
+    for (var entry : matchingResult.getMatchedRaws().entrySet()) {
+      var cached = (ProtobufMatchableIssueAdapter) entry.getValue();
+      var raw = (RawIssueTrackable) entry.getKey();
+      var tracked = TrackedIssue.fromPersistentCache(cached, raw);
+      trackedIssues.add(tracked);
+    }
+    // New local issues compared to previous persisted issues
+    for (var rawTrackable : matchingResult.getUnmatchedLefts()) {
+      trackedIssues.add(TrackedIssue.asNew((RawIssueTrackable) rawTrackable));
+    }
+    trackedIssuesPerRelativePath.put(file.getProjectRelativePath(), trackedIssues);
   }
 
   public synchronized void trackWithServerIssues(ProjectBinding projectBinding, Collection<ISonarLintIssuable> issuables, boolean shouldUpdateServerIssues,
@@ -137,23 +138,20 @@ public class ProjectIssueTracker {
     }
 
     try {
-
       var response = JobUtils.waitForFuture(monitor, SonarLintBackendService.get().trackWithServerIssues(project, issuesDtos, shouldUpdateServerIssues));
-
-      response.getIssuesByServerRelativePath().forEach((serverPath, serverTrackedIssues) -> {
-        projectBinding.serverPathToIdePath(serverPath).flatMap(project::find).ifPresent(slFile -> {
-          serverTrackedIssues.forEach(resultIssue -> {
-            var resultUuid = resultIssue.map(ServerMatchedIssueDto::getId, LocalOnlyIssueDto::getId);
-            var trackedIssue = trackedIssuesPerRelativePath.get(slFile.getProjectRelativePath()).stream().filter(i -> i.getUuid().equals(resultUuid)).findFirst();
-            if (trackedIssue.isEmpty()) {
-              // Possibly removed in the meantime?
-              return;
-            }
-            trackedIssue.get().updateFromSlCoreMatching(resultIssue);
-          });
-
-        });
-      });
+      response.getIssuesByServerRelativePath()
+        .forEach((serverPath, serverTrackedIssues) -> projectBinding.serverPathToIdePath(serverPath)
+          .flatMap(project::find)
+          .ifPresent(slFile -> serverTrackedIssues
+            .forEach(resultIssue -> {
+              var resultUuid = resultIssue.map(ServerMatchedIssueDto::getId, LocalOnlyIssueDto::getId);
+              var trackedIssue = trackedIssuesPerRelativePath.get(slFile.getProjectRelativePath()).stream().filter(i -> i.getUuid().equals(resultUuid)).findFirst();
+              if (trackedIssue.isEmpty()) {
+                // Possibly removed in the meantime?
+                return;
+              }
+              trackedIssue.get().updateFromSlCoreMatching(resultIssue);
+            })));
     } catch (InterruptedException e) {
       SonarLintLogger.get().debug("Interrupted!", e);
       Thread.currentThread().interrupt();
@@ -175,11 +173,6 @@ public class ProjectIssueTracker {
 
   private void trackAllRawIssuesAsUnknownCreationDate(ISonarLintFile file, Collection<RawIssueTrackable> rawIssues) {
     var trackedIssues = rawIssues.stream().map(TrackedIssue::asUnknownCreationDate).collect(Collectors.toList());
-    trackedIssuesPerRelativePath.put(file.getProjectRelativePath(), trackedIssues);
-  }
-
-  private void trackAllRawIssuesAsNew(ISonarLintFile file, Collection<RawIssueTrackable> rawIssues) {
-    var trackedIssues = rawIssues.stream().map(TrackedIssue::asNew).collect(Collectors.toList());
     trackedIssuesPerRelativePath.put(file.getProjectRelativePath(), trackedIssues);
   }
 

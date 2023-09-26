@@ -87,7 +87,7 @@ public class MatchingResults {
   }
 
   boolean isComplete() {
-    return leftToRight.size() == lefts.size();
+    return leftToRight.size() == lefts.size() || rightToLeft.size() == rights.size();
   }
 
 }
