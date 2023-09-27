@@ -55,7 +55,6 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
@@ -138,7 +137,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
-  @Ignore
   public void configureServerFromNewWizard() {
     var wizard = new ServerConnectionWizard();
     wizard.open();
@@ -219,7 +217,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
-  @Ignore
   public void testLocalServerStatusRequest() throws Exception {
     assertThat(hotspotServerPort).isNotEqualTo(-1);
     var statusConnection = (HttpURLConnection) new URL(String.format("http://localhost:%d/sonarlint/api/status", hotspotServerPort)).openConnection();
@@ -236,7 +233,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
-  @Ignore
   public void shouldFindSecretsInConnectedMode() {
     adminWsClient.projects()
       .create(CreateRequest.builder()
@@ -265,7 +261,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
-  @Ignore
   public void shouldAutomaticallyUpdateRuleSetWhenChangedOnServer() throws Exception {
     Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(9, 4));
 
