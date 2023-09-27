@@ -295,10 +295,18 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     ResourcesPlugin.getWorkspace().run(m -> trackIssues(docPerFile, successfulFiles, triggerType, monitor), monitor);
   }
 
-  protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
+  protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile,
+    Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
     final IProgressMonitor monitor) {
+    if (rawIssuesPerResource.entrySet().isEmpty()) {
+      return;
+    }
+    
+    // To access the preference service only once and not per issue
+    var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
 
     var issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getProject());
+    
     for (var entry : rawIssuesPerResource.entrySet()) {
       if (monitor.isCanceled()) {
         return;
@@ -315,7 +323,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       }
       trackFileIssues(file, trackables, issueTracker, triggerType, rawIssuesPerResource.size(), monitor);
       var tracked = issueTracker.getTracked(file);
-      SonarLintMarkerUpdater.createOrUpdateMarkers(file, openedDocument, tracked, triggerType);
+      SonarLintMarkerUpdater.createOrUpdateMarkers(file, openedDocument, tracked, triggerType, issuePeriodPreference);
     }
   }
 
