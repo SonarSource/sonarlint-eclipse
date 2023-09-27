@@ -227,8 +227,10 @@ public class SonarLintBackendService {
       .addComment(new AddIssueCommentParams(ConfigScopeSynchronizer.getConfigScopeId(project), serverIssueKey, text));
   }
 
-  public CompletableFuture<TrackWithServerIssuesResponse> trackWithServerIssues(ISonarLintProject project, Map<String, List<ClientTrackedIssueDto>> clientTrackedIssuesByServerRelativePath,
+  public CompletableFuture<TrackWithServerIssuesResponse> trackWithServerIssues(ISonarLintProject project,
+    Map<String, List<ClientTrackedIssueDto>> clientTrackedIssuesByServerRelativePath,
     boolean shouldFetchIssuesFromServer) {
-    return getBackend().getIssueTrackingService().trackWithServerIssues(new TrackWithServerIssuesParams(ConfigScopeSynchronizer.getConfigScopeId(project), clientTrackedIssuesByServerRelativePath, shouldFetchIssuesFromServer));
+    return getBackend().getIssueTrackingService().trackWithServerIssues(
+      new TrackWithServerIssuesParams(ConfigScopeSynchronizer.getConfigScopeId(project), clientTrackedIssuesByServerRelativePath, shouldFetchIssuesFromServer));
   }
 }
