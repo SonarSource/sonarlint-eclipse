@@ -25,24 +25,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
-import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
-import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
-import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
-import org.sonarlint.eclipse.core.internal.tracking.Trackable;
-import org.sonarlint.eclipse.core.internal.vcs.VcsService;
+import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTracker;
+import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.serverconnection.issues.ServerIssue;
+import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
 
 public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<ConnectedAnalysisConfiguration> {
 
@@ -74,52 +75,56 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
   @Override
   protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
     IProgressMonitor monitor) {
-    if (triggerType.shouldUpdateProjectIssuesSync(rawIssuesPerResource.size())) {
-      VcsService.getServerBranch(getProject()).ifPresent(b -> {
-        SonarLintLogger.get().debug("Download server issues for project " + getProject().getName());
-        engineFacade.downloadServerIssues(binding.projectKey(), b, monitor);
-      });
-    }
     super.trackIssues(docPerFile, rawIssuesPerResource, triggerType, monitor);
-    if (triggerType.shouldUpdateFileIssuesAsync()) {
-      trackServerIssuesAsync(engineFacade, rawIssuesPerResource.keySet(), docPerFile, triggerType);
+    if (triggerType.shouldMatchAsync()) {
+      new ServerIssueTrackingAndMarkerUpdateJob(getProject(), binding, rawIssuesPerResource.keySet(), docPerFile, triggerType).schedule();
     }
   }
 
   @Override
-  protected Collection<Trackable> trackFileIssues(ISonarLintFile file, List<Trackable> trackables, IssueTracker issueTracker, TriggerType triggerType, int totalTrackedFiles,
+  protected void trackFileIssues(ISonarLintFile file, List<RawIssueTrackable> trackables, ProjectIssueTracker issueTracker, TriggerType triggerType,
+    int totalTrackedFiles,
     IProgressMonitor monitor) {
-    var tracked = super.trackFileIssues(file, trackables, issueTracker, triggerType, totalTrackedFiles, monitor);
-    if (!tracked.isEmpty()) {
-      tracked = trackServerIssuesSync(engineFacade, file, tracked, triggerType.shouldUpdateFileIssuesSync(totalTrackedFiles), monitor);
+    super.trackFileIssues(file, trackables, issueTracker, triggerType, totalTrackedFiles, monitor);
+    if (!triggerType.shouldMatchAsync()) {
+      issueTracker.trackWithServerIssues(binding, List.of(file), triggerType.shouldUpdate(), monitor);
     }
-    return tracked;
-
   }
 
-  private void trackServerIssuesAsync(ConnectedEngineFacade engineFacade, Collection<ISonarLintIssuable> resources, Map<ISonarLintFile, IDocument> docPerFile,
-    TriggerType triggerType) {
-    SonarLintCorePlugin.getInstance().getServerIssueUpdater().updateAsync(engineFacade, getProject(),
-      binding,
-      resources,
-      docPerFile, triggerType);
-  }
+  private class ServerIssueTrackingAndMarkerUpdateJob extends Job {
+    private final ProjectBinding projectBinding;
+    private final Collection<ISonarLintIssuable> issuables;
+    private final ISonarLintProject project;
+    private final Map<ISonarLintFile, IDocument> docPerFile;
+    private final TriggerType triggerType;
 
-  private Collection<Trackable> trackServerIssuesSync(ConnectedEngineFacade engineFacade, ISonarLintFile file, Collection<Trackable> tracked, boolean updateServerIssues,
-    IProgressMonitor monitor) {
-    List<ServerIssue> serverIssues;
-    var serverBranch = VcsService.getServerBranch(getProject());
-    if (serverBranch.isPresent()) {
-      if (updateServerIssues) {
-        serverIssues = ServerIssueUpdater.fetchServerIssues(engineFacade, binding, serverBranch.get(), file, monitor);
-      } else {
-        serverIssues = engineFacade.getServerIssues(binding, serverBranch.get(), file.getProjectRelativePath());
+    private ServerIssueTrackingAndMarkerUpdateJob(ISonarLintProject project,
+      ProjectBinding projectBinding, Collection<ISonarLintIssuable> issuables, Map<ISonarLintFile, IDocument> docPerFile,
+      TriggerType triggerType) {
+      super("Fetch server issues for " + project.getName());
+      this.docPerFile = docPerFile;
+      this.triggerType = triggerType;
+      setPriority(DECORATE);
+      this.project = project;
+      this.projectBinding = projectBinding;
+      this.issuables = issuables;
+    }
+
+    @Override
+    protected IStatus run(IProgressMonitor monitor) {
+      var issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(project);
+      issueTracker.trackWithServerIssues(projectBinding, issuables, triggerType.shouldUpdate(), monitor);
+      if (monitor.isCanceled()) {
+        return Status.CANCEL_STATUS;
       }
-    } else {
-      serverIssues = List.of();
-    }
-    Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
-    return IssueTracker.matchAndTrackServerIssues(serverIssuesTrackable, tracked);
-  }
+      var trackedIssuesPerFile = issuables.stream()
+        .filter(ISonarLintFile.class::isInstance)
+        .map(f -> (ISonarLintFile) f)
+        .collect(Collectors.toMap(f -> f, issueTracker::getTracked));
 
+      new AsyncServerMarkerUpdaterJob(project, trackedIssuesPerFile, docPerFile, triggerType).schedule();
+      return Status.OK_STATUS;
+    }
+
+  }
 }

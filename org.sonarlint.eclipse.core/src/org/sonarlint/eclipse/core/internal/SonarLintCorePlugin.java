@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal;
 
 import org.eclipse.core.net.proxy.IProxyService;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
@@ -40,12 +41,8 @@ import org.sonarlint.eclipse.core.internal.jobs.GlobalLogOutput;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
-import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
-import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
-import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerCacheFactory;
-import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerRegistry;
-import org.sonarlint.eclipse.core.internal.tracking.PersistentIssueTrackerCache;
-import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
+import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTracker;
+import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTrackers;
 import org.sonarlint.eclipse.core.internal.utils.NodeJsManager;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -65,8 +62,7 @@ public class SonarLintCorePlugin extends Plugin {
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectConfigurationManager configManager;
 
-  private IssueTrackerRegistry issueTrackerRegistry;
-  private ServerIssueUpdater serverIssueUpdater;
+  private ProjectIssueTrackers issueTrackerRegistry;
 
   private StandaloneEngineFacade sonarlint;
   private final ServiceTracker<IProxyService, IProxyService> proxyTracker;
@@ -100,14 +96,8 @@ public class SonarLintCorePlugin extends Plugin {
   public void start(BundleContext context) throws Exception {
     super.start(context);
 
-    IssueTrackerCacheFactory factory = project -> {
-      var storeBasePath = StoragePathManager.getIssuesDir(project);
-      var issueStore = new IssueStore(storeBasePath, project);
-      return new PersistentIssueTrackerCache(issueStore);
-    };
-    issueTrackerRegistry = new IssueTrackerRegistry(factory);
-
-    serverIssueUpdater = new ServerIssueUpdater(issueTrackerRegistry);
+    issueTrackerRegistry = new ProjectIssueTrackers();
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(issueTrackerRegistry);
 
     nodeJsManager = new NodeJsManager();
 
@@ -150,6 +140,7 @@ public class SonarLintCorePlugin extends Plugin {
     SonarLintBackendService.get().stop();
     proxyTracker.close();
 
+    ResourcesPlugin.getWorkspace().removeResourceChangeListener(issueTrackerRegistry);
     issueTrackerRegistry.shutdown();
     if (serversManager != null) {
       serversManager.stop();
@@ -172,16 +163,12 @@ public class SonarLintCorePlugin extends Plugin {
     return proxyTracker.getService();
   }
 
-  public ServerIssueUpdater getServerIssueUpdater() {
-    return serverIssueUpdater;
-  }
-
-  public static IssueTracker getOrCreateIssueTracker(ISonarLintProject project) {
+  public static ProjectIssueTracker getOrCreateIssueTracker(ISonarLintProject project) {
     return getInstance().issueTrackerRegistry.getOrCreate(project);
   }
 
   public static void clearIssueTracker(ISonarLintProject project) {
-    getInstance().issueTrackerRegistry.get(project).ifPresent(IssueTracker::clear);
+    getInstance().issueTrackerRegistry.get(project).ifPresent(ProjectIssueTracker::clear);
   }
 
   public static AnalysisListenerManager getAnalysisListenerManager() {

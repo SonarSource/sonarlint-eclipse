@@ -22,22 +22,23 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 import org.sonarsource.sonarlint.core.commons.objectstore.HashingPathMapper;
 import org.sonarsource.sonarlint.core.commons.objectstore.Reader;
 import org.sonarsource.sonarlint.core.commons.objectstore.Writer;
 import org.sonarsource.sonarlint.core.serverconnection.FileUtils;
 
-public class IssueStore {
+public class PersistentLocalIssueStore {
   private Path basePath;
   private IndexedObjectStore<String, Sonarlint.Issues> store;
 
-  public IssueStore(Path storeBasePath, ISonarLintProject project) {
+  public PersistentLocalIssueStore(Path storeBasePath, ISonarLintProject project) {
     this.basePath = storeBasePath;
     FileUtils.mkdirs(storeBasePath);
     var index = new StringStoreIndex(storeBasePath);
@@ -65,15 +66,20 @@ public class IssueStore {
     return store.contains(key);
   }
 
-  public void save(String key, Collection<Trackable> issues) throws IOException {
+  public void save(String key, Collection<TrackedIssue> issues) throws IOException {
     store.write(key, transform(issues));
   }
 
   @Nullable
-  public Collection<Trackable> read(String key) throws IOException {
-    return store.read(key)
-      .map(IssueStore::transform)
-      .orElse(null);
+  public Collection<ProtobufMatchableIssueAdapter> read(String key) {
+    try {
+      return store.read(key)
+        .map(PersistentLocalIssueStore::transform)
+        .orElse(null);
+    } catch (IOException e) {
+      SonarLintLogger.get().error("Unable to read issue storage for basePath={} and key={}", basePath, key);
+      return List.of();
+    }
   }
 
   public void clean() {
@@ -85,53 +91,52 @@ public class IssueStore {
     FileUtils.mkdirs(basePath);
   }
 
-  private static Collection<Trackable> transform(Sonarlint.Issues protoIssues) {
+  private static Collection<ProtobufMatchableIssueAdapter> transform(Sonarlint.Issues protoIssues) {
     return protoIssues.getIssueList().stream()
-      .map(IssueStore::transform)
+      .map(PersistentLocalIssueStore::transform)
       .filter(Objects::nonNull)
       .collect(Collectors.toList());
   }
 
-  private static Sonarlint.Issues transform(Collection<Trackable> localIssues) {
+  private static Sonarlint.Issues transform(Collection<TrackedIssue> localIssues) {
     var builder = Sonarlint.Issues.newBuilder();
     localIssues.stream()
-      .map(IssueStore::transform)
+      .map(PersistentLocalIssueStore::transform)
       .filter(Objects::nonNull)
       .forEach(builder::addIssue);
 
     return builder.build();
   }
 
-  private static Trackable transform(Sonarlint.Issues.Issue issue) {
-    return new ProtobufIssueTrackable(issue);
+  private static ProtobufMatchableIssueAdapter transform(Sonarlint.Issues.Issue issue) {
+    return new ProtobufMatchableIssueAdapter(issue);
   }
 
-  private static Sonarlint.Issues.Issue transform(Trackable localIssue) {
+  private static Sonarlint.Issues.Issue transform(TrackedIssue localIssue) {
     var builder = Sonarlint.Issues.Issue.newBuilder()
       .setRuleKey(localIssue.getRuleKey())
       .setMessage(localIssue.getMessage())
-      .setResolved(localIssue.isResolved())
-      .setType(localIssue.getType().name());
+      .setResolved(localIssue.isResolved());
 
-    @Nullable
-    IssueSeverity severity = localIssue.getSeverity();
-    if (severity != null) {
-      builder.setSeverity(severity.name());
+    var overridenType = localIssue.getOverridenIssueType();
+    if (overridenType != null) {
+      builder.setType(overridenType.name());
+    }
+    var overridenSeverity = localIssue.getOverridenIssueSeverity();
+    if (overridenSeverity != null) {
+      builder.setSeverity(overridenSeverity.name());
     }
     if (localIssue.getCreationDate() != null) {
       builder.setCreationDate(localIssue.getCreationDate());
     }
-    if (localIssue.getLineHash() != null) {
-      builder.setChecksum(localIssue.getLineHash());
+    if (localIssue.getTextRangeHash() != null) {
+      builder.setTextRangeDigest(localIssue.getTextRangeHash());
     }
     if (localIssue.getServerIssueKey() != null) {
       builder.setServerIssueKey(localIssue.getServerIssueKey());
     }
     if (localIssue.getLine() != null) {
       builder.setLine(localIssue.getLine());
-    }
-    if (localIssue.getMarkerId() != null) {
-      builder.setMarkerId(localIssue.getMarkerId());
     }
     return builder.build();
   }

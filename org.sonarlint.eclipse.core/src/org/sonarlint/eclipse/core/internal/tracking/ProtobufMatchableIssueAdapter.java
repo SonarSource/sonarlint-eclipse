@@ -19,26 +19,42 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.Collection;
+import org.eclipse.jdt.annotation.Nullable;
+import org.sonarlint.eclipse.core.internal.proto.Sonarlint.Issues.Issue;
+import org.sonarlint.eclipse.core.internal.tracking.matching.MatchableIssue;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
-public interface IssueTrackerCache {
+public class ProtobufMatchableIssueAdapter implements MatchableIssue {
+  private final Issue issue;
 
-  boolean isFirstAnalysis(String file);
+  public ProtobufMatchableIssueAdapter(Issue issue) {
+    this.issue = issue;
+  }
 
-  Collection<Trackable> getCurrentTrackables(String file);
-  
-  Collection<Trackable> getLiveOrFail(String file);
+  @Nullable
+  @Override
+  public Integer getLine() {
+    return issue.getLine() != 0 ? issue.getLine() : null;
+  }
 
-  void put(String file, Collection<Trackable> trackables);
+  @Override
+  public String getMessage() {
+    return issue.getMessage();
+  }
 
-  /**
-   * Empty the cache, delete everything.
-   */
-  void clear();
+  @Nullable
+  @Override
+  public String getTextRangeHash() {
+    return StringUtils.trimToNull(issue.getTextRangeDigest());
+  }
 
-  /**
-   * Shutdown the cache. This is the time for persistent implementations to flush everything to storage.
-   */
-  void shutdown();
+  @Override
+  public String getRuleKey() {
+    return issue.getRuleKey();
+  }
+
+  public Issue getProtobufIssue() {
+    return issue;
+  }
 
 }

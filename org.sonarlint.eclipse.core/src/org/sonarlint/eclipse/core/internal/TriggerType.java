@@ -20,51 +20,57 @@
 package org.sonarlint.eclipse.core.internal;
 
 public enum TriggerType {
-  STARTUP("Startup", ServerIssueUpdateStrategy.PER_FILE_ASYNC),
-  EDITOR_OPEN("Editor open", ServerIssueUpdateStrategy.PER_FILE_ASYNC),
-  MANUAL("Manual trigger", ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC),
-  MANUAL_CHANGESET("Manual trigger changeset", ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC),
-  EDITOR_CHANGE("Editor change", ServerIssueUpdateStrategy.NO_UPDATE),
-  BINDING_CHANGE("Binding change", ServerIssueUpdateStrategy.PER_FILE_ASYNC),
-  STANDALONE_CONFIG_CHANGE("Standalone config change", ServerIssueUpdateStrategy.NO_UPDATE),
-  QUICK_FIX("Quick fix", ServerIssueUpdateStrategy.NO_UPDATE),
-  AFTER_RESOLVE("After resolve", ServerIssueUpdateStrategy.NO_UPDATE),
-  SERVER_EVENT("Server Event", ServerIssueUpdateStrategy.NO_UPDATE);
-
-  /**
-   * Magic number to decide if issues should be fetched per file or once for the entire project
-   */
-  private static final int PER_FILE_THRESHOLD = 10;
+  STARTUP("Startup", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
+  EDITOR_OPEN("Editor open", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
+  MANUAL("Manual trigger", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.SYNC),
+  MANUAL_CHANGESET("Manual trigger changeset", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.SYNC),
+  EDITOR_CHANGE("Editor change", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
+  BINDING_CHANGE("Binding change", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
+  STANDALONE_CONFIG_CHANGE("Standalone config change", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
+  QUICK_FIX("Quick fix", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
+  AFTER_RESOLVE("After resolve", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
+  SERVER_EVENT("Server Event", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC);
 
   private final String name;
 
+  /**
+   * @deprecated this is only used by old SonarQube versions (and SonarCloud). Can be removed when we get issue updates through SSE in all cases (starting from SQ 9.6).
+   */
   private enum ServerIssueUpdateStrategy {
     NO_UPDATE,
-    PER_PROJECT_OR_PER_FILE_SYNC,
-    PER_FILE_ASYNC
+    UPDATE
+  }
+
+  private enum ServerMatchingStrategy {
+    /**
+     * Wait for server issue matching before creating/updating markers
+     */
+    SYNC,
+    /**
+     * Create/update markers as soon as possible after analysis, and update later after server issue matching
+     */
+    ASYNC
   }
 
   private final ServerIssueUpdateStrategy updateStrategy;
+  private final ServerMatchingStrategy matchingStrategy;
 
-  TriggerType(String name, ServerIssueUpdateStrategy updateStrategy) {
+  TriggerType(String name, ServerIssueUpdateStrategy updateStrategy, ServerMatchingStrategy matchingStrategy) {
     this.name = name;
     this.updateStrategy = updateStrategy;
+    this.matchingStrategy = matchingStrategy;
   }
 
   public String getName() {
     return name;
   }
 
-  public boolean shouldUpdateFileIssuesAsync() {
-    return updateStrategy == ServerIssueUpdateStrategy.PER_FILE_ASYNC;
+  public boolean shouldUpdate() {
+    return updateStrategy == ServerIssueUpdateStrategy.UPDATE;
   }
 
-  public boolean shouldUpdateFileIssuesSync(int fileCount) {
-    return updateStrategy == ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC && fileCount < PER_FILE_THRESHOLD;
-  }
-
-  public boolean shouldUpdateProjectIssuesSync(int fileCount) {
-    return updateStrategy == ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC && fileCount >= PER_FILE_THRESHOLD;
+  public boolean shouldMatchAsync() {
+    return matchingStrategy == ServerMatchingStrategy.ASYNC;
   }
 
   public boolean isOnTheFly() {

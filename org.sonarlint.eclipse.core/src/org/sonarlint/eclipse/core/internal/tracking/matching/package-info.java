@@ -17,29 +17,5 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.tracking;
-
-import org.junit.Test;
-import org.sonarlint.eclipse.core.internal.proto.Sonarlint.Issues.Issue;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-public class ProtobufIssueTrackableTest {
-
-  private final Trackable empty = new ProtobufIssueTrackable(Issue.newBuilder().build());
-
-  @Test
-  public void should_return_null_serverIssueKey_when_unset() {
-    assertThat(empty.getServerIssueKey()).isNull();
-  }
-
-  @Test
-  public void should_return_null_line_when_unset() {
-    assertThat(empty.getLine()).isNull();
-  }
-
-  @Test
-  public void should_return_null_creationDate_when_unset() {
-    assertThat(empty.getCreationDate()).isNull();
-  }
-}
+@org.eclipse.jdt.annotation.NonNullByDefault
+package org.sonarlint.eclipse.core.internal.tracking.matching;

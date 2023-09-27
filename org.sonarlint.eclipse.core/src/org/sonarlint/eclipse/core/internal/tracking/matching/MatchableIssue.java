@@ -17,11 +17,25 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.tracking;
+package org.sonarlint.eclipse.core.internal.tracking.matching;
 
-import java.util.Collection;
-import java.util.function.Supplier;
+import org.eclipse.jdt.annotation.Nullable;
 
-@FunctionalInterface
-public interface Input<T extends Trackable> extends Supplier<Collection<T>> {
+public interface MatchableIssue {
+
+  /**
+   * The line index, starting with 1. Null means that
+   * issue does not relate to a line (file issue for example).
+   */
+  @Nullable
+  Integer getLine();
+
+  @Nullable
+  String getMessage();
+
+  @Nullable
+  String getTextRangeHash();
+
+  String getRuleKey();
+
 }
