@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.tracking.TrackedIssue;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -52,6 +53,13 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
   }
 
   private void updateMarkers(IProgressMonitor monitor) {
+    if (issuesPerFile.entrySet().isEmpty()) {
+      return;
+    }
+    
+    // To access the preference service only once and not per issue
+    var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
+    
     for (var entry : issuesPerFile.entrySet()) {
       var slFile = entry.getKey();
       var documentOrNull = docPerFile.get(slFile);
@@ -64,7 +72,8 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
       var markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(slFile.getResource());
       try {
         getJobManager().beginRule(markerRule, monitor);
-        SonarLintMarkerUpdater.updateMarkersWithServerSideData(slFile, documentNotNull, entry.getValue(), triggerType);
+        SonarLintMarkerUpdater.updateMarkersWithServerSideData(slFile, documentNotNull, entry.getValue(), triggerType,
+          issuePeriodPreference);
       } finally {
         getJobManager().endRule(markerRule);
       }

@@ -43,6 +43,7 @@ public class TrackedIssue implements MatchableIssue {
   private Long creationDate;
   @Nullable
   private String serverIssueKey;
+  private boolean isNewCode = true;
 
   /**
    * Fresh new issue from analysis
@@ -77,6 +78,7 @@ public class TrackedIssue implements MatchableIssue {
     if (StringUtils.isNotBlank(persistedServerIssueKey)) {
       issue.serverIssueKey = persistedServerIssueKey;
     }
+    issue.isNewCode = pbIssue.getIsOnNewCode();
     return issue;
   }
 
@@ -112,6 +114,10 @@ public class TrackedIssue implements MatchableIssue {
 
   public boolean isResolved() {
     return resolved;
+  }
+  
+  public boolean isNewCode() {
+    return isNewCode;
   }
 
   @Nullable
@@ -162,12 +168,14 @@ public class TrackedIssue implements MatchableIssue {
       this.overridenIssueType = serverMatched.getType();
       this.serverIssueKey = serverMatched.getServerKey();
       this.resolved = serverMatched.isResolved();
+      this.isNewCode = serverMatched.isOnNewCode();
       return null;
     }, localMatched -> {
       this.overridenIssueSeverity = null;
       this.overridenIssueType = null;
       this.serverIssueKey = null;
       this.resolved = localMatched.getResolutionStatus() != null;
+      this.isNewCode = true;
       return null;
     });
   }

@@ -37,6 +37,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -99,7 +100,8 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     var file = workspace.getRoot().getFileForLocation(location);
     sonarLintFile = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), file);
     sonarLintFile = spy(sonarLintFile);
-    SonarLintMarkerUpdater.createOrUpdateMarkers(sonarLintFile, Optional.empty(), List.of(trackables), TriggerType.EDITOR_CHANGE);
+    SonarLintMarkerUpdater.createOrUpdateMarkers(sonarLintFile, Optional.empty(), List.of(trackables),
+      TriggerType.EDITOR_CHANGE, SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME);
 
     return project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE);
   }

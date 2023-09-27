@@ -22,6 +22,7 @@ message Issues {
         string severity = 10;
         string type = 11;
         string textRangeDigest = 12;
+        bool isOnNewCode = 13;
     }
 }
 
