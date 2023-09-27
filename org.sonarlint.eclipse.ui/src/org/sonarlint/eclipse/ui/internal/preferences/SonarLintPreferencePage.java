@@ -46,6 +46,7 @@ import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.documentation.SonarLintDocumentation;
+import org.sonarlint.eclipse.ui.internal.job.TaintIssuesJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 /**
@@ -157,6 +158,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     var anyPreferenceChanged = false;
     if (!previousIssuePeriod.equals(SonarLintGlobalConfiguration.getIssuePeriod())) {
       SonarLintBackendService.get().notifyTelemetryAfterNewCodePreferenceChanged();
+      TaintIssuesJobsScheduler.scheduleUpdateAfterNewCodePeriodChange();
       anyPreferenceChanged = true;
     }
     if (!previousTestFileGlobPatterns.equals(SonarLintGlobalConfiguration.getTestFileGlobPatterns())) {

@@ -92,7 +92,8 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  public static void refreshMarkersForTaint(ISonarLintFile currentFile, String branchName, ConnectedEngineFacade facade) {
+  public static void refreshMarkersForTaint(ISonarLintFile currentFile, String branchName,
+    ConnectedEngineFacade facade, String issuePeriodPreference) {
     deleteTaintMarkers(currentFile);
 
     var project = currentFile.getProject();
@@ -106,11 +107,15 @@ public class SonarLintMarkerUpdater {
       var bindings = boundSiblingProjects.stream()
         .collect(Collectors.toMap(p -> p, p -> SonarLintCorePlugin.loadConfig(p).getProjectBinding().get()));
 
+      var actualTaintMarkersCreated = false;
       for (var taintIssue : taintVulnerabilities) {
-        findFileForLocationInBoundProjects(bindings, taintIssue.getFilePath())
-          .ifPresent(primaryLocationFile -> createTaintMarker(primaryLocationFile.getDocument(), primaryLocationFile, taintIssue, bindings));
+        if (!(taintIssue.isResolved() || shouldRemoveTaintMarker(taintIssue, issuePeriodPreference))) {
+          findFileForLocationInBoundProjects(bindings, taintIssue.getFilePath())
+            .ifPresent(primaryLocationFile -> createTaintMarker(primaryLocationFile.getDocument(), primaryLocationFile, taintIssue, bindings));
+          actualTaintMarkersCreated = true;
+        }
       }
-      if (!taintVulnerabilities.isEmpty() && taintVulnerabilitiesListener != null) {
+      if (actualTaintMarkersCreated && taintVulnerabilitiesListener != null) {
         taintVulnerabilitiesListener.markersCreated(facade.isSonarCloud());
       }
     });
@@ -524,5 +529,11 @@ public class SonarLintMarkerUpdater {
     return issue.getServerIssueKey() != null
       && Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE, issuePeriodPreference)
       && !issue.isNewCode();
+  }
+  
+  /** Taint markers should not be set / should be removed for issues not on new code when preference is set! */
+  private static boolean shouldRemoveTaintMarker(ServerTaintIssue issue, String issuePeriodPreference) {
+    return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE, issuePeriodPreference)
+      && !issue.isOnNewCode();
   }
 }

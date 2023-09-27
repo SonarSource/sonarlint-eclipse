@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -53,11 +54,15 @@ public class TaintIssuesUpdateAfterSyncJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
+      // To access the preference service only once and not per issue
+      var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
+      
       for (var issuable : issuables) {
         if (monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
         }
-        VcsService.getServerBranch(project).ifPresent(b -> SonarLintMarkerUpdater.refreshMarkersForTaint(issuable, b, engineFacade));
+        VcsService.getServerBranch(project)
+          .ifPresent(b -> SonarLintMarkerUpdater.refreshMarkersForTaint(issuable, b, engineFacade, issuePeriodPreference));
       }
       return Status.OK_STATUS;
     } catch (Throwable t) {
