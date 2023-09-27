@@ -116,7 +116,8 @@ public class PersistentLocalIssueStore {
     var builder = Sonarlint.Issues.Issue.newBuilder()
       .setRuleKey(localIssue.getRuleKey())
       .setMessage(localIssue.getMessage())
-      .setResolved(localIssue.isResolved());
+      .setResolved(localIssue.isResolved())
+      .setIsOnNewCode(localIssue.isNewCode());
 
     var overridenType = localIssue.getOverridenIssueType();
     if (overridenType != null) {
