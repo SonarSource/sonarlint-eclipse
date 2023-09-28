@@ -53,6 +53,8 @@ import org.sonarsource.sonarlint.core.clientapi.backend.initialize.InitializePar
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.AddIssueCommentParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.ChangeIssueStatusParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.ResolutionStatus;
+import org.sonarsource.sonarlint.core.clientapi.backend.newcode.GetNewCodeDefinitionParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.newcode.GetNewCodeDefinitionResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetEffectiveRuleDetailsResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.GetStandaloneRuleDescriptionParams;
@@ -234,7 +236,11 @@ public class SonarLintBackendService {
     return getBackend().getIssueTrackingService().trackWithServerIssues(
       new TrackWithServerIssuesParams(ConfigScopeSynchronizer.getConfigScopeId(project), clientTrackedIssuesByServerRelativePath, shouldFetchIssuesFromServer));
   }
-  
+
+  public CompletableFuture<GetNewCodeDefinitionResponse> getNewCodeDefinition(ISonarLintProject project) {
+    return getBackend().getNewCodeService().getNewCodeDefinition(new GetNewCodeDefinitionParams(ConfigScopeSynchronizer.getConfigScopeId(project)));
+  }
+
   /** When the (workspace) preference for focusing on new code is changed, the telemetry has to be adjusted */
   public void notifyTelemetryAfterNewCodePreferenceChanged() {
     getBackend().getNewCodeService().didToggleFocus();
