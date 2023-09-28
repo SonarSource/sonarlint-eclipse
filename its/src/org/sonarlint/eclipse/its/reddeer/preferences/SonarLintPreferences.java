@@ -26,7 +26,6 @@ import org.eclipse.reddeer.swt.impl.combo.DefaultCombo;
 import org.eclipse.reddeer.swt.impl.text.DefaultText;
 
 public class SonarLintPreferences extends PropertyPage {
-
   public static final String NAME = "SonarLint";
 
   public SonarLintPreferences(ReferencedComposite referencedComposite) {
@@ -41,10 +40,14 @@ public class SonarLintPreferences extends PropertyPage {
     new DefaultCombo(this, new WithLabelMatcher("SonarLint markers severity:")).setSelection(severity.getTextInCombo());
   }
 
+  public void setNewCodePreference(IssuePeriod period) {
+    new DefaultCombo(this, new WithLabelMatcher("SonarLint markers shown on:")).setSelection(period.getTextInCombo());
+  }
+
   public enum MarkerSeverity {
     ERROR("Error"), WARNING("Warning"), INFO("Info");
 
-    private String textInCombo;
+    private final String textInCombo;
 
     private MarkerSeverity(String textInCombo) {
       this.textInCombo = textInCombo;
@@ -55,4 +58,18 @@ public class SonarLintPreferences extends PropertyPage {
     }
   }
 
+  public enum IssuePeriod {
+    ALL_TIME("All code"),
+    NEW_CODE("New code");
+
+    private final String textInCombo;
+
+    private IssuePeriod(String textInCombo) {
+      this.textInCombo = textInCombo;
+    }
+
+    public String getTextInCombo() {
+      return textInCombo;
+    }
+  }
 }
