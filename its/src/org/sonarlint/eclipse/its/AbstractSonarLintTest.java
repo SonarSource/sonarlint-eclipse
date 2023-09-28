@@ -59,6 +59,7 @@ import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.shell.WorkbenchShell;
+import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -69,6 +70,8 @@ import org.osgi.framework.Version;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.its.reddeer.preferences.FileAssociationsPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.RuleConfigurationPreferences;
+import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences;
+import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssuePeriod;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole.ShowConsoleOption;
 import org.sonarqube.ws.client.HttpConnector;
@@ -115,7 +118,18 @@ public abstract class AbstractSonarLintTest {
     restoreDefaultFileAssociationConfiguration();
     restoreDefaultRulesConfiguration();
 
+    setNewCodePreference(IssuePeriod.ALL_TIME);
+
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SECRETS_EVER_DETECTED);
+  }
+
+  protected static void setNewCodePreference(IssuePeriod period) {
+    var preferenceDialog = new WorkbenchPreferenceDialog();
+    preferenceDialog.open();
+    var preferences = new SonarLintPreferences(preferenceDialog);
+    preferenceDialog.select(preferences);
+    preferences.setNewCodePreference(period);
+    preferenceDialog.ok();
   }
 
   private void waitSonarLintAnalysisJobs() {
@@ -137,7 +151,7 @@ public abstract class AbstractSonarLintTest {
   private static final List<String> sonarlintJobFamilies = List.of(
     "org.sonarlint.eclipse.projectJob",
     "org.sonarlint.eclipse.projectsJob");
-  
+
   @Before
   public final void before() {
     // File associations must be set explicitly on macOS!
@@ -291,7 +305,7 @@ public abstract class AbstractSonarLintTest {
       .credentials(Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD)
       .build());
   }
-  
+
   static void setSpecificFileAssociationConfiguration() {
     var preferencePage = FileAssociationsPreferences.open();
     preferencePage.enforceFileAssociation();
