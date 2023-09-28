@@ -30,8 +30,6 @@ import org.eclipse.reddeer.eclipse.exception.EclipseLayerException;
 import org.eclipse.reddeer.eclipse.ui.markers.matcher.AbstractMarkerMatcher;
 import org.eclipse.reddeer.eclipse.ui.views.markers.AbstractMarkersSupportView;
 import org.eclipse.reddeer.swt.api.TreeItem;
-import org.eclipse.reddeer.swt.impl.menu.ToolItemMenuItem;
-import org.eclipse.reddeer.swt.impl.toolbar.DefaultToolItem;
 import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
 import org.eclipse.reddeer.workbench.impl.menu.WorkbenchPartMenuItem;
 import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
@@ -44,6 +42,13 @@ public class OnTheFlyView extends AbstractMarkersSupportView {
 
   public OnTheFlyView() {
     super("SonarLint On-The-Fly");
+  }
+  
+  public List<TreeItem> getItems() {
+    activate();
+    new WaitUntil(new OnTheFlyIssuesViewMarkerIsUpdating(), TimePeriod.MEDIUM, false);
+    new WaitWhile(new OnTheFlyIssuesViewMarkerIsUpdating());
+    return new DefaultTree(cTabItem).getItems();
   }
 
   public DefaultTree getTree() {

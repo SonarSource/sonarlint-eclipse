@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<profile>
+  <name>SonarLint IT New Code</name>
+  <language>java</language>
+  <rules>
+    <rule>
+      <!-- Rename class name -->
+      <repositoryKey>java</repositoryKey>
+      <key>S101</key>
+      <priority>MAJOR</priority>
+    </rule>
+    <!-- try-with-resource for Closeable -->
+    <rule>
+      <repositoryKey>java</repositoryKey>
+      <key>S2095</key>
+      <priority>MAJOR</priority>
+    </rule>
+    <!-- Taint Vulnerability: Path from user data -->
+    <rule>
+      <repositoryKey>javasecurity</repositoryKey>
+      <key>S2083</key>
+      <priority>MAJOR</priority>
+    </rule>
+  </rules>
+</profile>

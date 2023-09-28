@@ -21,7 +21,9 @@ package org.sonarlint.eclipse.its;
 
 import com.google.gson.Gson;
 import com.sonar.orchestrator.build.MavenBuild;
+import com.sonar.orchestrator.container.Edition;
 import com.sonar.orchestrator.container.Server;
+import com.sonar.orchestrator.http.HttpMethod;
 import com.sonar.orchestrator.junit4.OrchestratorRule;
 import com.sonar.orchestrator.locator.URLLocation;
 import java.io.File;
@@ -59,11 +61,13 @@ import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.reddeer.conditions.RuleDescriptionViewIsLoaded;
+import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssuePeriod;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView.Binding;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintTaintVulnerabilitiesView;
 import org.sonarlint.eclipse.its.reddeer.wizards.MarkIssueAsDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectSelectionDialog;
@@ -88,6 +92,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   private static final String SECRET_JAVA_PROJECT_NAME = "secret-java";
   private static final String JAVA_SIMPLE_PROJECT_KEY = "java-simple";
   private static final String MAVEN2_PROJECT_KEY = "maven2";
+  private static final String MAVEN_TAINT_PROJECT_KEY = "maven-taint";
   private static final String INSUFFICIENT_PERMISSION_USER = "iHaveNoRights";
   private static final MarkerDescriptionMatcher ISSUE_MATCHER = new MarkerDescriptionMatcher(
     CoreMatchers.containsString("System.out"));
@@ -97,6 +102,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     .defaultForceAuthentication()
     .useDefaultAdminCredentialsForBuilds(true)
     .keepBundledPlugins()
+    .setEdition(Edition.DEVELOPER)
+    .activateLicense()
     .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[9.9]"))
     // Ensure SSE are processed correctly just after SQ startup
     .setServerProperty("sonar.pushevents.polling.initial.delay", "2")
@@ -117,6 +124,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     try {
       orchestrator.getServer().restoreProfile(
         URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint.xml"), null))));
+      orchestrator.getServer().restoreProfile(
+        URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint-new-code.xml"), null))));
     } catch (IOException e) {
       fail("Unable to load quality profile", e);
     }
@@ -440,11 +449,94 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     await().until(() -> onTheFlyView.getIssues(ISSUE_MATCHER), List<SonarLintIssueMarker>::isEmpty);
   }
 
+  // integration test for focusing on new code in connected mode
+  @Test
+  public void test_new_code_period_preference() {
+    // 1) create project on server / run first analysis
+    adminWsClient.projects()
+      .create(CreateRequest.builder()
+        .setName(MAVEN_TAINT_PROJECT_KEY)
+        .setKey(MAVEN_TAINT_PROJECT_KEY).build());
+    orchestrator.getServer().associateProjectToQualityProfile(MAVEN_TAINT_PROJECT_KEY, "java", "SonarLint IT New Code");
+
+    orchestrator.executeBuild(MavenBuild.create(new File("projects", "java/maven-taint/pom.xml"))
+      .setCleanPackageSonarGoals()
+      .setProperty("sonar.login", Server.ADMIN_LOGIN)
+      .setProperty("sonar.password", Server.ADMIN_PASSWORD)
+      .setProperty("sonar.projectKey", MAVEN_TAINT_PROJECT_KEY));
+
+    // 2) import project / check that new code period preference does nothing in standalone mode
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("java/maven-taint", MAVEN_TAINT_PROJECT_KEY);
+
+    var onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+    var taintVulnerabilitiesView = new SonarLintTaintVulnerabilitiesView();
+    taintVulnerabilitiesView.open();
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src/main/java", "taint", "taint_issue.java"));
+
+    await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(2));
+
+    setNewCodePreference(IssuePeriod.NEW_CODE);
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src/main/java", "taint", "taint_issue.java"));
+
+    await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(2));
+
+    setNewCodePreference(IssuePeriod.ALL_TIME);
+
+    // 3) bind to project on SonarQube / check issues and taint vulnerabilities exist
+    createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
+
+    var notificationShell = new DefaultShell("SonarLint Binding Suggestion");
+    new DefaultLink(notificationShell, "Don't ask again").click();
+
+    await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(2));
+    await().untilAsserted(() -> assertThat(taintVulnerabilitiesView.getItems()).hasSize(1));
+
+    var newTaintShell = new DefaultShell("SonarLint - Taint vulnerability found");
+    new DefaultLink(newTaintShell, "Show in view").click();
+
+    // 4) unbind project / set new code period to "previous version" / run second analysis with a new version
+    var bindingsView = new BindingsView();
+    bindingsView.open();
+    bindingsView.removeAllBindings();
+
+    setNewCodePeriodToPreviousVersion(MAVEN_TAINT_PROJECT_KEY);
+
+    orchestrator.executeBuild(MavenBuild.create(new File("projects", "java/maven-taint/pom.xml"))
+      .setCleanPackageSonarGoals()
+      .setProperty("sonar.projectVersion", "1.1-SNAPSHOT")
+      .setProperty("sonar.login", Server.ADMIN_LOGIN)
+      .setProperty("sonar.password", Server.ADMIN_PASSWORD)
+      .setProperty("sonar.projectKey", MAVEN_TAINT_PROJECT_KEY));
+    // Because of a bug in SQ that returns the techncial issue creation date, we have to run another analysis
+    // to be sure issues will be before the new code period
+    orchestrator.executeBuild(MavenBuild.create(new File("projects", "java/maven-taint/pom.xml"))
+      .setCleanPackageSonarGoals()
+      .setProperty("sonar.projectVersion", "1.2-SNAPSHOT")
+      .setProperty("sonar.login", Server.ADMIN_LOGIN)
+      .setProperty("sonar.password", Server.ADMIN_PASSWORD)
+      .setProperty("sonar.projectKey", MAVEN_TAINT_PROJECT_KEY));
+
+    // 5) bind to project on SonarQube / check that new code period preference is working
+    createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
+
+    await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(2));
+    await().untilAsserted(() -> assertThat(taintVulnerabilitiesView.getItems()).hasSize(1));
+
+    setNewCodePreference(IssuePeriod.NEW_CODE);
+
+    await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).isEmpty());
+    await().untilAsserted(() -> assertThat(taintVulnerabilitiesView.getItems()).isEmpty());
+  }
+
   private static void createConnectionAndBindProject(String projectKey) {
     createConnectionAndBindProject(orchestrator, projectKey, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
   }
 
-  private QualityProfile getQualityProfile(String projectKey, String qualityProfileName) {
+  private static QualityProfile getQualityProfile(String projectKey, String qualityProfileName) {
     var searchReq = new SearchWsRequest();
     searchReq.setQualityProfile(qualityProfileName);
     searchReq.setProjectKey(projectKey);
@@ -515,6 +607,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     }
     wizard.finish();
 
+    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
+
     var projectBindingWizard = new ProjectBindingWizard();
     var projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
     projectsToBindPage.clickAdd();
@@ -533,5 +627,15 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     bindingsView.open();
     bindingsView.updateAllProjectBindings();
     new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
+  }
+
+  private static void setNewCodePeriodToPreviousVersion(String projectKey) {
+    orchestrator.getServer()
+      .newHttpCall("api/new_code_periods/set")
+      .setMethod(HttpMethod.POST)
+      .setAdminCredentials()
+      .setParam("project", projectKey)
+      .setParam("type", "PREVIOUS_VERSION")
+      .execute();
   }
 }
