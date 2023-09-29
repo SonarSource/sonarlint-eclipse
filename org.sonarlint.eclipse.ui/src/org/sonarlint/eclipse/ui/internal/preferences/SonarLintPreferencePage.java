@@ -85,7 +85,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     //       high span as it will be set internally to the actual grid width if ours is too big: Otherwise the the
     //       settings label from the line below would shift one row up!
     var issuePeriodLabel = new Link(getFieldEditorParent(), SWT.NONE);
-    issuePeriodLabel.setText("This preference only applies for projects in connected mode with <a>SonarQube / SonarCloud</a>:");
+    issuePeriodLabel.setText("<a>Learn how</a> SonarLint markers can help you focus on new code to deliver Clean Code.");
     issuePeriodLabel.setLayoutData(new GridData(SWT.LEFT, SWT.DOWN, true, false, Integer.MAX_VALUE, 1));
     issuePeriodLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.ISSUE_PERIOD_LINK, e.display));
