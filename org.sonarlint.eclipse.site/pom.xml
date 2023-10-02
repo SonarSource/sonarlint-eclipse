@@ -67,7 +67,9 @@
           <archiveDirectory>${project.build.directory}/repository/</archiveDirectory>
           <includes>
             <include>features/*</include>
-            <include>plugins/*</include>
+            <include>plugins/org.jetbrains.kotlin.*</include>
+            <include>plugins/org.sonarlint.*</include>
+            <include>plugins/org.sonarsource.*</include>
           </includes>
           <processAttachedArtifacts>false</processAttachedArtifacts>
           <processMainArtifact>false</processMainArtifact>
