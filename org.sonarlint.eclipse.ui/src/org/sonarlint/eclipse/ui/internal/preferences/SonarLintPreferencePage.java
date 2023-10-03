@@ -80,21 +80,21 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     addField(new StringFieldEditor(SonarLintGlobalConfiguration.PREF_TEST_FILE_GLOB_PATTERNS,
       Messages.SonarPreferencePage_label_test_file_glob_patterns, getFieldEditorParent()));
     addField(new NodeJsField(getFieldEditorParent()));
-    
+
     // INFO: For the label to take up all the horizontal space in the grid (the size we cannot get), we have to use a
-    //       high span as it will be set internally to the actual grid width if ours is too big: Otherwise the the
-    //       settings label from the line below would shift one row up!
+    // high span as it will be set internally to the actual grid width if ours is too big: Otherwise the
+    // settings label from the line below would shift one row up!
     var issuePeriodLabel = new Link(getFieldEditorParent(), SWT.NONE);
     issuePeriodLabel.setText("<a>Learn how</a> SonarLint markers can help you focus on new code to deliver Clean Code.");
     issuePeriodLabel.setLayoutData(new GridData(SWT.LEFT, SWT.DOWN, true, false, Integer.MAX_VALUE, 1));
     issuePeriodLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.ISSUE_PERIOD_LINK, e.display));
-    
+
     addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD,
       Messages.SonarPreferencePage_label_issue_period,
       new String[][] {
-        {"Since the beginning", SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME},
-        {"Only on new code", SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE}},
+        {"All code", SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME},
+        {"New code", SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE}},
       getFieldEditorParent()));
   }
 
