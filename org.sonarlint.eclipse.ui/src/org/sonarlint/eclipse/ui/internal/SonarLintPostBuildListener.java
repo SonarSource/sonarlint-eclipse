@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -54,7 +55,7 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
 
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
-    if (event.getType() == IResourceChangeEvent.POST_BUILD) {
+    if (event.getType() == IResourceChangeEvent.POST_BUILD && event.getBuildKind() != IncrementalProjectBuilder.CLEAN_BUILD) {
       final var changedFiles = new ArrayList<ISonarLintFile>();
       try {
         event.getDelta().accept(delta -> visitDelta(changedFiles, delta));
