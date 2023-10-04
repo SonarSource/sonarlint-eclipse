@@ -71,6 +71,7 @@ public class SonarLintGlobalConfiguration {
   public static final String PREF_NODEJS_PATH = "nodeJsPath"; //$NON-NLS-1$
   private static final String PREF_TAINT_VULNERABILITY_DISPLAYED = "taintVulnerabilityDisplayed";
   private static final String PREF_SECRETS_EVER_DETECTED = "secretsEverDetected";
+  private static final String PREF_USER_SURVEY_LAST_LINK = "userSurveyLastLink"; //$NON-NLS-1$
 
   private SonarLintGlobalConfiguration() {
     // Utility class
@@ -300,4 +301,13 @@ public class SonarLintGlobalConfiguration {
     setPreferenceBoolean(PREF_SECRETS_EVER_DETECTED, true);
   }
 
+  /** See {@link org.sonarlint.eclipse.ui.internal.survey.SurveyPopup} for more information */
+  public static String getUserSurveyLastLink() {
+    return getPreferenceString(PREF_USER_SURVEY_LAST_LINK);
+  }
+  
+  /** See {@link org.sonarlint.eclipse.ui.internal.survey.SurveyPopup} for more information */
+  public static void setUserSurveyLastLink(String link) {
+    setPreferenceString(PREF_USER_SURVEY_LAST_LINK, link);
+  }
 }

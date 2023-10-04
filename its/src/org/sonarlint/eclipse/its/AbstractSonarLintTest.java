@@ -197,6 +197,13 @@ public abstract class AbstractSonarLintTest {
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
+    
+    // If we have any SonarLint for Eclipse user survey, just click it away as we don't test the behavior!
+    try {
+      new DefaultShell("SonarLint - New Eclipse user survey").close();
+    } catch (Exception ignored) {
+      System.out.println("SonarLint for Eclipse user survey found, ignoring it!");
+    }
   }
 
   protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
