@@ -62,6 +62,7 @@ import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsSer
 import org.sonarlint.eclipse.ui.internal.job.PeriodicStoragesSynchronizerJob;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
+import org.sonarlint.eclipse.ui.internal.popup.SurveyPopup;
 import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
@@ -276,6 +277,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
           WindowOpenCloseListener.addListenerToAllPages(window);
         }
       }
+      
+      // Display user survey pop-up (comment out if not needed, comment in again if needed and replace link)
+      SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed("https://forms.gle/EdAJf5sdJDvDT6dNA");
 
       return Status.OK_STATUS;
     }

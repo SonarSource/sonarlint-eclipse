@@ -35,9 +35,12 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 public class AboutPropertyPage extends PropertyPage implements IWorkbenchPreferencePage {
+  public static final String ABOUT_CONFIGURATION_ID = "org.sonarlint.eclipse.ui.properties.AboutPropertyPage";
 
   private Button enabledBtn;
 
@@ -129,6 +132,24 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
     var layoutData = new GridData();
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
+    
+    /** Information on SonarLint for Eclipse user surveys */
+    var surveyHeader = new Link(composite, SWT.NONE);
+    surveyHeader.setLayoutData(textGd);
+    surveyHeader.setText("\nSonarLint for Eclipse user survey");
+    var surveyText = new Link(composite, SWT.NONE);
+    surveyText.setLayoutData(textGd);
+    surveyText.setText("From time to time we might provide you with the link to a user survey as we are interested in "
+      + "your feedback to improve SonarLint for Eclipse.\nIt will pop-up for you on IDE startup and you are free to "
+      + "check it out, but there is no obligation to take part in the survey.\nYou can come back here anytime to find "
+      + "the link to the survey once again, perhaps if you changed your mind and want to take part.");
+    var link = SonarLintGlobalConfiguration.getUserSurveyLastLink();
+    if (!link.isBlank()) {
+      var surveyLink = new Link(composite, SWT.NONE);
+      surveyLink.setText("To access the current survey, <a>click here</a>. Be cautious, the survey might already be "
+        + "closed and therefore unavailable!");
+      surveyLink.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowser(link, e.display));
+    }
 
     return composite;
   }
@@ -143,5 +164,4 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
   protected void performDefaults() {
     enabledBtn.setSelection(true);
   }
-
 }
