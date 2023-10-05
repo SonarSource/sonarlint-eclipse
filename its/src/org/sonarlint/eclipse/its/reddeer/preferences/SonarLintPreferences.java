@@ -59,7 +59,7 @@ public class SonarLintPreferences extends PropertyPage {
   }
 
   public enum IssuePeriod {
-    ALL_TIME("All code"),
+    ALL_TIME("Overall code"),
     NEW_CODE("New code");
 
     private final String textInCombo;

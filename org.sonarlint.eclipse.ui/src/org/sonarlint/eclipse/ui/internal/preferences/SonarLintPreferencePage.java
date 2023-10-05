@@ -93,7 +93,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD,
       Messages.SonarPreferencePage_label_issue_period,
       new String[][] {
-        {"All code", SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME},
+        {"Overall code", SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME},
         {"New code", SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE}},
       getFieldEditorParent()));
   }
