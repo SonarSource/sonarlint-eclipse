@@ -117,7 +117,7 @@ public class RulesConfigurationPart {
     paramPanelParent = new Composite(horizontalSplitter, SWT.NONE);
     paramPanelParent.setLayout(new GridLayout());
     paramPanel = emptyRuleParam();
-    horizontalSplitter.setWeights(70, 30);
+    horizontalSplitter.setWeights(new int[] {70, 30});
   }
 
   // Visible for testing

@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.AbstractSonarGlobalConfigurationJob;
 import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
@@ -51,7 +52,7 @@ public class DisplayGlobalConfigurationRuleDescriptionJob extends AbstractSonarG
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to display global configuration rule description for rule " + ruleKey, e);
       Display.getDefault().syncExec(ruleDetailsPanel::clearRule);
-      return Status.error(e.getMessage(), e);
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, IStatus.ERROR, e.getMessage(), e);
     }
 
     return Status.OK_STATUS;

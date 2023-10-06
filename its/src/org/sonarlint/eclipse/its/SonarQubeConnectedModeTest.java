@@ -356,10 +356,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   // integration test for the "Mark issue as ..." dialog without and then with permission
   @Test
   public void test_MarkIssueAs_Dialog() {
-    // INFO: It is flaky when running on top of the oldest Eclipse version but works fine in the other test cases,
-    // therefore it should be skipped in that particular situation!
-    Assume.assumeTrue(!"oldest".equals(System.getProperty("target.platform")));
-
     // 1) Create project on SonarQube
     adminWsClient.projects()
       .create(CreateRequest.builder()

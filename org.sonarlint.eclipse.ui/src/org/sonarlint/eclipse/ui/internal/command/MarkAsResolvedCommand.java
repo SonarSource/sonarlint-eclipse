@@ -122,7 +122,7 @@ public class MarkAsResolvedCommand extends AbstractIssueCommand implements IElem
           }
 
         } else {
-          return Status.error("Project is not bound anymore");
+          return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, IStatus.ERROR, "Project is not bound anymore", null);
         }
       }
 

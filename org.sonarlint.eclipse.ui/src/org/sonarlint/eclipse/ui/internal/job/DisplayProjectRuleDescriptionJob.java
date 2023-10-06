@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.AbstractSonarProjectJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -65,19 +66,19 @@ public class DisplayProjectRuleDescriptionJob extends AbstractSonarProjectJob {
     try {
       Display.getDefault().syncExec(ruleDetailsPanel::displayLoadingIndicator);
       // Getting the CompletableFuture<...> object before running the UI update to not block the UI thread
-      var ruleDetails = SonarLintBackendService.get().getEffectiveRuleDetails(project, ruleKey, contextKey).details();      
-      
+      var ruleDetails = SonarLintBackendService.get().getEffectiveRuleDetails(project, ruleKey, contextKey).details();
+
       // Add the actual issue type / severity / impacts
       var actualDetails = new EffectiveRuleDetailsDto(ruleKey, ruleDetails.getName(),
         issueSeverity != null ? issueSeverity : ruleDetails.getSeverity(),
         issueType != null ? issueType : ruleDetails.getType(), ruleDetails.getCleanCodeAttribute().orElse(null),
         issueImpacts, ruleDetails.getDescription(), ruleDetails.getParams(), ruleDetails.getLanguage());
-      
+
       Display.getDefault().syncExec(() -> ruleDetailsPanel.updateRule(actualDetails, actualDetails.getDescription()));
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to display project rule description for rule " + ruleKey, e);
       Display.getDefault().syncExec(ruleDetailsPanel::clearRule);
-      return Status.error(e.getMessage(), e);
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, IStatus.ERROR, e.getMessage(), e);
     }
 
     return Status.OK_STATUS;

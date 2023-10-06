@@ -159,7 +159,9 @@ public class SonarLintBackendService {
       requireNonNull(initJob, "SonarLintBackendService has not been initialized").join();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      Platform.getLog(SonarLintBackendService.class).error("Interrupted!", e);
+      IStatus status = new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, IStatus.ERROR,
+        "Interrupted!", e);
+      Platform.getLog(Platform.getBundle(SonarLintCorePlugin.PLUGIN_ID)).log(status);
     }
     return requireNonNull(backend, "SonarLintBackendService has not been initialized");
   }
@@ -211,7 +213,9 @@ public class SonarLintBackendService {
       try {
         backendLocalCopy.shutdown().get(10, TimeUnit.SECONDS);
       } catch (ExecutionException | TimeoutException e) {
-        Platform.getLog(SonarLintBackendService.class).error("Unable to stop the SonartLint backend", e);
+        IStatus status = new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, IStatus.ERROR,
+          "Unable to stop the SonartLint backend", e);
+        Platform.getLog(Platform.getBundle(SonarLintCorePlugin.PLUGIN_ID)).log(status);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
