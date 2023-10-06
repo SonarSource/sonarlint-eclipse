@@ -38,6 +38,12 @@ eks_container: &CONTAINER_DEFINITION
   region: eu-central-1
   cluster_name: ${CIRRUS_CLUSTER_NAME}
   namespace: default
+  nodeSelectorTerms:
+      - matchExpressions:
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values:
+            - m4.4xlarge
 
 eks_builder_container: &BUILDER_CONTAINER_DEFINITION
   <<: *CONTAINER_DEFINITION
@@ -69,8 +75,8 @@ build_task:
   <<: *ONLY_IF
   eks_container:
     <<: *BUILDER_CONTAINER_DEFINITION
-    cpu: 4
-    memory: 2G
+    cpu: 8
+    memory: 4G
   env:
     ARTIFACTORY_DEPLOY_REPO: sonarsource-public-qa
     ARTIFACTORY_DEPLOY_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer
@@ -98,8 +104,8 @@ validate_task:
   <<: *ONLY_IF_EXCEPT_NIGHTLY
   eks_container:
     <<: *BUILDER_CONTAINER_DEFINITION
-    cpu: 4
-    memory: 2G
+    cpu: 8
+    memory: 4G
   env:
     DEPLOY_PULL_REQUEST: false
     DISPLAY: :10
@@ -127,7 +133,7 @@ qa_task:
   <<: *ONLY_IF_EXCEPT_NIGHTLY
   eks_container:
     <<: *BUILDER_CONTAINER_DEFINITION
-    cpu: 4
+    cpu: 8
     memory: 12G
   env:
     ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
@@ -197,8 +203,8 @@ sonarqube_task:
   <<: *ONLY_IF_EXCEPT_NIGHTLY
   eks_container:
     <<: *BUILDER_CONTAINER_DEFINITION
-    cpu: 4
-    memory: 2G
+    cpu: 8
+    memory: 4G
   env:
     DEPLOY_PULL_REQUEST: false
     DISPLAY: :10
