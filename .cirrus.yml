@@ -94,7 +94,7 @@ build_task:
   build_script: |
     source cirrus-env BUILD-PRIVATE
     base64 --decode "${CODESIGNING_JKS_PATH}.b64" > "${CODESIGNING_JKS_PATH}"
-    .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true
+    .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true -T 1C
   cleanup_before_cache_script: cleanup_maven_repository
 
 validate_task:
@@ -116,7 +116,7 @@ validate_task:
     metacity --sm-disable --replace &
     sleep 10 # give metacity some time to start
     source cirrus-env QA
-    mvn -B -e -V verify -P-deploy-sonarsource,-release,-sign
+    mvn -B -e -V verify -P-deploy-sonarsource,-release,-sign -T 1C
     /etc/init.d/xvfb stop
   cleanup_before_cache_script: cleanup_maven_repository
   on_failure:
@@ -171,7 +171,7 @@ qa_task:
     echo "Run Maven ITs for Eclipse ${TARGET_PLATFORM} and Server ${SQ_VERSION}"
     mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify -f its/pom.xml -Pcoverage \
       -Dtarget.platform=${TARGET_PLATFORM} -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/staged-repository" -Dsonar.runtimeVersion=${SQ_VERSION} \
-      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
+      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec -T 1C
     mv it-coverage.exec it-coverage-${TARGET_PLATFORM}.exec
   cleanup_before_cache_script: cleanup_maven_repository
   always:
@@ -220,7 +220,7 @@ sonarqube_task:
     curl --no-progress-meter https://api.cirrus-ci.com/v1/artifact/build/$CIRRUS_BUILD_ID/jacoco.zip -o jacoco.zip
     unzip jacoco.zip -d ${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/
     source cirrus-env QA
-    .cirrus/regular_mvn_build_deploy_analyze \
+    .cirrus/regular_mvn_build_deploy_analyze -T 1C \
       -P-deploy-sonarsource,-release,-sign -Dmaven.install.skip=true -Dmaven.deploy.skip=true -Dcyclonedx.skip=true \
       -Pcoverage -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
     /etc/init.d/xvfb stop
