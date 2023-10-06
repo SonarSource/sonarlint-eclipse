@@ -210,6 +210,10 @@
                 </dependency>
                 <dependency>
                   <type>p2-installable-unit</type>
+                  <artifactId>org.eclipse.m2e.feature.feature.group</artifactId>
+                </dependency>
+                <dependency>
+                  <type>p2-installable-unit</type>
                   <artifactId>org.eclipse.egit.feature.group</artifactId>
                 </dependency>
               </dependencies>
