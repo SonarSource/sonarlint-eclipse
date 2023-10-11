@@ -38,8 +38,8 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.ResolutionStatus;
 
+/** Job to be run after successfully marking an issue as resolved (either server or anticipated one) */
 public class MarkAsResolvedJob extends Job {
-
   private final ISonarLintProject project;
   private final String serverIssueKey;
   private final ResolutionStatus newStatus;
@@ -85,6 +85,5 @@ public class MarkAsResolvedJob extends Job {
       Thread.currentThread().interrupt();
       return new Status(IStatus.CANCEL, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
     }
-
   }
 }

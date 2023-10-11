@@ -97,7 +97,7 @@
             class="org.sonarlint.eclipse.ui.internal.markers.MarkerPropertyTester"
             id="org.sonarlint.eclipse.ui.internal.quickFix"
             namespace="org.sonarlint.eclipse.ui"
-            properties="hasQuickFix,matchedOnServer"
+            properties="hasQuickFix,canBeResolved,resolvedIssue"
             type="org.eclipse.ui.views.markers.MarkerItem">
       </propertyTester>
   </extension>
@@ -807,6 +807,7 @@
          <command
                  commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
                  mnemonic="%command.correctionAssistProposals.mnemonic"
+                 icon="icons/full/marker_resolution16/quickfix_change.png"
                  style="push">
                <visibleWhen
                     checkEnabled="true">
@@ -814,6 +815,14 @@
          </command>
          <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
+                 mnemonic="M"
+                 style="push">
+               <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
+         </command>
+         <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.ReOpenResolvedCommand"
                  mnemonic="M"
                  style="push">
                <visibleWhen
@@ -841,6 +850,14 @@
          </command>
          <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
+                 mnemonic="M"
+                 style="push">
+               <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
+         </command>
+         <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.ReOpenResolvedCommand"
                  mnemonic="M"
                  style="push">
                <visibleWhen
@@ -898,6 +915,14 @@
          </command>
          <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.MarkAsResolvedCommand"
+                 mnemonic="M"
+                 style="push">
+               <visibleWhen
+                    checkEnabled="true">
+              </visibleWhen>
+         </command>
+         <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.ReOpenResolvedCommand"
                  mnemonic="M"
                  style="push">
                <visibleWhen
@@ -1138,6 +1163,12 @@
           name="Mark Issue as..."
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
+    <command
+          description="Re-Open already resolved issue"
+          id="org.sonarlint.eclipse.ui.internal.command.ReOpenResolvedCommand"
+          name="Re-Open resolved Issue..."
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
   </extension>
 
   <extension point="org.eclipse.ui.handlers">
@@ -1288,7 +1319,26 @@
                      operator="or">
                   <instanceof value="org.eclipse.ui.views.markers.MarkerItem"/>
                   <test
-                        property="org.sonarlint.eclipse.ui.matchedOnServer">
+                        property="org.sonarlint.eclipse.ui.canBeResolved">
+                  </test>
+               </iterate>
+               <count
+                     value="+">
+               </count>
+            </and>
+         </enabledWhen>
+      </handler>
+      <handler
+          class="org.sonarlint.eclipse.ui.internal.command.ReOpenResolvedCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.ReOpenResolvedCommand">
+          <enabledWhen>
+            <and>
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <instanceof value="org.eclipse.ui.views.markers.MarkerItem"/>
+                  <test
+                        property="org.sonarlint.eclipse.ui.resolvedIssue">
                   </test>
                </iterate>
                <count

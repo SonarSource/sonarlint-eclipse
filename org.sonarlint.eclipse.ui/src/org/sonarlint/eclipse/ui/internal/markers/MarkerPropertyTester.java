@@ -25,9 +25,9 @@ import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 
 public class MarkerPropertyTester extends PropertyTester {
-
   private static final String HAS_QUICK_FIX = "hasQuickFix"; //$NON-NLS-1$
-  private static final String MATCHED_ON_SERVER = "matchedOnServer"; //$NON-NLS-1$
+  private static final String CAN_BE_RESOLVED = "canBeResolved"; //$NON-NLS-1$
+  private static final String RESOLVED_ISSUE = "resolvedIssue"; //$NON-NLS-1$
 
   /**
    * Create a new instance of the receiver.
@@ -45,16 +45,22 @@ public class MarkerPropertyTester extends PropertyTester {
     if (marker != null) {
       switch (property) {
         case HAS_QUICK_FIX:
-          return !MarkerUtils.getIssueQuickFixes(marker).getQuickFixes().isEmpty();
-        case MATCHED_ON_SERVER:
-          return hasServerIssueKey(marker);
+          return !isResolved(marker) && !MarkerUtils.getIssueQuickFixes(marker).getQuickFixes().isEmpty();
+        case CAN_BE_RESOLVED:
+          return !isResolved(marker) && canBeResolved(marker);
+        case RESOLVED_ISSUE:
+          return isResolved(marker);
       }
     }
     return false;
   }
-
-  private static boolean hasServerIssueKey(IMarker marker) {
-    return marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null) != null;
+  
+  private static boolean isResolved(IMarker marker) {
+    return marker.getAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, false);
   }
-
+  
+  private static boolean canBeResolved(IMarker marker) {
+    return marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null) != null
+      || marker.getAttribute(MarkerUtils.SONAR_MARKER_ANTICIPATED_ISSUE_ATTR, false);
+  }
 }

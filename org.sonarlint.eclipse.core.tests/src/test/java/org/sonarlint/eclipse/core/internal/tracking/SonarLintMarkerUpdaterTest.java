@@ -144,6 +144,9 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     
     var id = UUID.randomUUID();
     when(trackable.getId()).thenReturn(id);
+    
+    var resolved = false;
+    when(trackable.isResolved()).thenReturn(resolved);
 
     var markers = processTrackable(trackable);
     assertThat(markers).hasSize(1);
@@ -153,7 +156,8 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR)).isEqualTo(severity);
     assertThat(markers[0].getAttribute(IMarker.MESSAGE)).isEqualTo(message);
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR)).isEqualTo(serverIssueKey);
-    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID)).isEqualTo(id.toString());
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR)).isEqualTo(id.toString());
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR)).isEqualTo(false);
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_ANTICIPATED_ISSUE_ATTR)).isEqualTo(true);
   }
 

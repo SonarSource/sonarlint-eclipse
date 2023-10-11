@@ -57,23 +57,27 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_CREATION_DATE_ATTR = "creationdate";
   public static final String SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR = "sonarattribute";
   public static final String SONAR_MARKER_ISSUE_IMPACTS_ATTR = "sonarimpacts";
-  
+
   // This is used for grouping and has to be set additionally to all impacts
   public static final String SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR = "sonarhighestimpact";
 
-  public static final String SONAR_MARKER_TRACKED_ISSUE_ID = "trackedIssueId";
+  public static final String SONAR_MARKER_TRACKED_ISSUE_ID_ATTR = "trackedIssueId";
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
   public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocations";
   public static final String SONAR_MARKER_QUICK_FIXES_ATTR = "quickfixes";
   public static final String SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR = "rulecontextkey";
-  
+
+  // Indicates a marker is already resolved (either on the server or as an anticipated issue. Useful as some context
+  // menu options should not be visible for resolved issues, others should
+  public static final String SONAR_MARKER_RESOLVED_ATTR = "resolved";
+
   // Indicates a marker comes from a project in connected mode with SonarQube 10.2+ which has the option to mark
   // anticipated issues as resolved.
   public static final String SONAR_MARKER_ANTICIPATED_ISSUE_ATTR = "anticipatedIssue";
 
   public static final Set<String> SONARLINT_PRIMARY_MARKER_IDS = Set.of(
     SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, SonarLintCorePlugin.MARKER_REPORT_ID, SonarLintCorePlugin.MARKER_TAINT_ID);
-  
+
   /** Matching status of an issue: Either found locally, on SonarCloud or SonarQube */
   public enum FindingMatchingStatus {
     NOT_MATCHED,
@@ -93,75 +97,75 @@ public final class MarkerUtils {
       }
     }
   }
-  
+
   @Nullable
   public static String encodeUuid(@Nullable UUID uuid) {
     return uuid == null ? null : uuid.toString();
   }
-  
+
   @Nullable
   public static RuleType decodeRuleType(@Nullable String encoded) {
     return encoded == null ? null : RuleType.valueOf(encoded);
   }
-  
+
   @Nullable
   public static IssueSeverity decodeSeverity(@Nullable String encoded) {
     return encoded == null ? null : IssueSeverity.valueOf(encoded);
   }
-  
+
   @Nullable
   public static String encodeCleanCodeAttribute(@Nullable CleanCodeAttribute decoded) {
-    return decoded == null ? null : decoded.name(); 
+    return decoded == null ? null : decoded.name();
   }
-  
+
   @Nullable
   public static CleanCodeAttribute decodeCleanCodeAttribute(@Nullable String encoded) {
     return encoded == null ? null : CleanCodeAttribute.valueOf(encoded);
   }
-  
+
   @Nullable
   public static String encodeHighestImpact(@Nullable Map<SoftwareQuality, ImpactSeverity> decoded) {
     if (decoded == null || decoded.size() == 0) {
       return null;
     }
-    
+
     if (decoded.values().contains(ImpactSeverity.HIGH)) {
       return ImpactSeverity.HIGH.name();
     }
-    
+
     return decoded.values().contains(ImpactSeverity.MEDIUM)
       ? ImpactSeverity.MEDIUM.name()
       : ImpactSeverity.LOW.name();
   }
-  
+
   @Nullable
   public static ImpactSeverity decodeHighestImpact(@Nullable String encoded) {
     return encoded == null ? null : ImpactSeverity.valueOf(encoded);
   }
-  
+
   @Nullable
   public static String encodeImpacts(@Nullable Map<SoftwareQuality, ImpactSeverity> decoded) {
     if (decoded == null || decoded.size() == 0) {
       return null;
     }
-    
+
     var mapAsString = new StringBuilder();
     for (var entry : decoded.entrySet()) {
       mapAsString.append(entry.getKey() + "=" + entry.getValue().name() + ",");
     }
-    return mapAsString.delete(mapAsString.length()-1, mapAsString.length()).toString();
+    return mapAsString.delete(mapAsString.length() - 1, mapAsString.length()).toString();
   }
-  
+
   public static Map<SoftwareQuality, ImpactSeverity> decodeImpacts(@Nullable String encoded) {
     if (encoded == null) {
       return Collections.emptyMap();
     }
-    
+
     return Arrays.stream(encoded.split(","))
       .map(entry -> entry.split("="))
       .collect(Collectors.toMap(entry -> SoftwareQuality.valueOf(entry[0]), entry -> ImpactSeverity.valueOf(entry[1])));
   }
-  
+
   /**
    *  Get the matching status of a specific markers' issue by id
    *  

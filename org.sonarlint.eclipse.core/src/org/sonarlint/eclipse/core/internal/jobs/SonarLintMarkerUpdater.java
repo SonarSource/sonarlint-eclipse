@@ -211,7 +211,7 @@ public class SonarLintMarkerUpdater {
     Collection<? extends TrackedIssue> issues, TriggerType triggerType, Set<IMarker> previousMarkersToDelete,
     final String issuePeriodPreference, final boolean viableForStatusChange) throws CoreException {
     var lazyInitDocument = openedDocument.orElse(null);
-    
+
     for (var issue : issues) {
       if (issue.isResolved() || shouldRemoveIssueMarker(issue, issuePeriodPreference)) {
         issue.setMarkerId(null);
@@ -278,6 +278,7 @@ public class SonarLintMarkerUpdater {
       marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, taintIssue.getSeverity().name());
       marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, taintIssue.getType().name());
       marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, taintIssue.getKey());
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, taintIssue.isResolved());
 
       var creationDate = taintIssue.getCreationDate().toEpochMilli();
       marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationDate));
@@ -471,7 +472,7 @@ public class SonarLintMarkerUpdater {
     var existingAttributes = marker.getAttributes();
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.PRIORITY, getPriority(trackedIssue.getSeverity()));
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID,
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR,
       MarkerUtils.encodeUuid(trackedIssue.getId()));
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR,
       trackedIssue.getSeverity());
@@ -481,6 +482,8 @@ public class SonarLintMarkerUpdater {
       trackedIssue.getServerIssueKey());
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ANTICIPATED_ISSUE_ATTR,
       viableForStatusChange);
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RESOLVED_ATTR,
+      trackedIssue.isResolved());
 
     Long creationDate = trackedIssue.getCreationDate();
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR,
@@ -532,7 +535,7 @@ public class SonarLintMarkerUpdater {
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_TAINT_FLOW_ID);
       });
   }
-  
+
   /**
    *  Markers should not be set / should be removed for issues not on new code when preference is set. Of course
    *  markers should stay in standalone mode because the preference is only applied in connected mode!
@@ -542,7 +545,7 @@ public class SonarLintMarkerUpdater {
       && Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE, issuePeriodPreference)
       && !issue.isNewCode();
   }
-  
+
   /** Taint markers should not be set / should be removed for issues not on new code when preference is set! */
   private static boolean shouldRemoveTaintMarker(ServerTaintIssue issue, final String issuePeriodPreference) {
     return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE, issuePeriodPreference)
