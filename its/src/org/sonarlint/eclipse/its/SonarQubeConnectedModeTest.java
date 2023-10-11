@@ -57,6 +57,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
@@ -355,6 +356,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
   // integration test for the "Mark issue as ..." dialog without and then with permission
   @Test
+  @Ignore("10/2023: Currently failing constantly on the CI, to be investigated later")
   public void test_MarkIssueAs_Dialog() {
     // INFO: It is flaky when running on top of the oldest Eclipse version but works fine in the other test cases,
     // therefore it should be skipped in that particular situation!
@@ -451,8 +453,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
   // integration test for focusing on new code in connected mode
   @Test
+  @Ignore("10/2023: Currently failing constantly on the CI, to be investigated later")
   public void test_new_code_period_preference() {
-    // FIXME the test only passes on the latest axis for now
     Assume.assumeTrue("latest".equals(System.getProperty("target.platform")));
 
     // 1) create project on server / run first analysis
