@@ -220,12 +220,22 @@ public class SonarLintBackendService {
     }
   }
 
+  /**
+   *  INFO: For anticipated issues the `serverIssueKey` parameter has to be replaced with the string representation of
+   *        the `TrackedIssue.id` field. This is due to SLCORE using the same method for server and anticipated issues,
+   *        therefore the naming confusion!
+   */
   public CompletableFuture<Void> changeIssueStatus(ISonarLintProject project, String serverIssueKey, ResolutionStatus newStatus, boolean isTaint) {
     return getBackend()
       .getIssueService()
       .changeStatus(new ChangeIssueStatusParams(ConfigScopeSynchronizer.getConfigScopeId(project), serverIssueKey, newStatus, isTaint));
   }
 
+  /**
+   *  INFO: For anticipated issues the `serverIssueKey` parameter has to be replaced with the string representation of
+   *        the `TrackedIssue.id` field. This is due to SLCORE using the same method for server and anticipated issues,
+   *        therefore the naming confusion!
+   */
   public CompletableFuture<Void> addIssueComment(ISonarLintProject project, String serverIssueKey, String text) {
     return getBackend()
       .getIssueService()

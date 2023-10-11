@@ -52,7 +52,8 @@ public class MarkAsResolvedDialog extends Dialog {
   private String finalComment;
   private final boolean isSonarCloud;
 
-  public MarkAsResolvedDialog(Shell parentShell, List<ResolutionStatus> transitions, String hostURL, boolean isSonarCloud) {
+  public MarkAsResolvedDialog(Shell parentShell, List<ResolutionStatus> transitions, String hostURL,
+    boolean isSonarCloud) {
     super(parentShell);
     this.transitions = transitions;
     this.isSonarCloud = isSonarCloud;
@@ -61,8 +62,10 @@ public class MarkAsResolvedDialog extends Dialog {
 
   @Override
   protected Control createDialogArea(Composite parent) {
-    var container = (Composite) super.createDialogArea(parent);
-
+    return createDialogAreaInternally((Composite) super.createDialogArea(parent));
+  }
+  
+  protected Composite createDialogAreaInternally(Composite container) {
     var group = new Group(container, SWT.NONE);
     group.setLayout(new GridLayout(1, true));
     var gridData = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -93,7 +96,7 @@ public class MarkAsResolvedDialog extends Dialog {
     var commentHelp = new Link(container, SWT.NONE);
     gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
     commentHelp.setLayoutData(gridData);
-    commentHelp.setText("<a href=\"" + formattingHelpURL + "\">Formatting Help</a>: *Bold* `Code` * Bulleted point");
+    commentHelp.setText("<a>Formatting Help</a>: *Bold* `Code` * Bulleted point");
     commentHelp.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
@@ -106,7 +109,7 @@ public class MarkAsResolvedDialog extends Dialog {
 
   @Override
   protected void createButtonsForButtonBar(Composite parent) {
-    createButton(parent, IDialogConstants.OK_ID, "Mark as resolved", true);
+    createButton(parent, IDialogConstants.OK_ID, "Mark Issue as Resolved", true);
     createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
   }
 

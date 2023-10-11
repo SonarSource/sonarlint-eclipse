@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Adapters;
@@ -27,54 +26,45 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.window.Window;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
-import org.sonarlint.eclipse.core.internal.jobs.MarkAsResolvedJob;
+import org.sonarlint.eclipse.core.internal.jobs.ReOpenResolvedJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.dialog.MarkAnticipatedIssueAsResolvedDialog;
-import org.sonarlint.eclipse.ui.internal.dialog.MarkAsResolvedDialog;
-import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckStatusChangePermittedParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckStatusChangePermittedResponse;
-import org.sonarsource.sonarlint.core.clientapi.backend.issue.ResolutionStatus;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.ReopenIssueParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.ReopenIssueResponse;
 
 /**
- *  Command invoked on issues matched from SonarQube / SonarCloud or on anticipated issues in connection with
- *  SonarQube 10.2+ to resolve an issue based on server configuration and user authentication. Not available on issues
- *  only found locally!
+ *  Command invoked on issues already resolved (either as anticipated issue or issue already known to the server).
  */
-public class MarkAsResolvedCommand extends AbstractResolvedCommand {
+public class ReOpenResolvedCommand extends AbstractResolvedCommand {
   @Override
   protected void execute(IMarker selectedMarker, IWorkbenchWindow window) {
     currentWindow = window;
     
     var project = Adapters.adapt(selectedMarker.getResource().getProject(), ISonarLintProject.class);
     var file = Adapters.adapt(selectedMarker.getResource(), ISonarLintFile.class);
-    var issueKey = getIssueKey(selectedMarker);
+    var issueKey = selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR, null);
     if (issueKey == null) {
-      window.getShell().getDisplay()
-        .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), "Mark Issue as Resolved",
+      currentWindow.getShell().getDisplay()
+        .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), "Re-Openning resolved Issue",
           "No issue key available"));
       return;
     }
-
-    var markerType = tryGetMarkerType(selectedMarker, "Mark Issue as Resolved, marker type not available");
+    
+    var markerType = tryGetMarkerType(selectedMarker, "Re-Openning resolved Issue, marker type not available");
     if (markerType == null) {
       return;
     }
 
     var checkJob = new Job("Check user permissions for setting the issue resolution") {
-      private CheckStatusChangePermittedResponse result;
+      private ReopenIssueResponse result;
       private ResolvedBinding resolvedBinding;
 
       @Override
@@ -84,8 +74,7 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
           resolvedBinding = binding.get();
           try {
             result = JobUtils.waitForFuture(monitor, SonarLintBackendService.get().getBackend().getIssueService()
-              .checkStatusChangePermitted(
-                new CheckStatusChangePermittedParams(resolvedBinding.getProjectBinding().connectionId(), issueKey)));
+              .reopenIssue(new ReopenIssueParams(resolvedBinding.getProjectBinding().connectionId(), issueKey)));
             return Status.OK_STATUS;
           } catch (ExecutionException e) {
             return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID,
@@ -100,53 +89,26 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
       }
     };
 
-    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(selectedMarker, project, file, issueKey,
-      markerType, checkJob.result, checkJob.resolvedBinding));
+    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(project, file, markerType, checkJob.result,
+      checkJob.resolvedBinding));
     checkJob.schedule();
   }
-
-  private void afterCheckSuccessful(IMarker marker, ISonarLintProject project, ISonarLintFile file, String issueKey,
-    String markerType, CheckStatusChangePermittedResponse result, ResolvedBinding resolvedBinding) {
-    var hostURL = resolvedBinding.getEngineFacade().getHost();
+  
+  private void afterCheckSuccessful(ISonarLintProject project, ISonarLintFile file, String markerType,
+    ReopenIssueResponse result, ResolvedBinding resolvedBinding) {
     var isSonarCloud = resolvedBinding.getEngineFacade().isSonarCloud();
 
-    if (!result.isPermitted()) {
+    if (!result.isIssueReopened()) {
       currentWindow.getShell().getDisplay()
         .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(),
-          "Mark Issue as Resolved on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
-          result.getNotPermittedReason()));
+          "Re-Openning resolved Issue on " + (isSonarCloud ? "SonarCloud" : "SonarQube"), ""));
       return;
     }
 
     currentWindow.getShell().getDisplay().asyncExec(() -> {
-      var dialog = createDialog(marker, currentWindow.getShell(), result.getAllowedStatuses(), hostURL, isSonarCloud);
-      if (dialog.open() == Window.OK) {
-        var newStatus = dialog.getFinalTransition();
-        var comment = dialog.getFinalComment();
-
-        var job = new MarkAsResolvedJob(project, (ConnectedEngineFacade) resolvedBinding.getEngineFacade(), file,
-          issueKey, newStatus, StringUtils.trimToNull(comment),
-          markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID));
-        job.schedule();
-      }
+      var job = new ReOpenResolvedJob(project, (ConnectedEngineFacade) resolvedBinding.getEngineFacade(), file,
+        markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID));
+      job.schedule();
     });
-  }
-  
-  /** Get the issue key (e.g. server issue key / UUID) */
-  @Nullable
-  protected String getIssueKey(IMarker marker) {
-    var serverIssue = marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
-    return serverIssue != null
-      ? serverIssue
-        : marker.getAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR, null);
-  }
-  
-  /** Get the correct dialog (differing for server / anticipated issues) */
-  protected MarkAsResolvedDialog createDialog(IMarker marker, Shell parentShell, List<ResolutionStatus> transitions,
-    String hostURL, boolean isSonarCloud) {
-    var serverIssue = marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
-    return serverIssue != null
-      ? new MarkAsResolvedDialog(parentShell, transitions, hostURL, isSonarCloud)
-        : new MarkAnticipatedIssueAsResolvedDialog(parentShell, transitions, hostURL);
   }
 }
