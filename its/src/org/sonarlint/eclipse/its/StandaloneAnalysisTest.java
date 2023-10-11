@@ -196,6 +196,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseJsInYamlFile() {
+    // Don't run this test on macOS devices as Node.js might not be found!
+    ignoreMacOS();
+    
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("js/js-simple", "js-simple");
 
@@ -210,6 +213,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseCSS() {
+    // Don't run this test on macOS devices as Node.js might not be found!
+    ignoreMacOS();
+    
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("css/css-simple", "css-simple");
 
@@ -224,6 +230,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseTypeScript() {
+    // Don't run this test on macOS devices as Node.js might not be found!
+    ignoreMacOS();
+    
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("ts/ts-simple", "ts-simple");
 

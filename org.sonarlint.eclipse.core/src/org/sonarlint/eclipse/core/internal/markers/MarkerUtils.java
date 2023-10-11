@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
@@ -60,10 +61,15 @@ public final class MarkerUtils {
   // This is used for grouping and has to be set additionally to all impacts
   public static final String SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR = "sonarhighestimpact";
 
+  public static final String SONAR_MARKER_TRACKED_ISSUE_ID = "trackedIssueId";
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
   public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocations";
   public static final String SONAR_MARKER_QUICK_FIXES_ATTR = "quickfixes";
   public static final String SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR = "rulecontextkey";
+  
+  // Indicates a marker comes from a project in connected mode with SonarQube 10.2+ which has the option to mark
+  // anticipated issues as resolved.
+  public static final String SONAR_MARKER_ANTICIPATED_ISSUE_ATTR = "anticipatedIssue";
 
   public static final Set<String> SONARLINT_PRIMARY_MARKER_IDS = Set.of(
     SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, SonarLintCorePlugin.MARKER_REPORT_ID, SonarLintCorePlugin.MARKER_TAINT_ID);
@@ -86,6 +92,11 @@ public final class MarkerUtils {
         }
       }
     }
+  }
+  
+  @Nullable
+  public static String encodeUuid(@Nullable UUID uuid) {
+    return uuid == null ? null : uuid.toString();
   }
   
   @Nullable

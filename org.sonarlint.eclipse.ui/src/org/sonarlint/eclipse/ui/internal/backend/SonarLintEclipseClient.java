@@ -72,6 +72,7 @@ import org.sonarsource.sonarlint.core.clientapi.client.event.DidReceiveServerEve
 import org.sonarsource.sonarlint.core.clientapi.client.hotspot.HotspotDetailsDto;
 import org.sonarsource.sonarlint.core.clientapi.client.hotspot.ShowHotspotParams;
 import org.sonarsource.sonarlint.core.clientapi.client.info.GetClientInfoResponse;
+import org.sonarsource.sonarlint.core.clientapi.client.issue.ShowIssueParams;
 import org.sonarsource.sonarlint.core.clientapi.client.message.ShowMessageParams;
 import org.sonarsource.sonarlint.core.clientapi.client.message.ShowSoonUnsupportedMessageParams;
 import org.sonarsource.sonarlint.core.clientapi.client.progress.ReportProgressParams;
@@ -318,6 +319,11 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
   @Override
   public void showSoonUnsupportedMessage(ShowSoonUnsupportedMessageParams params) {
+    // Not yet implemented
+  }
+
+  @Override
+  public void showIssue(ShowIssueParams params) {
     // Not yet implemented
   }
 

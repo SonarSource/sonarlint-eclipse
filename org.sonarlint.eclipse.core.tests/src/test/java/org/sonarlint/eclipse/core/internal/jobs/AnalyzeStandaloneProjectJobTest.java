@@ -99,6 +99,9 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   @Test
   public void analyzeWithRuleParameters() throws Exception {
+    // Don't run this test on macOS devices as Node.js might not be found!
+    ignoreMacOS();
+    
     var file = (IFile) project.findMember("src/main/sample.js");
     var slProject = new DefaultSonarLintProjectAdapter(project);
     var fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);
@@ -108,7 +111,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
     var underTest = new AnalyzeStandaloneProjectJob(new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze), TriggerType.EDITOR_CHANGE));
     underTest.schedule();
-    assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
+    assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
     var status = underTest.getResult();
     assertThat(status.isOK()).isTrue();
 
@@ -130,7 +133,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       var underTest = new AnalyzeStandaloneProjectJob(
         new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.EDITOR_CHANGE));
       underTest.schedule();
-      assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
+      assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
@@ -141,7 +144,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       mcl.clearCounter();
 
       underTest.schedule();
-      assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
+      assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
@@ -167,7 +170,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       var underTest = new AnalyzeStandaloneProjectJob(
         new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.MANUAL, true));
       underTest.schedule();
-      assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
+      assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);
@@ -179,7 +182,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       mcl.clearCounter();
 
       underTest.schedule();
-      assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
+      assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);

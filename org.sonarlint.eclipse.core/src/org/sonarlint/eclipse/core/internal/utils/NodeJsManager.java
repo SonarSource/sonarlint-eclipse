@@ -119,7 +119,7 @@ public class NodeJsManager {
     return null;
   }
   
-  private static Optional<Boolean> isMac() {
+  public static Optional<Boolean> isMac() {
     try {
       var os = System.getProperty("os.name");
       

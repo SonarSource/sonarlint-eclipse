@@ -61,6 +61,7 @@ import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.shell.WorkbenchShell;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -323,5 +324,18 @@ public abstract class AbstractSonarLintTest {
     ruleConfigurationPreferences.restoreDefaults();
     ruleConfigurationPreferences.ok();
   }
-
+  
+  /** Some tests are not able to run on macOS due to issues with Node.js and Eclipse running in different contexts */
+  protected final void ignoreMacOS() {
+    var ignoreMacOS = false;
+    
+    try {
+      var os = System.getProperty("os.name");
+      ignoreMacOS = os == null || os.toLowerCase().contains("mac");
+    } catch (Exception ignored) {
+      ignoreMacOS = false;
+    }
+    
+    Assume.assumeFalse(ignoreMacOS);
+  }
 }

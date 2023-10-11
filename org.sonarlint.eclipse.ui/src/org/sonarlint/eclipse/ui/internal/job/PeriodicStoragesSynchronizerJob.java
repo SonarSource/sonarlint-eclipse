@@ -27,9 +27,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 
@@ -56,7 +55,8 @@ public class PeriodicStoragesSynchronizerJob extends Job {
         try {
           var boundProjectKeys = connection.getBoundProjectKeys();
           connection.scheduledSync(boundProjectKeys, serverMonitor);
-          AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.BINDING_CHANGE, f -> isBoundToConnection(f, connection));
+          AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.BINDING_CHANGE,
+            f -> SonarLintUtils.isBoundToConnection(f, connection));
           // TODO Refresh taints
         } catch (Exception e) {
           SonarLintLogger.get().error("Unable to synchronize local storage for connection '" + connection.getId() + "'", e);
@@ -69,10 +69,4 @@ public class PeriodicStoragesSynchronizerJob extends Job {
       schedule(syncPeriod * 1000);
     }
   }
-
-  private static boolean isBoundToConnection(ISonarLintFile f, IConnectedEngineFacade facade) {
-    var config = SonarLintCorePlugin.loadConfig(f.getProject());
-    return config.isBound() && facade.getId().equals(config.getProjectBinding().get().connectionId());
-  }
-
 }

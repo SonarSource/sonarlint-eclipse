@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.util.UUID;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.sonarlint.eclipse.core.internal.tracking.matching.MatchableIssue;
@@ -33,6 +34,8 @@ public class TrackedIssue implements MatchableIssue {
 
   private RawIssueTrackable raw;
   private boolean resolved = false;
+  @Nullable
+  private UUID id;
   @Nullable
   private Long markerId;
   @Nullable
@@ -119,6 +122,15 @@ public class TrackedIssue implements MatchableIssue {
   public boolean isNewCode() {
     return isNewCode;
   }
+  
+  @Nullable
+  public UUID getId() {
+    return id;
+  }
+  
+  public void setId(@Nullable UUID id) {
+    this.id = id;
+  }
 
   @Nullable
   public Long getMarkerId() {
@@ -163,6 +175,7 @@ public class TrackedIssue implements MatchableIssue {
 
   public void updateFromSlCoreMatching(Either<ServerMatchedIssueDto, LocalOnlyIssueDto> resultIssue) {
     resultIssue.map(serverMatched -> {
+      this.id = serverMatched.getId();
       this.creationDate = serverMatched.getIntroductionDate();
       this.overridenIssueSeverity = serverMatched.getOverriddenSeverity();
       this.overridenIssueType = serverMatched.getType();
@@ -171,6 +184,7 @@ public class TrackedIssue implements MatchableIssue {
       this.isNewCode = serverMatched.isOnNewCode();
       return null;
     }, localMatched -> {
+      this.id = localMatched.getId();
       this.overridenIssueSeverity = null;
       this.overridenIssueType = null;
       this.serverIssueKey = null;
