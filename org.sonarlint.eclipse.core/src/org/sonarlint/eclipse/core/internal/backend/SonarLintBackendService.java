@@ -52,6 +52,8 @@ import org.sonarsource.sonarlint.core.clientapi.backend.initialize.FeatureFlagsD
 import org.sonarsource.sonarlint.core.clientapi.backend.initialize.InitializeParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.AddIssueCommentParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.ChangeIssueStatusParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckAnticipatedStatusChangeSupportedParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckAnticipatedStatusChangeSupportedResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.ResolutionStatus;
 import org.sonarsource.sonarlint.core.clientapi.backend.newcode.GetNewCodeDefinitionParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.newcode.GetNewCodeDefinitionResponse;
@@ -244,5 +246,11 @@ public class SonarLintBackendService {
   /** When the (workspace) preference for focusing on new code is changed, the telemetry has to be adjusted */
   public void notifyTelemetryAfterNewCodePreferenceChanged() {
     getBackend().getNewCodeService().didToggleFocus();
+  }
+  
+  public CompletableFuture<CheckAnticipatedStatusChangeSupportedResponse> checkAnticipatedStatusChangeSupported(ISonarLintProject project) {
+    return getBackend()
+      .getIssueService()
+      .checkAnticipatedStatusChangeSupported(new CheckAnticipatedStatusChangeSupportedParams(ConfigScopeSynchronizer.getConfigScopeId(project)));
   }
 }

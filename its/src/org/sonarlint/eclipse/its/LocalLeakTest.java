@@ -65,6 +65,9 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
   @Test
   public void dontLooseLeakOnParsingError() {
+    // Don't run this test on macOS devices as Node.js might not be found!
+    ignoreMacOS();
+    
     new JavaPerspective().open();
 
     var issuesView = new OnTheFlyView();

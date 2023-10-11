@@ -30,6 +30,7 @@ import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.tracking.TrackedIssue;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -60,6 +61,10 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
     // To access the preference service only once and not per issue
     var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
     
+    // If the project connection offers changing the status on anticipated issues (SonarQube 10.2+) we can enable the
+    // context menu option on the markers.
+    var viableForStatusChange = SonarLintUtils.checkProjectSupportsAnticipatedStatusChange(getProject());
+    
     for (var entry : issuesPerFile.entrySet()) {
       var slFile = entry.getKey();
       var documentOrNull = docPerFile.get(slFile);
@@ -73,7 +78,7 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
       try {
         getJobManager().beginRule(markerRule, monitor);
         SonarLintMarkerUpdater.updateMarkersWithServerSideData(slFile, documentNotNull, entry.getValue(), triggerType,
-          issuePeriodPreference);
+          issuePeriodPreference, viableForStatusChange);
       } finally {
         getJobManager().endRule(markerRule);
       }

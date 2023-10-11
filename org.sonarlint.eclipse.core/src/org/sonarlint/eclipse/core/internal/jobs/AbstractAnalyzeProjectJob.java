@@ -58,6 +58,7 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
 import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -304,6 +305,10 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     
     // To access the preference service only once and not per issue
     var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
+    
+    // If the project connection offers changing the status on anticipated issues (SonarQube 10.2+) we can enable the
+    // context menu option on the markers.
+    var viableForStatusChange = SonarLintUtils.checkProjectSupportsAnticipatedStatusChange(getProject());
 
     var issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getProject());
     
@@ -323,7 +328,8 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       }
       trackFileIssues(file, trackables, issueTracker, triggerType, rawIssuesPerResource.size(), monitor);
       var tracked = issueTracker.getTracked(file);
-      SonarLintMarkerUpdater.createOrUpdateMarkers(file, openedDocument, tracked, triggerType, issuePeriodPreference);
+      SonarLintMarkerUpdater.createOrUpdateMarkers(file, openedDocument, tracked, triggerType, issuePeriodPreference,
+        viableForStatusChange);
     }
   }
 

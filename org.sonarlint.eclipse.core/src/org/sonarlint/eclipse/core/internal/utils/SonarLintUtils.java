@@ -21,12 +21,16 @@ package org.sonarlint.eclipse.core.internal.utils;
 
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import org.eclipse.core.resources.IResource;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 public class SonarLintUtils {
@@ -90,5 +94,28 @@ public class SonarLintUtils {
     return config.isBound()
       && config.getProjectBinding().isPresent()
       && facade.getId().equals(config.getProjectBinding().get().connectionId());
+  }
+  
+  /**
+   *  Check if a project has a connection to a SonarQube 10.2+ instance can therefore offer the user the option to
+   *  transition anticipated issues. If the project is not bound to any connection, just log it and provide an error
+   *  if checking the server failed for any reason.
+   *  
+   *  TODO: Because it is costly, cache the information and only retrieve it periodically!
+   */
+  public static boolean checkProjectSupportsAnticipatedStatusChange(ISonarLintProject project) {
+    var viableForStatusChange = false;
+    try {
+      viableForStatusChange = SonarLintBackendService.get().checkAnticipatedStatusChangeSupported(project).get().isSupported();
+    } catch (InterruptedException | ExecutionException err) {
+      var cause = err.getCause();
+      if (!(cause instanceof IllegalArgumentException)) {
+        SonarLintLogger.get().error("Could not check if project is bound and if connection is supporting anticipated issues", err);
+      } else {
+        SonarLintLogger.get().info("The project '" + project.getName() + "' is not bound either SonarQube or SonarCloud");
+      }
+    }
+    
+    return viableForStatusChange;
   }
 }

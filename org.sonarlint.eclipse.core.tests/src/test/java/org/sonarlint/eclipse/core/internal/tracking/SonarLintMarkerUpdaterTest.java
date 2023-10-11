@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -101,7 +102,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     sonarLintFile = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), file);
     sonarLintFile = spy(sonarLintFile);
     SonarLintMarkerUpdater.createOrUpdateMarkers(sonarLintFile, Optional.empty(), List.of(trackables),
-      TriggerType.EDITOR_CHANGE, SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME);
+      TriggerType.EDITOR_CHANGE, SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME, true);
 
     return project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE);
   }
@@ -140,6 +141,9 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
     var serverIssueKey = "dummy-serverIssueKey";
     when(trackable.getServerIssueKey()).thenReturn(serverIssueKey);
+    
+    var id = UUID.randomUUID();
+    when(trackable.getId()).thenReturn(id);
 
     var markers = processTrackable(trackable);
     assertThat(markers).hasSize(1);
@@ -149,6 +153,8 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR)).isEqualTo(severity);
     assertThat(markers[0].getAttribute(IMarker.MESSAGE)).isEqualTo(message);
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR)).isEqualTo(serverIssueKey);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID)).isEqualTo(id.toString());
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_ANTICIPATED_ISSUE_ATTR)).isEqualTo(true);
   }
 
   @Test
