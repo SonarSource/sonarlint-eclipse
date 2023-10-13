@@ -114,6 +114,8 @@ validate_task:
     /etc/init.d/xvfb stop
   cleanup_before_cache_script: cleanup_maven_repository
   on_failure:
+    mvn_log_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/work/data/.metadata/.log"
     xvfb_log_artifacts:
       path: "${CIRRUS_WORKING_DIR}/Xvfb.out"
     junit_artifacts:
