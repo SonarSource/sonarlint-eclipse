@@ -54,6 +54,8 @@ import org.sonarsource.sonarlint.core.clientapi.backend.issue.AddIssueCommentPar
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.ChangeIssueStatusParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckAnticipatedStatusChangeSupportedParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckAnticipatedStatusChangeSupportedResponse;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.ReopenIssueParams;
+import org.sonarsource.sonarlint.core.clientapi.backend.issue.ReopenIssueResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.ResolutionStatus;
 import org.sonarsource.sonarlint.core.clientapi.backend.newcode.GetNewCodeDefinitionParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.newcode.GetNewCodeDefinitionResponse;
@@ -251,6 +253,12 @@ public class SonarLintBackendService {
 
   public CompletableFuture<GetNewCodeDefinitionResponse> getNewCodeDefinition(ISonarLintProject project) {
     return getBackend().getNewCodeService().getNewCodeDefinition(new GetNewCodeDefinitionParams(ConfigScopeSynchronizer.getConfigScopeId(project)));
+  }
+  
+  public CompletableFuture<ReopenIssueResponse> reopenIssue(ISonarLintProject project, String issueKey, Boolean isTaintVulnerability) {
+    return getBackend()
+      .getIssueService()
+      .reopenIssue(new ReopenIssueParams(ConfigScopeSynchronizer.getConfigScopeId(project), issueKey, isTaintVulnerability));
   }
 
   /** When the (workspace) preference for focusing on new code is changed, the telemetry has to be adjusted */

@@ -60,6 +60,9 @@ public class TaintIssuesUpdateOnFileOpenedJob extends Job {
   protected IStatus run(IProgressMonitor monitor) {
     try {
       // To access the preference service only once and not per issue
+      var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
+      
+      // To access the preference service only once and not per issue
       var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
       
       for (var issuable : issuables) {
@@ -70,7 +73,8 @@ public class TaintIssuesUpdateOnFileOpenedJob extends Job {
           var file = ((ISonarLintFile) issuable);
           VcsService.getServerBranch(project).ifPresent(b -> {
             fetchServerTaintIssues(engineFacade, projectBinding, b, file, monitor);
-            SonarLintMarkerUpdater.refreshMarkersForTaint(file, b, engineFacade, issuePeriodPreference);
+            SonarLintMarkerUpdater.refreshMarkersForTaint(file, b, engineFacade, issuePeriodPreference,
+              issueFilterPreference);
           });
         }
       }

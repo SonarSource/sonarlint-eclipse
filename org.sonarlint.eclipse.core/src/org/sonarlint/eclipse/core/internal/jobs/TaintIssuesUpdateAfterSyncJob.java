@@ -55,6 +55,9 @@ public class TaintIssuesUpdateAfterSyncJob extends Job {
   protected IStatus run(IProgressMonitor monitor) {
     try {
       // To access the preference service only once and not per issue
+      var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
+      
+      // To access the preference service only once and not per issue
       var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
       
       for (var issuable : issuables) {
@@ -62,7 +65,8 @@ public class TaintIssuesUpdateAfterSyncJob extends Job {
           return Status.CANCEL_STATUS;
         }
         VcsService.getServerBranch(project)
-          .ifPresent(b -> SonarLintMarkerUpdater.refreshMarkersForTaint(issuable, b, engineFacade, issuePeriodPreference));
+          .ifPresent(b -> SonarLintMarkerUpdater.refreshMarkersForTaint(issuable, b, engineFacade,
+            issuePeriodPreference, issueFilterPreference));
       }
       return Status.OK_STATUS;
     } catch (Throwable t) {

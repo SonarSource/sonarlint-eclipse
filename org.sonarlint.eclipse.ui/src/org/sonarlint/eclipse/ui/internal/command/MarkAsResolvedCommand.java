@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
@@ -72,6 +71,7 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
     if (markerType == null) {
       return;
     }
+    var isTaintVulnerability = markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID);
 
     var checkJob = new Job("Check user permissions for setting the issue resolution") {
       private CheckStatusChangePermittedResponse result;
@@ -101,12 +101,12 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
     };
 
     JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(selectedMarker, project, file, issueKey,
-      markerType, checkJob.result, checkJob.resolvedBinding));
+      isTaintVulnerability, checkJob.result, checkJob.resolvedBinding));
     checkJob.schedule();
   }
 
   private void afterCheckSuccessful(IMarker marker, ISonarLintProject project, ISonarLintFile file, String issueKey,
-    String markerType, CheckStatusChangePermittedResponse result, ResolvedBinding resolvedBinding) {
+    Boolean isTaintVulnerability, CheckStatusChangePermittedResponse result, ResolvedBinding resolvedBinding) {
     var hostURL = resolvedBinding.getEngineFacade().getHost();
     var isSonarCloud = resolvedBinding.getEngineFacade().isSonarCloud();
 
@@ -125,20 +125,10 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
         var comment = dialog.getFinalComment();
 
         var job = new MarkAsResolvedJob(project, (ConnectedEngineFacade) resolvedBinding.getEngineFacade(), file,
-          issueKey, newStatus, StringUtils.trimToNull(comment),
-          markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID));
+          issueKey, newStatus, StringUtils.trimToNull(comment), isTaintVulnerability);
         job.schedule();
       }
     });
-  }
-  
-  /** Get the issue key (e.g. server issue key / UUID) */
-  @Nullable
-  protected String getIssueKey(IMarker marker) {
-    var serverIssue = marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
-    return serverIssue != null
-      ? serverIssue
-        : marker.getAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR, null);
   }
   
   /** Get the correct dialog (differing for server / anticipated issues) */

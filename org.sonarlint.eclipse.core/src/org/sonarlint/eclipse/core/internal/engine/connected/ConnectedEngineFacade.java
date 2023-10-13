@@ -409,8 +409,10 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     return withEngine(engine -> engine.getServerIssues(projectBinding, branchName, filePath)).orElse(emptyList());
   }
 
-  public List<ServerTaintIssue> getServerTaintIssues(EclipseProjectBinding projectBinding, String branchName, String filePath) {
-    return withEngine(engine -> engine.getServerTaintIssues(projectBinding, branchName, filePath)).orElse(emptyList());
+  public List<ServerTaintIssue> getServerTaintIssues(EclipseProjectBinding projectBinding, String branchName,
+    String filePath, Boolean includeResolved) {
+    return withEngine(engine -> engine.getServerTaintIssues(projectBinding, branchName, filePath, includeResolved))
+      .orElse(emptyList());
   }
 
   public ProjectBinding calculatePathPrefixes(String projectKey, List<String> ideFilePaths) {

@@ -303,6 +303,8 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       return;
     }
     
+    // TODO: Add global preference for displaying additionally resolved issues!
+    
     // To access the preference service only once and not per issue
     var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
     

@@ -32,6 +32,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
@@ -63,6 +64,15 @@ public abstract class AbstractResolvedCommand extends AbstractIssueCommand imple
   protected static Optional<ResolvedBinding> getBinding(IMarker marker) {
     var project = Adapters.adapt(marker.getResource().getProject(), ISonarLintProject.class);
     return SonarLintCorePlugin.getServersManager().resolveBinding(project);
+  }
+  
+  /** Get the issue key (e.g. server issue key / UUID) */
+  @Nullable
+  protected String getIssueKey(IMarker marker) {
+    var serverIssue = marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
+    return serverIssue != null
+      ? serverIssue
+        : marker.getAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR, null);
   }
   
   /** Try to get the marker type (normal issue or a taint, different behavior) */

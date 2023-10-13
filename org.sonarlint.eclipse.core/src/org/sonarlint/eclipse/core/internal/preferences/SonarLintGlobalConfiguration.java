@@ -61,6 +61,9 @@ public class SonarLintGlobalConfiguration {
 
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
   public static final int PREF_MARKER_SEVERITY_DEFAULT = IMarker.SEVERITY_INFO;
+  public static final String PREF_ISSUE_DISPLAY_FILTER = "issueFilter"; //$NON-NLS-1$
+  public static final String PREF_ISSUE_DISPLAY_FILTER_ALL = "allIssues"; //$NON-NLS-1$
+  public static final String PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED = "nonResolved"; //$NON-NLS-1$
   public static final String PREF_ISSUE_PERIOD = "issuePeriod"; //$NON-NLS-1$
   public static final String PREF_ISSUE_PERIOD_ALLTIME = "allTime"; //$NON-NLS-1$
   public static final String PREF_ISSUE_PERIOD_NEWCODE = "newCode"; //$NON-NLS-1$
@@ -82,6 +85,12 @@ public class SonarLintGlobalConfiguration {
 
   public static String getTestFileGlobPatterns() {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_TEST_FILE_GLOB_PATTERNS, PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT, null);
+  }
+  
+  // INFO: Not to be confused with Eclipse marker view filters
+  public static String getIssueFilter() {
+    return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_ISSUE_DISPLAY_FILTER,
+      PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, null);
   }
   
   public static String getIssuePeriod() {
