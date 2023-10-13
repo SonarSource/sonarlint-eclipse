@@ -31,10 +31,11 @@ public class TaintIssuesJobsScheduler {
   }
   
   /**
-   *  After the preference regarding the new code period is changed, we have to update the markers in the
-   *  SonarLint Taint Vulnerabilites view as it is not done like the other issues via a new analysis!
+   *  After the preference regarding the new code period or displaying only non-resolved / all issues is changed, we
+   *  have to update the SonarLint Taint Vulnerabilities view as it is not done like the other issues via a new
+   *  analysis!
    */
-  public static void scheduleUpdateAfterNewCodePeriodChange() {
+  public static void scheduleUpdateAfterPreferenceChange() {
     var openedFiles = PlatformUtils.collectOpenedFiles(null, f -> true);
     openedFiles.keySet().forEach(project -> {
       var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);

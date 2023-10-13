@@ -53,7 +53,9 @@ public class ProjectIssueTrackers implements IResourceChangeListener {
       var project = Adapters.adapt(event.getResource(), ISonarLintProject.class);
       if (project != null) {
         var removed = registry.remove(project);
-        removed.flushAll();
+        if (removed != null) {
+          removed.flushAll();
+        }
       }
     }
   }

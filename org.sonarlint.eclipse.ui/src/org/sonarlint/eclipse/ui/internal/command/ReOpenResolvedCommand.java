@@ -33,11 +33,9 @@ import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.ReOpenResolvedJob;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.clientapi.backend.issue.ReopenIssueParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.issue.ReopenIssueResponse;
 
 /**
@@ -50,7 +48,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
     
     var project = Adapters.adapt(selectedMarker.getResource().getProject(), ISonarLintProject.class);
     var file = Adapters.adapt(selectedMarker.getResource(), ISonarLintFile.class);
-    var issueKey = selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR, null);
+    var issueKey = getIssueKey(selectedMarker);
     if (issueKey == null) {
       currentWindow.getShell().getDisplay()
         .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), "Re-Openning resolved Issue",
@@ -62,6 +60,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
     if (markerType == null) {
       return;
     }
+    var isTaintVulnerability = markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID);
 
     var checkJob = new Job("Check user permissions for setting the issue resolution") {
       private ReopenIssueResponse result;
@@ -73,8 +72,8 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
         if (binding.isPresent()) {
           resolvedBinding = binding.get();
           try {
-            result = JobUtils.waitForFuture(monitor, SonarLintBackendService.get().getBackend().getIssueService()
-              .reopenIssue(new ReopenIssueParams(resolvedBinding.getProjectBinding().connectionId(), issueKey)));
+            result = JobUtils.waitForFuture(monitor,
+              SonarLintBackendService.get().reopenIssue(project, issueKey, isTaintVulnerability));
             return Status.OK_STATUS;
           } catch (ExecutionException e) {
             return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID,
@@ -89,25 +88,26 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
       }
     };
 
-    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(project, file, markerType, checkJob.result,
-      checkJob.resolvedBinding));
+    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(project, file, isTaintVulnerability,
+      checkJob.result, checkJob.resolvedBinding));
     checkJob.schedule();
   }
   
-  private void afterCheckSuccessful(ISonarLintProject project, ISonarLintFile file, String markerType,
+  private void afterCheckSuccessful(ISonarLintProject project, ISonarLintFile file, Boolean isTaintVulnerability,
     ReopenIssueResponse result, ResolvedBinding resolvedBinding) {
     var isSonarCloud = resolvedBinding.getEngineFacade().isSonarCloud();
 
     if (!result.isIssueReopened()) {
       currentWindow.getShell().getDisplay()
         .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(),
-          "Re-Openning resolved Issue on " + (isSonarCloud ? "SonarCloud" : "SonarQube"), ""));
+          "Re-Openning resolved Issue on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
+          "Could not re-open the resolved Issue!"));
       return;
     }
 
     currentWindow.getShell().getDisplay().asyncExec(() -> {
       var job = new ReOpenResolvedJob(project, (ConnectedEngineFacade) resolvedBinding.getEngineFacade(), file,
-        markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID));
+        isTaintVulnerability);
       job.schedule();
     });
   }

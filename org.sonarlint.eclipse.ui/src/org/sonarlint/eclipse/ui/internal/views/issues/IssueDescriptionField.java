@@ -60,6 +60,11 @@ public class IssueDescriptionField extends MarkerField {
   @Override
   public String getValue(MarkerItem item) {
     var sb = new StringBuilder();
+    
+    // TODO: Somehow fix later, change icons instead of description!
+    var isResolved = item.getAttributeValue(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, false);
+    sb.append(isResolved ? "(RESOLVED) " : "");
+    
     sb.append(item.getAttributeValue(IMarker.MESSAGE, "No message"));
     var marker = item.getMarker();
     // When grouping by severity, MarkerItem will be a MarkerCategory, that doesn't have an attached marker

@@ -95,13 +95,17 @@ public class SonarLintMarkerUpdater {
   }
 
   public static void refreshMarkersForTaint(ISonarLintFile currentFile, String branchName,
-    ConnectedEngineFacade facade, final String issuePeriodPreference) {
+    ConnectedEngineFacade facade, final String issuePeriodPreference, final String issueFilterPreference) {
     deleteTaintMarkers(currentFile);
 
     var project = currentFile.getProject();
     var config = SonarLintCorePlugin.loadConfig(project);
     config.getProjectBinding().ifPresent(binding -> {
-      var taintVulnerabilities = facade.getServerTaintIssues(binding, branchName, currentFile.getProjectRelativePath())
+      var includeResolvedByPreference = Objects.equals(
+        SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_ALL, issueFilterPreference);
+      
+      var taintVulnerabilities = facade.getServerTaintIssues(binding, branchName,
+        currentFile.getProjectRelativePath(), includeResolvedByPreference)
         .stream()
         .collect(Collectors.toList());
 
@@ -111,7 +115,8 @@ public class SonarLintMarkerUpdater {
 
       var actualTaintMarkersCreated = false;
       for (var taintIssue : taintVulnerabilities) {
-        if (!(taintIssue.isResolved() || shouldRemoveTaintMarker(taintIssue, issuePeriodPreference))) {
+        if (!(shouldHideResolvedTaintMarker(taintIssue, issueFilterPreference)
+          || shouldHidePreNewCodeTaintMarker(taintIssue, issuePeriodPreference))) {
           findFileForLocationInBoundProjects(bindings, taintIssue.getFilePath())
             .ifPresent(primaryLocationFile -> createTaintMarker(primaryLocationFile.getDocument(), primaryLocationFile, taintIssue, bindings));
           actualTaintMarkersCreated = true;
@@ -190,7 +195,7 @@ public class SonarLintMarkerUpdater {
     if (markerId != null) {
       marker = issuable.getResource().findMarker(markerId);
     }
-    if (issue.isResolved() || shouldRemoveIssueMarker(issue, issuePeriodPreference)) {
+    if (issue.isResolved() || shouldHidePreNewCodeIssueMarker(issue, issuePeriodPreference)) {
       if (marker != null) {
         // For makers of issues in connected mode: Issue is associated to a marker, means it was not marked as resolved
         // in previous analysis, but now it is, so clear marker!
@@ -213,7 +218,7 @@ public class SonarLintMarkerUpdater {
     var lazyInitDocument = openedDocument.orElse(null);
 
     for (var issue : issues) {
-      if (issue.isResolved() || shouldRemoveIssueMarker(issue, issuePeriodPreference)) {
+      if (issue.isResolved() || shouldHidePreNewCodeIssueMarker(issue, issuePeriodPreference)) {
         issue.setMarkerId(null);
       } else {
         lazyInitDocument = lazyInitDocument != null ? lazyInitDocument : file.getDocument();
@@ -540,14 +545,20 @@ public class SonarLintMarkerUpdater {
    *  Markers should not be set / should be removed for issues not on new code when preference is set. Of course
    *  markers should stay in standalone mode because the preference is only applied in connected mode!
    */
-  private static boolean shouldRemoveIssueMarker(TrackedIssue issue, final String issuePeriodPreference) {
+  private static boolean shouldHidePreNewCodeIssueMarker(TrackedIssue issue, final String issuePeriodPreference) {
     return issue.getServerIssueKey() != null
       && Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE, issuePeriodPreference)
       && !issue.isNewCode();
   }
+  
+  /** Taint marker should not be set / should be removed for issues already resolved when preference is set */
+  private static boolean shouldHideResolvedTaintMarker(ServerTaintIssue issue, final String issueFilterPreference) {
+    return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, issueFilterPreference)
+      && issue.isResolved();
+  }
 
   /** Taint markers should not be set / should be removed for issues not on new code when preference is set! */
-  private static boolean shouldRemoveTaintMarker(ServerTaintIssue issue, final String issuePeriodPreference) {
+  private static boolean shouldHidePreNewCodeTaintMarker(ServerTaintIssue issue, final String issuePeriodPreference) {
     return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE, issuePeriodPreference)
       && !issue.isOnNewCode();
   }

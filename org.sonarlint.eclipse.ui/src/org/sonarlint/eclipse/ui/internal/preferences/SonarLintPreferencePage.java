@@ -70,6 +70,8 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
   @Override
   protected void createFieldEditors() {
+    var labelLayoutData = new GridData(SWT.LEFT, SWT.DOWN, true, false, Integer.MAX_VALUE, 1);
+    
     addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY,
       Messages.SonarPreferencePage_label_marker_severity,
       new String[][] {
@@ -84,9 +86,22 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     // INFO: For the label to take up all the horizontal space in the grid (the size we cannot get), we have to use a
     // high span as it will be set internally to the actual grid width if ours is too big: Otherwise the
     // settings label from the line below would shift one row up!
+    var issueFilterLabel = new Link(getFieldEditorParent(), SWT.NONE);
+    issueFilterLabel.setText("<a>Learn how</a> SonarLint markers can be resolved from within your IDE.");
+    issueFilterLabel.setLayoutData(labelLayoutData);
+    issueFilterLabel.addListener(SWT.Selection,
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.MARK_ISSUES_LINK, e.display));
+    
+    addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER,
+      Messages.SonarPreferencePage_label_issue_filter,
+      new String[][] {
+        {"Non-resolved issues", SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED},
+        {"All issues (including resolved)", SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_ALL}},
+      getFieldEditorParent()));
+    
     var issuePeriodLabel = new Link(getFieldEditorParent(), SWT.NONE);
     issuePeriodLabel.setText("<a>Learn how</a> SonarLint markers can help you focus on new code to deliver Clean Code.");
-    issuePeriodLabel.setLayoutData(new GridData(SWT.LEFT, SWT.DOWN, true, false, Integer.MAX_VALUE, 1));
+    issuePeriodLabel.setLayoutData(labelLayoutData);
     issuePeriodLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.ISSUE_PERIOD_LINK, e.display));
 
@@ -151,15 +166,21 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
   @Override
   public boolean performOk() {
+    var previousIssueFilter = SonarLintGlobalConfiguration.getIssueFilter();
     var previousIssuePeriod = SonarLintGlobalConfiguration.getIssuePeriod();
     var previousTestFileGlobPatterns = SonarLintGlobalConfiguration.getTestFileGlobPatterns();
     var previousNodeJsPath = SonarLintGlobalConfiguration.getNodejsPath();
     var result = super.performOk();
     var anyPreferenceChanged = false;
-    if (!previousIssuePeriod.equals(SonarLintGlobalConfiguration.getIssuePeriod())) {
-      SonarLintBackendService.get().notifyTelemetryAfterNewCodePreferenceChanged();
-      TaintIssuesJobsScheduler.scheduleUpdateAfterNewCodePeriodChange();
+    
+    var issueFilterChanged = !previousIssueFilter.equals(SonarLintGlobalConfiguration.getIssueFilter());
+    var issuePeriodChanged = !previousIssuePeriod.equals(SonarLintGlobalConfiguration.getIssuePeriod());
+    if (issueFilterChanged || issuePeriodChanged) {
+      TaintIssuesJobsScheduler.scheduleUpdateAfterPreferenceChange();
       anyPreferenceChanged = true;
+    }
+    if (issuePeriodChanged) {
+      SonarLintBackendService.get().notifyTelemetryAfterNewCodePreferenceChanged();
     }
     if (!previousTestFileGlobPatterns.equals(SonarLintGlobalConfiguration.getTestFileGlobPatterns())) {
       TestFileClassifier.get().reload();
