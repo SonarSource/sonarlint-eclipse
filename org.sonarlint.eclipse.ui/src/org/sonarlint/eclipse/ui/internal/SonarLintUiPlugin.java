@@ -83,6 +83,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private static final WindowOpenCloseListener WINDOW_OPEN_CLOSE_LISTENER = new WindowOpenCloseListener();
   private static final SonarLintPostBuildListener SONARLINT_POST_BUILD_LISTENER = new SonarLintPostBuildListener();
+  private static final SonarLintDebugResourceChangedListener SONARLINT_DEBUG_LISTENER = new SonarLintDebugResourceChangedListener();
   private static final SonarLintVcsCacheCleaner SONARLINT_VCS_CACHE_CLEANER = new SonarLintVcsCacheCleaner();
   private static final SonarLintFlowLocationsService SONARLINT_FLOW_LOCATION_SERVICE = new SonarLintFlowLocationsService();
 
@@ -225,10 +226,16 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   public static void addPostBuildListener() {
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_POST_BUILD_LISTENER, IResourceChangeEvent.POST_BUILD);
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_DEBUG_LISTENER, IResourceChangeEvent.PRE_CLOSE
+      | IResourceChangeEvent.PRE_DELETE
+      | IResourceChangeEvent.PRE_BUILD
+      | IResourceChangeEvent.POST_BUILD
+      | IResourceChangeEvent.POST_CHANGE);
   }
 
   public static void removePostBuildListener() {
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_POST_BUILD_LISTENER);
+    ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_DEBUG_LISTENER);
   }
 
   /**
@@ -277,7 +284,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
           WindowOpenCloseListener.addListenerToAllPages(window);
         }
       }
-      
+
       // Display user survey pop-up (comment out if not needed, comment in again if needed and replace link)
       Display.getDefault().syncExec(() -> SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed("https://forms.gle/EdAJf5sdJDvDT6dNA"));
 
