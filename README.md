@@ -1,6 +1,8 @@
 SonarLint for Eclipse
 =====================
 
+SonarLint helps you deliver [Clean Code](https://www.sonarsource.com/solutions/clean-code/?utm_medium=referral&utm_source=github&utm_campaign=clean-code&utm_content=sonarlint-eclipse) in your IDE.
+
 Installing and using
 --------------------
 
@@ -8,7 +10,7 @@ See https://docs.sonarsource.com/sonarlint/eclipse/getting-started/installation/
 
 For offline installation and older versions see the update site archive at https://binaries.sonarsource.com/?prefix=SonarLint-for-Eclipse/releases/
 
-Have Question or Feedback?
+Have Questions or Feedback?
 --------------------------
 
 For SonarLint support questions ("How do I?", "I got this error, why?", ...), please first read the [FAQ](https://community.sonarsource.com/t/frequently-asked-questions/7204) and then head to the [SonarSource forum](https://community.sonarsource.com/c/help/sl). There are chances that a question similar to yours has already been answered. 
@@ -34,15 +36,15 @@ We assume basic knowledge of Eclipse PDE and Tycho.
 
 You need to have a few Eclipse plugins:
 * Eclipse RCP
-* Eclipse Plug-in developement environment
+* Eclipse Plug-in development environment
 * m2e
 * RedDeer to run ITs
 
 Normally, m2e will automatically suggest to install missing connectors (Tycho configurators, ...)
 
 1. Run `mvn verify` on the command line to fetch artifacts referenced in the parent pom
-2. In Eclipse, import the project root as Maven project
-3. (Optional) In Eclipse, import the `its/` folder as Maven project
+2. In Eclipse, import the project root as a Maven project
+3. (Optional) In Eclipse, import the `its/` folder as a Maven project
 4. Open `target-platforms/dev.target` with the target platform editor
     - Click **Set as Target Platform** (or **Reload Target Platform**) in the top-right corner
 
