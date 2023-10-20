@@ -266,7 +266,6 @@ promote_task:
     ARTIFACTS: org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:zip,org.sonarsource.sonarlint.eclipse:sonarlint-eclipse-parent:json:cyclonedx
   <<: *SETUP_MAVEN_CACHE
   promote_script: |
-    source cirrus-env PROMOTE
     .cirrus/cirrus_promote_maven
   cleanup_before_cache_script: cleanup_maven_repository
 
