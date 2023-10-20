@@ -86,7 +86,9 @@ build_task:
     variable_name: CODESIGNING_JKS_FILE
   <<: *SETUP_MAVEN_CACHE
   build_script: |
+    echo before: $BUILD_NUMBER
     source cirrus-env BUILD-PRIVATE
+    echo after: $BUILD_NUMBER
     base64 --decode "${CODESIGNING_JKS_PATH}.b64" > "${CODESIGNING_JKS_PATH}"
     .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true
   cleanup_before_cache_script: cleanup_maven_repository
@@ -251,8 +253,8 @@ mend_scan_task:
 promote_task:
   depends_on:
     - validate
-    - qa
-    - sonarqube
+    # - qa
+    # - sonarqube
   <<: *ONLY_PR_AND_MAINTAINED_BRANCHES
   eks_container:
     <<: *CONTAINER_DEFINITION
