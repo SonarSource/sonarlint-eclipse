@@ -4,11 +4,11 @@
 
 set -euo pipefail
 
-# use maven to set PROJECT_VERSION in the environment, call the promote cloud function and notify burgr
+# use maven to set PROJECT_VERSION in the environment, call the promote function and notify burgr
 
 source cirrus-env PROMOTE
 source .cirrus/set_maven_build_version "$BUILD_NUMBER"
-curl -sfSL -H "Authorization: Bearer $GCF_ACCESS_TOKEN" "$PROMOTE_URL/$GITHUB_REPO/$GITHUB_BRANCH/$BUILD_NUMBER/$PULL_REQUEST"
+cirrus_jfrog_promote
 
 #Add github commit status with build number
 if [[ ! -v GITHUB_TOKEN ]]; then
