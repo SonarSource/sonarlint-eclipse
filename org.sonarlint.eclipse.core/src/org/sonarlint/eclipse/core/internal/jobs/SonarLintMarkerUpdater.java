@@ -74,7 +74,7 @@ public class SonarLintMarkerUpdater {
 
   public static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument,
     Collection<? extends TrackedIssue> issues, TriggerType triggerType, final String issuePeriodPreference,
-    final boolean viableForStatusChange) {
+    final String issueFilterPreference, final boolean viableForStatusChange) {
     try {
       Set<IMarker> previousMarkersToDelete;
       if (triggerType.isOnTheFly()) {
@@ -84,7 +84,7 @@ public class SonarLintMarkerUpdater {
       }
 
       createOrUpdateMarkers(file, openedDocument, issues, triggerType, previousMarkersToDelete, issuePeriodPreference,
-        viableForStatusChange);
+        issueFilterPreference, viableForStatusChange);
 
       for (var marker : previousMarkersToDelete) {
         marker.delete();
@@ -176,11 +176,11 @@ public class SonarLintMarkerUpdater {
 
   public static void updateMarkersWithServerSideData(ISonarLintIssuable issuable, IDocument document,
     Collection<TrackedIssue> issues, TriggerType triggerType, final String issuePeriodPreference,
-    final boolean viableForStatusChange) {
+    final String issueFilterPreference, final boolean viableForStatusChange) {
     try {
       for (var issue : issues) {
         updateMarkerWithServerSideData(issuable, document, issue, triggerType, issuePeriodPreference,
-          viableForStatusChange);
+          issueFilterPreference, viableForStatusChange);
       }
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
@@ -189,13 +189,14 @@ public class SonarLintMarkerUpdater {
 
   private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, IDocument document,
     TrackedIssue issue, TriggerType triggerType, final String issuePeriodPreference,
-    final boolean viableForStatusChange) throws CoreException {
+    final String issueFilterPreference, final boolean viableForStatusChange) throws CoreException {
     var markerId = issue.getMarkerId();
     IMarker marker = null;
     if (markerId != null) {
       marker = issuable.getResource().findMarker(markerId);
     }
-    if (issue.isResolved() || shouldHidePreNewCodeIssueMarker(issue, issuePeriodPreference)) {
+    if (shouldHideResolvedIssueMarker(issue, issueFilterPreference)
+      || shouldHidePreNewCodeIssueMarker(issue, issuePeriodPreference)) {
       if (marker != null) {
         // For makers of issues in connected mode: Issue is associated to a marker, means it was not marked as resolved
         // in previous analysis, but now it is, so clear marker!
@@ -214,11 +215,13 @@ public class SonarLintMarkerUpdater {
 
   private static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument,
     Collection<? extends TrackedIssue> issues, TriggerType triggerType, Set<IMarker> previousMarkersToDelete,
-    final String issuePeriodPreference, final boolean viableForStatusChange) throws CoreException {
+    final String issuePeriodPreference, final String issueFilterPreference,
+    final boolean viableForStatusChange) throws CoreException {
     var lazyInitDocument = openedDocument.orElse(null);
 
     for (var issue : issues) {
-      if (issue.isResolved() || shouldHidePreNewCodeIssueMarker(issue, issuePeriodPreference)) {
+      if (shouldHideResolvedIssueMarker(issue, issueFilterPreference)
+        || shouldHidePreNewCodeIssueMarker(issue, issuePeriodPreference)) {
         issue.setMarkerId(null);
       } else {
         lazyInitDocument = lazyInitDocument != null ? lazyInitDocument : file.getDocument();
@@ -539,6 +542,12 @@ public class SonarLintMarkerUpdater {
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_TAINT_ID);
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_TAINT_FLOW_ID);
       });
+  }
+  
+  /** Markers should not be set / should be removed for issues already resolved when preference is set */
+  private static boolean shouldHideResolvedIssueMarker(TrackedIssue issue, final String issueFilterPreference) {
+    return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, issueFilterPreference)
+      && issue.isResolved();
   }
 
   /**

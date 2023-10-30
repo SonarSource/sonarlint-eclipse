@@ -59,6 +59,9 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
     }
     
     // To access the preference service only once and not per issue
+    var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
+    
+    // To access the preference service only once and not per issue
     var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
     
     // If the project connection offers changing the status on anticipated issues (SonarQube 10.2+) we can enable the
@@ -78,7 +81,7 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
       try {
         getJobManager().beginRule(markerRule, monitor);
         SonarLintMarkerUpdater.updateMarkersWithServerSideData(slFile, documentNotNull, entry.getValue(), triggerType,
-          issuePeriodPreference, viableForStatusChange);
+          issuePeriodPreference, issueFilterPreference, viableForStatusChange);
       } finally {
         getJobManager().endRule(markerRule);
       }

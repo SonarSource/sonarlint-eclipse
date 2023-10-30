@@ -303,7 +303,8 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       return;
     }
     
-    // TODO: Add global preference for displaying additionally resolved issues!
+    // To access the preference service only once and not per issue
+    var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
     
     // To access the preference service only once and not per issue
     var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
@@ -331,7 +332,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       trackFileIssues(file, trackables, issueTracker, triggerType, rawIssuesPerResource.size(), monitor);
       var tracked = issueTracker.getTracked(file);
       SonarLintMarkerUpdater.createOrUpdateMarkers(file, openedDocument, tracked, triggerType, issuePeriodPreference,
-        viableForStatusChange);
+        issueFilterPreference, viableForStatusChange);
     }
   }
 

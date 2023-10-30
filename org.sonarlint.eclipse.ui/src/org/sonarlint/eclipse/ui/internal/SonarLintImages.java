@@ -49,6 +49,9 @@ public final class SonarLintImages {
   public static final ImageDescriptor STANDALONE_16 = createImageDescriptor("logo/standalone-16px.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARCLOUD_16 = createImageDescriptor("logo/sonarcloud-16px.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARQUBE_16 = createImageDescriptor("logo/sonarqube-16px.png"); //$NON-NLS-1$
+  public static final ImageDescriptor STANDALONE_RESOLVED_16 = createImageDescriptor("logo/resolved/standalone-resolved-16px.png"); //$NON-NLS-1$
+  public static final ImageDescriptor SONARCLOUD_RESOLVED_16 = createImageDescriptor("logo/resolved/sonarcloud-resolved-16px.png"); //$NON-NLS-1$
+  public static final ImageDescriptor SONARQUBE_RESOLVED_16 = createImageDescriptor("logo/resolved/sonarqube-resolved-16px.png"); //$NON-NLS-1$
 
   public static final ImageDescriptor VIEW_ON_THE_FLY = createImageDescriptor("full/eview16/onthefly.png"); //$NON-NLS-1$
   public static final ImageDescriptor VIEW_BINDINGS = createImageDescriptor("full/eview16/bindings.png"); //$NON-NLS-1$
@@ -91,15 +94,17 @@ public final class SonarLintImages {
    *  Mapping of the matching status of an issue to the specific image
    *
    *  @param matchingStatus specific matching status of an issue
+   *  @param isResolved resolution status of an issue
    *  @return the corresponding connection mode icon (including standalone)
    */
-  private static ImageDescriptor matchingStatusToImageDescriptor(FindingMatchingStatus matchingStatus) {
+  private static ImageDescriptor matchingStatusToImageDescriptor(FindingMatchingStatus matchingStatus,
+    boolean isResolved) {
     if (matchingStatus == FindingMatchingStatus.NOT_MATCHED) {
-      return STANDALONE_16;
+      return isResolved ? STANDALONE_RESOLVED_16 : STANDALONE_16;
     } else if (matchingStatus == FindingMatchingStatus.MATCHED_WITH_SC) {
-      return SONARCLOUD_16;
+      return isResolved ? SONARCLOUD_RESOLVED_16 : SONARCLOUD_16;
     }
-    return SONARQUBE_16;
+    return isResolved ? SONARQUBE_RESOLVED_16 : SONARQUBE_16;
   }
 
   /**
@@ -108,17 +113,19 @@ public final class SonarLintImages {
    *  @param matchingStatus matching status of an issue (nullable when grouped)
    *  @param severity issue severity
    *  @param type issue type
+   *  @param isResolved issue status
    *  @return composite image if found, null otherwise
    */
   @Nullable
-  public static Image getIssueImage(@Nullable FindingMatchingStatus matchingStatus, String severity, @Nullable String type) {
-    var key = matchingStatus + "/" + severity + "/" + type;
+  public static Image getIssueImage(@Nullable FindingMatchingStatus matchingStatus, String severity,
+    @Nullable String type, boolean isResolved) {
+    var key = matchingStatus + "/" + severity + "/" + type + "/" + isResolved;
     var imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
     var image = imageRegistry.get(key);
     if (image == null) {
       ImageDescriptor matchingStatusImage = null;
       if (matchingStatus != null) {
-        matchingStatusImage = matchingStatusToImageDescriptor(matchingStatus);
+        matchingStatusImage = matchingStatusToImageDescriptor(matchingStatus, isResolved);
       }
       var severityImage = createImageDescriptor("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
       ImageDescriptor typeImage = null;
@@ -135,17 +142,19 @@ public final class SonarLintImages {
    *
    *  @param matchingStatus matching status of an issue (nullable when grouped)
    *  @param impact highest issue impact
+   *  @param isResolved issue status
    *  @return composite image if found, null otherwise
    */
   @Nullable
-  public static Image getIssueImage(@Nullable FindingMatchingStatus matchingStatus, String impact) {
-    var key = matchingStatus + "/" + impact;
+  public static Image getIssueImage(@Nullable FindingMatchingStatus matchingStatus, String impact,
+    boolean isResolved) {
+    var key = matchingStatus + "/" + impact + "/" + isResolved;
     var imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
     var image = imageRegistry.get(key);
     if (image == null) {
       ImageDescriptor matchingStatusImage = null;
       if (matchingStatus != null) {
-        matchingStatusImage = matchingStatusToImageDescriptor(matchingStatus);
+        matchingStatusImage = matchingStatusToImageDescriptor(matchingStatus, isResolved);
       }
       var impactImage = createImageDescriptor("impact/" + impact.toLowerCase(Locale.ENGLISH) + ".png");
       imageRegistry.put(key, new CompositeIssueImage(matchingStatusImage, impactImage, null));
