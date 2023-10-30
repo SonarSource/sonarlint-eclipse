@@ -61,10 +61,6 @@ public class IssueDescriptionField extends MarkerField {
   public String getValue(MarkerItem item) {
     var sb = new StringBuilder();
     
-    // TODO: Somehow fix later, change icons instead of description!
-    var isResolved = item.getAttributeValue(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, false);
-    sb.append(isResolved ? "(RESOLVED) " : "");
-    
     sb.append(item.getAttributeValue(IMarker.MESSAGE, "No message"));
     var marker = item.getMarker();
     // When grouping by severity, MarkerItem will be a MarkerCategory, that doesn't have an attached marker
@@ -115,6 +111,8 @@ public class IssueDescriptionField extends MarkerField {
       var matchingStatus = MarkerUtils.getMatchingStatus(item.getMarker(),
         item.getAttributeValue(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null));
       
+      var isResolved = item.getAttributeValue(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, false);
+      
       // We have to check if we want to display an old or new CCT issue
       var cleanCodeAttribute = MarkerUtils.decodeCleanCodeAttribute(
         item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR, null));
@@ -123,10 +121,11 @@ public class IssueDescriptionField extends MarkerField {
       if (cleanCodeAttribute == null || highestImpact == null) {
         return SonarLintImages.getIssueImage(matchingStatus,
           item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, "major"),
-          item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, "code_smell"));
+          item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, "code_smell"),
+          isResolved);
       }
       
-      return SonarLintImages.getIssueImage(matchingStatus, highestImpact.name());
+      return SonarLintImages.getIssueImage(matchingStatus, highestImpact.name(), isResolved);
     } else {
       // It is no actual marker but a groupBy item which groups the headers
       var groupByTitle = item.getAttributeValue(IMarker.MESSAGE, "")
@@ -139,13 +138,13 @@ public class IssueDescriptionField extends MarkerField {
       if (ImpactSeverity.HIGH.name().equals(groupByTitle)
         || ImpactSeverity.MEDIUM.name().equals(groupByTitle)
         || ImpactSeverity.LOW.name().equals(groupByTitle)) {
-        return SonarLintImages.getIssueImage(null, groupByTitle);
+        return SonarLintImages.getIssueImage(null, groupByTitle, false);
       } else if (IssueSeverity.BLOCKER.name().equals(groupByTitle)
         || IssueSeverity.CRITICAL.name().equals(groupByTitle)
         || IssueSeverity.MAJOR.name().equals(groupByTitle)
         || IssueSeverity.MINOR.name().equals(groupByTitle)
         || IssueSeverity.INFO.name().equals(groupByTitle)) {
-        return SonarLintImages.getIssueImage(null, groupByTitle, null);
+        return SonarLintImages.getIssueImage(null, groupByTitle, null, false);
       }
       return SonarLintImages.getNotAvailableImage();
     }

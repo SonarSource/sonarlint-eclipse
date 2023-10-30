@@ -101,7 +101,7 @@ public class SonarLintUtils {
    *  transition anticipated issues. If the project is not bound to any connection, just log it and provide an error
    *  if checking the server failed for any reason.
    *  
-   *  TODO: Because it is costly, cache the information and only retrieve it periodically!
+   *  INFO: Because it is costly, maybe cache the information in the future and only check periodically!
    */
   public static boolean checkProjectSupportsAnticipatedStatusChange(ISonarLintProject project) {
     var viableForStatusChange = false;

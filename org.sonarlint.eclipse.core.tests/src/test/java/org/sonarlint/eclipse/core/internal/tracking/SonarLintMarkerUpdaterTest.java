@@ -102,7 +102,8 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     sonarLintFile = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), file);
     sonarLintFile = spy(sonarLintFile);
     SonarLintMarkerUpdater.createOrUpdateMarkers(sonarLintFile, Optional.empty(), List.of(trackables),
-      TriggerType.EDITOR_CHANGE, SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME, true);
+      TriggerType.EDITOR_CHANGE, SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME,
+      SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, true);
 
     return project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE);
   }

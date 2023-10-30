@@ -32,7 +32,7 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDo
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-/** Job to be run after successfully re-openning a resolved issue (either server or anticipated one) */
+/** Job to be run after successfully re-opening a resolved issue (either server or anticipated one) */
 public class ReOpenResolvedJob extends Job {
   private final ISonarLintProject project;
   private final boolean isTaint;
@@ -41,7 +41,7 @@ public class ReOpenResolvedJob extends Job {
 
   public ReOpenResolvedJob(ISonarLintProject project, ConnectedEngineFacade facade, ISonarLintFile file,
     boolean isTaint) {
-    super("Re-Openning resolved Issue");
+    super("Re-Opening resolved Issue");
     this.project = project;
     this.facade = facade;
     this.file = file;
@@ -52,7 +52,7 @@ public class ReOpenResolvedJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     SonarLintNotifications.get()
-      .showNotification(new Notification("Re-Openning resolved Issue", "The issue was successfully re-openned", null));
+      .showNotification(new Notification("Re-Opening resolved Issue", "The issue was successfully re-opened", null));
     if (isTaint) {
       new TaintIssuesUpdateAfterSyncJob(facade, project, List.of(file)).schedule();
     } else {

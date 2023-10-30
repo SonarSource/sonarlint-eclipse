@@ -51,12 +51,12 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
     var issueKey = getIssueKey(selectedMarker);
     if (issueKey == null) {
       currentWindow.getShell().getDisplay()
-        .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), "Re-Openning resolved Issue",
+        .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), "Re-Opening resolved Issue",
           "No issue key available"));
       return;
     }
     
-    var markerType = tryGetMarkerType(selectedMarker, "Re-Openning resolved Issue, marker type not available");
+    var markerType = tryGetMarkerType(selectedMarker, "Re-Opening resolved Issue, marker type not available");
     if (markerType == null) {
       return;
     }
@@ -100,7 +100,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
     if (!result.isIssueReopened()) {
       currentWindow.getShell().getDisplay()
         .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(),
-          "Re-Openning resolved Issue on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
+          "Re-Opening resolved Issue on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
           "Could not re-open the resolved Issue!"));
       return;
     }
