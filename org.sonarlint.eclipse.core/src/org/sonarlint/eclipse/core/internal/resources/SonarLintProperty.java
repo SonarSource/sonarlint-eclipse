@@ -24,13 +24,12 @@ public class SonarLintProperty {
   private String value;
 
   public SonarLintProperty(String name, String value) {
-    this.name = name;
-    this.value = value;
+    this.name = name.strip();
+    this.value = value.strip();
   }
 
   public SonarLintProperty(SonarLintProperty another) {
-    this.name = another.name;
-    this.value = another.value;
+    this(another.name, another.value);
   }
 
   public String getName() {
