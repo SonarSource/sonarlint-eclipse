@@ -59,7 +59,7 @@ public class SonarLintGlobalConfigurationTest extends SonarTestCase {
   public void should_serialize_extra_properties() {
     var list = List.of(
       new SonarLintProperty("key1", "value1"),
-      new SonarLintProperty("key2", "value2"));
+      new SonarLintProperty("key2   ", "value2   "));
 
     var serialized = SonarLintGlobalConfiguration.serializeExtraProperties(list);
     var desList = SonarLintGlobalConfiguration.deserializeExtraProperties(serialized);
