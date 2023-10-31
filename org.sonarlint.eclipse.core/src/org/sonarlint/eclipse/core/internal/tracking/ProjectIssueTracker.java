@@ -127,11 +127,20 @@ public class ProjectIssueTracker {
 
     for (var issuable : issuables) {
       if (issuable instanceof ISonarLintFile) {
-        var file = ((ISonarLintFile) issuable);
+        var relativePath = ((ISonarLintFile) issuable).getProjectRelativePath();
 
-        var serverRelativePath = IssueStorePaths.idePathToServerPath(projectBinding, file.getProjectRelativePath());
-        var localIssuesTracked = trackedIssuesPerRelativePath.get(file.getProjectRelativePath());
-        issuesDtos.put(serverRelativePath, localIssuesTracked.stream().map(ProjectIssueTracker::convertFromTrackable).collect(Collectors.toList()));
+        var serverRelativePath = IssueStorePaths.idePathToServerPath(projectBinding, relativePath);
+        if (serverRelativePath != null) {
+          var localIssuesTracked = trackedIssuesPerRelativePath.get(relativePath);
+          issuesDtos.put(serverRelativePath,
+            localIssuesTracked.stream().map(ProjectIssueTracker::convertFromTrackable).collect(Collectors.toList()));
+        } else {
+          SonarLintLogger.get().debug("'" + relativePath
+            + "' cannot be converted from IDE to server path for project binding: '"
+            + projectBinding.projectKey() + "' / '"
+            + projectBinding.idePathPrefix() + "' / '"
+            + projectBinding.serverPathPrefix() + "'");
+        }
       }
     }
 

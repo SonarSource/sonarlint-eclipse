@@ -20,14 +20,22 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
+import org.eclipse.core.internal.resources.File;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -35,6 +43,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ProjectIssueTrackerTest {
+  private List<String> debugs = new ArrayList<>();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -48,12 +57,35 @@ public class ProjectIssueTrackerTest {
   private ISonarLintFile file1;
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() throws IOException, URISyntaxException {
     var project = mock(ISonarLintProject.class);
+    
+    // In order for "ProjectIssueTracker.trackWithServerIssues(...)" to work we have to mock a project resource
+    var dummyResource = mock(File.class);
+    when(dummyResource.getLocationURI()).thenReturn(new URI(DUMMY_FILE1_PATH));
+    when(project.getResource()).thenReturn(dummyResource);
+    
     store = new PersistentLocalIssueStore(temporaryFolder.newFolder().toPath(), project);
     underTest = new ProjectIssueTracker(project, store);
     file1 = mock(ISonarLintFile.class);
     when(file1.getProjectRelativePath()).thenReturn(DUMMY_FILE1_PATH);
+    
+    SonarLintLogger.get().addLogListener(new LogListener() {
+      @Override
+      public void info(String msg, boolean fromAnalyzer) {
+      }
+
+      @Override
+      public void error(String msg, boolean fromAnalyzer) {
+      }
+
+      @Override
+      public void debug(String msg, boolean fromAnalyzer) {
+        debugs.add(msg);
+      }
+    });
+    
+    debugs = new ArrayList<>();
   }
 
   @Test
@@ -207,4 +239,12 @@ public class ProjectIssueTrackerTest {
     assertThat(nonMatchingTracked.getCreationDate()).isNotNull();
   }
 
+  /** Corner case in which the IDE path cannot be converted to server path */
+  @Test
+  public void test_trackWithServerIssues_path_null() {
+    underTest.trackWithServerIssues(new ProjectBinding("testProject", "/", "/"), List.of(file1), false, new NullProgressMonitor());
+    
+    assertThat(debugs)
+      .contains("'dummyFile1' cannot be converted from IDE to server path for project binding: 'testProject' / '/' / '/'");
+  }
 }
