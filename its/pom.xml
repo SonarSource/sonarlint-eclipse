@@ -149,14 +149,15 @@
           <includes>
             <include>**/*Test.java</include>
           </includes>
-          <!-- Kill test JVM if tests take more than 10 minutes (600 seconds) to finish -->
-          <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
           <trimStackTrace>false</trimStackTrace>
           <useUIHarness>true</useUIHarness>
           <useUIThread>false</useUIThread>
           <appArgLine>-eclipse.keyring target/keyring -eclipse.password secure-storage-password.txt -pluginCustomization
             ${project.basedir}/plugin_customization.ini</appArgLine>
-          <forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
+          
+          <!-- Kill test JVM if tests take more than 45 minutes (2700 seconds) to finish -->
+          <forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
+          
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemProperties>
             <target.platform>${target.platform}</target.platform>

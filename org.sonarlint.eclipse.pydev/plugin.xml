@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+   <extension
+         point="org.sonarlint.eclipse.core.syntaxHighlightingProvider">
+      <enhancer
+            class="org.sonarlint.eclipse.pydev.internal.PythonProjectConfiguratorExtension">
+      </enhancer>
+   </extension>
+</plugin>

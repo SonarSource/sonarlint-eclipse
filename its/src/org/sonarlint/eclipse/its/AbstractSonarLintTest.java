@@ -107,6 +107,12 @@ public abstract class AbstractSonarLintTest {
     // first wait for previous analyzes to finish properly
     // this prevents trying to clear the console in the middle of a job
     waitSonarLintAnalysisJobs();
+    
+    // remove PyDev default preferences window if shown
+    try {
+      new DefaultShell("Default Eclipse preferences for PyDev").close();
+    } catch (Exception ignored) {
+    }
 
     var consoleView = new SonarLintConsole();
     System.out.println(consoleView.getConsoleView().getConsoleText());
