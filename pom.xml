@@ -32,6 +32,7 @@
     <module>org.sonarlint.eclipse.m2e</module>
     <module>org.sonarlint.eclipse.jdt</module>
     <module>org.sonarlint.eclipse.cdt</module>
+    <module>org.sonarlint.eclipse.pydev</module>
 
     <module>org.sonarlint.eclipse.site</module>
 
