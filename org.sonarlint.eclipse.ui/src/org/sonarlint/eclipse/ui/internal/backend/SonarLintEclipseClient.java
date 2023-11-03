@@ -43,6 +43,7 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacad
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -58,6 +59,7 @@ import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
 import org.sonarlint.eclipse.ui.internal.popup.SingleBindingSuggestionPopup;
+import org.sonarlint.eclipse.ui.internal.popup.SoonUnsupportedPopup;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
@@ -319,7 +321,17 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
   @Override
   public void showSoonUnsupportedMessage(ShowSoonUnsupportedMessageParams params) {
-    // Not yet implemented
+    var connectionVersionCombination = params.getDoNotShowAgainId();
+    if (SonarLintGlobalConfiguration.alreadySoonUnsupportedConnection(connectionVersionCombination)) {
+      return;
+    }
+    
+    Display.getDefault().syncExec(() -> {
+      var popup = new SoonUnsupportedPopup(params.getDoNotShowAgainId(), params.getText());
+      popup.setFadingEnabled(false);
+      popup.setDelayClose(0L);
+      popup.open();
+    });
   }
 
   @Override

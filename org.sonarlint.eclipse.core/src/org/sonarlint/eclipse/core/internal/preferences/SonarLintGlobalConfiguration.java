@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.preferences;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -78,6 +79,7 @@ public class SonarLintGlobalConfiguration {
   private static final String PREF_TAINT_VULNERABILITY_DISPLAYED = "taintVulnerabilityDisplayed";
   private static final String PREF_SECRETS_EVER_DETECTED = "secretsEverDetected";
   private static final String PREF_USER_SURVEY_LAST_LINK = "userSurveyLastLink"; //$NON-NLS-1$
+  private static final String PREF_SOON_UNSUPPORTED_CONNECTIONS = "soonUnsupportedSonarQubeConnections"; //$NON-NLS-1$
 
   private SonarLintGlobalConfiguration() {
     // Utility class
@@ -317,13 +319,37 @@ public class SonarLintGlobalConfiguration {
     setPreferenceBoolean(PREF_SECRETS_EVER_DETECTED, true);
   }
 
-  /** See {@link org.sonarlint.eclipse.ui.internal.survey.SurveyPopup} for more information */
+  /** See {@link org.sonarlint.eclipse.ui.internal.popup.SurveyPopup} for more information */
   public static String getUserSurveyLastLink() {
     return getPreferenceString(PREF_USER_SURVEY_LAST_LINK);
   }
   
-  /** See {@link org.sonarlint.eclipse.ui.internal.survey.SurveyPopup} for more information */
+  /** See {@link org.sonarlint.eclipse.ui.internal.popup.SurveyPopup} for more information */
   public static void setUserSurveyLastLink(String link) {
     setPreferenceString(PREF_USER_SURVEY_LAST_LINK, link);
+  }
+  
+  /** See {@link org.sonarlint.eclipse.ui.internal.popup.SoonUnsupportedPopup} for more information */
+  public static boolean alreadySoonUnsupportedConnection(String connectionVersionCombination) {
+    var currentPreference = getPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS);
+    if (PREF_DEFAULT.equals(currentPreference)) {
+      return false;
+    }
+    
+    return Set.of(currentPreference.split(",")).contains(connectionVersionCombination);
+  }
+  
+  /** See {@link org.sonarlint.eclipse.ui.internal.popup.SoonUnsupportedPopup} for more information */
+  public static void addSoonUnsupportedConnection(String connectionVersionCombination) {
+    var currentPreference = getPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS);
+    if (PREF_DEFAULT.equals(currentPreference)) {
+      setPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS, connectionVersionCombination);
+      return;
+    }
+    
+    var currentConnections = new HashSet<String>(Arrays.asList(currentPreference.split(",")));
+    currentConnections.add(connectionVersionCombination);
+    
+    setPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS, String.join(",", currentConnections));
   }
 }
