@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.documentation;
 public class SonarLintDocumentation {
   private static final String BASE_DOCS_URL = "https://docs.sonarsource.com/sonarlint/eclipse";
   public static final String CONNECTED_MODE_LINK = BASE_DOCS_URL + "/team-features/connected-mode/";
+  public static final String VERSION_SUPPORT_POLICY = BASE_DOCS_URL + "/team-features/connected-mode/#sonarlint-sonarqube-version-support-policy";
   public static final String SECURITY_HOTSPOTS_LINK = BASE_DOCS_URL + "/using-sonarlint/security-hotspots/";
   public static final String TAINT_VULNERABILITIES_LINK = BASE_DOCS_URL + "/using-sonarlint/taint-vulnerabilities/";
   public static final String ON_THE_FLY_VIEW_LINK = BASE_DOCS_URL + "/using-sonarlint/investigating-issues/#the-on-the-fly-view";

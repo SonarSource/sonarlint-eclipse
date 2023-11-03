@@ -113,6 +113,17 @@ public abstract class AbstractSonarLintTest {
       new DefaultShell("Default Eclipse preferences for PyDev").close();
     } catch (Exception ignored) {
     }
+    
+    // remove warning about soon unsupported version (there can be multiple)
+    if ("oldest".equals(System.getProperty("target.platform"))) {
+      while (true) {
+        try {
+          new DefaultShell("SonarQube - Soon unsupported version").close();
+        } catch (Exception ignored) {
+          break;
+        }
+      }
+    }
 
     var consoleView = new SonarLintConsole();
     System.out.println(consoleView.getConsoleView().getConsoleText());
