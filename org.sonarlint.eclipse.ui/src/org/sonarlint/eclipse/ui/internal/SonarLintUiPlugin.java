@@ -279,7 +279,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       }
       
       // Display user survey pop-up (comment out if not needed, comment in again if needed and replace link)
-      Display.getDefault().syncExec(() -> SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed("https://forms.gle/EdAJf5sdJDvDT6dNA"));
+      //Display.getDefault().syncExec(() -> SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed(""));
 
       return Status.OK_STATUS;
     }
