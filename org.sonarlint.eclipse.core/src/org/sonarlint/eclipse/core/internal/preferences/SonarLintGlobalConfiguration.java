@@ -89,14 +89,28 @@ public class SonarLintGlobalConfiguration {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_TEST_FILE_GLOB_PATTERNS, PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT, null);
   }
   
+  /** To check whether the workspace settings exclude some issues from being displayed */
+  public static boolean notAllIssuesShown() {
+    return PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED.equals(getIssueFilter())
+      || PREF_ISSUE_PERIOD_NEWCODE.equals(getIssuePeriod());
+  }
+  
   // INFO: Not to be confused with Eclipse marker view filters
   public static String getIssueFilter() {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_ISSUE_DISPLAY_FILTER,
       PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, null);
   }
   
+  public static void setIssueFilter(String issueFilter) {
+    setPreferenceString(PREF_ISSUE_DISPLAY_FILTER, issueFilter);
+  }
+  
   public static String getIssuePeriod() {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_ISSUE_PERIOD, PREF_ISSUE_PERIOD_ALLTIME, null);
+  }
+  
+  public static void setIssuePeriod(String issuePeriod) {
+    setPreferenceString(PREF_ISSUE_PERIOD, issuePeriod);
   }
 
   public static int getMarkerSeverity() {

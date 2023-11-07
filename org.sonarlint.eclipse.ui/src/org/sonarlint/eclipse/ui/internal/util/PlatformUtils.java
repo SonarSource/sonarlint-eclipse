@@ -31,14 +31,18 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -51,6 +55,16 @@ public final class PlatformUtils {
 
   private PlatformUtils() {
   }
+  
+  /** Show a specific view (open it if not already in the workspace, otherwise bring to front) */
+  public static IViewPart showView(String id) throws PartInitException {
+    return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(id);
+  }
+  
+  /** Show a specific preference dialog */
+  public static PreferenceDialog showPreferenceDialog(String id) {
+    return PreferencesUtil.createPreferenceDialogOn(Display.getCurrent().getActiveShell(), id, null, null);
+  }
 
   /**
    * Opens editor for given file.
@@ -62,6 +76,18 @@ public final class PlatformUtils {
     } catch (PartInitException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
+  }
+  
+  /**
+   *  Opens editor for given marker.
+   */
+  public static void openEditor(IMarker marker) {
+    var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    try {
+      IDE.openEditor(page, marker);
+    } catch (PartInitException e) {
+      SonarLintLogger.get().error(e.getMessage(), e);
+    } 
   }
 
   /**
