@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.locations;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -77,6 +77,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
   private static class FlowLocationNode implements LocationNode {
 
+    @Nullable
     private final String label;
     private final MarkerFlowLocation location;
 
@@ -135,7 +136,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
         children = new ArrayList<>();
         LocationFileGroupNode lastNode = null;
         for (var location : flow.getLocations()) {
-          if (lastNode == null || !lastNode.getFilePath().equals(location.getFilePath())) {
+          if (lastNode == null || !Objects.equals(lastNode.getFilePath(), location.getFilePath())) {
             lastNode = new LocationFileGroupNode(children.size(), location.getFilePath());
             children.add(lastNode);
           }
@@ -178,19 +179,20 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
   private static class LocationFileGroupNode implements LocationNode {
 
     private final int groupIndex;
-    private final String filePath;
+    @Nullable
+    private final Path filePath;
     private final List<FlowLocationNode> children = new ArrayList<>();
 
-    public LocationFileGroupNode(int groupIndex, String filePath) {
+    public LocationFileGroupNode(int groupIndex, @Nullable Path path) {
       this.groupIndex = groupIndex;
-      this.filePath = filePath;
+      this.filePath = path;
     }
 
     public void addLocation(FlowLocationNode flowLocationNode) {
       children.add(flowLocationNode);
     }
 
-    public @Nullable String getFilePath() {
+    public @Nullable Path getFilePath() {
       return filePath;
     }
 
@@ -321,7 +323,12 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       } else if (element instanceof FlowLocationNode) {
         return ((FlowLocationNode) element).getLabel();
       } else if (element instanceof LocationFileGroupNode) {
-        return Paths.get(((LocationFileGroupNode) element).getFilePath()).getFileName().toString();
+        var filePath = ((LocationFileGroupNode) element).getFilePath();
+        if (filePath != null) {
+          return filePath.getFileName().toString();
+        } else {
+          return "<no path>";
+        }
       } else if (element instanceof String) {
         return (String) element;
       }

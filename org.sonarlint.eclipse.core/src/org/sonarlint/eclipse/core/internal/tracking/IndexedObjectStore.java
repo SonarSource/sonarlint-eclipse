@@ -25,10 +25,10 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Optional;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarsource.sonarlint.core.commons.objectstore.ObjectStore;
-import org.sonarsource.sonarlint.core.commons.objectstore.PathMapper;
-import org.sonarsource.sonarlint.core.commons.objectstore.Reader;
-import org.sonarsource.sonarlint.core.commons.objectstore.Writer;
+import org.sonarsource.sonarlint.core.client.legacy.objectstore.ObjectStore;
+import org.sonarsource.sonarlint.core.client.legacy.objectstore.PathMapper;
+import org.sonarsource.sonarlint.core.client.legacy.objectstore.Reader;
+import org.sonarsource.sonarlint.core.client.legacy.objectstore.Writer;
 
 /**
  * An ObjectStore without internal cache that derives the filesystem path to storage using a provided PathMapper.

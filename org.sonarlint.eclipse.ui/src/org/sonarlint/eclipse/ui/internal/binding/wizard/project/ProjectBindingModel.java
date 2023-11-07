@@ -25,8 +25,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ModelObject;
-import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
-import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
 
 public class ProjectBindingModel extends ModelObject {
 
@@ -37,8 +35,7 @@ public class ProjectBindingModel extends ModelObject {
   private List<ISonarLintProject> eclipseProjects;
   private ConnectionFacade connection;
   private String sonarProjectKey;
-  private boolean skipServerSelection;
-  private TextSearchIndex<ServerProject> projectIndex;
+  private boolean skipConnectionSelection;
 
   public void setProjects(List<ISonarLintProject> eclipseProjects) {
     this.eclipseProjects = eclipseProjects;
@@ -75,22 +72,12 @@ public class ProjectBindingModel extends ModelObject {
     firePropertyChange(PROPERTY_CONNECTION, old, this.eclipseProjects);
   }
 
-  public boolean isSkipServerSelection() {
-    return skipServerSelection;
+  public boolean isSkipConnectionSelection() {
+    return skipConnectionSelection;
   }
 
-  public void setSkipServer(boolean skipServerSelection) {
-    this.skipServerSelection = skipServerSelection;
-  }
-
-  @Nullable
-  public TextSearchIndex<ServerProject> getProjectIndex() {
-    return projectIndex;
-  }
-
-  public void setProjectIndex(TextSearchIndex<ServerProject> projectIndex) {
-    this.projectIndex = projectIndex;
-
+  public void setSkipServer(boolean skipConnectionSelection) {
+    this.skipConnectionSelection = skipConnectionSelection;
   }
 
 }

@@ -17,30 +17,38 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.core.internal.utils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarsource.sonarlint.core.commons.log.ClientLogOutput;
 
-public final class SonarLintAnalyzerLogOutput implements ClientLogOutput {
+public class FileUtils {
 
-  @Override
-  public void log(String msg, Level level) {
-    switch (level) {
-      case TRACE:
-      case DEBUG:
-        SonarLintLogger.get().analyzerDebug(msg);
-        break;
-      case INFO:
-      case WARN:
-        SonarLintLogger.get().analyzerInfo(msg);
-        break;
-      case ERROR:
-        SonarLintLogger.get().analyzerError(msg);
-        break;
-      default:
-        SonarLintLogger.get().analyzerInfo(msg);
-    }
-
+  private FileUtils() {
+    // Utility class
   }
+
+  public static void deleteRecursively(Path dir) {
+    try {
+      Files.walk(dir)
+        .sorted(Comparator.reverseOrder())
+        .map(Path::toFile)
+        .forEach(File::delete);
+    } catch (Exception e) {
+      SonarLintLogger.get().error("Unable to delete directory: " + dir, e);
+    }
+  }
+
+  public static void mkdirs(Path path) {
+    try {
+      Files.createDirectories(path);
+    } catch (IOException e) {
+      throw new IllegalStateException("Unable to create directory: " + path, e);
+    }
+  }
+
 }

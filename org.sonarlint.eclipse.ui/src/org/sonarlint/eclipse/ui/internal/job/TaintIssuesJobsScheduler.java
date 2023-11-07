@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.ui.internal.job;
 
 import java.util.stream.Collectors;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
+import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesMarkerUpdateJob;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class TaintIssuesJobsScheduler {
@@ -44,7 +44,7 @@ public class TaintIssuesJobsScheduler {
           .map(file -> file.getFile())
           .collect(Collectors.toList());
 
-        new TaintIssuesUpdateAfterSyncJob(facade, project, files).schedule();
+        new TaintIssuesMarkerUpdateJob(facade, project, files).schedule();
       }
     });
   }

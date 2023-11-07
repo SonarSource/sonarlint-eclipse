@@ -37,7 +37,6 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.ConnectionBindProjectsAction;
 import org.sonarlint.eclipse.ui.internal.binding.actions.ConnectionDeleteAction;
 import org.sonarlint.eclipse.ui.internal.binding.actions.ConnectionEditAction;
-import org.sonarlint.eclipse.ui.internal.binding.actions.ConnectionUpdateAction;
 import org.sonarlint.eclipse.ui.internal.binding.actions.NewConnectionWizardAction;
 import org.sonarlint.eclipse.ui.internal.binding.actions.ProjectChangeBindingAction;
 import org.sonarlint.eclipse.ui.internal.binding.actions.ProjectUnbindAction;
@@ -47,9 +46,8 @@ public class BindingsViewActionProvider extends CommonActionProvider {
   public static final String NEW_MENU_ID = "org.sonarlint.eclipse.ui.server.newMenuId";
 
   private ICommonActionExtensionSite actionSite;
-  protected Action deleteServerAction;
+  protected Action deleteConnectionAction;
   protected Action editAction;
-  protected Action updateAction;
   protected Action updateBindingAction;
   protected Action bindProjectsAction;
   protected Action unbindProjectsAction;
@@ -69,7 +67,7 @@ public class BindingsViewActionProvider extends CommonActionProvider {
         var commonViewer = (CommonViewer) viewer;
         var wsSite = (ICommonViewerWorkbenchSite) site;
         addListeners(commonViewer);
-        makeServerActions(commonViewer, wsSite.getSelectionProvider());
+        makeConnectionActions(commonViewer, wsSite.getSelectionProvider());
       }
     }
   }
@@ -88,11 +86,10 @@ public class BindingsViewActionProvider extends CommonActionProvider {
     });
   }
 
-  private void makeServerActions(CommonViewer tableViewer, ISelectionProvider provider) {
+  private void makeConnectionActions(CommonViewer tableViewer, ISelectionProvider provider) {
     var shell = tableViewer.getTree().getShell();
-    deleteServerAction = new ConnectionDeleteAction(shell, provider);
+    deleteConnectionAction = new ConnectionDeleteAction(shell, provider);
     editAction = new ConnectionEditAction(shell, provider);
-    updateAction = new ConnectionUpdateAction(provider);
     updateBindingAction = new ProjectChangeBindingAction(shell, provider);
     bindProjectsAction = new ConnectionBindProjectsAction(shell, provider);
     unbindProjectsAction = new ProjectUnbindAction(shell, provider);
@@ -101,9 +98,8 @@ public class BindingsViewActionProvider extends CommonActionProvider {
   @Override
   public void fillActionBars(IActionBars actionBars) {
     actionBars.updateActionBars();
-    actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(), deleteServerAction);
+    actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(), deleteConnectionAction);
     actionBars.setGlobalActionHandler(ActionFactory.RENAME.getId(), editAction);
-    actionBars.setGlobalActionHandler(ActionFactory.REFRESH.getId(), updateAction);
   }
 
   @Override
@@ -123,7 +119,6 @@ public class BindingsViewActionProvider extends CommonActionProvider {
     populateServersAndProjects(selection, servers, projects);
 
     if (!servers.isEmpty() && projects.isEmpty()) {
-      menu.add(updateAction);
       if (servers.size() == 1) {
         menu.add(bindProjectsAction);
       }
@@ -131,7 +126,7 @@ public class BindingsViewActionProvider extends CommonActionProvider {
       if (servers.size() == 1) {
         menu.add(editAction);
       }
-      menu.add(deleteServerAction);
+      menu.add(deleteConnectionAction);
       menu.add(new Separator());
     }
 

@@ -24,20 +24,20 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
-import org.sonarlint.eclipse.core.internal.jobs.TestFileClassifier;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.common.ClientFileExclusions;
-import org.sonarsource.sonarlint.core.commons.SonarLintException;
-
-import static java.util.stream.Collectors.toCollection;
+import org.sonarsource.sonarlint.core.client.utils.ClientFileExclusions;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.file.GetFilesStatusResponse;
 
 public class FileExclusionsChecker {
   private final ClientFileExclusions projectExclusions;
@@ -57,37 +57,38 @@ public class FileExclusionsChecker {
     globalExclusions = new ClientFileExclusions(Collections.emptySet(), Collections.emptySet(), globalGlobExclusions);
   }
 
-  public Collection<ISonarLintFile> filterExcludedFiles(ISonarLintProject project, Collection<ISonarLintFile> files) {
-    return filterExcludedFiles(project, files, true);
-  }
-
-  public Collection<ISonarLintFile> filterExcludedFiles(ISonarLintProject project, Collection<ISonarLintFile> files, boolean log) {
-    var notExcluded = files
+  private Collection<ISonarLintFile> filterExcludedFiles(ISonarLintProject project, Collection<ISonarLintFile> files, boolean log, IProgressMonitor monitor) {
+    var filesByUri = files
       .stream()
       .filter(file -> !isExcludedByLocalConfiguration(file, log))
-      .collect(toCollection(HashSet::new));
+      .collect(Collectors.toMap(ISonarLintFile::uri, f -> f));
+
+    var notExcluded = new HashSet<ISonarLintFile>();
+    notExcluded.addAll(filesByUri.values());
 
     SonarLintCorePlugin.getConnectionManager()
       .resolveBinding(project)
       .ifPresent(binding -> {
-        var testFileClassifier = TestFileClassifier.get();
+        GetFilesStatusResponse statuses;
         try {
-          var excludedByServerSideExclusions = binding.getConnectionFacade().getServerFileExclusions(binding.getProjectBinding(), notExcluded,
-            testFileClassifier::isTest);
-          notExcluded.removeAll(excludedByServerSideExclusions);
-          excludedByServerSideExclusions.forEach(file -> {
+          statuses = JobUtils.waitForFuture(monitor, SonarLintBackendService.get().getFilesStatus(project, filesByUri.values()));
+        } catch (InterruptedException | ExecutionException e) {
+          throw new IllegalStateException("Unable to get exclusions", e);
+        }
+
+        statuses.getFileStatuses().forEach((uri, status) -> {
+          if (status.isExcluded()) {
+            var file = filesByUri.get(uri);
             notExcluded.remove(file);
             logIfNeeded(file, log, "server side");
-          });
-        } catch (SonarLintException e) {
-          SonarLintLogger.get().error("Unable to read server side exclusions. Check your binding.", e);
-        }
+          }
+        });
       });
     return notExcluded;
   }
 
-  public boolean isExcluded(ISonarLintFile file, boolean log) {
-    return filterExcludedFiles(file.getProject(), List.of(file), log).isEmpty();
+  public boolean isExcluded(ISonarLintFile file, boolean log, IProgressMonitor monitor) {
+    return filterExcludedFiles(file.getProject(), List.of(file), log, monitor).isEmpty();
   }
 
   private boolean isExcludedByLocalConfiguration(ISonarLintFile file, boolean log) {

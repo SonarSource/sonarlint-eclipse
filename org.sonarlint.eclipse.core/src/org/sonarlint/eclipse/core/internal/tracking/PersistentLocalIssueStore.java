@@ -28,11 +28,11 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint;
+import org.sonarlint.eclipse.core.internal.utils.FileUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.commons.objectstore.HashingPathMapper;
-import org.sonarsource.sonarlint.core.commons.objectstore.Reader;
-import org.sonarsource.sonarlint.core.commons.objectstore.Writer;
-import org.sonarsource.sonarlint.core.serverconnection.FileUtils;
+import org.sonarsource.sonarlint.core.client.legacy.objectstore.HashingPathMapper;
+import org.sonarsource.sonarlint.core.client.legacy.objectstore.Reader;
+import org.sonarsource.sonarlint.core.client.legacy.objectstore.Writer;
 
 public class PersistentLocalIssueStore {
   private Path basePath;
@@ -77,7 +77,7 @@ public class PersistentLocalIssueStore {
         .map(PersistentLocalIssueStore::transform)
         .orElse(null);
     } catch (IOException e) {
-      SonarLintLogger.get().error("Unable to read issue storage for basePath=" + basePath + " and key=" + key);
+      SonarLintLogger.get().error("Unable to read issue storage for basePath='" + basePath + "' and key='" + key + "'");
       return List.of();
     }
   }

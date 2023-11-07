@@ -78,7 +78,7 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
     var configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(projectScope, "SimpleProject");
     configuration.setAutoEnabled(false);
     configuration.setBindingSuggestionsDisabled(true);
-    configuration.setProjectBinding(new EclipseProjectBinding("myServer", "myProjectKey", "aPrefix", "aSuffix"));
+    configuration.setProjectBinding(new EclipseProjectBinding("myServer", "myProjectKey"));
     assertThat(projectScope.getLocation().append("org.sonarlint.eclipse.core.prefs").toFile()).doesNotExist();
     SonarLintCorePlugin.getInstance().getProjectConfigManager().save(projectScope, configuration);
     assertThat(projectScope.getLocation().append("org.sonarlint.eclipse.core.prefs").toFile()).exists();

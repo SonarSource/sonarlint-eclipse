@@ -42,7 +42,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.MessageDialogUtils;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleDefinitionDto;
 
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
 
@@ -71,8 +71,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     label.setText("When a project is connected to <a>SonarQube/SonarCloud</a>, "
       + "configuration from the server applies.");
     label.addListener(SWT.Selection,
-      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_LINK, e.display)
-    );
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_LINK, e.display));
 
     initialRuleConfigs = SonarLintGlobalConfiguration.readRulesConfig();
     rulesConfigurationPart = new RulesConfigurationPart(() -> loadRuleDetails(), initialRuleConfigs);
@@ -102,7 +101,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
       if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
         MessageDialogUtils.enhancedWithConnectedModeInformation("Are you working in a team?",
           "When using Connected Mode you can benefit from having the rule configuration synchronized to all "
-          + "developers in your team instead of everyone having to configure it locally!");
+            + "developers in your team instead of everyone having to configure it locally!");
       }
     }
     return true;

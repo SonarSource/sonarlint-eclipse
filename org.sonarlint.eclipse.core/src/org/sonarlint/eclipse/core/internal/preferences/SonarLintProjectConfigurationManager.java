@@ -39,7 +39,15 @@ public class SonarLintProjectConfigurationManager {
   // Changing the node name would be a breaking change so we keep the old name "serverId" for now
   public static final String P_CONNECTION_ID = "serverId";
   public static final String P_PROJECT_KEY = "projectKey";
+  /**
+   * @deprecated since 10.0
+   */
+  @Deprecated
   private static final String P_SQ_PREFIX_KEY = "sqPrefixKey";
+  /**
+   * @deprecated since 10.0
+   */
+  @Deprecated
   private static final String P_IDE_PREFIX_KEY = "idePrefixKey";
   /**
    * @deprecated since 3.7
@@ -84,7 +92,7 @@ public class SonarLintProjectConfigurationManager {
     projectNode.remove(P_MODULE_KEY);
     var connectionId = projectNode.get(P_CONNECTION_ID, "");
     if (isNotBlank(connectionId) && isNotBlank(projectKey)) {
-      projectConfig.setProjectBinding(new EclipseProjectBinding(connectionId, projectKey, projectNode.get(P_SQ_PREFIX_KEY, ""), projectNode.get(P_IDE_PREFIX_KEY, "")));
+      projectConfig.setProjectBinding(new EclipseProjectBinding(connectionId, projectKey));
     }
     projectConfig.setAutoEnabled(projectNode.getBoolean(P_AUTO_ENABLED_KEY, true));
     projectConfig.setBindingSuggestionsDisabled(projectNode.getBoolean(P_BINDING_SUGGESTIONS_DISABLED_KEY, false));
@@ -113,10 +121,8 @@ public class SonarLintProjectConfigurationManager {
 
     configuration.getProjectBinding().ifPresentOrElse(
       binding -> {
-        projectNode.put(P_PROJECT_KEY, binding.projectKey());
-        projectNode.put(P_CONNECTION_ID, binding.connectionId());
-        projectNode.put(P_SQ_PREFIX_KEY, binding.serverPathPrefix());
-        projectNode.put(P_IDE_PREFIX_KEY, binding.idePathPrefix());
+        projectNode.put(P_PROJECT_KEY, binding.getProjectKey());
+        projectNode.put(P_CONNECTION_ID, binding.getConnectionId());
       },
       () -> {
         projectNode.remove(P_PROJECT_KEY);

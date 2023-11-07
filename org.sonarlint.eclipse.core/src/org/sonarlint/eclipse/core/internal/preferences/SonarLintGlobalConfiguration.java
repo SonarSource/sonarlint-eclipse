@@ -19,6 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.preferences;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,6 +44,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
@@ -47,13 +55,9 @@ import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.StandaloneRuleConfigDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.UpdateStandaloneRulesConfigurationParams;
-import org.sonarsource.sonarlint.core.commons.RuleKey;
-import org.sonarsource.sonarlint.shaded.com.google.gson.Gson;
-import org.sonarsource.sonarlint.shaded.com.google.gson.JsonParseException;
-import org.sonarsource.sonarlint.shaded.com.google.gson.annotations.SerializedName;
-import org.sonarsource.sonarlint.shaded.com.google.gson.reflect.TypeToken;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.DidChangeClientNodeJsPathParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.StandaloneRuleConfigDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.UpdateStandaloneRulesConfigurationParams;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
@@ -90,6 +94,31 @@ public class SonarLintGlobalConfiguration {
     // Utility class
   }
 
+  private static final IPreferenceChangeListener rootNodeChangeListener = event -> {
+    switch (event.getKey()) {
+      case PREF_RULES_CONFIG:
+        SonarLintBackendService.get().getBackend().getRulesService()
+          .updateStandaloneRulesConfiguration(new UpdateStandaloneRulesConfigurationParams(buildStandaloneRulesConfigDto()));
+        break;
+      case PREF_NODEJS_PATH:
+        SonarLintBackendService.get().getBackend().getAnalysisService().didChangeClientNodeJsPath(new DidChangeClientNodeJsPathParams(getNodejsPath()));
+        break;
+      case PREF_ISSUE_PERIOD:
+        SonarLintBackendService.get().getBackend().getNewCodeService().didToggleFocus();
+        break;
+    }
+  };
+
+  public static void init() {
+    var rootNode = getInstancePreferenceNode();
+    rootNode.addPreferenceChangeListener(rootNodeChangeListener);
+  }
+
+  public static void stop() {
+    var rootNode = getInstancePreferenceNode();
+    rootNode.removePreferenceChangeListener(rootNodeChangeListener);
+  }
+
   public static String getTestFileGlobPatterns() {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_TEST_FILE_GLOB_PATTERNS, PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT, null);
   }
@@ -116,9 +145,7 @@ public class SonarLintGlobalConfiguration {
 
     // Then add project properties
     var sonarProject = SonarLintCorePlugin.loadConfig(project);
-    if (sonarProject.getExtraProperties() != null) {
-      props.addAll(sonarProject.getExtraProperties());
-    }
+    props.addAll(sonarProject.getExtraProperties());
 
     return props;
   }
@@ -186,39 +213,32 @@ public class SonarLintGlobalConfiguration {
     savePreferences(p -> p.putBoolean(key, value), key, value);
   }
 
-  private static String serializeRuleKeyList(Collection<RuleKey> exclusions) {
-    return exclusions.stream()
-      .map(RuleKey::toString)
-      .sorted()
-      .collect(Collectors.joining(";"));
-  }
-
-  public static void disableRule(RuleKey ruleKey) {
+  public static void disableRule(String ruleKey) {
     var rules = new ArrayList<>(readRulesConfig());
-    var ruleToDisable = rules.stream().filter(r -> r.getKey().equals(ruleKey.toString())).findFirst();
+    var ruleToDisable = rules.stream().filter(r -> r.getKey().equals(ruleKey)).findFirst();
     if (ruleToDisable.isPresent()) {
       ruleToDisable.get().setActive(false);
     } else {
-      rules.add(new RuleConfig(ruleKey.toString(), false));
+      rules.add(new RuleConfig(ruleKey, false));
     }
     saveRulesConfig(rules);
   }
 
-  public static Collection<RuleKey> getExcludedRules() {
+  public static Collection<String> getExcludedRules() {
     return readRulesConfig().stream()
       .filter(r -> !r.isActive())
-      .map(r -> RuleKey.parse(r.getKey()))
+      .map(RuleConfig::getKey)
       .collect(toList());
   }
 
-  public static Collection<RuleKey> getIncludedRules() {
+  public static Collection<String> getIncludedRules() {
     return readRulesConfig().stream()
       .filter(RuleConfig::isActive)
-      .map(r -> RuleKey.parse(r.getKey()))
+      .map(RuleConfig::getKey)
       .collect(toList());
   }
 
-  public static Map<String, StandaloneRuleConfigDto> buildStandaloneRulesConfig() {
+  public static Map<String, StandaloneRuleConfigDto> buildStandaloneRulesConfigDto() {
     return readRulesConfig().stream()
       .collect(Collectors.toMap(r -> r.getKey(), r -> new StandaloneRuleConfigDto(r.isActive(), Map.copyOf(r.getParams()))));
   }
@@ -267,7 +287,6 @@ public class SonarLintGlobalConfiguration {
   public static void saveRulesConfig(Collection<RuleConfig> rules) {
     var json = serializeRulesJson(rules);
     setPreferenceString(PREF_RULES_CONFIG, json);
-    SonarLintBackendService.get().getBackend().getRulesService().updateStandaloneRulesConfiguration(new UpdateStandaloneRulesConfigurationParams(buildStandaloneRulesConfig()));
   }
 
   private static String serializeRulesJson(Collection<RuleConfig> rules) {
@@ -300,12 +319,15 @@ public class SonarLintGlobalConfiguration {
     return getPreferenceBoolean(PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES);
   }
 
-  public static void setNodeJsPath(String path) {
-    setPreferenceString(PREF_NODEJS_PATH, path);
-  }
-
-  public static String getNodejsPath() {
-    return getPreferenceString(PREF_NODEJS_PATH);
+  @Nullable
+  public static Path getNodejsPath() {
+    var nodeJsPathSetting = StringUtils.trimToNull(getPreferenceString(PREF_NODEJS_PATH));
+    try {
+      return nodeJsPathSetting != null ? Paths.get(nodeJsPathSetting) : null;
+    } catch (InvalidPathException e) {
+      SonarLintLogger.get().error("Invalid nodejs path", e);
+      return null;
+    }
   }
 
   public static boolean taintVulnerabilityNeverBeenDisplayed() {
@@ -352,7 +374,7 @@ public class SonarLintGlobalConfiguration {
       return;
     }
 
-    var currentConnections = new HashSet<>(Arrays.asList(currentPreference.split(",")));
+    var currentConnections = new HashSet<String>(Arrays.asList(currentPreference.split(",")));
     currentConnections.add(connectionVersionCombination);
 
     setPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS, String.join(",", currentConnections));

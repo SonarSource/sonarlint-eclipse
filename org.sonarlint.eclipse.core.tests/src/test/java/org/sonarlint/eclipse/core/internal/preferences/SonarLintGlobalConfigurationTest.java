@@ -30,7 +30,6 @@ import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
-import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,7 +39,7 @@ public class SonarLintGlobalConfigurationTest extends SonarTestCase {
 
   @Before
   public void clean() throws BackingStoreException {
-    ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).removeNode();
+    ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).clear();
   }
 
   @Test
@@ -84,11 +83,11 @@ public class SonarLintGlobalConfigurationTest extends SonarTestCase {
   public void should_exclude_rule() {
     assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEmpty();
 
-    var ruleKey1 = new RuleKey("squid", "S123");
+    var ruleKey1 = "squid:S123";
     SonarLintGlobalConfiguration.disableRule(ruleKey1);
     assertThat(SonarLintGlobalConfiguration.getExcludedRules()).containsOnly(ruleKey1);
 
-    var ruleKey2 = new RuleKey("php", "S456");
+    var ruleKey2 = "php:S456";
     SonarLintGlobalConfiguration.disableRule(ruleKey2);
     assertThat(SonarLintGlobalConfiguration.getExcludedRules()).containsExactlyInAnyOrder(ruleKey1, ruleKey2);
   }

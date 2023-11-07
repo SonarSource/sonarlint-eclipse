@@ -21,29 +21,22 @@ package org.sonarlint.eclipse.core.internal;
 
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.StandaloneEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.AbstractSonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
-import org.sonarlint.eclipse.core.internal.jobs.GlobalLogOutput;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
-import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTrackers;
-import org.sonarlint.eclipse.core.internal.utils.NodeJsManager;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class SonarLintCorePlugin extends Plugin {
@@ -68,14 +61,9 @@ public class SonarLintCorePlugin extends Plugin {
   private final ServiceTracker<IProxyService, IProxyService> proxyTracker;
 
   private final AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
-  private final SonarLintTelemetry telemetry = new SonarLintTelemetry();
   private ConnectionManager connectionsManager = null;
 
-  private NodeJsManager nodeJsManager;
-
   public SonarLintCorePlugin() {
-    // prepare the log output early to get traces from the backend
-    org.sonarsource.sonarlint.core.commons.log.SonarLintLogger.setTarget(new GlobalLogOutput());
     plugin = this;
     proxyTracker = new ServiceTracker<>(FrameworkUtil.getBundle(this.getClass()).getBundleContext(), IProxyService.class, null);
     proxyTracker.open();
@@ -98,42 +86,11 @@ public class SonarLintCorePlugin extends Plugin {
 
     issueTrackerRegistry = new ProjectIssueTrackers();
     ResourcesPlugin.getWorkspace().addResourceChangeListener(issueTrackerRegistry);
-
-    nodeJsManager = new NodeJsManager();
-
-    startupAsync();
-  }
-
-  public void startupAsync() {
-    // SLE-122 Delay a little bit to let the time to the workspace to initialize (and avoid NPE)
-    new StartupJob().schedule(2000);
-  }
-
-  private class StartupJob extends Job {
-
-    StartupJob() {
-      super("SonarLint Core startup");
-    }
-
-    @Override
-    public IStatus run(IProgressMonitor monitor) {
-      startTelemetry();
-      return Status.OK_STATUS;
-    }
-
-    private void startTelemetry() {
-      if (SonarLintTelemetry.shouldBeActivated()) {
-        telemetry.init();
-      } else {
-        SonarLintLogger.get().info("Telemetry disabled");
-      }
-    }
+    SonarLintGlobalConfiguration.init();
   }
 
   @Override
   public void stop(BundleContext context) throws Exception {
-    telemetry.stop();
-
     if (sonarlint != null) {
       sonarlint.stop();
     }
@@ -145,6 +102,7 @@ public class SonarLintCorePlugin extends Plugin {
     if (connectionsManager != null) {
       connectionsManager.stop();
     }
+    SonarLintGlobalConfiguration.stop();
     SonarLintExtensionTracker.close();
     AbstractSonarLintExtensionTracker.closeTracker();
 
@@ -173,14 +131,6 @@ public class SonarLintCorePlugin extends Plugin {
 
   public static AnalysisListenerManager getAnalysisListenerManager() {
     return getInstance().analysisListenerManager;
-  }
-
-  public static SonarLintTelemetry getTelemetry() {
-    return getInstance().telemetry;
-  }
-
-  public static NodeJsManager getNodeJsManager() {
-    return getInstance().nodeJsManager;
   }
 
   public static synchronized ConnectionManager getConnectionManager() {

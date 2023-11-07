@@ -32,21 +32,20 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
-import org.sonarsource.sonarlint.core.clientapi.backend.branch.DidChangeActiveSonarProjectBranchParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.BindingConfigurationDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.DidUpdateBindingParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.ConfigurationScopeDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.DidAddConfigurationScopesParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.config.scope.DidRemoveConfigurationScopeParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.SonarLintRpcServer;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.binding.BindingConfigurationDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.binding.DidUpdateBindingParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.scope.ConfigurationScopeDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.scope.DidAddConfigurationScopesParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.scope.DidRemoveConfigurationScopeParams;
 
 import static java.util.stream.Collectors.toList;
 
 public class ConfigScopeSynchronizer implements IResourceChangeListener {
 
-  private final SonarLintBackend backend;
+  private final SonarLintRpcServer backend;
 
-  ConfigScopeSynchronizer(SonarLintBackend backend) {
+  ConfigScopeSynchronizer(SonarLintRpcServer backend) {
     this.backend = backend;
   }
 
@@ -105,13 +104,6 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
     });
   }
 
-  void branchChanged(ISonarLintProject project, String newActiveBranchName) {
-    backend
-      .getSonarProjectBranchService()
-      .didChangeActiveSonarProjectBranch(
-        new DidChangeActiveSonarProjectBranchParams(ConfigScopeSynchronizer.getConfigScopeId(project), newActiveBranchName));
-  }
-
   private void projectPreferencesChanged(ISonarLintProject project) {
     SonarLintLogger.get().debug("Project binding preferences changed: " + project.getName());
     backend.getConfigurationService()
@@ -129,7 +121,8 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
   private static BindingConfigurationDto toBindingDto(ISonarLintProject p) {
     var config = SonarLintCorePlugin.loadConfig(p);
     var projectBinding = config.getProjectBinding();
-    return new BindingConfigurationDto(projectBinding.map(EclipseProjectBinding::connectionId).orElse(null), projectBinding.map(EclipseProjectBinding::projectKey).orElse(null),
+    return new BindingConfigurationDto(projectBinding.map(EclipseProjectBinding::getConnectionId).orElse(null),
+      projectBinding.map(EclipseProjectBinding::getProjectKey).orElse(null),
       config.isBindingSuggestionsDisabled());
   }
 }

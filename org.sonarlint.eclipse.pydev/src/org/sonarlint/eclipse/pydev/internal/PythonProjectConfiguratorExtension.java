@@ -23,9 +23,9 @@ import java.util.Optional;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.sonarlint.eclipse.core.rule.ISyntaxHighlightingProvider;
-import org.sonarsource.sonarlint.core.commons.Language;
 
 public class PythonProjectConfiguratorExtension implements ISyntaxHighlightingProvider {
+  private static final String PYTHON_LANGUAGE_KEY = "py";
   private final boolean pyDevPresent;
 
   public PythonProjectConfiguratorExtension() {
@@ -48,7 +48,7 @@ public class PythonProjectConfiguratorExtension implements ISyntaxHighlightingPr
 
   @Override
   public Optional<SourceViewerConfiguration> sourceViewerConfiguration(String ruleLanguage) {
-    if (pyDevPresent && ruleLanguage.equals(Language.PYTHON.getLanguageKey())) {
+    if (pyDevPresent && ruleLanguage.equals(PYTHON_LANGUAGE_KEY)) {
       return Optional.of(PyDevUtils.sourceViewerConfiguration());
     }
     return Optional.empty();
@@ -56,7 +56,7 @@ public class PythonProjectConfiguratorExtension implements ISyntaxHighlightingPr
 
   @Override
   public Optional<IDocumentPartitioner> documentPartitioner(String ruleLanguage) {
-    if (pyDevPresent && ruleLanguage.equals(Language.PYTHON.getLanguageKey())) {
+    if (pyDevPresent && ruleLanguage.equals(PYTHON_LANGUAGE_KEY)) {
       return Optional.of(PyDevUtils.documentPartitioner());
     }
     return Optional.empty();

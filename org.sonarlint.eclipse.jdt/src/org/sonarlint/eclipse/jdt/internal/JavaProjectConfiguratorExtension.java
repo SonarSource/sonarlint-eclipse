@@ -40,11 +40,11 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.rule.ISyntaxHighlightingProvider;
 import org.sonarlint.eclipse.ui.quickfixes.IMarkerResolutionEnhancer;
 import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
-import org.sonarsource.sonarlint.core.commons.Language;
 
 public class JavaProjectConfiguratorExtension
   implements IAnalysisConfigurator, ISonarLintFileAdapterParticipant, IFileTypeProvider, IMarkerResolutionEnhancer, ISyntaxHighlightingProvider {
 
+  private static final String JAVA_LANGUAGE_KEY = "java";
   @Nullable
   private final JdtUtils javaProjectConfigurator;
   private final boolean jdtPresent;
@@ -115,7 +115,7 @@ public class JavaProjectConfiguratorExtension
 
   @Override
   public Optional<SourceViewerConfiguration> sourceViewerConfiguration(String ruleLanguage) {
-    if (jdtUiPresent && ruleLanguage.equals(Language.JAVA.getLanguageKey())) {
+    if (jdtUiPresent && ruleLanguage.equals(JAVA_LANGUAGE_KEY)) {
       return Optional.of(JdtUiUtils.sourceViewerConfiguration());
     }
     return Optional.empty();
@@ -123,7 +123,7 @@ public class JavaProjectConfiguratorExtension
 
   @Override
   public Optional<IDocumentPartitioner> documentPartitioner(String ruleLanguage) {
-    if (jdtUiPresent && ruleLanguage.equals(Language.JAVA.getLanguageKey())) {
+    if (jdtUiPresent && ruleLanguage.equals(JAVA_LANGUAGE_KEY)) {
       return Optional.of(JdtUiUtils.documentPartitioner());
     }
     return Optional.empty();

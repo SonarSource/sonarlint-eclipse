@@ -40,9 +40,9 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.dialog.MarkAnticipatedIssueAsResolvedDialog;
 import org.sonarlint.eclipse.ui.internal.dialog.MarkAsResolvedDialog;
-import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckStatusChangePermittedParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.issue.CheckStatusChangePermittedResponse;
-import org.sonarsource.sonarlint.core.clientapi.backend.issue.ResolutionStatus;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.CheckStatusChangePermittedParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.CheckStatusChangePermittedResponse;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.ResolutionStatus;
 
 /**
  *  Command invoked on issues matched from SonarQube / SonarCloud or on anticipated issues in connection with
@@ -68,7 +68,7 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
           try {
             result = JobUtils.waitForFuture(monitor, SonarLintBackendService.get().getBackend().getIssueService()
               .checkStatusChangePermitted(
-                new CheckStatusChangePermittedParams(resolvedBinding.getProjectBinding().connectionId(), issueKey)));
+                new CheckStatusChangePermittedParams(resolvedBinding.getProjectBinding().getConnectionId(), issueKey)));
             return Status.OK_STATUS;
           } catch (ExecutionException e) {
             return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID,
@@ -107,8 +107,7 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
         var newStatus = dialog.getFinalTransition();
         var comment = dialog.getFinalComment();
 
-        var job = new MarkAsResolvedJob(project, resolvedBinding.getConnectionFacade(), file,
-          issueKey, newStatus, StringUtils.trimToNull(comment), isTaintVulnerability);
+        var job = new MarkAsResolvedJob(project, file, issueKey, newStatus, StringUtils.trimToNull(comment), isTaintVulnerability);
         job.schedule();
       }
     });
@@ -119,7 +118,8 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
     String hostURL, boolean isSonarCloud) {
     var serverIssue = marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
     return serverIssue != null
-      ? new MarkAsResolvedDialog(parentShell, transitions, hostURL, isSonarCloud)
-        : new MarkAnticipatedIssueAsResolvedDialog(parentShell, transitions, hostURL);
+      ? new MarkAsResolvedDialog(parentShell, transitions, hostURL,
+        isSonarCloud)
+      : new MarkAnticipatedIssueAsResolvedDialog(parentShell, transitions, hostURL);
   }
 }

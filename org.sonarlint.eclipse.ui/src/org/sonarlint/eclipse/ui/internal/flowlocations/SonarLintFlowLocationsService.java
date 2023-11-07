@@ -40,6 +40,7 @@ import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
 import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
@@ -205,7 +206,7 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
   private static void triggerTelemetryOnShowTaintVulnerability(IMarker marker) {
     try {
       if (marker.getType().equals(SonarLintCorePlugin.MARKER_TAINT_ID)) {
-        SonarLintCorePlugin.getTelemetry().taintVulnerabilitiesInvestigatedLocally();
+        SonarLintTelemetry.taintVulnerabilitiesInvestigatedLocally();
       }
     } catch (CoreException e) {
       SonarLintLogger.get().debug("Cannot get marker type", e);

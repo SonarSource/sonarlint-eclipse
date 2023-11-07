@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.utils;
 
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Adapters;
@@ -34,7 +33,8 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 
 public class SonarLintUtils {
   /**
@@ -99,7 +99,17 @@ public class SonarLintUtils {
   }
 
   @Nullable
-  public static SonarLintLanguage convert(Language engineLanguage) {
+  public static SonarLintLanguage convert(Language rpcLanguage) {
+    try {
+      return SonarLintLanguage.valueOf(rpcLanguage.name());
+    } catch (IllegalArgumentException e) {
+      // The language doesn't exist in SLE
+      return null;
+    }
+  }
+
+  @Nullable
+  public static SonarLintLanguage convert(SonarLanguage engineLanguage) {
     try {
       return SonarLintLanguage.valueOf(engineLanguage.name());
     } catch (IllegalArgumentException e) {
@@ -132,7 +142,7 @@ public class SonarLintUtils {
     var config = SonarLintCorePlugin.loadConfig(f.getProject());
     return config.isBound()
       && config.getProjectBinding().isPresent()
-      && facade.getId().equals(config.getProjectBinding().get().connectionId());
+      && facade.getId().equals(config.getProjectBinding().get().getConnectionId());
   }
 
   /**
@@ -143,16 +153,15 @@ public class SonarLintUtils {
    *  INFO: Because it is costly, maybe cache the information in the future and only check periodically!
    */
   public static boolean checkProjectSupportsAnticipatedStatusChange(ISonarLintProject project) {
+    var config = SonarLintCorePlugin.loadConfig(project);
+    if (!config.isBound()) {
+      return false;
+    }
     var viableForStatusChange = false;
     try {
-      viableForStatusChange = SonarLintBackendService.get().checkAnticipatedStatusChangeSupported(project).get().isSupported();
-    } catch (InterruptedException | ExecutionException err) {
-      var cause = err.getCause();
-      if (!(cause instanceof IllegalArgumentException)) {
-        SonarLintLogger.get().error("Could not check if project is bound and if connection is supporting anticipated issues", err);
-      } else {
-        SonarLintLogger.get().info("The project '" + project.getName() + "' is not bound either SonarQube or SonarCloud");
-      }
+      viableForStatusChange = SonarLintBackendService.get().checkAnticipatedStatusChangeSupported(project).join().isSupported();
+    } catch (Exception err) {
+      SonarLintLogger.get().error("Could not check if project is bound and if connection is supporting anticipated issues", err);
     }
 
     return viableForStatusChange;

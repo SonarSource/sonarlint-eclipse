@@ -26,7 +26,6 @@ import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
 
 public class SonarLintProjectConfiguration {
 
@@ -65,25 +64,27 @@ public class SonarLintProjectConfiguration {
     return Optional.ofNullable(projectBinding);
   }
 
-  public static class EclipseProjectBinding extends ProjectBinding {
+  public static class EclipseProjectBinding {
 
     private final String connectionId;
+    private final String projectKey;
 
-    public EclipseProjectBinding(String connectionId, String projectKey, String sqPathPrefix, String idePathPrefix) {
-      super(projectKey, sqPathPrefix, idePathPrefix);
+    public EclipseProjectBinding(String connectionId, String projectKey) {
       this.connectionId = connectionId;
+      this.projectKey = projectKey;
     }
 
-    public String connectionId() {
+    public String getConnectionId() {
       return connectionId;
+    }
+
+    public String getProjectKey() {
+      return projectKey;
     }
 
     @Override
     public int hashCode() {
-      final var prime = 31;
-      var result = super.hashCode();
-      result = prime * result + ((connectionId == null) ? 0 : connectionId.hashCode());
-      return result;
+      return Objects.hash(connectionId, projectKey);
     }
 
     @Override
@@ -95,7 +96,7 @@ public class SonarLintProjectConfiguration {
         return false;
       }
       var other = (EclipseProjectBinding) obj;
-      return Objects.equals(connectionId, other.connectionId);
+      return Objects.equals(connectionId, other.connectionId) && Objects.equals(projectKey, other.projectKey);
     }
 
   }

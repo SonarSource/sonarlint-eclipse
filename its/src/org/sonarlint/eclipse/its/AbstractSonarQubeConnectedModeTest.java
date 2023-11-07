@@ -94,7 +94,7 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
       .setProperty("sonar.password", Server.ADMIN_PASSWORD)
       .setProperty("sonar.projectKey", projectKey);
 
-    for (var pair: analysisProperties.entrySet()) {
+    for (var pair : analysisProperties.entrySet()) {
       build = build.setProperty(pair.getKey(), pair.getValue());
     }
 
@@ -154,27 +154,17 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     serverProjectSelectionPage.waitForProjectsToBeFetched();
     serverProjectSelectionPage.setProjectKey(projectKey);
     projectBindingWizard.finish();
-
-    var bindingsView = new BindingsView();
-    bindingsView.open();
-    bindingsView.updateAllProjectBindings();
-    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
-  
+
   protected static void bindProjectFromContextMenu(Project project, String projectKey) {
     new ContextMenu(project.getTreeItem()).getItem("SonarLint", "Bind to SonarQube or SonarCloud...").select();
-    
+
     var projectBindingWizard = new ProjectBindingWizard();
     projectBindingWizard.next();
-    
+
     var serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
     serverProjectSelectionPage.waitForProjectsToBeFetched();
     serverProjectSelectionPage.setProjectKey(projectKey);
     projectBindingWizard.finish();
-    
-    var bindingsView = new BindingsView();
-    bindingsView.open();
-    bindingsView.updateAllProjectBindings();
-    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
 }

@@ -31,12 +31,11 @@ import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.clientapi.backend.issue.ResolutionStatus;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.ResolutionStatus;
 
 /** Job to be run after successfully marking an issue as resolved (either server or anticipated one) */
 public class MarkAsResolvedJob extends Job {
@@ -45,14 +44,13 @@ public class MarkAsResolvedJob extends Job {
   private final ResolutionStatus newStatus;
   private final boolean isTaint;
   private final @Nullable String comment;
-  private final ConnectionFacade facade;
   private final ISonarLintFile file;
 
-  public MarkAsResolvedJob(ISonarLintProject project, ConnectionFacade facade, ISonarLintFile file, String serverIssueKey, ResolutionStatus newStatus, @Nullable String comment,
+  public MarkAsResolvedJob(ISonarLintProject project, ISonarLintFile file, String serverIssueKey, ResolutionStatus newStatus,
+    @Nullable String comment,
     boolean isTaint) {
     super("Marking issue as resolved");
     this.project = project;
-    this.facade = facade;
     this.file = file;
     this.serverIssueKey = serverIssueKey;
     this.newStatus = newStatus;
@@ -72,11 +70,8 @@ public class MarkAsResolvedJob extends Job {
       }
       SonarLintNotifications.get()
         .showNotification(new Notification("Issue marked as resolved", "The issue was successfully marked as resolved", null));
-      if (isTaint) {
-        new TaintIssuesUpdateAfterSyncJob(facade, project, List.of(file)).schedule();
-      } else {
-        var request = new AnalyzeProjectRequest(project, List.of(new FileWithDocument(file, null)),
-          TriggerType.AFTER_RESOLVE, false, false);
+      if (!isTaint) {
+        var request = new AnalyzeProjectRequest(project, List.of(new FileWithDocument(file, null)), TriggerType.AFTER_RESOLVE, false, false);
         AbstractAnalyzeProjectJob.create(request).schedule();
       }
       return Status.OK_STATUS;

@@ -91,7 +91,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   @Before
   public void clean() throws BackingStoreException {
-    ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).removeNode();
+    ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).clear();
   }
 
   @After

@@ -19,95 +19,31 @@
  */
 package org.sonarlint.eclipse.core.internal.telemetry;
 
-import java.nio.file.Path;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
-import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
-import org.sonarsource.sonarlint.core.commons.Language;
-import org.sonarsource.sonarlint.core.telemetry.InternalDebug;
-import org.sonarsource.sonarlint.core.telemetry.TelemetryClientAttributesProvider;
-import org.sonarsource.sonarlint.core.telemetry.TelemetryHttpClient;
-import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
-import org.sonarsource.sonarlint.core.telemetry.TelemetryPathManager;
+import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
+import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.telemetry.TelemetryRpcService;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.AddQuickFixAppliedForRuleParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.AddReportedRulesParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.AnalysisDoneOnSingleLanguageParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.DevNotificationsClickedParams;
 
 public class SonarLintTelemetry {
-  private static final String TELEMETRY_PRODUCT_KEY = "eclipse";
-  private static final String PRODUCT = "SonarLint Eclipse";
-  private static final String OLD_STORAGE_FILENAME = "sonarlint_usage";
-  public static final String DISABLE_PROPERTY_KEY = "sonarlint.telemetry.disabled";
 
-  private TelemetryManager telemetry;
+  private SonarLintTelemetry() {
 
-  @Nullable
-  private TelemetryJob scheduledJob;
-
-  static Path getStorageFilePath() {
-    TelemetryPathManager.migrate(TELEMETRY_PRODUCT_KEY, getOldStorageFilePath());
-    return TelemetryPathManager.getPath(TELEMETRY_PRODUCT_KEY);
   }
 
-  private static Path getOldStorageFilePath() {
-    return SonarLintCorePlugin.getInstance().getStateLocation().toFile().toPath().resolve(OLD_STORAGE_FILENAME);
-  }
-
-  public static boolean shouldBeActivated() {
-    return !"true".equals(System.getProperty(DISABLE_PROPERTY_KEY));
-  }
-
-  public void optOut(boolean optOut) {
-    if (telemetry != null) {
-      if (optOut) {
-        if (telemetry.isEnabled()) {
-          telemetry.disable();
-        }
-      } else {
-        if (!telemetry.isEnabled()) {
-          telemetry.enable();
-        }
-      }
-    }
-  }
-
-  public boolean enabled() {
-    return telemetry != null && telemetry.isEnabled();
-  }
-
-  public void init() {
-    try {
-      var clientWithProxy = SonarLintBackendService.get().getBackend().getHttpClientNoAuth();
-      var client = new TelemetryHttpClient(PRODUCT, SonarLintUtils.getPluginVersion(), ideVersionForTelemetry(), System.getProperty("osgi.os"), System.getProperty("osgi.arch"),
-        clientWithProxy);
-      this.telemetry = newTelemetryManager(getStorageFilePath(), client);
-      this.scheduledJob = new TelemetryJob();
-      scheduledJob.schedule(TimeUnit.MINUTES.toMillis(1));
-    } catch (Exception e) {
-      if (InternalDebug.isEnabled()) {
-        SonarLintLogger.get().error("Failed during periodic telemetry job", e);
-      }
-    }
-  }
-
-  private static String ideVersionForTelemetry() {
+  public static String ideVersionForTelemetry() {
     var sb = new StringBuilder();
     var iProduct = Platform.getProduct();
     if (iProduct != null) {
@@ -123,187 +59,55 @@ public class SonarLintTelemetry {
     return sb.toString();
   }
 
-  // visible for testing
-  public TelemetryManager newTelemetryManager(Path path, TelemetryHttpClient client) {
-    return new TelemetryManager(path, client, new EclipseTelemetryAttributesProvider());
-  }
-
-  public static class EclipseTelemetryAttributesProvider implements TelemetryClientAttributesProvider {
-
-    @Override
-    public boolean usesConnectedMode() {
-      return isAnyOpenProjectBound();
-    }
-
-    @Override
-    public boolean useSonarCloud() {
-      return isAnyOpenProjectBoundToSonarCloud();
-    }
-
-    @Override
-    public Optional<String> nodeVersion() {
-      return Optional.ofNullable(getNodeJsVersion());
-    }
-
-    @Override
-    public boolean devNotificationsDisabled() {
-      return SonarLintCorePlugin.getConnectionManager().getConnections().stream().anyMatch(ConnectionFacade::areNotificationsDisabled);
-    }
-
-    @Override
-    public Set<String> getNonDefaultEnabledRules() {
-      var ruleKeys = SonarLintGlobalConfiguration.readRulesConfig().stream()
-        .filter(RuleConfig::isActive)
-        .map(RuleConfig::getKey)
-        .collect(Collectors.toSet());
-      // the set could contain rules enabled by default but with a parameter change
-      ruleKeys.removeAll(defaultEnabledRuleKeys());
-      return ruleKeys;
-    }
-
-    @Override
-    public Set<String> getDefaultDisabledRules() {
-      return SonarLintGlobalConfiguration.readRulesConfig().stream()
-        .filter(rule -> !rule.isActive())
-        .map(RuleConfig::getKey)
-        .collect(Collectors.toSet());
-    }
-
-    private static Set<String> defaultEnabledRuleKeys() {
-      try {
-        return SonarLintBackendService.get().getStandaloneRules().get().getRulesByKey().values().stream()
-          .filter(RuleDefinitionDto::isActiveByDefault)
-          .map(RuleDefinitionDto::getKey)
-          .collect(Collectors.toSet());
-      } catch (Exception err) {
-        SonarLintLogger.get().error("Loading all standalone rules for telemetry failed", err);
+  public static void updateTelemetryAfterAnalysis(AnalysisResults result, long start, Map<ISonarLintIssuable, List<RawIssue>> issuesPerResource) {
+    if (result.languagePerFile().size() == 1) {
+      var languageOfTheSingleFile = result.languagePerFile().entrySet().iterator().next().getValue();
+      if (languageOfTheSingleFile != null) {
+        var rpcLanguage = org.sonarsource.sonarlint.core.rpc.protocol.common.Language.valueOf(languageOfTheSingleFile.name());
+        getTelemetryService().analysisDoneOnSingleLanguage(new AnalysisDoneOnSingleLanguageParams(rpcLanguage, (int) (System.currentTimeMillis() - start)));
       }
-
-      return Collections.emptySet();
+    } else {
+      getTelemetryService().analysisDoneOnMultipleFiles();
     }
-
-    @Override
-    public Map<String, Object> additionalAttributes() {
-      return Collections.emptyMap();
-    }
+    getTelemetryService()
+      .addReportedRules(new AddReportedRulesParams(issuesPerResource.values().stream().flatMap(Collection::stream).map(RawIssue::getRuleKey).collect(Collectors.toSet())));
   }
 
-  private class TelemetryJob extends Job {
-
-    public TelemetryJob() {
-      super("SonarLint Telemetry");
-      setSystem(true);
-    }
-
-    @Override
-    protected IStatus run(IProgressMonitor monitor) {
-      schedule(TimeUnit.HOURS.toMillis(6));
-      upload();
-      return Status.OK_STATUS;
-    }
-
+  private static TelemetryRpcService getTelemetryService() {
+    return SonarLintBackendService.get().getBackend().getTelemetryService();
   }
 
-  // visible for testing
-  public void upload() {
-    if (enabled()) {
-      telemetry.uploadLazily();
+  public static void devNotificationsClicked(String category) {
+    getTelemetryService().devNotificationsClicked(new DevNotificationsClickedParams(category));
+  }
+
+  public static boolean isEnabled() {
+    try {
+      return getTelemetryService().getStatus().get().isEnabled();
+    } catch (InterruptedException | ExecutionException e) {
+      SonarLintLogger.get().debug("Unable to get telemetry status", e);
+      return false;
     }
   }
 
-  public void analysisDoneOnMultipleFiles() {
-    if (enabled()) {
-      telemetry.analysisDoneOnMultipleFiles();
+  public static void optOut(boolean optOut) {
+    if (optOut) {
+      getTelemetryService().disableTelemetry();
+    } else {
+      getTelemetryService().enableTelemetry();
     }
   }
 
-  public void analysisDoneOnSingleFile(@Nullable Language language, int time) {
-    if (enabled()) {
-      telemetry.analysisDoneOnSingleLanguage(language, time);
-    }
+  public static void addQuickFixAppliedForRule(String ruleKey) {
+    getTelemetryService().addQuickFixAppliedForRule(new AddQuickFixAppliedForRuleParams(ruleKey));
   }
 
-  public void devNotificationsReceived(String eventType) {
-    if (enabled()) {
-      telemetry.devNotificationsReceived(eventType);
-    }
+  public static void taintVulnerabilitiesInvestigatedRemotely() {
+    getTelemetryService().taintVulnerabilitiesInvestigatedRemotely();
   }
 
-  public void devNotificationsClicked(String eventType) {
-    if (enabled()) {
-      telemetry.devNotificationsClicked(eventType);
-    }
-  }
-
-  public void showHotspotRequestReceived() {
-    if (enabled()) {
-      telemetry.showHotspotRequestReceived();
-    }
-  }
-
-  public void taintVulnerabilitiesInvestigatedLocally() {
-    if (enabled()) {
-      telemetry.taintVulnerabilitiesInvestigatedLocally();
-    }
-  }
-
-  public void taintVulnerabilitiesInvestigatedRemotely() {
-    if (enabled()) {
-      telemetry.taintVulnerabilitiesInvestigatedRemotely();
-    }
-  }
-
-  public void addReportedRules(Set<String> ruleKeys) {
-    if (enabled()) {
-      telemetry.addReportedRules(ruleKeys);
-    }
-  }
-
-  public void addQuickFixAppliedForRule(String ruleKey) {
-    if (enabled()) {
-      telemetry.addQuickFixAppliedForRule(ruleKey);
-    }
-  }
-
-  public void helpAndFeedbackLinkClicked(String itemId) {
-    if (enabled()) {
-      telemetry.helpAndFeedbackLinkClicked(itemId);
-    }
-  }
-
-  public void stop() {
-    if (scheduledJob != null) {
-      scheduledJob.cancel();
-      scheduledJob = null;
-    }
-    if (enabled()) {
-      telemetry.stop();
-    }
-  }
-
-  // visible for testing
-  public Job getScheduledJob() {
-    return scheduledJob;
-  }
-
-  public static boolean isAnyOpenProjectBound() {
-    return ProjectsProviderUtils.allProjects().stream()
-      .anyMatch(p -> p.isOpen() && SonarLintCorePlugin.loadConfig(p).isBound());
-  }
-
-  public static boolean isAnyOpenProjectBoundToSonarCloud() {
-    return ProjectsProviderUtils.allProjects().stream()
-      .filter(p -> p.isOpen() && SonarLintCorePlugin.loadConfig(p).isBound())
-      .map(SonarLintCorePlugin.getConnectionManager()::resolveBinding)
-      .flatMap(Optional::stream)
-      .map(ResolvedBinding::getConnectionFacade)
-      .anyMatch(ConnectionFacade::isSonarCloud);
-  }
-
-  @Nullable
-  public static String getNodeJsVersion() {
-    var v = SonarLintCorePlugin.getNodeJsManager().getNodeJsVersion();
-    return v != null ? v.toString() : null;
+  public static void taintVulnerabilitiesInvestigatedLocally() {
+    getTelemetryService().taintVulnerabilitiesInvestigatedLocally();
   }
 
 }

@@ -43,9 +43,9 @@ import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
-import org.sonarsource.sonarlint.core.commons.IssueSeverity;
-import org.sonarsource.sonarlint.core.commons.TextRange;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.IssueSeverity;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.TextRangeDto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -115,11 +115,11 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
    */
   private TrackedIssue newMockTrackable() {
     var trackedIssue = mock(TrackedIssue.class);
-    var rawIssue = mock(Issue.class);
+    var rawIssue = mock(RawIssue.class);
     when(trackedIssue.getIssueFromAnalysis()).thenReturn(rawIssue);
 
     // mandatory non-nulls
-    when(rawIssue.getTextRange()).thenReturn(new TextRange(1, 2, 3, 4));
+    when(rawIssue.getTextRange()).thenReturn(new TextRangeDto(1, 2, 3, 4));
     when(rawIssue.getSeverity()).thenReturn(IssueSeverity.MAJOR);
 
     // explicit nulls, because Mockito uses 0 values otherwise
@@ -168,7 +168,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
     var line = 5;
     when(trackable.getLine()).thenReturn(line);
-    when(trackable.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRange(line, 4, 5, 14));
+    when(trackable.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRangeDto(line, 4, 5, 14));
 
     var markers = processTrackable(trackable);
     assertThat(markers).hasSize(1);
@@ -196,7 +196,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
     var line = 5;
     when(trackable.getLine()).thenReturn(line);
-    when(trackable.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRange(line, 4, 5, 14));
+    when(trackable.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRangeDto(line, 4, 5, 14));
 
     var markers = processTrackable();
     assertThat(markers).isEmpty();
@@ -210,13 +210,13 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
     var line1 = 5;
     when(trackable1.getLine()).thenReturn(line1);
-    when(trackable1.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRange(line1, 4, 5, 14));
+    when(trackable1.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRangeDto(line1, 4, 5, 14));
 
     var trackable2 = newMockTrackable();
 
     var line2 = 4;
     when(trackable2.getLine()).thenReturn(line2);
-    when(trackable2.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRange(line2, 4, 5, 14));
+    when(trackable2.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRangeDto(line2, 4, 5, 14));
 
     var markers = processTrackable(trackable1, trackable2);
     assertThat(markers).hasSize(2);
@@ -230,7 +230,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
     var line = 5;
     when(trackable.getLine()).thenReturn(line);
-    when(trackable.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRange(line, 4, 5, 14));
+    when(trackable.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRangeDto(line, 4, 5, 14));
 
     var markers = processTrackable(trackable);
     assertThat(markers).hasSize(1);

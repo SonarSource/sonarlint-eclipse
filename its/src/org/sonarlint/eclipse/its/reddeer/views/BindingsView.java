@@ -38,10 +38,6 @@ public class BindingsView extends WorkbenchView {
     super("SonarLint Bindings");
   }
 
-  public void updateAllProjectBindings() {
-    getBindings().forEach(Binding::updateAllProjectBindings);
-  }
-
   public boolean isBindingEmpty() {
     activate();
     try {
@@ -84,11 +80,6 @@ public class BindingsView extends WorkbenchView {
     @Override
     public String toString() {
       return i.getText();
-    }
-
-    public void updateAllProjectBindings() {
-      i.select();
-      new ContextMenuItem("Update All Project Bindings").select();
     }
 
   }

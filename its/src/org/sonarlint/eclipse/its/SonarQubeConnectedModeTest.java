@@ -30,6 +30,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
@@ -236,10 +237,11 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
 
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 4));
+    await().atMost(1, TimeUnit.MINUTES)
+      .untilAsserted(() -> assertThat(defaultEditor.getMarkers())
+        .extracting(Marker::getText, Marker::getLineNumber)
+        .containsOnly(
+          tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 4)));
 
     var notificationShell = new DefaultShell("SonarLint - Secret(s) detected");
     new DefaultLink(notificationShell, "Dismiss").click();

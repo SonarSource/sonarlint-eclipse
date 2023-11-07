@@ -29,13 +29,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
-import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
 
 /**
  * Two situations:
@@ -47,7 +46,7 @@ class EclipseInputFile implements ClientInputFile {
   private final boolean isTestFile;
   private final ISonarLintFile file;
   @Nullable
-  private final Language language;
+  private final SonarLanguage language;
   @Nullable
   private final IDocument editorDocument;
   private final Path tempDirectory;
@@ -55,7 +54,7 @@ class EclipseInputFile implements ClientInputFile {
   private Path filePath;
   private final long documentModificationStamp;
 
-  EclipseInputFile(boolean isTestFile, ISonarLintFile file, Path tempDirectory, @Nullable IDocument editorDocument, @Nullable Language language) {
+  EclipseInputFile(boolean isTestFile, ISonarLintFile file, Path tempDirectory, @Nullable IDocument editorDocument, @Nullable SonarLanguage language) {
     this.isTestFile = isTestFile;
     this.file = file;
     this.tempDirectory = tempDirectory;
@@ -73,9 +72,8 @@ class EclipseInputFile implements ClientInputFile {
   }
 
   private synchronized void initFromFS(ISonarLintFile file, Path temporaryDirectory) {
-    IFileStore fileStore;
     try {
-      fileStore = EFS.getStore(file.getResource().getLocationURI());
+      var fileStore = EFS.getStore(file.getResource().getLocationURI());
       var localFile = fileStore.toLocalFile(EFS.NONE, null);
       if (localFile == null) {
         // For analyzers to properly work we should ensure the temporary file has a "correct" name, and not a generated one
@@ -100,7 +98,7 @@ class EclipseInputFile implements ClientInputFile {
   }
 
   @Override
-  public Language language() {
+  public SonarLanguage language() {
     return language;
   }
 

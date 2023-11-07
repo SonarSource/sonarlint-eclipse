@@ -19,48 +19,38 @@
  */
 package org.sonarlint.eclipse.core.internal.engine;
 
-import java.nio.file.Path;
-import java.util.EnumSet;
 import java.util.Optional;
 import java.util.function.Function;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
-import org.sonarlint.eclipse.core.internal.backend.PluginPathHelper;
-import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
+import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
+import org.sonarlint.eclipse.core.internal.jobs.SonarLintUtilsLogOutput;
 import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
-import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneSonarLintEngine;
-import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.AnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.EngineConfiguration;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssueListener;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.SonarLintAnalysisEngine;
 
 public class StandaloneEngineFacade {
   @Nullable
-  private StandaloneSonarLintEngine wrappedEngine;
+  private SonarLintAnalysisEngine wrappedEngine;
 
   @Nullable
-  private synchronized StandaloneSonarLintEngine getOrCreateEngine() {
+  private synchronized SonarLintAnalysisEngine getOrCreateEngine() {
     if (wrappedEngine == null) {
       SonarLintLogger.get().info("Starting standalone SonarLint engine " + SonarLintUtils.getPluginVersion() + "...");
-      var nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
-      var enabledLanguages = EnumSet.noneOf(SonarLintLanguage.class);
-      enabledLanguages.addAll(SonarLintUtils.getStandaloneEnabledLanguages());
-      var globalConfig = StandaloneGlobalConfiguration.builder()
-        .addPlugins(PluginPathHelper.getEmbeddedPluginPaths().stream().toArray(Path[]::new))
+      var globalConfig = EngineConfiguration.builder()
         .setWorkDir(StoragePathManager.getDefaultWorkDir())
-        .setLogOutput(new SonarLintAnalyzerLogOutput())
-        .addEnabledLanguages(enabledLanguages.stream().map(l -> Language.valueOf(l.name())).toArray(Language[]::new))
-        .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
+        .setLogOutput(new SonarLintUtilsLogOutput())
         .setClientPid(SonarLintUtils.getPlatformPid()).build();
       try {
-        wrappedEngine = new StandaloneSonarLintEngineImpl(globalConfig);
+        wrappedEngine = new SonarLintAnalysisEngine(globalConfig, SonarLintBackendService.get().getBackend(), null);
         SkippedPluginsNotifier.notifyForSkippedPlugins(wrappedEngine.getPluginDetails(), null);
       } catch (Throwable e) {
         SonarLintLogger.get().error("Unable to start standalone SonarLint engine", e);
@@ -70,7 +60,7 @@ public class StandaloneEngineFacade {
     return wrappedEngine;
   }
 
-  private <G> Optional<G> withEngine(Function<StandaloneSonarLintEngine, G> function) {
+  private <G> Optional<G> withEngine(Function<SonarLintAnalysisEngine, G> function) {
     getOrCreateEngine();
     if (wrappedEngine != null) {
       return Optional.ofNullable(function.apply(wrappedEngine));
@@ -78,10 +68,10 @@ public class StandaloneEngineFacade {
     return Optional.empty();
   }
 
-  @Nullable
-  public AnalysisResults runAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor) {
+  public AnalysisResults runAnalysis(ISonarLintProject project, AnalysisConfiguration config, RawIssueListener issueListener, IProgressMonitor monitor) {
+    var configScopeId = ConfigScopeSynchronizer.getConfigScopeId(project);
     return withEngine(engine -> {
-      var analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
+      var analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"), configScopeId);
       AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, engine.getPluginDetails());
       return analysisResults;
     }).orElseThrow(() -> new IllegalStateException("SonarLint Engine not available"));

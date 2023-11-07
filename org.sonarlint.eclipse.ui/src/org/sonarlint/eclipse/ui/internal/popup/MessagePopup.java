@@ -21,13 +21,14 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import org.eclipse.swt.graphics.Image;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.message.MessageType;
 
 public class MessagePopup extends AbstractSonarLintPopup {
 
-  private final String type;
+  private final MessageType type;
   private final String message;
 
-  public MessagePopup(String type, String message) {
+  public MessagePopup(MessageType type, String message) {
     this.type = type;
     this.message = message;
   }

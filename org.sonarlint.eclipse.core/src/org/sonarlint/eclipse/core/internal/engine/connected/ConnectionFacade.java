@@ -20,55 +20,45 @@
 package org.sonarlint.eclipse.core.internal.engine.connected;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
-import org.sonarlint.eclipse.core.internal.backend.PluginPathHelper;
+import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
 import org.sonarlint.eclipse.core.internal.engine.SkippedPluginsNotifier;
-import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
+import org.sonarlint.eclipse.core.internal.jobs.SonarLintUtilsLogOutput;
 import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarlint.eclipse.core.internal.vcs.VcsService;
-import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
-import org.sonarsource.sonarlint.core.client.api.connected.ProjectBranches;
-import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
-import org.sonarsource.sonarlint.core.commons.Language;
-import org.sonarsource.sonarlint.core.serverapi.EndpointParams;
-import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
-import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
-import org.sonarsource.sonarlint.core.serverconnection.issues.ServerIssue;
-import org.sonarsource.sonarlint.core.serverconnection.issues.ServerTaintIssue;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.AnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.EngineConfiguration;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssueListener;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.SonarLintAnalysisEngine;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarCloudConnectionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarQubeConnectionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.SonarProjectDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.TokenDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.UsernamePasswordDto;
 
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 public class ConnectionFacade {
@@ -81,42 +71,27 @@ public class ConnectionFacade {
   private String organization;
   private boolean hasAuth;
   @Nullable
-  private ConnectedSonarLintEngine wrappedEngine;
+  private SonarLintAnalysisEngine wrappedEngine;
   private final List<IConnectionStateListener> facadeListeners = new ArrayList<>();
   private boolean notificationsDisabled;
-  // Cache the project list to avoid dead lock
-  private final Map<String, ServerProject> allProjectsByKey = new ConcurrentHashMap<>();
+  private final Map<String, SonarProjectDto> cachedSonarProjectsByKey = new ConcurrentHashMap<>();
 
   ConnectionFacade(String id) {
     this.id = id;
   }
 
   @Nullable
-  private synchronized ConnectedSonarLintEngine getOrCreateEngine() {
+  private synchronized SonarLintAnalysisEngine getOrCreateEngine() {
     if (wrappedEngine == null) {
       SonarLintLogger.get().info("Starting SonarLint engine for connection '" + id + "'...");
-      var nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
-      var builder = isSonarCloud() ? ConnectedGlobalConfiguration.sonarCloudBuilder() : ConnectedGlobalConfiguration.sonarQubeBuilder();
-      var enabledLanguages = EnumSet.noneOf(SonarLintLanguage.class);
-      enabledLanguages.addAll(SonarLintUtils.getStandaloneEnabledLanguages());
-      enabledLanguages.addAll(SonarLintUtils.getConnectedEnabledLanguages());
-      builder
-        .setConnectionId(getId())
+      var builder = EngineConfiguration.builder()
         .setWorkDir(StoragePathManager.getConnectionSpecificWorkDir(getId()))
-        .setStorageRoot(StoragePathManager.getStorageDir())
-        .setLogOutput(new SonarLintAnalyzerLogOutput())
-        .addEnabledLanguages(enabledLanguages.stream().map(l -> Language.valueOf(l.name())).toArray(Language[]::new))
-        .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
+        .setLogOutput(new SonarLintUtilsLogOutput())
         .setClientPid(SonarLintUtils.getPlatformPid());
-
-      builder.useEmbeddedPlugin(Language.JS.getPluginKey(), PluginPathHelper.findEmbeddedJsPlugin());
-      builder.useEmbeddedPlugin(Language.HTML.getPluginKey(), PluginPathHelper.findEmbeddedHtmlPlugin());
-      builder.useEmbeddedPlugin(Language.XML.getPluginKey(), PluginPathHelper.findEmbeddedXmlPlugin());
-      builder.useEmbeddedPlugin(Language.SECRETS.getPluginKey(), PluginPathHelper.findEmbeddedSecretsPlugin());
 
       var globalConfig = builder.build();
       try {
-        this.wrappedEngine = new ConnectedSonarLintEngineImpl(globalConfig);
+        this.wrappedEngine = new SonarLintAnalysisEngine(globalConfig, SonarLintBackendService.get().getBackend(), id);
         SkippedPluginsNotifier.notifyForSkippedPlugins(wrappedEngine.getPluginDetails(), id);
       } catch (Throwable e) {
         SonarLintLogger.get().error("Unable to start connected SonarLint engine", e);
@@ -126,27 +101,12 @@ public class ConnectionFacade {
     return wrappedEngine;
   }
 
-  private <G> Optional<G> withEngine(Function<ConnectedSonarLintEngine, G> function) {
+  private <G> Optional<G> withEngine(Function<SonarLintAnalysisEngine, G> function) {
     getOrCreateEngine();
     if (wrappedEngine != null) {
       return Optional.ofNullable(function.apply(wrappedEngine));
     }
     return Optional.empty();
-  }
-
-  private void doWithEngine(Consumer<ConnectedSonarLintEngine> consumer) {
-    getOrCreateEngine();
-    if (wrappedEngine != null) {
-      consumer.accept(wrappedEngine);
-    }
-  }
-
-  private void reloadProjects(ConnectedSonarLintEngine engine, IProgressMonitor monitor) {
-    this.allProjectsByKey.clear();
-    this.allProjectsByKey.putAll(engine.downloadAllProjects(createEndpointParams(), SonarLintBackendService.get().getBackend().getHttpClient(getId()),
-      new WrappedProgressMonitor(monitor, "Download project list from server '" + getId() + "'")));
-    // Some project names might have been changed
-    notifyAllListenersStateChanged();
   }
 
   public void notifyAllListenersStateChanged() {
@@ -155,10 +115,25 @@ public class ConnectionFacade {
     }
   }
 
+  /**
+   * Returns the id of this connection.
+   * Each connection has a distinct id, fixed for
+   * its lifetime.
+   *
+   * @return the connection id
+   */
   public String getId() {
     return id;
   }
 
+  /**
+   * Returns the host for the connection.
+   * The format of the host can be either a qualified or unqualified hostname,
+   * or an IP address and must conform to RFC 2732.
+   *
+   * @return a host string conforming to RFC 2732
+   * @see java.net.URL#getHost()
+   */
   public String getHost() {
     return host;
   }
@@ -185,6 +160,29 @@ public class ConnectionFacade {
   public ConnectionFacade setHasAuth(boolean hasAuth) {
     this.hasAuth = hasAuth;
     return this;
+  }
+
+  @Nullable
+  public Either<TokenDto, UsernamePasswordDto> getCredentials() {
+    if (!hasAuth()) {
+      return null;
+    }
+    @Nullable
+    String username;
+    @Nullable
+    String password;
+    try {
+      username = ConnectionManager.getUsername(this);
+      password = ConnectionManager.getPassword(this);
+    } catch (StorageException e) {
+      SonarLintLogger.get().error("Unable to resolve credentials for connection: " + getId());
+      return null;
+    }
+    if (StringUtils.isNotBlank(password)) {
+      return Either.forRight(new UsernamePasswordDto(username, password));
+    } else {
+      return Either.forLeft(new TokenDto(username));
+    }
   }
 
   public synchronized void delete() {
@@ -214,13 +212,13 @@ public class ConnectionFacade {
     SonarLintCorePlugin.getConnectionManager().updateConnection(this, username, password);
   }
 
-  @Nullable
-  public AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor) {
+  public AnalysisResults runAnalysis(ISonarLintProject project, AnalysisConfiguration config, RawIssueListener issueListener, IProgressMonitor monitor) {
+    var configScopeId = ConfigScopeSynchronizer.getConfigScopeId(project);
     return withEngine(engine -> {
-      var analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
+      var analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"), configScopeId);
       AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, engine.getPluginDetails());
       return analysisResults;
-    }).orElse(null);
+    }).orElseThrow(() -> new IllegalStateException("Engine is not available"));
   }
 
   public synchronized void stop() {
@@ -229,13 +227,9 @@ public class ConnectionFacade {
 
   private void doStop() {
     if (wrappedEngine != null) {
-      wrappedEngine.stop(false);
+      wrappedEngine.stop();
       wrappedEngine = null;
     }
-  }
-
-  public void updateProjectList(IProgressMonitor monitor) {
-    doWithEngine(engine -> reloadProjects(engine, monitor));
   }
 
   private static Stream<ISonarLintProject> getOpenedProjects() {
@@ -246,9 +240,9 @@ public class ConnectionFacade {
   public Set<String> getBoundProjectKeys() {
     return getOpenedProjects()
       .map(project -> SonarLintCorePlugin.loadConfig(project).getProjectBinding())
-      .filter(binding -> binding.filter(b -> id.equals(b.connectionId())).isPresent())
+      .filter(binding -> binding.filter(b -> id.equals(b.getConnectionId())).isPresent())
       .map(Optional::get)
-      .map(ProjectBinding::projectKey)
+      .map(EclipseProjectBinding::getProjectKey)
       .collect(Collectors.toSet());
   }
 
@@ -256,7 +250,7 @@ public class ConnectionFacade {
     return getOpenedProjects()
       .filter(p -> {
         var config = SonarLintCorePlugin.loadConfig(p);
-        return config.getProjectBinding().filter(b -> id.equals(b.connectionId())).isPresent();
+        return config.getProjectBinding().filter(b -> id.equals(b.getConnectionId())).isPresent();
       }).collect(toList());
   }
 
@@ -266,14 +260,14 @@ public class ConnectionFacade {
       .map(SonarLintCorePlugin::loadConfig)
       .map(SonarLintProjectConfiguration::getProjectBinding)
       .flatMap(Optional::stream)
-      .filter(c -> c.connectionId().equals(id))
-      .map(ProjectBinding::projectKey)
+      .filter(c -> c.getConnectionId().equals(id))
+      .map(EclipseProjectBinding::getProjectKey)
       .distinct()
       .sorted()
       .map(projectKey -> {
-        var sonarProject = getCachedSonarProject(projectKey);
-        if (sonarProject.isPresent()) {
-          return new SonarProject(id, sonarProject.get().getKey(), sonarProject.get().getName());
+        var sonarProject = cachedSonarProjectsByKey.get(projectKey);
+        if (sonarProject != null) {
+          return new SonarProject(id, sonarProject.getKey(), sonarProject.getName());
         } else {
           return new SonarProject(id, projectKey, "<unknown>");
         }
@@ -281,64 +275,41 @@ public class ConnectionFacade {
       .collect(toList());
   }
 
+  public Optional<SonarProjectDto> getCachedSonarProject(String projectKey) {
+    return Optional.ofNullable(cachedSonarProjectsByKey.get(projectKey));
+  }
+
   public List<ISonarLintProject> getBoundProjects(String projectKey) {
     return ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
       .filter(p -> {
         var config = SonarLintCorePlugin.loadConfig(p);
-        return config.getProjectBinding().filter(b -> id.equals(b.connectionId()) && projectKey.equals(b.projectKey())).isPresent();
+        return config.getProjectBinding().filter(b -> id.equals(b.getConnectionId()) && projectKey.equals(b.getProjectKey())).isPresent();
       }).collect(toList());
   }
 
-  public void updateProjectStorage(String projectKey, IProgressMonitor monitor) {
-    doWithEngine(engine -> {
-      engine.updateProject(createEndpointParams(), SonarLintBackendService.get().getBackend().getHttpClient(getId()), projectKey,
-        new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for project '" + projectKey + "'"));
-      getBoundProjects(projectKey).forEach(p -> {
-        var projectBinding = engine.calculatePathPrefixes(projectKey, p.files().stream().map(ISonarLintFile::getProjectRelativePath).collect(toList()));
-        var idePathPrefix = projectBinding.idePathPrefix();
-        var sqPathPrefix = projectBinding.serverPathPrefix();
-        SonarLintLogger.get().debug("Detected prefixes for " + p.getName() + ":\n  IDE prefix: " + idePathPrefix + "\n  Server side prefix: " + sqPathPrefix);
-        var config = SonarLintCorePlugin.loadConfig(p);
-        config.setProjectBinding(new EclipseProjectBinding(getId(), projectKey, sqPathPrefix, idePathPrefix));
-        SonarLintCorePlugin.saveConfig(p, config);
-      });
-      SkippedPluginsNotifier.notifyForSkippedPlugins(engine.getPluginDetails(), id);
-    });
-    // Some prefix/suffix might have been changed
-    notifyAllListenersStateChanged();
-
-  }
-
-  private static EndpointParams createEndpointParams(String url, @Nullable String organization) {
-    return new EndpointParams(url, SonarLintUtils.getSonarCloudUrl().equals(url), organization);
-  }
-
-  public EndpointParams createEndpointParams() {
-    return createEndpointParams(getHost(), getOrganization());
-  }
-
-  public TextSearchIndex<ServerProject> computeProjectIndex() {
-    var index = new TextSearchIndex<ServerProject>();
-    for (ServerProject project : allProjectsByKey.values()) {
-      index.index(project, project.getKey() + " " + project.getName());
-    }
-    return index;
-  }
-
-  public Optional<ServerProject> getCachedSonarProject(String projectKey) {
-    return Optional.ofNullable(allProjectsByKey.get(projectKey));
-  }
-
-  public List<ISonarLintFile> getServerFileExclusions(ProjectBinding binding, Collection<ISonarLintFile> files, Predicate<ISonarLintFile> testFilePredicate) {
-    return withEngine(engine -> engine.getExcludedFiles(binding, files, ISonarLintFile::getProjectRelativePath, testFilePredicate)).orElse(emptyList());
-  }
-
-  public void addConnectedEngineListener(IConnectionStateListener listener) {
+  /**
+   * Adds the given state listener to this engine.
+   * Once registered, a listener starts receiving notification of
+   * state changes to this engine. The listener continues to receive
+   * notifications until it is removed.
+   * Has no effect if an identical listener is already registered.
+   *
+   * @param listener the engine listener
+   * @see #removeConnectionListener(IConnectionStateListener)
+   */
+  public void addConnectionListener(IConnectionStateListener listener) {
     facadeListeners.add(listener);
   }
 
-  public void removeConnectedEngineListener(IConnectionStateListener listener) {
+  /**
+   * Removes the given state listener from this engine. Has no
+   * effect if the listener is not registered.
+   *
+   * @param listener the listener
+   * @see #addConnectionListener(IConnectionStateListener)
+   */
+  public void removeConnectionListener(IConnectionStateListener listener) {
     facadeListeners.remove(listener);
   }
 
@@ -368,84 +339,20 @@ public class ConnectionFacade {
     return this;
   }
 
-  public void downloadServerIssues(String projectKey, @Nullable String branchName, IProgressMonitor monitor) {
-    doWithEngine(
-      engine -> engine.downloadAllServerIssues(createEndpointParams(), SonarLintBackendService.get().getBackend().getHttpClient(getId()), projectKey, branchName,
-        new WrappedProgressMonitor(monitor, "Fetch issues")));
+  public Either<TransientSonarQubeConnectionDto, TransientSonarCloudConnectionDto> toTransientDto() {
+    if (isSonarCloud()) {
+      return Either.forRight(new TransientSonarCloudConnectionDto(getOrganization(), getCredentials()));
+    } else {
+      return Either.forLeft(new TransientSonarQubeConnectionDto(getHost(), getCredentials()));
+    }
   }
 
-  public List<ServerIssue> downloadAllServerIssuesForFile(ProjectBinding projectBinding, String branchName, String filePath, IProgressMonitor monitor) {
-    return withEngine(
-      engine -> {
-        engine.downloadAllServerIssuesForFile(createEndpointParams(), SonarLintBackendService.get().getBackend().getHttpClient(getId()), projectBinding, filePath,
-          branchName, new WrappedProgressMonitor(monitor, "Fetch issues"));
-        return engine.getServerIssues(projectBinding, branchName, filePath);
-      })
-        .orElse(emptyList());
-  }
-
-  public void downloadAllServerTaintIssuesForFile(ProjectBinding projectBinding, String branchName, String filePath, IProgressMonitor monitor) {
-    doWithEngine(
-      engine -> engine.downloadAllServerTaintIssuesForFile(createEndpointParams(), SonarLintBackendService.get().getBackend().getHttpClient(getId()), projectBinding, filePath,
-        branchName, new WrappedProgressMonitor(monitor, "Fetch taint issues")));
-  }
-
-  public List<ServerIssue> getServerIssues(ProjectBinding projectBinding, String branchName, String filePath) {
-    return withEngine(engine -> engine.getServerIssues(projectBinding, branchName, filePath)).orElse(emptyList());
-  }
-
-  public List<ServerTaintIssue> getServerTaintIssues(EclipseProjectBinding projectBinding, String branchName,
-    String filePath, Boolean includeResolved) {
-    return withEngine(engine -> engine.getServerTaintIssues(projectBinding, branchName, filePath, includeResolved))
-      .orElse(emptyList());
-  }
-
-  public ProjectBinding calculatePathPrefixes(String projectKey, List<String> ideFilePaths) {
-    return withEngine(engine -> engine.calculatePathPrefixes(projectKey, ideFilePaths)).orElse(new ProjectBinding(projectKey, "", ""));
-  }
-
-  public ProjectBranches getServerBranches(String projectKey) {
-    return withEngine(engine -> engine.getServerBranches(projectKey))
-      .orElseThrow(() -> new IllegalStateException("The connected engine could not be started"));
-  }
-
-  public void manualSync(Set<String> projectKeysToUpdate, IProgressMonitor monitor) {
-    doWithEngine(engine -> {
-      sync(projectKeysToUpdate, monitor, engine);
-      projectKeysToUpdate.forEach(projectKey -> {
-        var eclipseProjects = getBoundProjects(projectKey);
-        Set<String> branchesToSync = new HashSet<>();
-        eclipseProjects.forEach(p -> VcsService.getServerBranch(p).ifPresent(branchesToSync::add));
-        branchesToSync.forEach(b -> {
-          SonarLintLogger.get().debug("Download server issues for project '" + projectKey + "' on branch '" + b + "'");
-          downloadServerIssues(projectKey, b, monitor);
-        });
-      });
+  public CompletableFuture<List<SonarProjectDto>> getAndCacheAllSonarProjects() {
+    return SonarLintBackendService.get().getAllProjects(this).thenApply(projects -> {
+      projects.forEach(p -> this.cachedSonarProjectsByKey.put(p.getKey(), p));
+      notifyAllListenersStateChanged();
+      return projects;
     });
   }
 
-  private void sync(Set<String> projectKeysToUpdate, IProgressMonitor monitor, ConnectedSonarLintEngine engine) {
-    engine.sync(createEndpointParams(), SonarLintBackendService.get().getBackend().getHttpClient(getId()), projectKeysToUpdate,
-      new WrappedProgressMonitor(monitor, "Synchronize projects storage for connection '" + getId() + "'"));
-    // Force recompute of best server branch
-    VcsService.clearVcsCache();
-    rematchBranches(projectKeysToUpdate, monitor, engine);
-
-    updateProjectList(monitor);
-  }
-
-  public void scheduledSync(Set<String> projectKeys, IProgressMonitor monitor) {
-    doWithEngine(engine -> sync(projectKeys, monitor, engine));
-  }
-
-  private void rematchBranches(Set<String> projectKeys, IProgressMonitor monitor, ConnectedSonarLintEngine engine) {
-    for (var projectKey : projectKeys) {
-      var boundProjects = getBoundProjects(projectKey);
-
-      for (var project : boundProjects) {
-        VcsService.getServerBranch(project).ifPresent(b -> SonarLintBackendService.get().branchChanged(project, b));
-      }
-
-    }
-  }
 }

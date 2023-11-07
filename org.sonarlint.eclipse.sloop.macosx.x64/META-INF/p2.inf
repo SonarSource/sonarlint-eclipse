@@ -1,0 +1,5 @@
+instructions.install = \
+    chmod(targetDir:@artifact,targetFile:sloop/jre/bin,permissions:+x,options:-R);\
+    chmod(targetDir:@artifact,targetFile:sloop/jre/lib/jspawnhelper,permissions:+x);
+ instructions.install.import= \
+    org.eclipse.equinox.p2.touchpoint.eclipse.chmod

@@ -84,7 +84,7 @@ public abstract class AbstractResolvedCommand extends AbstractIssueCommand imple
       if (binding.isPresent()) {
         element.setIcon(binding.get().getConnectionFacade().isSonarCloud()
           ? SonarLintImages.SONARCLOUD_16
-            : SonarLintImages.SONARQUBE_16);
+          : SonarLintImages.SONARQUBE_16);
       }
     }
   }
@@ -110,7 +110,7 @@ public abstract class AbstractResolvedCommand extends AbstractIssueCommand imple
     }
     if (serverIssue == null) {
       currentWindow.getShell().getDisplay()
-      .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), errorTitle, errorMessage));
+        .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), errorTitle, errorMessage));
     }
 
     return serverIssue;

@@ -20,26 +20,26 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarsource.sonarlint.core.commons.log.ClientLogOutput;
+import org.sonarsource.sonarlint.core.client.utils.ClientLogOutput;
 
-public final class GlobalLogOutput implements ClientLogOutput {
+public final class SonarLintUtilsLogOutput implements ClientLogOutput {
 
   @Override
   public void log(String msg, Level level) {
     switch (level) {
       case TRACE:
       case DEBUG:
-        SonarLintLogger.get().debug(msg);
+        SonarLintLogger.get().analyzerDebug(msg);
         break;
       case INFO:
       case WARN:
-        SonarLintLogger.get().info(msg);
+        SonarLintLogger.get().analyzerInfo(msg);
         break;
       case ERROR:
-        SonarLintLogger.get().error(msg);
+        SonarLintLogger.get().analyzerError(msg);
         break;
       default:
-        SonarLintLogger.get().info(msg);
+        SonarLintLogger.get().analyzerInfo(msg);
     }
 
   }
