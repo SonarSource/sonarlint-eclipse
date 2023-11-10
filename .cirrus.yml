@@ -78,17 +78,26 @@ build_task:
     SIGN_KEY: VAULT[development/kv/data/sign data.key]
     PGP_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
     DEPLOY_PULL_REQUEST: true
-    CODESIGNING_JKS_FILE: VAULT[development/team/sonarlint/kv/data/codesigning/2021-2023 data.file]
-    CODESIGNING_JKS_PATH: ${CIRRUS_WORKING_DIR}/SonarSource-2021-2023.jks
-    CODESIGNING_JKS_PASSWORD: VAULT[development/team/sonarlint/kv/data/codesigning/2021-2023 data.password]
+    #CODESIGNING_JKS_FILE: VAULT[development/team/sonarlint/kv/data/codesigning/2021-2023 data.file]
+    #CODESIGNING_JKS_PATH: ${CIRRUS_WORKING_DIR}/SonarSource-2021-2023.jks
+    #CODESIGNING_JKS_PASSWORD: VAULT[development/team/sonarlint/kv/data/codesigning/2021-2023 data.password]
+    SM_API_KEY: VAULT[development/team/sonarlint/kv/data/codesigning/2023-2025 data.apikey]
+    SM_CERT: VAULT[development/team/sonarlint/kv/data/codesigning/2023-2025 data.cert]
+    SM_CERT_FP: VAULT[development/team/sonarlint/kv/data/codesigning/2023-2025 data.cert_fp]
+    SM_CLIENT_CERT_FILE_BASE64: VAULT[development/team/sonarlint/kv/data/codesigning/2023-2025 data.client_cert_file_base64]
+    SM_CLIENT_CERT_FILE: ${CIRRUS_WORKING_DIR}/Certificate.pkcs12.p12
+    SM_CLIENT_CERT_PASSWORD: VAULT[development/team/sonarlint/kv/data/codesigning/2023-2025 data.client_cert_password]
+    SM_HOST: VAULT[development/team/sonarlint/kv/data/codesigning/2023-2025 data.host]
   codesigning_file:
-    path: ${CODESIGNING_JKS_PATH}.b64
-    variable_name: CODESIGNING_JKS_FILE
+    path: ${SM_CLIENT_CERT_FILE}.b64
+    variable_name: SM_CLIENT_CERT_FILE_BASE64
   <<: *SETUP_MAVEN_CACHE
   build_script: |
+    base64 --decode "${SM_CLIENT_CERT_FILE}.b64" > "${SM_CLIENT_CERT_FILE}"
+    smctl healthcheck
     source cirrus-env BUILD-PRIVATE
-    base64 --decode "${CODESIGNING_JKS_PATH}.b64" > "${CODESIGNING_JKS_PATH}"
-    .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true
+    echo .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true
+    mvn clean install -Dmaven.test.skip=true -Dsonar.skip=true -Psign
   cleanup_before_cache_script: cleanup_maven_repository
 
 validate_task:
