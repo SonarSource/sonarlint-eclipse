@@ -96,8 +96,7 @@ build_task:
     base64 --decode "${SM_CLIENT_CERT_FILE}.b64" > "${SM_CLIENT_CERT_FILE}"
     smctl healthcheck
     source cirrus-env BUILD-PRIVATE
-    echo .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true
-    mvn clean install -Dmaven.test.skip=true -Dsonar.skip=true -Psign
+    .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true
   cleanup_before_cache_script: cleanup_maven_repository
 
 validate_task:
