@@ -78,9 +78,6 @@ build_task:
     SIGN_KEY: VAULT[development/kv/data/sign data.key]
     PGP_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
     DEPLOY_PULL_REQUEST: true
-    #CODESIGNING_JKS_FILE: VAULT[development/team/sonarlint/kv/data/codesigning/2021-2023 data.file]
-    #CODESIGNING_JKS_PATH: ${CIRRUS_WORKING_DIR}/SonarSource-2021-2023.jks
-    #CODESIGNING_JKS_PASSWORD: VAULT[development/team/sonarlint/kv/data/codesigning/2021-2023 data.password]
     SM_API_KEY: VAULT[development/team/sonarlint/kv/data/codesigning/2023-2025 data.apikey]
     SM_CERT: VAULT[development/team/sonarlint/kv/data/codesigning/2023-2025 data.cert]
     SM_CERT_FP: VAULT[development/team/sonarlint/kv/data/codesigning/2023-2025 data.cert_fp]
@@ -94,7 +91,6 @@ build_task:
   <<: *SETUP_MAVEN_CACHE
   build_script: |
     base64 --decode "${SM_CLIENT_CERT_FILE}.b64" > "${SM_CLIENT_CERT_FILE}"
-    smctl healthcheck
     source cirrus-env BUILD-PRIVATE
     .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true
   cleanup_before_cache_script: cleanup_maven_repository
