@@ -56,14 +56,17 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
+        <configuration>          
+          <keystore>NONE</keystore>
+          <alias>key_525594307</alias>
+          <storepass>none</storepass>
+          <providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
+          <storetype>PKCS11</storetype>
+          <providerArg>/usr/local/share/smtools/pkcs11properties.cfg</providerArg>
+          <tsa>http://timestamp.digicert.com</tsa>
           <certs>true</certs>
           <verbose>false</verbose>
-          <alias>sonarsource-codesign-2021-2023</alias>
-          <keystore>${sonarsource.keystore.path}</keystore>
-          <storepass>${sonarsource.keystore.password}</storepass>
           <skip>${jarsigner.skip}</skip>
-          <tsa>http://timestamp.digicert.com?alg=sha256</tsa>
           <archiveDirectory>${project.build.directory}/repository/</archiveDirectory>
           <includes>
             <include>features/*</include>

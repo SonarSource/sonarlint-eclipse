@@ -61,6 +61,7 @@
     <!-- Same protobuf version than the one in SonarLint Core-->
     <protobuf.version>3.21.9</protobuf.version>
     <jacoco.version>0.8.8</jacoco.version>
+    <jarsigner.version>3.0.0</jarsigner.version>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
@@ -321,9 +322,33 @@
       <id>sign</id>
       <properties>
         <jarsigner.skip>false</jarsigner.skip>
-        <sonarsource.keystore.path>${env.CODESIGNING_JKS_PATH}</sonarsource.keystore.path>
-        <sonarsource.keystore.password>${env.CODESIGNING_JKS_PASSWORD}</sonarsource.keystore.password>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jarsigner-plugin</artifactId>
+            <version>${jarsigner.version}</version>
+            <executions>
+            <execution>
+            <id>sign</id>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            </execution>
+            </executions>
+            <configuration>
+              <keystore>NONE</keystore>
+              <alias>key_525594307</alias>
+              <storepass>none</storepass>
+              <providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
+              <storetype>PKCS11</storetype>
+              <providerArg>/usr/local/share/smtools/pkcs11properties.cfg</providerArg>
+              <tsa>http://timestamp.digicert.com</tsa>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
