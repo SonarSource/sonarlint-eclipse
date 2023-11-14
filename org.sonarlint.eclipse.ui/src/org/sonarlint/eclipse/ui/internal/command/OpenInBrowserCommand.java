@@ -20,19 +20,15 @@
 package org.sonarlint.eclipse.ui.internal.command;
 
 import java.util.Map;
-import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
@@ -66,11 +62,6 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to open issue in browser", e);
     }
-  }
-
-  private static Optional<ResolvedBinding> getBinding(IMarker marker) {
-    var project = Adapters.adapt(marker.getResource().getProject(), ISonarLintProject.class);
-    return SonarLintCorePlugin.getServersManager().resolveBinding(project);
   }
 
   private static String buildLink(String serverUrl, String projectKey, String issueKey) {
