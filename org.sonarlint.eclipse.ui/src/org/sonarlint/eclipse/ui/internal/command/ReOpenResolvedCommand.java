@@ -21,13 +21,11 @@ package org.sonarlint.eclipse.ui.internal.command;
 
 import java.util.concurrent.ExecutionException;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
@@ -42,38 +40,25 @@ import org.sonarsource.sonarlint.core.clientapi.backend.issue.ReopenIssueRespons
  *  Command invoked on issues already resolved (either as anticipated issue or issue already known to the server).
  */
 public class ReOpenResolvedCommand extends AbstractResolvedCommand {
+  static {
+    TITLE = "Re-Opening resolved Issue";
+  }
+  
   @Override
-  protected void execute(IMarker selectedMarker, IWorkbenchWindow window) {
-    currentWindow = window;
-    
-    var project = Adapters.adapt(selectedMarker.getResource().getProject(), ISonarLintProject.class);
-    var file = Adapters.adapt(selectedMarker.getResource(), ISonarLintFile.class);
-    var issueKey = getIssueKey(selectedMarker);
-    if (issueKey == null) {
-      currentWindow.getShell().getDisplay()
-        .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), "Re-Opening resolved Issue",
-          "No issue key available"));
-      return;
-    }
-    
-    var markerType = tryGetMarkerType(selectedMarker, "Re-Opening resolved Issue, marker type not available");
-    if (markerType == null) {
-      return;
-    }
-    var isTaintVulnerability = markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID);
-
+  protected void execute(IMarker marker, ISonarLintFile file, ISonarLintProject project, String issueKey,
+    boolean isTaint) {
     var checkJob = new Job("Check user permissions for setting the issue resolution") {
       private ReopenIssueResponse result;
       private ResolvedBinding resolvedBinding;
 
       @Override
       protected IStatus run(IProgressMonitor monitor) {
-        var binding = getBinding(selectedMarker);
+        var binding = getBinding(marker);
         if (binding.isPresent()) {
           resolvedBinding = binding.get();
           try {
             result = JobUtils.waitForFuture(monitor,
-              SonarLintBackendService.get().reopenIssue(project, issueKey, isTaintVulnerability));
+              SonarLintBackendService.get().reopenIssue(project, issueKey, isTaint));
             return Status.OK_STATUS;
           } catch (ExecutionException e) {
             return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID,
@@ -88,8 +73,8 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
       }
     };
 
-    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(project, file, isTaintVulnerability,
-      checkJob.result, checkJob.resolvedBinding));
+    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(project, file, isTaint, checkJob.result,
+      checkJob.resolvedBinding));
     checkJob.schedule();
   }
   
@@ -100,7 +85,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
     if (!result.isIssueReopened()) {
       currentWindow.getShell().getDisplay()
         .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(),
-          "Re-Opening resolved Issue on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
+          TITLE + " on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
           "Could not re-open the resolved Issue!"));
       return;
     }

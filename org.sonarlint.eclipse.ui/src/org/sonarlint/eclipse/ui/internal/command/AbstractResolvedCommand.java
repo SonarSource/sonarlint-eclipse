@@ -20,9 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.command;
 
 import java.util.Map;
-import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -31,15 +29,46 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 /** Shared logic for all commands on (to be) resolved issues */
 public abstract class AbstractResolvedCommand extends AbstractIssueCommand implements IElementUpdater {
+  protected static String TITLE;
+  
   protected IWorkbenchWindow currentWindow;
+  
+  /** To be implemented by the actual commands */
+  protected abstract void execute(IMarker marker, ISonarLintFile file, ISonarLintProject project, String issueKey,
+    boolean isTaint);
+  
+  @Override
+  protected void execute(IMarker selectedMarker, IWorkbenchWindow window) {
+    currentWindow = window;
+    
+    var slFile = tryGetISonarLintFile(selectedMarker, TITLE,
+      "Cannot adapt marker resource to ISonarLintFile, please see the logs for more information");
+    if (slFile == null) {
+      return;
+    }
+    var project = slFile.getProject();
+    
+    var issueKey = tryGetIssueKey(selectedMarker, TITLE, "No issue key found on marker");
+    if (issueKey == null) {
+      return;
+    }
+    
+    var markerType = tryGetMarkerType(selectedMarker, TITLE);
+    if (markerType == null) {
+      return;
+    }
+    
+    // run actual command
+    execute(selectedMarker, slFile, project, issueKey, markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID));
+  }
   
   @Override
   public void updateElement(UIElement element, Map parameters) {
@@ -60,19 +89,31 @@ public abstract class AbstractResolvedCommand extends AbstractIssueCommand imple
     }
   }
   
-  /** Check for issue binding: Either SonarQube or SonarCloud */
-  protected static Optional<ResolvedBinding> getBinding(IMarker marker) {
-    var project = Adapters.adapt(marker.getResource().getProject(), ISonarLintProject.class);
-    return SonarLintCorePlugin.getServersManager().resolveBinding(project);
+  /** Try to get the ISonarLint file from the marker */
+  @Nullable
+  protected ISonarLintFile tryGetISonarLintFile(IMarker marker, String errorTitle, String errorMessage) {
+    var slFile = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class);
+    if (slFile == null) {
+      currentWindow.getShell().getDisplay()
+        .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), errorTitle, errorMessage));
+    }
+    
+    return slFile;
   }
   
-  /** Get the issue key (e.g. server issue key / UUID) */
+  /** Try to get the issue key (e.g. server issue key / UUID) */
   @Nullable
-  protected String getIssueKey(IMarker marker) {
+  protected String tryGetIssueKey(IMarker marker, String errorTitle, String errorMessage) {
     var serverIssue = marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
-    return serverIssue != null
-      ? serverIssue
-        : marker.getAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR, null);
+    if (serverIssue == null) {
+      serverIssue = marker.getAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR, null);
+    }
+    if (serverIssue == null) {
+      currentWindow.getShell().getDisplay()
+      .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), errorTitle, errorMessage));
+    }
+    
+    return serverIssue;
   }
   
   /** Try to get the marker type (normal issue or a taint, different behavior) */
@@ -82,7 +123,6 @@ public abstract class AbstractResolvedCommand extends AbstractIssueCommand imple
     try {
       markerType = marker.getType();
     } catch (CoreException err) {
-      SonarLintLogger.get().error("Error getting marker type", err);
       currentWindow.getShell().getDisplay()
         .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), errorTitle, err.getMessage()));
     }

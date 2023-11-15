@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Adapters;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
@@ -117,5 +119,20 @@ public class SonarLintUtils {
     }
     
     return viableForStatusChange;
+  }
+  
+  /**
+   *  Wrapper around {@link org.eclipse.core.runtime.Adapters#adapt(Object, Class)} in order to log debug information
+   *  which we then can use when debugging / investigating issues.
+   */
+  @Nullable
+  public static <T> T adapt(Object sourceObject, Class<T> adapter) {
+    var adapted = Adapters.adapt(sourceObject, adapter);
+    if (adapted == null) {
+      SonarLintLogger.get().debug("'" + sourceObject.toString() + "' could not be adapted to '"
+        + adapter.toString() + "'");
+    }
+	
+    return adapted;
   }
 }
