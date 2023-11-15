@@ -39,13 +39,13 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDo
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectsJob;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerMatcher;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.documentation.SonarLintDocumentation;
+import org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencePage;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
-import org.sonarlint.eclipse.ui.internal.util.MessageBoxUtils;
+import org.sonarlint.eclipse.ui.internal.util.MessageDialogUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
 import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
@@ -67,27 +67,17 @@ public class OpenIssueInEclipseJob extends Job {
   private final ISonarLintProject project;
   private final ResolvedBinding binding;
   private final boolean recreatedMarkersAlready;
+  private final boolean askedForPreferenceChangeAlready;
   
-  public OpenIssueInEclipseJob(String name, ShowIssueParams params, ISonarLintProject project, ResolvedBinding binding) {
-    super(name);
+  public OpenIssueInEclipseJob(OpenIssueInEclipseJobParams params) {
+    super(params.name);
     
-    this.name = name;
-    this.params = params;
-    this.project = project;
-    this.binding = binding;
-    this.recreatedMarkersAlready = false;
-  }
-  
-  private OpenIssueInEclipseJob(String name, ShowIssueParams params, ISonarLintProject project,
-    ResolvedBinding binding, ISonarLintFile file, boolean recreatedMarkersAlready) {
-    super(name);
-    
-    this.name = name;
-    this.params = params;
-    this.project = project;
-    this.binding = binding;
-    this.file = file;
-    this.recreatedMarkersAlready = recreatedMarkersAlready;
+    this.name = params.name;
+    this.params = params.params;
+    this.project = params.project;
+    this.binding = params.binding;
+    this.recreatedMarkersAlready = params.recreatedMarkersAlready;
+    this.askedForPreferenceChangeAlready = params.askedForPreferenceChangeAlready;
   }
 
   @Override
@@ -112,7 +102,7 @@ public class OpenIssueInEclipseJob extends Job {
     } catch (CoreException e) {
       var message = "An error occured while trying to match the issue locally.";
       
-      MessageBoxUtils.openInIdeError(message + " Please see the console for the full error log!");
+      MessageDialogUtils.openInIdeError(message + " Please see the console for the full error log!");
       SonarLintLogger.get().error(message, e);
     }
     
@@ -121,21 +111,19 @@ public class OpenIssueInEclipseJob extends Job {
   
   /** File check: We try to convert the server path to IDE path in order to find the correct file */
   private Optional<ISonarLintFile> tryGetLocalFile() {
-    var configScopeId = params.getConfigScopeId();
-    
     // Check if the server file path can be matched to a local file path
     var filePathOpt = binding.getProjectBinding().serverPathToIdePath(params.getServerRelativeFilePath());
     if (filePathOpt.isEmpty()) {
-      MessageBoxUtils.openInIdeError("The file containing the issue cannot be located in the project '"
-        + configScopeId + "'. Maybe it was already changed locally!");
+      MessageDialogUtils.openInIdeError("The file containing the issue cannot be located in the project '"
+        + project.getName() + "'. Maybe it was already changed locally!");
       return Optional.empty();
     }
     
     // Check if file exists in project based on the server to IDE path matching
     var fileOpt = project.find(filePathOpt.get());
     if (fileOpt.isEmpty()) {
-      MessageBoxUtils.openInIdeError("The file containing the issue cannot be located in the project '"
-        + configScopeId + "'. Maybe it was already changed locally!");
+      MessageDialogUtils.openInIdeError("The file containing the issue cannot be found in the project '"
+        + project.getName() + "'. Maybe it was already changed locally!");
       return Optional.empty();
     }
     
@@ -145,19 +133,17 @@ public class OpenIssueInEclipseJob extends Job {
   /** Branch check: Local and remote information should match (if no local branch found, at least try your best) */
   private boolean tryMatchBranches() {
     var branch = params.getBranch();
-    var configScopeId = params.getConfigScopeId();
     
     var localBranch = VcsService.getServerBranch(project);
     if (localBranch.isEmpty()) {
       // This error message may be misleading to COBOL / ABAP developers but that is okay for now :>
-      MessageBoxUtils.openInIdeError("The local branch of the project '" + configScopeId
-        + "' could not be determened. SonarLint now can only try to find the matching local issue!",
-        () -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.BRANCH_AWARENESS, Display.getDefault()));
+      MessageDialogUtils.openInIdeInformation("The local branch of the project '" + project.getName()
+        + "' could not be determened. SonarLint now can only try to find the matching local issue!");
     } else if (!branch.equals(localBranch.get())) {
-      MessageBoxUtils.openInIdeError("The local branch '" + localBranch.get() + "' of the project '"
-        + configScopeId + "' does not match the remote branch '" + branch + "'. "
-        + "Please checkout the correct branch and invoke 'Open in IDE' once again!",
-        () -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.BRANCH_AWARENESS, Display.getDefault()));
+      MessageDialogUtils.openInIdeError("The local branch '" + localBranch.get() + "' of the project '"
+        + project.getName() + "' does not match the remote branch '" + branch + "'. "
+        + "Please checkout the correct branch and invoke 'Open in IDE' once again!");
+      BrowserUtils.openExternalBrowser(SonarLintDocumentation.BRANCH_AWARENESS, Display.getDefault());
       return false;
     }
     
@@ -222,9 +208,10 @@ public class OpenIssueInEclipseJob extends Job {
       @Override
       public void done(IJobChangeEvent event) {
         if (Status.OK_STATUS == event.getResult()) {
-          new OpenIssueInEclipseJob(name, params, project, binding, file, true).schedule();
+          new OpenIssueInEclipseJob(new OpenIssueInEclipseJobParams(name, params, project, binding, file, true))
+            .schedule();
         } else {
-          MessageBoxUtils.openInIdeError("Fetching the issue to be displayed failed because the dependent "
+          MessageDialogUtils.openInIdeError("Fetching the issue to be displayed failed because the dependent "
             + "job did not finish successfully.");
         }
       }
@@ -233,20 +220,23 @@ public class OpenIssueInEclipseJob extends Job {
   
   /** When the workspace preferences are not in our favor we want the consent from the user to change them */
   private IStatus handlePossibleHiddenIssue() {
-    if (!SonarLintGlobalConfiguration.notAllIssuesShown()) {
-      MessageBoxUtils.openInIdeError("The issue was not found locally. Maybe the issue was already "
+    // When we already asked the user to change his workspace preferences, he agreed but did not change anything we
+    // don't want to end up in a loop asking the user if could please change his preferences ^^
+    if (askedForPreferenceChangeAlready) {
+      MessageDialogUtils.openInIdeError("The issue was not found locally. Maybe the issue was already "
         + "resolved or the resources has moved / was deleted.");
       return Status.CANCEL_STATUS;
     }
     
     // Ask the user if we are allowed to change the workspace preferences
-    MessageBoxUtils.openInIdeQuestion("The issue might not be found due to the workspace preferences "
-      + "on the display of SonarLint markers. Are we allowed to change the preferences to display all possible "
-      + "markers and to try to find the issue again?",
+    MessageDialogUtils.openInIdeQuestion("The issue might not be found due to the workspace preferences "
+      + "on the display of SonarLint markers. Please change the preferences and 'Apply and Close' them to continue!",
       () -> {
-        SonarLintGlobalConfiguration.setIssueFilter(SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_ALL);
-        SonarLintGlobalConfiguration.setIssuePeriod(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME);
-        new OpenIssueInEclipseJob(name, params, project, binding, file, false).schedule();
+        var preferences = PlatformUtils.showPreferenceDialog(SonarLintPreferencePage.ID);
+        var page = (SonarLintPreferencePage) preferences.getSelectedPage();
+        page.setOpenIssueInEclipseJobParams(
+          new OpenIssueInEclipseJobParams(name, params, project, binding, file, true, true));
+        preferences.open();
       });
     
     return Status.OK_STATUS;
@@ -281,5 +271,51 @@ public class OpenIssueInEclipseJob extends Job {
         SonarLintLogger.get().error("Open in IDE: An error occoured while opening the SonarLint views", e);
       }
     });
+  }
+  
+  
+  public static class OpenIssueInEclipseJobParams {
+    @Nullable
+    private ISonarLintFile file;
+    
+    public final String name;
+    public final ShowIssueParams params;
+    public final ISonarLintProject project;
+    public final ResolvedBinding binding;
+    public final boolean recreatedMarkersAlready;
+    public final boolean askedForPreferenceChangeAlready;
+    
+    public OpenIssueInEclipseJobParams(String name, ShowIssueParams params, ISonarLintProject project,
+      ResolvedBinding binding) {
+      this.name = name;
+      this.params = params;
+      this.project = project;
+      this.binding = binding;
+      this.recreatedMarkersAlready = false;
+      this.askedForPreferenceChangeAlready = false;
+    }
+    
+    public OpenIssueInEclipseJobParams(String name, ShowIssueParams params, ISonarLintProject project,
+      ResolvedBinding binding, ISonarLintFile file, boolean recreatedMarkersAlready) {
+      this.name = name;
+      this.params = params;
+      this.project = project;
+      this.binding = binding;
+      this.file = file;
+      this.recreatedMarkersAlready = recreatedMarkersAlready;
+      this.askedForPreferenceChangeAlready = false;
+    }
+    
+    public OpenIssueInEclipseJobParams(String name, ShowIssueParams params, ISonarLintProject project,
+      ResolvedBinding binding, ISonarLintFile file, boolean recreatedMarkersAlready,
+      boolean askedForPreferenceChangeAlready) {
+      this.name = name;
+      this.params = params;
+      this.project = project;
+      this.binding = binding;
+      this.file = file;
+      this.recreatedMarkersAlready = recreatedMarkersAlready;
+      this.askedForPreferenceChangeAlready = askedForPreferenceChangeAlready;
+    }
   }
 }

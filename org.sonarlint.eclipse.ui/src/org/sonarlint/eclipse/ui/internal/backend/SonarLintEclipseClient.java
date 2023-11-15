@@ -56,6 +56,7 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingPr
 import org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView;
 import org.sonarlint.eclipse.ui.internal.job.BackendProgressJobScheduler;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
+import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueInEclipseJobParams;
 import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
@@ -363,7 +364,8 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
     }
     
     // Handle expensive checks and actual logic in separate job to not block the thread
-    new OpenIssueInEclipseJob("Open in IDE", params, project, bindingOpt.get()).schedule();
+    new OpenIssueInEclipseJob(new OpenIssueInEclipseJobParams("Open in IDE", params, project, bindingOpt.get()))
+      .schedule();
   }
 
   @Override

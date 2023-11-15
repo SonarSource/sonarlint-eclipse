@@ -19,24 +19,38 @@
  */
 package org.sonarlint.eclipse.its.reddeer.conditions;
 
-import org.eclipse.reddeer.common.condition.AbstractWaitCondition;
-import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
+import org.eclipse.reddeer.common.condition.WaitCondition;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintTaintVulnerabilitiesView;
 
-public class RuleDescriptionViewIsLoaded extends AbstractWaitCondition {
-  private final RuleDescriptionView ruleDescriptionView;
-
-  public RuleDescriptionViewIsLoaded(RuleDescriptionView ruleDescriptionView) {
-    this.ruleDescriptionView = ruleDescriptionView;
+public class SonarLintTaintVulnerabilitiesViewOpened implements WaitCondition {
+private final SonarLintTaintVulnerabilitiesView sonarLintTaintVulnerabilitiesView;
+  
+  public SonarLintTaintVulnerabilitiesViewOpened(SonarLintTaintVulnerabilitiesView sonarLintTaintVulnerabilitiesView) {
+    this.sonarLintTaintVulnerabilitiesView = sonarLintTaintVulnerabilitiesView;
+  }
+  
+  @Override
+  public boolean test() {
+    return sonarLintTaintVulnerabilitiesView.isOpen();
   }
 
   @Override
-  public boolean test() {
-    ruleDescriptionView.open();
-    return !"Loading...".equals(ruleDescriptionView.getRuleName().getText()) && !ruleDescriptionView.getFirstBrowser().getText().isBlank();
+  public SonarLintTaintVulnerabilitiesView getResult() {
+    return sonarLintTaintVulnerabilitiesView;
   }
 
   @Override
   public String description() {
-    return "Rule description is loading";
+    return "Taint Vulnerabilities view is opened";
+  }
+
+  @Override
+  public String errorMessageWhile() {
+    return "Taint Vulnerabilities view is still opened";
+  }
+
+  @Override
+  public String errorMessageUntil() {
+    return "Taint Vulnerabilities view is not yet opened";
   }
 }

@@ -46,6 +46,8 @@ import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.documentation.SonarLintDocumentation;
+import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
+import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueInEclipseJobParams;
 import org.sonarlint.eclipse.ui.internal.job.TaintIssuesJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
@@ -53,11 +55,14 @@ import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
  * Preference page for the workspace.
  */
 public class SonarLintPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
-
   public static final String ID = "org.sonarlint.eclipse.ui.preferences.SonarLintPreferencePage";
   private static final String NODE_JS_TOOLTIP = "SonarLint requires Node.js to analyze some languages. "
     + "You can provide an explicit path for the node executable here or leave this field blank to let SonarLint look for it using your PATH environment variable.";
 
+  // when we ask the user to change the preferences on "Open in IDE" feature;
+  @Nullable
+  private OpenIssueInEclipseJobParams openIssueInEclipseJobParams;
+  
   public SonarLintPreferencePage() {
     super(Messages.SonarPreferencePage_title, GRID);
   }
@@ -193,8 +198,18 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     if (anyPreferenceChanged) {
       AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
     }
+    if (openIssueInEclipseJobParams != null) {
+      // INFO: We cannot schedule it immediately as the OpenIssueInEclipseJob might be faster than the preferences
+      //       dialog closing. It will focus the MessageDialog when the issue cannot but in order to access it we have
+      //       to close the preferences dialog which cannot be focused.
+      //       -> This is a corner case but just in case (e.g. ITs crashing on our side because they're too fast).
+      new OpenIssueInEclipseJob(openIssueInEclipseJobParams).schedule(250);
+    }
 
     return result;
   }
-
+  
+  public void setOpenIssueInEclipseJobParams(OpenIssueInEclipseJobParams params) {
+    this.openIssueInEclipseJobParams = params;
+  }
 }

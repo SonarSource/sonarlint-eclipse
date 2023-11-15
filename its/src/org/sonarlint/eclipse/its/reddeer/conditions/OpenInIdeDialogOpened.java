@@ -19,24 +19,38 @@
  */
 package org.sonarlint.eclipse.its.reddeer.conditions;
 
-import org.eclipse.reddeer.common.condition.AbstractWaitCondition;
-import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
+import org.eclipse.reddeer.common.condition.WaitCondition;
+import org.sonarlint.eclipse.its.reddeer.wizards.OpenInIdeDialog;
 
-public class RuleDescriptionViewIsLoaded extends AbstractWaitCondition {
-  private final RuleDescriptionView ruleDescriptionView;
-
-  public RuleDescriptionViewIsLoaded(RuleDescriptionView ruleDescriptionView) {
-    this.ruleDescriptionView = ruleDescriptionView;
+/** Await the "Open in IDE" dialog is opened (no matter what the content is) */
+public class OpenInIdeDialogOpened implements WaitCondition {
+  @Override
+  public boolean test() {
+    try {
+      new OpenInIdeDialog().isEnabled();
+      return true;
+    } catch (Exception ignored) {
+      return false;
+    }
   }
 
   @Override
-  public boolean test() {
-    ruleDescriptionView.open();
-    return !"Loading...".equals(ruleDescriptionView.getRuleName().getText()) && !ruleDescriptionView.getFirstBrowser().getText().isBlank();
+  public OpenInIdeDialog getResult() {
+    return new OpenInIdeDialog();
   }
 
   @Override
   public String description() {
-    return "Rule description is loading";
+    return "'Open in IDE' dialog is opened";
+  }
+
+  @Override
+  public String errorMessageWhile() {
+    return "'Open in IDE' dialog is still opened";
+  }
+
+  @Override
+  public String errorMessageUntil() {
+    return "'Open in IDE' dialog is not yet opened";
   }
 }
