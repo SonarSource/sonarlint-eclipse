@@ -99,7 +99,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.html</groupId>
                   <artifactId>sonar-html-plugin</artifactId>
-                  <version>3.10.0.3651</version>
+                  <version>3.11.0.4708</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
