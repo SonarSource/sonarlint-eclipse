@@ -47,7 +47,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
-import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueInEclipseJobParams;
+import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueContext;
 import org.sonarlint.eclipse.ui.internal.job.TaintIssuesJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
@@ -61,7 +61,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
   // when we ask the user to change the preferences on "Open in IDE" feature;
   @Nullable
-  private OpenIssueInEclipseJobParams openIssueInEclipseJobParams;
+  private OpenIssueContext openIssueContext;
   
   public SonarLintPreferencePage() {
     super(Messages.SonarPreferencePage_title, GRID);
@@ -198,18 +198,18 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     if (anyPreferenceChanged) {
       AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
     }
-    if (openIssueInEclipseJobParams != null) {
+    if (openIssueContext != null) {
       // INFO: We cannot schedule it immediately as the OpenIssueInEclipseJob might be faster than the preferences
-      //       dialog closing. It will focus the MessageDialog when the issue cannot but in order to access it we have
-      //       to close the preferences dialog which cannot be focused.
+      //       dialog closing. It will focus the MessageDialog when the issue cannot be found but in order to access it
+      //       we have to close the preferences dialog which cannot be focused.
       //       -> This is a corner case but just in case (e.g. ITs crashing on our side because they're too fast).
-      new OpenIssueInEclipseJob(openIssueInEclipseJobParams).schedule(250);
+      new OpenIssueInEclipseJob(openIssueContext).schedule(250);
     }
 
     return result;
   }
   
-  public void setOpenIssueInEclipseJobParams(OpenIssueInEclipseJobParams params) {
-    this.openIssueInEclipseJobParams = params;
+  public void setOpenIssueInEclipseJobParams(OpenIssueContext context) {
+    this.openIssueContext = context;
   }
 }

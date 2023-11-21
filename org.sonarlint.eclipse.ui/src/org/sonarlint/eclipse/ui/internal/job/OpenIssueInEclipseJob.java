@@ -69,15 +69,15 @@ public class OpenIssueInEclipseJob extends Job {
   private final boolean recreatedMarkersAlready;
   private final boolean askedForPreferenceChangeAlready;
   
-  public OpenIssueInEclipseJob(OpenIssueInEclipseJobParams params) {
-    super(params.name);
+  public OpenIssueInEclipseJob(OpenIssueContext context) {
+    super(context.getName());
     
-    this.name = params.name;
-    this.params = params.params;
-    this.project = params.project;
-    this.binding = params.binding;
-    this.recreatedMarkersAlready = params.recreatedMarkersAlready;
-    this.askedForPreferenceChangeAlready = params.askedForPreferenceChangeAlready;
+    this.name = context.getName();
+    this.params = context.getParams();
+    this.project = context.getProject();
+    this.binding = context.getBinding();
+    this.recreatedMarkersAlready = context.getRecreatedMarkersAlready();
+    this.askedForPreferenceChangeAlready = context.getAskedForPreferenceChangeAlready();
   }
 
   @Override
@@ -138,7 +138,7 @@ public class OpenIssueInEclipseJob extends Job {
     if (localBranch.isEmpty()) {
       // This error message may be misleading to COBOL / ABAP developers but that is okay for now :>
       MessageDialogUtils.openInIdeInformation("The local branch of the project '" + project.getName()
-        + "' could not be determened. SonarLint now can only try to find the matching local issue!");
+        + "' could not be determined. SonarLint now can only try to find the matching local issue!");
     } else if (!branch.equals(localBranch.get())) {
       MessageDialogUtils.openInIdeError("The local branch '" + localBranch.get() + "' of the project '"
         + project.getName() + "' does not match the remote branch '" + branch + "'. "
@@ -208,7 +208,7 @@ public class OpenIssueInEclipseJob extends Job {
       @Override
       public void done(IJobChangeEvent event) {
         if (Status.OK_STATUS == event.getResult()) {
-          new OpenIssueInEclipseJob(new OpenIssueInEclipseJobParams(name, params, project, binding, file, true))
+          new OpenIssueInEclipseJob(new OpenIssueContext(name, params, project, binding, file, true))
             .schedule();
         } else {
           MessageDialogUtils.openInIdeError("Fetching the issue to be displayed failed because the dependent "
@@ -235,7 +235,7 @@ public class OpenIssueInEclipseJob extends Job {
         var preferences = PlatformUtils.showPreferenceDialog(SonarLintPreferencePage.ID);
         var page = (SonarLintPreferencePage) preferences.getSelectedPage();
         page.setOpenIssueInEclipseJobParams(
-          new OpenIssueInEclipseJobParams(name, params, project, binding, file, true, true));
+          new OpenIssueContext(name, params, project, binding, file, true, true));
         preferences.open();
       });
     
@@ -274,18 +274,18 @@ public class OpenIssueInEclipseJob extends Job {
   }
   
   
-  public static class OpenIssueInEclipseJobParams {
+  public static class OpenIssueContext {
     @Nullable
     private ISonarLintFile file;
     
-    public final String name;
-    public final ShowIssueParams params;
-    public final ISonarLintProject project;
-    public final ResolvedBinding binding;
-    public final boolean recreatedMarkersAlready;
-    public final boolean askedForPreferenceChangeAlready;
+    private final String name;
+    private final ShowIssueParams params;
+    private final ISonarLintProject project;
+    private final ResolvedBinding binding;
+    private final boolean recreatedMarkersAlready;
+    private final boolean askedForPreferenceChangeAlready;
     
-    public OpenIssueInEclipseJobParams(String name, ShowIssueParams params, ISonarLintProject project,
+    public OpenIssueContext(String name, ShowIssueParams params, ISonarLintProject project,
       ResolvedBinding binding) {
       this.name = name;
       this.params = params;
@@ -295,7 +295,7 @@ public class OpenIssueInEclipseJob extends Job {
       this.askedForPreferenceChangeAlready = false;
     }
     
-    public OpenIssueInEclipseJobParams(String name, ShowIssueParams params, ISonarLintProject project,
+    public OpenIssueContext(String name, ShowIssueParams params, ISonarLintProject project,
       ResolvedBinding binding, ISonarLintFile file, boolean recreatedMarkersAlready) {
       this.name = name;
       this.params = params;
@@ -306,7 +306,7 @@ public class OpenIssueInEclipseJob extends Job {
       this.askedForPreferenceChangeAlready = false;
     }
     
-    public OpenIssueInEclipseJobParams(String name, ShowIssueParams params, ISonarLintProject project,
+    public OpenIssueContext(String name, ShowIssueParams params, ISonarLintProject project,
       ResolvedBinding binding, ISonarLintFile file, boolean recreatedMarkersAlready,
       boolean askedForPreferenceChangeAlready) {
       this.name = name;
@@ -316,6 +316,35 @@ public class OpenIssueInEclipseJob extends Job {
       this.file = file;
       this.recreatedMarkersAlready = recreatedMarkersAlready;
       this.askedForPreferenceChangeAlready = askedForPreferenceChangeAlready;
+    }
+    
+    @Nullable
+    public ISonarLintFile getFile() {
+      return file;
+    }
+    
+    public String getName() {
+      return name;
+    }
+    
+    public ShowIssueParams getParams() {
+      return params;
+    }
+    
+    public ISonarLintProject getProject() {
+      return project;
+    }
+    
+    public ResolvedBinding getBinding() {
+      return binding;
+    }
+    
+    public boolean getRecreatedMarkersAlready() {
+      return recreatedMarkersAlready;
+    }
+    
+    public boolean getAskedForPreferenceChangeAlready() {
+      return askedForPreferenceChangeAlready;
     }
   }
 }
