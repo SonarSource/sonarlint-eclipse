@@ -31,7 +31,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.BadLocationException;
@@ -41,7 +40,8 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
 import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
@@ -174,8 +174,14 @@ public final class MarkerUtils {
    *  @return specific matching status of a markers' issue
    */
   public static FindingMatchingStatus getMatchingStatus(IMarker marker, @Nullable String markerServerKey) {
-    var bindingOptional = SonarLintCorePlugin.getServersManager()
-      .resolveBinding(Adapters.adapt(marker.getResource().getProject(), ISonarLintProject.class));
+    var slFile = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class);
+    if (slFile == null) {
+      SonarLintLogger.get().debug("MarkerUtils.getMatchingStatus: Resolving project of marker '" + marker.toString()
+        + "' was not possible due to the file not being adaptable.");
+      return FindingMatchingStatus.NOT_MATCHED;
+    }
+    
+    var bindingOptional = SonarLintCorePlugin.getServersManager().resolveBinding(slFile.getProject());
     if (bindingOptional.isEmpty() || markerServerKey == null) {
       return FindingMatchingStatus.NOT_MATCHED;
     }

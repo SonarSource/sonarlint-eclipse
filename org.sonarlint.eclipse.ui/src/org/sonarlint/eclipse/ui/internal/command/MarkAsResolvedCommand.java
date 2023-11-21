@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.ui.internal.command;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -30,7 +29,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
@@ -53,33 +51,19 @@ import org.sonarsource.sonarlint.core.clientapi.backend.issue.ResolutionStatus;
  *  only found locally!
  */
 public class MarkAsResolvedCommand extends AbstractResolvedCommand {
+  static {
+    TITLE = "Mark Issue as Resolved";
+  }
+  
   @Override
-  protected void execute(IMarker selectedMarker, IWorkbenchWindow window) {
-    currentWindow = window;
-    
-    var project = Adapters.adapt(selectedMarker.getResource().getProject(), ISonarLintProject.class);
-    var file = Adapters.adapt(selectedMarker.getResource(), ISonarLintFile.class);
-    var issueKey = getIssueKey(selectedMarker);
-    if (issueKey == null) {
-      window.getShell().getDisplay()
-        .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), "Mark Issue as Resolved",
-          "No issue key available"));
-      return;
-    }
-
-    var markerType = tryGetMarkerType(selectedMarker, "Mark Issue as Resolved, marker type not available");
-    if (markerType == null) {
-      return;
-    }
-    var isTaintVulnerability = markerType.equals(SonarLintCorePlugin.MARKER_TAINT_ID);
-
+  protected void execute(IMarker marker, ISonarLintFile file, ISonarLintProject project, String issueKey, boolean isTaint) {
     var checkJob = new Job("Check user permissions for setting the issue resolution") {
       private CheckStatusChangePermittedResponse result;
       private ResolvedBinding resolvedBinding;
 
       @Override
       protected IStatus run(IProgressMonitor monitor) {
-        var binding = getBinding(selectedMarker);
+        var binding = getBinding(marker);
         if (binding.isPresent()) {
           resolvedBinding = binding.get();
           try {
@@ -100,8 +84,8 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
       }
     };
 
-    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(selectedMarker, project, file, issueKey,
-      isTaintVulnerability, checkJob.result, checkJob.resolvedBinding));
+    JobUtils.scheduleAfterSuccess(checkJob, () -> afterCheckSuccessful(marker, project, file, issueKey, isTaint,
+      checkJob.result, checkJob.resolvedBinding));
     checkJob.schedule();
   }
 
@@ -113,7 +97,7 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
     if (!result.isPermitted()) {
       currentWindow.getShell().getDisplay()
         .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(),
-          "Mark Issue as Resolved on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
+          TITLE + " on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
           result.getNotPermittedReason()));
       return;
     }
