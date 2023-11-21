@@ -19,24 +19,45 @@
  */
 package org.sonarlint.eclipse.its.reddeer.conditions;
 
-import org.eclipse.reddeer.common.condition.AbstractWaitCondition;
+import org.eclipse.reddeer.common.condition.WaitCondition;
 import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
 
-public class RuleDescriptionViewIsLoaded extends AbstractWaitCondition {
+public class RuleDescriptionViewOpenedWithContent implements WaitCondition {
   private final RuleDescriptionView ruleDescriptionView;
-
-  public RuleDescriptionViewIsLoaded(RuleDescriptionView ruleDescriptionView) {
+  private final String content;
+  
+  public RuleDescriptionViewOpenedWithContent(RuleDescriptionView ruleDescriptionView, String content) {
     this.ruleDescriptionView = ruleDescriptionView;
+    this.content = content;
+  }
+  
+  @Override
+  public boolean test() {
+    if (!ruleDescriptionView.isOpen()) {
+      return false;
+    }
+    ruleDescriptionView.open();
+    
+    return ruleDescriptionView.getFlatTextContent().contains(content);
   }
 
   @Override
-  public boolean test() {
-    ruleDescriptionView.open();
-    return !"Loading...".equals(ruleDescriptionView.getRuleName().getText()) && !ruleDescriptionView.getFirstBrowser().getText().isBlank();
+  public RuleDescriptionView getResult() {
+    return ruleDescriptionView;
   }
 
   @Override
   public String description() {
-    return "Rule description is loading";
+    return "Rule Description view is opened with content '" + content + "'";
+  }
+
+  @Override
+  public String errorMessageWhile() {
+    return "Rule Description view is still opened with content '" + content + "'";
+  }
+
+  @Override
+  public String errorMessageUntil() {
+    return "Rule Description view is not yet opened with content '" + content + "'";
   }
 }

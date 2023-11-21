@@ -35,13 +35,17 @@ public final class BrowserUtils {
   }
 
   public static void openExternalBrowser(String url, Display display) {
-    display.asyncExec(() -> {
-      try {
-        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(url));
-      } catch (PartInitException | MalformedURLException e) {
-        SonarLintLogger.get().error("Unable to open external browser", e);
-      }
-    });
+    // For unit tests we want to disable the actual browser opening
+    var externalBrowserDisabled = System.getProperty("sonarlint.internal.externalBrowser.disabled");
+    if (externalBrowserDisabled == null) {
+      display.asyncExec(() -> {
+        try {
+          PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(url));
+        } catch (PartInitException | MalformedURLException e) {
+          SonarLintLogger.get().error("Unable to open external browser", e);
+        }
+      });
+    }
   }
 
   public static void addLinkListener(Browser browser) {

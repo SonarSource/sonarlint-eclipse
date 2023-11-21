@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="provider"/>
+            <element ref="enhancer"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>

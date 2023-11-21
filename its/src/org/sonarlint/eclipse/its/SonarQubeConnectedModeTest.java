@@ -20,21 +20,16 @@
 package org.sonarlint.eclipse.its;
 
 import com.google.gson.Gson;
-import com.sonar.orchestrator.build.MavenBuild;
 import com.sonar.orchestrator.container.Edition;
 import com.sonar.orchestrator.container.Server;
 import com.sonar.orchestrator.http.HttpMethod;
 import com.sonar.orchestrator.junit4.OrchestratorRule;
-import com.sonar.orchestrator.locator.URLLocation;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
+import java.util.Map;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
@@ -54,12 +49,10 @@ import org.eclipse.swt.widgets.Label;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assume;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.reddeer.conditions.RuleDescriptionViewIsLoaded;
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssuePeriod;
@@ -71,16 +64,13 @@ import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintTaintVulnerabilitiesView;
 import org.sonarlint.eclipse.its.reddeer.wizards.MarkIssueAsDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
-import org.sonarlint.eclipse.its.reddeer.wizards.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
 import org.sonarqube.ws.QualityProfiles.SearchWsResponse.QualityProfile;
 import org.sonarqube.ws.client.PostRequest;
-import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.permission.AddGroupWsRequest;
 import org.sonarqube.ws.client.permission.RemoveGroupWsRequest;
 import org.sonarqube.ws.client.project.CreateRequest;
 import org.sonarqube.ws.client.qualityprofile.SearchWsRequest;
-import org.sonarqube.ws.client.setting.SetRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -88,16 +78,17 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertTrue;
 
-public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
+public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTest {
   private static final String S106 = "S106";
-  private static final String SECRET_JAVA_PROJECT_NAME = "secret-java";
   private static final String JAVA_SIMPLE_PROJECT_KEY = "java-simple";
+  private static final String SECRET_JAVA_PROJECT_NAME = "secret-java";
   private static final String MAVEN2_PROJECT_KEY = "maven2";
   private static final String MAVEN_TAINT_PROJECT_KEY = "maven-taint";
   private static final String INSUFFICIENT_PERMISSION_USER = "iHaveNoRights";
   private static final MarkerDescriptionMatcher ISSUE_MATCHER = new MarkerDescriptionMatcher(
     CoreMatchers.containsString("System.out"));
-
+  
+  /** Orchestrator to not be re-used in order for ITs to not fail -> always use latest release locally (not LTS) */
   @ClassRule
   public static final OrchestratorRule orchestrator = OrchestratorRule.builderEnv()
     .defaultForceAuthentication()
@@ -105,39 +96,20 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     .keepBundledPlugins()
     .setEdition(Edition.DEVELOPER)
     .activateLicense()
-    .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[9.9]"))
+    .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE"))
     // Ensure SSE are processed correctly just after SQ startup
     .setServerProperty("sonar.pushevents.polling.initial.delay", "2")
     .setServerProperty("sonar.pushevents.polling.period", "1")
     .setServerProperty("sonar.pushevents.polling.last.timestamp", "1")
     .build();
-
-  protected static WsClient adminWsClient;
-
+  
   @BeforeClass
   public static void prepare() {
-    adminWsClient = newAdminWsClient(orchestrator.getServer());
-    adminWsClient.settings().set(SetRequest.builder().setKey("sonar.forceAuthentication").setValue("true").build());
-    adminWsClient.projects()
-      .create(CreateRequest.builder()
-        .setName(JAVA_SIMPLE_PROJECT_KEY)
-        .setKey(JAVA_SIMPLE_PROJECT_KEY).build());
-    try {
-      orchestrator.getServer().restoreProfile(
-        URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint.xml"), null))));
-      orchestrator.getServer().restoreProfile(
-        URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint-new-code.xml"), null))));
-    } catch (IOException e) {
-      fail("Unable to load quality profile", e);
-    }
+    prepare(orchestrator);
+    adminWsClient.projects().create(CreateRequest.builder()
+      .setName(JAVA_SIMPLE_PROJECT_KEY)
+      .setKey(JAVA_SIMPLE_PROJECT_KEY).build());
     orchestrator.getServer().associateProjectToQualityProfile(JAVA_SIMPLE_PROJECT_KEY, "java", "SonarLint IT Java");
-  }
-
-  @Before
-  public void cleanBindings() {
-    var bindingsView = new BindingsView();
-    bindingsView.open();
-    bindingsView.removeAllBindings();
   }
 
   @After
@@ -252,7 +224,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", SECRET_JAVA_PROJECT_NAME);
 
-    createConnectionAndBindProject(SECRET_JAVA_PROJECT_NAME);
+    createConnectionAndBindProject(orchestrator, SECRET_JAVA_PROJECT_NAME);
 
     // Remove binding suggestion notification
     var bindingSuggestionNotificationShell = new DefaultShell("SonarLint Binding Suggestion");
@@ -277,7 +249,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/java-simple", JAVA_SIMPLE_PROJECT_KEY);
 
-    createConnectionAndBindProject(JAVA_SIMPLE_PROJECT_KEY);
+    createConnectionAndBindProject(orchestrator, JAVA_SIMPLE_PROJECT_KEY);
 
     // Remove binding suggestion notification
     var bindingSuggestionNotificationShell = new DefaultShell("SonarLint Binding Suggestion");
@@ -322,7 +294,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     var rootProject = importExistingProjectIntoWorkspace("java/java-simple", JAVA_SIMPLE_PROJECT_KEY);
 
-    createConnectionAndBindProject(JAVA_SIMPLE_PROJECT_KEY);
+    createConnectionAndBindProject(orchestrator, JAVA_SIMPLE_PROJECT_KEY);
 
     // Remove binding suggestion notification
     var bindingSuggestionNotificationShell = new DefaultShell("SonarLint Binding Suggestion");
@@ -377,11 +349,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     onTheFlyView.open();
 
     // 3) Run SonarQube analysis
-    orchestrator.executeBuild(MavenBuild.create(new File("projects", "java/maven2/pom.xml"))
-      .setCleanPackageSonarGoals()
-      .setProperty("sonar.login", Server.ADMIN_LOGIN)
-      .setProperty("sonar.password", Server.ADMIN_PASSWORD)
-      .setProperty("sonar.projectKey", MAVEN2_PROJECT_KEY));
+    runMavenBuild(orchestrator, MAVEN2_PROJECT_KEY, "projects", "java/maven2/pom.xml", Map.of());
 
     // 4) Add new user to SonarQube
     adminWsClient.users().create(org.sonarqube.ws.client.user.CreateRequest.builder()
@@ -463,12 +431,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
         .setName(MAVEN_TAINT_PROJECT_KEY)
         .setKey(MAVEN_TAINT_PROJECT_KEY).build());
     orchestrator.getServer().associateProjectToQualityProfile(MAVEN_TAINT_PROJECT_KEY, "java", "SonarLint IT New Code");
-
-    orchestrator.executeBuild(MavenBuild.create(new File("projects", "java/maven-taint/pom.xml"))
-      .setCleanPackageSonarGoals()
-      .setProperty("sonar.login", Server.ADMIN_LOGIN)
-      .setProperty("sonar.password", Server.ADMIN_PASSWORD)
-      .setProperty("sonar.projectKey", MAVEN_TAINT_PROJECT_KEY));
+    
+    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml", Map.of());
 
     // 2) import project / check that new code period preference does nothing in standalone mode
     new JavaPerspective().open();
@@ -509,21 +473,14 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     bindingsView.removeAllBindings();
 
     setNewCodePeriodToPreviousVersion(MAVEN_TAINT_PROJECT_KEY);
-
-    orchestrator.executeBuild(MavenBuild.create(new File("projects", "java/maven-taint/pom.xml"))
-      .setCleanPackageSonarGoals()
-      .setProperty("sonar.projectVersion", "1.1-SNAPSHOT")
-      .setProperty("sonar.login", Server.ADMIN_LOGIN)
-      .setProperty("sonar.password", Server.ADMIN_PASSWORD)
-      .setProperty("sonar.projectKey", MAVEN_TAINT_PROJECT_KEY));
+    
+    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml",
+      Map.of("sonar.projectVersion", "1.1-SNAPSHOT"));
+    
     // Because of a bug in SQ that returns the techncial issue creation date, we have to run another analysis
     // to be sure issues will be before the new code period
-    orchestrator.executeBuild(MavenBuild.create(new File("projects", "java/maven-taint/pom.xml"))
-      .setCleanPackageSonarGoals()
-      .setProperty("sonar.projectVersion", "1.2-SNAPSHOT")
-      .setProperty("sonar.login", Server.ADMIN_LOGIN)
-      .setProperty("sonar.password", Server.ADMIN_PASSWORD)
-      .setProperty("sonar.projectKey", MAVEN_TAINT_PROJECT_KEY));
+    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml",
+      Map.of("sonar.projectVersion", "1.2-SNAPSHOT"));
 
     // 5) bind to project on SonarQube / check that new code period preference is working
     createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
@@ -535,10 +492,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).isEmpty());
     await().untilAsserted(() -> assertThat(taintVulnerabilitiesView.getItems()).isEmpty());
-  }
-
-  private static void createConnectionAndBindProject(String projectKey) {
-    createConnectionAndBindProject(orchestrator, projectKey, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
   }
 
   private static QualityProfile getQualityProfile(String projectKey, String qualityProfileName) {
@@ -577,61 +530,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   private static String javaRuleKey(String key) {
     // Starting from SonarJava 6.0 (embedded in SQ 8.2), rule repository has been changed
     return orchestrator.getServer().version().isGreaterThanOrEquals(8, 2) ? ("java:" + key) : ("squid:" + key);
-  }
-
-  protected static void createConnectionAndBindProject(OrchestratorRule orchestrator, String projectKey,
-    String username, String password) {
-    var wizard = new ServerConnectionWizard();
-    wizard.open();
-    new ServerConnectionWizard.ServerTypePage(wizard).selectSonarQube();
-    wizard.next();
-
-    var serverUrlPage = new ServerConnectionWizard.ServerUrlPage(wizard);
-    serverUrlPage.setUrl(orchestrator.getServer().getUrl());
-    wizard.next();
-
-    var authenticationModePage = new ServerConnectionWizard.AuthenticationModePage(wizard);
-    authenticationModePage.selectUsernamePasswordMode();
-    wizard.next();
-
-    var authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
-    authenticationPage.setUsername(username);
-    authenticationPage.setPassword(password);
-    wizard.next();
-
-    // as login can take time, wait for the next page to appear
-    new WaitUntil(new WidgetIsFound(Label.class, new WithTextMatcher("SonarQube Connection Identifier")));
-    var connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
-
-    connectionNamePage.setConnectionName("test");
-    wizard.next();
-
-    if (orchestrator.getServer().version().isGreaterThanOrEquals(8, 7)) {
-      // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
-      wizard.next();
-    }
-    wizard.finish();
-
-    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
-
-    var projectBindingWizard = new ProjectBindingWizard();
-    var projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
-    projectsToBindPage.clickAdd();
-
-    var projectSelectionDialog = new ProjectSelectionDialog();
-    projectSelectionDialog.setProjectName(projectKey);
-    projectSelectionDialog.ok();
-
-    projectBindingWizard.next();
-    var serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
-    serverProjectSelectionPage.waitForProjectsToBeFetched();
-    serverProjectSelectionPage.setProjectKey(projectKey);
-    projectBindingWizard.finish();
-
-    var bindingsView = new BindingsView();
-    bindingsView.open();
-    bindingsView.updateAllProjectBindings();
-    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
 
   private static void setNewCodePeriodToPreviousVersion(String projectKey) {

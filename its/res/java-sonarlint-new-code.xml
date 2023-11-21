@@ -9,6 +9,18 @@
       <key>S101</key>
       <priority>MAJOR</priority>
     </rule>
+    <!-- System.out -->
+    <rule>
+      <repositoryKey>java</repositoryKey>
+      <key>S106</key>
+      <priority>MAJOR</priority>
+    </rule>
+    <!-- Remove unused variable -->
+    <rule>
+      <repositoryKey>java</repositoryKey>
+      <key>S1481</key>
+      <priority>MINOR</priority>
+    </rule>
     <!-- try-with-resource for Closeable -->
     <rule>
       <repositoryKey>java</repositoryKey>

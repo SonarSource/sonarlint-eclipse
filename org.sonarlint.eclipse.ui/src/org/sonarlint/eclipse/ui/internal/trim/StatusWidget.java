@@ -30,13 +30,11 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsoleConstants;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -44,6 +42,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.BindingsView;
 import org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView;
 import org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencePage;
+import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
 import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
 import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
@@ -164,10 +163,7 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
 
     @Override
     public void run() {
-      var pref = PreferencesUtil.createPreferenceDialogOn(Display.getCurrent().getActiveShell(), SonarLintPreferencePage.ID, null, null);
-      if (pref != null) {
-        pref.open();
-      }
+      PlatformUtils.showPreferenceDialog(SonarLintPreferencePage.ID).open();
     }
   }
 

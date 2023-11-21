@@ -17,26 +17,28 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.its.reddeer.conditions;
+package org.sonarlint.eclipse.its.reddeer.wizards;
 
-import org.eclipse.reddeer.common.condition.AbstractWaitCondition;
-import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
+import org.eclipse.reddeer.swt.impl.button.NoButton;
+import org.eclipse.reddeer.swt.impl.button.OkButton;
+import org.eclipse.reddeer.swt.impl.button.YesButton;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 
-public class RuleDescriptionViewIsLoaded extends AbstractWaitCondition {
-  private final RuleDescriptionView ruleDescriptionView;
-
-  public RuleDescriptionViewIsLoaded(RuleDescriptionView ruleDescriptionView) {
-    this.ruleDescriptionView = ruleDescriptionView;
+/** We use {@link org.eclipse.jface.dialogs.MessageDialog} to display messages on that feature */
+public class OpenInIdeDialog extends DefaultShell {
+  public OpenInIdeDialog() {
+    super("Open in IDE");
   }
-
-  @Override
-  public boolean test() {
-    ruleDescriptionView.open();
-    return !"Loading...".equals(ruleDescriptionView.getRuleName().getText()) && !ruleDescriptionView.getFirstBrowser().getText().isBlank();
+  
+  public void ok() {
+    new OkButton(this).click();
   }
-
-  @Override
-  public String description() {
-    return "Rule description is loading";
+  
+  public void no() {
+    new NoButton(this).click();
+  }
+  
+  public void yes() {
+    new YesButton(this).click();
   }
 }

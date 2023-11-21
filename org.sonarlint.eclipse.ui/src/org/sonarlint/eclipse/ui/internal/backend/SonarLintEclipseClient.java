@@ -55,6 +55,8 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
 import org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView;
 import org.sonarlint.eclipse.ui.internal.job.BackendProgressJobScheduler;
+import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
+import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueContext;
 import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
@@ -334,9 +336,36 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
     });
   }
 
+  /**
+   *  Before this method is even invoked, some magic already interacts with Eclipse: When there is no connection to
+   *  SonarQube, it will automatically launch the "Connect to SonarQube or SonarCloud" wizard. Some magic will also ask
+   *  the user to find the correct project if there is currently no binding to the SonarQube project.
+   *  -> both cases must not be tested afterwards
+   */
   @Override
   public void showIssue(ShowIssueParams params) {
-    // Not yet implemented
+    var configScopeId = params.getConfigScopeId();
+
+    // We were just asked to find the correct project, this cannot happen -> Only log the information
+    var projectOpt = resolveProject(configScopeId);
+    if (projectOpt.isEmpty()) {
+      SonarLintLogger.get().error("Open in IDE: The project '" + configScopeId
+        + "' was removed in the middle of running the action on '" + params + "'");
+      return;
+    }
+    var project = projectOpt.get();
+    
+    // We were just asked to connect and create a binding, this cannot happen -> Only log the information
+    var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+    if (bindingOpt.isEmpty()) {
+      SonarLintLogger.get().error("Open in IDE: The project '" + configScopeId
+        + "' removed its binding in the middle of running the action on '" + params + "'");
+      return;
+    }
+    
+    // Handle expensive checks and actual logic in separate job to not block the thread
+    new OpenIssueInEclipseJob(new OpenIssueContext("Open in IDE", params, project, bindingOpt.get()))
+      .schedule();
   }
 
   @Override

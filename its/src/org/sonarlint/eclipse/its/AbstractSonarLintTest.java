@@ -61,6 +61,7 @@ import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.shell.WorkbenchShell;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -72,6 +73,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.its.reddeer.preferences.FileAssociationsPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.RuleConfigurationPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences;
+import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssueFilter;
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssuePeriod;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole.ShowConsoleOption;
@@ -101,6 +103,20 @@ public abstract class AbstractSonarLintTest {
 
   @ClassRule
   public static final TemporaryFolder tempFolder = new TemporaryFolder();
+  
+  @AfterClass
+  public static final void cleanupAfterClass() {
+    // remove warning about soon unsupported version (there can be multiple)
+    if ("oldest".equals(System.getProperty("target.platform"))) {
+      while (true) {
+        try {
+          new DefaultShell("SonarQube - Soon unsupported version").close();
+        } catch (Exception ignored) {
+          break;
+        }
+      }
+    }
+  }
 
   @After
   public final void cleanup() {
@@ -112,17 +128,6 @@ public abstract class AbstractSonarLintTest {
     try {
       new DefaultShell("Default Eclipse preferences for PyDev").close();
     } catch (Exception ignored) {
-    }
-    
-    // remove warning about soon unsupported version (there can be multiple)
-    if ("oldest".equals(System.getProperty("target.platform"))) {
-      while (true) {
-        try {
-          new DefaultShell("SonarQube - Soon unsupported version").close();
-        } catch (Exception ignored) {
-          break;
-        }
-      }
     }
 
     var consoleView = new SonarLintConsole();
@@ -147,6 +152,15 @@ public abstract class AbstractSonarLintTest {
     var preferences = new SonarLintPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
     preferences.setNewCodePreference(period);
+    preferenceDialog.ok();
+  }
+  
+  protected static void setIssueFilterPreference(IssueFilter filter) {
+    var preferenceDialog = new WorkbenchPreferenceDialog();
+    preferenceDialog.open();
+    var preferences = new SonarLintPreferences(preferenceDialog);
+    preferenceDialog.select(preferences);
+    preferences.setIssueFilterPreference(filter);
     preferenceDialog.ok();
   }
 
@@ -180,6 +194,9 @@ public abstract class AbstractSonarLintTest {
   public static final void beforeClass() throws BackingStoreException {
     System.out.println("Eclipse: " + platformVersion());
     System.out.println("GTK: " + System.getProperty("org.eclipse.swt.internal.gtk.version"));
+    
+    // Integration tests should not open the external browser
+    System.setProperty("sonarlint.internal.externalBrowser.disabled", "true");
 
     ROOT.node("servers").removeNode();
     ROOT_SECURE.node("servers").removeNode();
