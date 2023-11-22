@@ -61,7 +61,6 @@ import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
 import org.sonarlint.eclipse.ui.internal.job.PeriodicStoragesSynchronizerJob;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
-import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
 import org.sonarlint.eclipse.ui.internal.popup.SurveyPopup;
 import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
@@ -109,22 +108,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     @Override
     public void error(String msg, boolean fromAnalyzer) {
       if (PlatformUI.isWorkbenchRunning()) {
-        doAsyncInUiThread(() -> {
-          if (isNodeCommandException(msg)) {
-            getSonarConsole().info(msg, false);
-            var popup = new MissingNodePopup();
-            popup.setFadingEnabled(false);
-            popup.setDelayClose(0L);
-            popup.open();
-          } else {
-            getSonarConsole().error(msg, fromAnalyzer);
-          }
-        });
+        doAsyncInUiThread(() -> getSonarConsole().error(msg, fromAnalyzer));
       }
-    }
-
-    private boolean isNodeCommandException(String msg) {
-      return msg.contains("NodeCommandException");
     }
 
     @Override
