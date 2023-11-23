@@ -116,6 +116,9 @@ public abstract class AbstractSonarLintTest {
         }
       }
     }
+    
+    // File associations must be set explicitly on macOS!
+    restoreDefaultFileAssociationConfiguration();
   }
 
   @After
@@ -136,9 +139,7 @@ public abstract class AbstractSonarLintTest {
 
     new WorkbenchShell().maximize();
     new CleanWorkspaceRequirement().fulfill();
-
-    // File associations must be set explicitly on macOS!
-    restoreDefaultFileAssociationConfiguration();
+    
     restoreDefaultRulesConfiguration();
 
     setNewCodePreference(IssuePeriod.ALL_TIME);
@@ -347,7 +348,7 @@ public abstract class AbstractSonarLintTest {
     preferencePage.ok();
   }
 
-  void restoreDefaultFileAssociationConfiguration() {
+  static void restoreDefaultFileAssociationConfiguration() {
     var preferencePage = FileAssociationsPreferences.open();
     preferencePage.resetFileAssociation();
     preferencePage.ok();
