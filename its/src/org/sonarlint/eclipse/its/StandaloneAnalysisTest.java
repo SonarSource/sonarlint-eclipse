@@ -35,7 +35,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyDialog;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
@@ -51,7 +50,6 @@ import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.hamcrest.core.StringContains;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.sonarlint.eclipse.its.reddeer.conditions.OnTheFlyViewIsEmpty;
@@ -269,8 +267,10 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   // Need PyDev
   @Test
   @Category(RequiresExtraDependency.class)
-  @Ignore("PyDev preventing Java files to be opened using double click: https://bugs.eclipse.org/bugs/show_bug.cgi?id=579282")
   public void shouldAnalysePython() {
+    // The PydevPerspective is not working correctly in older PyDev versions, therefore only run in iBuilds
+    Assume.assumeTrue("ibuilds".equals(System.getProperty("target.platform", "ibuilds")));
+    
     new PydevPerspective().open();
     importExistingProjectIntoWorkspace("python");
 
