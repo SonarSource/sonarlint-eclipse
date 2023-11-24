@@ -103,7 +103,7 @@ validate_task:
   eks_container:
     <<: *BUILDER_CONTAINER_DEFINITION
     cpu: 4
-    memory: 2G
+    memory: 4G
   env:
     DEPLOY_PULL_REQUEST: false
     DISPLAY: :10
@@ -204,7 +204,7 @@ sonarqube_task:
   eks_container:
     <<: *BUILDER_CONTAINER_DEFINITION
     cpu: 4
-    memory: 2G
+    memory: 4G
   env:
     DEPLOY_PULL_REQUEST: false
     DISPLAY: :10
