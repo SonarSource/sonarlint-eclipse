@@ -17,5 +17,31 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-@org.eclipse.jdt.annotation.NonNullByDefault
-package org.sonarlint.eclipse.ui.internal.documentation;
+package org.sonarlint.eclipse.core.internal.telemetry;
+
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
+
+public enum LinkTelemetry {
+
+  CONNECTED_MODE_DOCS("connectedModeDocs", SonarLintDocumentation.CONNECTED_MODE_LINK),
+  COMPARE_SERVER_PRODUCTS("compareServerProducts", SonarLintDocumentation.COMPARE_SERVER_PRODUCTS_LINK),
+  SONARQUBE_EDITIONS_DOWNLOADS("sonarQubeEditionsDownloads", SonarLintDocumentation.SONARQUBE_EDITIONS_LINK),
+  SONARCLOUD_PRODUCT_PAGE("sonarCloudProductPage", SonarLintDocumentation.SONARCLOUD_PRODUCT_LINK);
+
+  private final String linkId;
+  private final String url;
+
+  LinkTelemetry(String linkId, String url) {
+    this.linkId = linkId;
+    this.url = url;
+  }
+
+  public String getLinkId() {
+    return this.linkId;
+  }
+
+  public String getUrl() {
+    return this.url;
+  }
+
+}

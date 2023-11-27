@@ -58,6 +58,7 @@ public final class Messages extends NLS {
   public static String PropertyAndPreferencePage_showprojectspecificsettings_label;
 
   public static String ServersView_noServers;
+  public static String ServersView_noServers_connectedMode;
   public static String jobInitializingServersView;
   public static String viewInitializing;
 

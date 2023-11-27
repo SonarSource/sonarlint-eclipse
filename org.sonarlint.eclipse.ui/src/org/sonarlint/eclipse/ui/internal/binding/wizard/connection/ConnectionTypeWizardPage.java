@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.internal.telemetry.LinkTelemetry;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.wizard.PojoPropertiesCompat;
@@ -50,7 +50,6 @@ public class ConnectionTypeWizardPage extends WizardPage {
 
   @Override
   public void createControl(Composite parent) {
-
     var radioButtonGroupContainer = new Composite(parent, SWT.NONE);
     var layout = new GridLayout();
     layout.numColumns = 2;
@@ -60,24 +59,43 @@ public class ConnectionTypeWizardPage extends WizardPage {
     var sonarCloudButton = new Button(radioButtonGroupContainer, SWT.RADIO);
     sonarCloudButton.setImage(SonarLintImages.IMG_SONARCLOUD_LOGO);
 
-    var onPremiseButton = new Button(radioButtonGroupContainer, SWT.RADIO);
-    onPremiseButton.setImage(SonarLintImages.IMG_SONARQUBE_LOGO);
+    var sonarQubeButton = new Button(radioButtonGroupContainer, SWT.RADIO);
+    sonarQubeButton.setImage(SonarLintImages.IMG_SONARQUBE_LOGO);
 
-    var gd = new GridData(GridData.FILL_BOTH);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.widthHint = 300;
-    var sonarCloudLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
-    sonarCloudLabel.setText("Connect to <a>the online service</a>");
+    gd.heightHint = 80;
+
+    var sonarCloudLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
+    sonarCloudLabel.setText("A Software-as-a-Service (SaaS) tool that easily integrates into the cloud DevOps platforms "
+      + "and extends the CI/CD workflow to systematically help developers and organizations deliver Clean Code.");
     sonarCloudLabel.setLayoutData(gd);
-    sonarCloudLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowser(SonarLintUtils.getSonarCloudUrl(), e.display));
-    var onPremiseLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
-    onPremiseLabel.setText("Connect to a server");
-    onPremiseLabel.setLayoutData(gd);
+
+    var sonarQubeLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
+    sonarQubeLabel.setText("An Open-source, self-managed tool that easily integrates into the developers' "
+      + "CI/CD pipeline and DevOps platform to systematically help developers and organizations deliver Clean Code.");
+    sonarQubeLabel.setLayoutData(gd);
+
+    var sonarCloudFreeLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
+    sonarCloudFreeLabel.setText("<a>SonarCloud</a> is entirely free for open source projects");
+    sonarCloudFreeLabel.setLayoutData(gd);
+    sonarCloudFreeLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowserWithTelemetry(LinkTelemetry.SONARCLOUD_PRODUCT_PAGE, e.display));
+
+    var sonarQubeFreeLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
+    sonarQubeFreeLabel.setText("SonarQube offers a free <a>Community Edition</a>");
+    sonarQubeFreeLabel.setLayoutData(gd);
+    sonarQubeFreeLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowserWithTelemetry(LinkTelemetry.SONARQUBE_EDITIONS_DOWNLOADS, e.display));
+
+    var comparisonLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
+    comparisonLabel.setText("Discover which option is the best for your team <a>here</a>");
+    comparisonLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowserWithTelemetry(LinkTelemetry.COMPARE_SERVER_PRODUCTS, e.display));
+    comparisonLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     var sonarCloudSelection = WidgetPropertiesCompat.buttonSelection().observe(sonarCloudButton);
-    var onPremSelection = WidgetPropertiesCompat.buttonSelection().observe(onPremiseButton);
+    var sonarQubeSelection = WidgetPropertiesCompat.buttonSelection().observe(sonarQubeButton);
     var selectObservable = new SelectObservableValue<>(ServerConnectionModel.ConnectionType.class);
     selectObservable.addOption(ServerConnectionModel.ConnectionType.SONARCLOUD, sonarCloudSelection);
-    selectObservable.addOption(ServerConnectionModel.ConnectionType.ONPREMISE, onPremSelection);
+    selectObservable.addOption(ServerConnectionModel.ConnectionType.ONPREMISE, sonarQubeSelection);
     var dataBindingContext = new DataBindingContext();
     dataBindingContext.bindValue(selectObservable, PojoPropertiesCompat.value(ServerConnectionModel.PROPERTY_CONNECTION_TYPE).observe(model));
 

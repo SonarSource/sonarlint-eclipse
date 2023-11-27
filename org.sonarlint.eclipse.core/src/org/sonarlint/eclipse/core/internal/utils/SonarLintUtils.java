@@ -97,7 +97,7 @@ public class SonarLintUtils {
       && config.getProjectBinding().isPresent()
       && facade.getId().equals(config.getProjectBinding().get().connectionId());
   }
-  
+
   /**
    *  Check if a project has a connection to a SonarQube 10.2+ instance can therefore offer the user the option to
    *  transition anticipated issues. If the project is not bound to any connection, just log it and provide an error
@@ -117,10 +117,10 @@ public class SonarLintUtils {
         SonarLintLogger.get().info("The project '" + project.getName() + "' is not bound either SonarQube or SonarCloud");
       }
     }
-    
+
     return viableForStatusChange;
   }
-  
+
   /**
    *  Wrapper around {@link org.eclipse.core.runtime.Adapters#adapt(Object, Class)} in order to log debug information
    *  which we then can use when debugging / investigating issues.
@@ -132,7 +132,7 @@ public class SonarLintUtils {
       SonarLintLogger.get().debug("'" + sourceObject.toString() + "' could not be adapted to '"
         + adapter.toString() + "'");
     }
-	
+
     return adapted;
   }
 }

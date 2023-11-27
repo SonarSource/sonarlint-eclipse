@@ -21,9 +21,9 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 /** Popup indicating that there is a connection in the workspace to a soon unsupported SonarQube version */

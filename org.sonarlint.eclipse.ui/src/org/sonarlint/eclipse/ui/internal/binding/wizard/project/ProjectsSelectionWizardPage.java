@@ -37,8 +37,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.ide.IDE.SharedImages;
@@ -77,12 +79,31 @@ public class ProjectsSelectionWizardPage extends AbstractProjectBindingWizardPag
 
   @Override
   protected void doCreateControl(Composite container) {
-    projectsViewer = new TableViewer(container, SWT.MULTI | SWT.BORDER);
+    var bindingContainer = new Composite(container, SWT.NONE);
+    var layout = new GridLayout();
+    layout.numColumns = 1;
+    bindingContainer.setLayout(layout);
+    var gd = new GridData(GridData.FILL_BOTH);
+    gd.widthHint = 500;
+
+    var bindingLabel = new Label(bindingContainer, SWT.WRAP);
+    bindingLabel.setText("Complete your Connected Mode setup by binding your local project to your SonarQube or SonarCloud project "
+      + "to benefit from the same rules and settings that are used to inspect the project on the server.");
+    bindingLabel.setLayoutData(gd);
+
+    var tableContainer = new Composite(bindingContainer, SWT.NONE);
+    var tableLayout = new GridLayout();
+    tableLayout.numColumns = 2;
+    tableContainer.setLayout(tableLayout);
+    projectsViewer = new TableViewer(tableContainer, SWT.MULTI | SWT.BORDER);
     projectsViewer.addSelectionChangedListener(event -> updateButtonsState());
     projectsViewer.setContentProvider(new ArrayContentProvider());
     projectsViewer.setLabelProvider(new SonarLintProjectLabelProvider());
     projectsViewer.setInput(new ArrayList<>(model.getEclipseProjects()));
-    projectsViewer.getTable().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3));
+    var gdTable = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
+    gdTable.widthHint = 500;
+    gdTable.heightHint = 200;
+    projectsViewer.getTable().setLayoutData(gdTable);
 
     var dataBindingContext = new DataBindingContext();
     observableInput = ViewersObservablesCompat.observeInput(projectsViewer);
@@ -95,7 +116,7 @@ public class ProjectsSelectionWizardPage extends AbstractProjectBindingWizardPag
 
     WizardPageSupport.create(this, dataBindingContext);
 
-    var btnAddProject = new Button(container, SWT.NONE);
+    var btnAddProject = new Button(tableContainer, SWT.NONE);
     btnAddProject.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
@@ -106,7 +127,7 @@ public class ProjectsSelectionWizardPage extends AbstractProjectBindingWizardPag
     btnAddProject.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
     btnAddProject.setText("Add...");
 
-    btnRemove = new Button(container, SWT.NONE);
+    btnRemove = new Button(tableContainer, SWT.NONE);
     btnRemove.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {

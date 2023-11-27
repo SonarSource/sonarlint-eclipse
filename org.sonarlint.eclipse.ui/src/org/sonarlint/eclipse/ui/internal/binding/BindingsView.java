@@ -37,7 +37,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -55,9 +55,11 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeLifecycleListener;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeListener;
+import org.sonarlint.eclipse.core.internal.telemetry.LinkTelemetry;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 /**
@@ -107,14 +109,15 @@ public class BindingsView extends CommonNavigator {
   private Control createDefaultPage(FormToolkit kit) {
     var form = kit.createForm(book);
     var body = form.getBody();
-    var layout = new GridLayout(2, false);
+    var layout = new RowLayout();
+    layout.center = true;
     body.setLayout(layout);
+    var layoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+    body.setLayoutData(layoutData);
 
     var hlink = new Link(body, SWT.NONE);
     hlink.setText(Messages.ServersView_noServers);
     hlink.setBackground(book.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-    var gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
-    hlink.setLayoutData(gd);
     hlink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
@@ -124,6 +127,10 @@ public class BindingsView extends CommonNavigator {
         }
       }
     });
+
+    var connectedModeLabel = new Link(body, SWT.NONE);
+    connectedModeLabel.setText(Messages.ServersView_noServers_connectedMode);
+    connectedModeLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowserWithTelemetry(LinkTelemetry.CONNECTED_MODE_DOCS, e.display));
 
     // Create the context menu for the default page
     final var commonViewer = this.getCommonViewer();
@@ -151,6 +158,7 @@ public class BindingsView extends CommonNavigator {
         // the context menu will not come up
         body.setMenu(menu);
         hlink.setMenu(menu);
+        connectedModeLabel.setMenu(menu);
       }
     }
 
@@ -261,11 +269,9 @@ public class BindingsView extends CommonNavigator {
     for (var server : SonarLintCorePlugin.getServersManager().getServers()) {
       server.addConnectedEngineListener(serverListener);
     }
-    
     // add listener for when project is opened / closed / deleted
     projectListener = event -> {
       var shouldRefresh = new AtomicBoolean(false);
-      
       if (event.getType() == IResourceChangeEvent.PRE_CLOSE
         || event.getType() == IResourceChangeEvent.PRE_DELETE) {
         shouldRefresh.set(true);
@@ -278,8 +284,8 @@ public class BindingsView extends CommonNavigator {
               //       correctly binded.
               for (var child : delta.getAffectedChildren(IResourceDelta.CHANGED)) {
                 var resource = child.getResource();
-                
-                if (((resource.getType() & IResource.PROJECT) != 0) 
+
+                if (((resource.getType() & IResource.PROJECT) != 0)
                   && resource.getProject().isOpen()
                   && ((child.getFlags() & IResourceDelta.OPEN) != 0)) {
                   shouldRefresh.set(true);
@@ -287,21 +293,19 @@ public class BindingsView extends CommonNavigator {
                 }
               }
             }
-            
             return false;
           });
         } catch (CoreException err) {
           SonarLintLogger.get().error("Error while updating the SonarLint Bindings after opening a project", err);
         }
       }
-      
       if (shouldRefresh.get()) {
         refreshView();
       }
     };
     ResourcesPlugin.getWorkspace().addResourceChangeListener(projectListener);
   }
-  
+
   private void refreshView() {
     refreshConnectionState();
     for (var server : SonarLintCorePlugin.getServersManager().getServers()) {
@@ -318,7 +322,7 @@ public class BindingsView extends CommonNavigator {
 
   protected void removeServer(final IConnectedEngineFacade server) {
     Display.getDefault().asyncExec(() -> {
-      tableViewer.remove(tableViewer.getInput(), new Object[] { server });
+      tableViewer.remove(tableViewer.getInput(), new Object[] {server});
       toggleDefaultPage();
     });
   }
