@@ -178,7 +178,7 @@ public class SonarLintTelemetry {
       } catch (Exception err) {
         SonarLintLogger.get().error("Loading all standalone rules for telemetry failed", err);
       }
-      
+
       return Collections.emptySet();
     }
 
@@ -262,6 +262,12 @@ public class SonarLintTelemetry {
   public void addQuickFixAppliedForRule(String ruleKey) {
     if (enabled()) {
       telemetry.addQuickFixAppliedForRule(ruleKey);
+    }
+  }
+
+  public void helpAndFeedbackLinkClicked(String itemId) {
+    if (enabled()) {
+      telemetry.helpAndFeedbackLinkClicked(itemId);
     }
   }
 

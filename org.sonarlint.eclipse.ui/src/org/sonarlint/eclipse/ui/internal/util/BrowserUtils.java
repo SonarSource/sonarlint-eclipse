@@ -28,6 +28,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.telemetry.LinkTelemetry;
 
 public final class BrowserUtils {
   private BrowserUtils() {
@@ -46,6 +48,15 @@ public final class BrowserUtils {
         }
       });
     }
+  }
+
+  /**
+   * In scope of MMF-3451, we want to log the number of clicks on links related to the topic of
+   * "connected mode setup UI helps users discover the value of Sonar solution and connected mode"
+   */
+  public static void openExternalBrowserWithTelemetry(LinkTelemetry link, Display display) {
+    SonarLintCorePlugin.getTelemetry().helpAndFeedbackLinkClicked(link.getLinkId());
+    openExternalBrowser(link.getUrl(), display);
   }
 
   public static void addLinkListener(Browser browser) {
