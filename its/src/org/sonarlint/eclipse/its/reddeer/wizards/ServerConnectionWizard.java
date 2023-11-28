@@ -26,6 +26,7 @@ import org.eclipse.reddeer.eclipse.selectionwizard.NewMenuWizard;
 import org.eclipse.reddeer.jface.wizard.WizardPage;
 import org.eclipse.reddeer.swt.impl.button.CheckBox;
 import org.eclipse.reddeer.swt.impl.button.RadioButton;
+import org.eclipse.reddeer.swt.impl.label.DefaultLabel;
 import org.eclipse.reddeer.swt.impl.table.DefaultTable;
 import org.eclipse.reddeer.swt.impl.text.DefaultText;
 import org.eclipse.swt.widgets.Table;
@@ -74,7 +75,9 @@ public class ServerConnectionWizard extends NewMenuWizard {
   }
 
   public static class AuthenticationPage extends WizardPage {
-
+    public final String DEPRECATION_MESSAGE = "Authentication via username and password is deprecated and will "
+      + "be removed in the future. Please use a token instead.";
+    
     public AuthenticationPage(ReferencedComposite referencedComposite) {
       super(referencedComposite);
     }
@@ -89,6 +92,10 @@ public class ServerConnectionWizard extends NewMenuWizard {
 
     public void setPassword(String password) {
       new DefaultText(this, 1).setText(password);
+    }
+    
+    public String getDeprecationMessage() {
+      return new DefaultLabel(this, 2).getText();
     }
   }
 

@@ -65,6 +65,7 @@ import org.sonarlint.eclipse.its.reddeer.views.SonarLintTaintVulnerabilitiesView
 import org.sonarlint.eclipse.its.reddeer.wizards.MarkIssueAsDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
+import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard.AuthenticationPage;
 import org.sonarqube.ws.QualityProfiles.SearchWsResponse.QualityProfile;
 import org.sonarqube.ws.client.PostRequest;
 import org.sonarqube.ws.client.permission.AddGroupWsRequest;
@@ -154,6 +155,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     assertThat(wizard.isNextEnabled()).isFalse();
     authenticationPage.setPassword("wrong");
     assertThat(wizard.isNextEnabled()).isTrue();
+    
+    // until we change the ITs with the removal of the username / password authentication we check here once
+    assertThat(authenticationPage.getDeprecationMessage()).isEqualTo(authenticationPage.DEPRECATION_MESSAGE);
 
     wizard.next();
     new WaitUntil(new DialogMessageIsExpected(wizard, "Authentication failed"));
