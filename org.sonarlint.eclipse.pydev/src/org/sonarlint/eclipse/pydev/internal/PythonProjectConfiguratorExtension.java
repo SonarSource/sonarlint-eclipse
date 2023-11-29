@@ -33,7 +33,8 @@ public class PythonProjectConfiguratorExtension implements ISyntaxHighlightingPr
   }
 
   private static boolean isPyDevPresent() {
-    return isClassPresentAtRuntime("org.python.pydev.plugin.PydevPlugin");
+    return isClassPresentAtRuntime("org.python.pydev.plugin.PydevPlugin")
+      && isClassPresentAtRuntime("org.python.pydev.core.CorePlugin");
   }
 
   private static boolean isClassPresentAtRuntime(String className) {
