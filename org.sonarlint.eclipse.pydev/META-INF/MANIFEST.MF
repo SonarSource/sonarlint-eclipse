@@ -10,6 +10,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface.text,
  org.eclipse.core.filebuffers,
  org.python.pydev;resolution:=optional,
+ org.python.pydev.core;resolution:=optional,
  org.sonarlint.eclipse.core,
  org.sonarsource.sonarlint.core.sonarlint-core-osgi,
  org.eclipse.jdt.annotation;resolution:=optional,
@@ -18,9 +19,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.swt
 Import-Package: org.eclipse.jface.preference,
  org.eclipse.ui.editors.text,
- org.eclipse.ui.texteditor,
- org.python.pydev.core.partition,
- org.python.pydev.shared_core
+ org.eclipse.ui.texteditor
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
