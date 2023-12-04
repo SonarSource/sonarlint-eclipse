@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -28,6 +29,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public abstract class AbstractListPropertyPage extends PropertyPage {
   protected Button removeButton;
@@ -91,5 +95,9 @@ public abstract class AbstractListPropertyPage extends PropertyPage {
       }
     }
   }
-
+  
+  /** Check for issue binding: Either SonarQube or SonarCloud */
+  protected static Optional<ResolvedBinding> getBinding(ISonarLintProject project) {
+    return SonarLintCorePlugin.getServersManager().resolveBinding(project);
+  }
 }

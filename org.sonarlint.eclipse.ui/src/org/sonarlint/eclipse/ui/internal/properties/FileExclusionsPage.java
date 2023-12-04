@@ -39,8 +39,6 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -53,6 +51,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -61,6 +60,7 @@ import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 public class FileExclusionsPage extends AbstractListPropertyPage implements IWorkbenchPreferencePage {
   private static final String PREFERENCE_ID = "org.sonarlint.eclipse.ui.properties.FileExclusionsPage";
@@ -97,7 +97,12 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     pageComponent.setLayout(layout);
 
     if (!isGlobal()) {
-      createLinkToGlobal(parent, pageComponent);
+      var bindingOpt = getBinding(getProject());
+      if (bindingOpt.isEmpty()) {
+        createLinkToGlobal(parent, pageComponent);
+      } else {
+        createLinkToDocumentation(pageComponent, bindingOpt.get().getEngineFacade().isSonarCloud());
+      }
     }
 
     var data = new GridData(GridData.FILL_BOTH);
@@ -250,13 +255,19 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     var gridData = new GridData();
     gridData.horizontalSpan = 2;
     fLink.setLayoutData(gridData);
-    var sl = new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        PreferencesUtil.createPreferenceDialogOn(ancestor.getShell(), PREFERENCE_ID, null, null).open();
-      }
-    };
-    fLink.addSelectionListener(sl);
+    fLink.addListener(SWT.Selection,
+      e -> PreferencesUtil.createPreferenceDialogOn(ancestor.getShell(), PREFERENCE_ID, null, null).open());
+  }
+  
+  private static void createLinkToDocumentation(Composite parent, boolean isSonarCloud) {
+    var fLink = new Link(parent, SWT.NONE);
+    fLink.setText("As this project is bound to " + (isSonarCloud ? "SonarCloud" : "SonarQube")
+      + ", the file exclusions must be configured there. <a>Learn more</a>");
+    var gridData = new GridData();
+    gridData.horizontalSpan = 2;
+    fLink.setLayoutData(gridData);
+    fLink.addListener(SWT.Selection,
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.FILE_EXCLUSIONS, e.display));
   }
 
   @Override
