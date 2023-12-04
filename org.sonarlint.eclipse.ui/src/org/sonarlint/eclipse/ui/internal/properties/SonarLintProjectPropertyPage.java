@@ -30,9 +30,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
@@ -41,6 +41,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 /**
  * Property page for projects. It store in
@@ -53,7 +54,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
   private Link addServerLink;
   private Link bindLink;
   private Composite container;
-  private Label boundDetails;
+  private Link boundDetails;
 
   public SonarLintProjectPropertyPage() {
     setTitle(Messages.SonarProjectPropertyPage_title);
@@ -90,8 +91,10 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
 
-    boundDetails = new Label(container, SWT.NONE);
+    boundDetails = new Link(container, SWT.NONE);
     boundDetails.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    boundDetails.addListener(SWT.Selection,
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_BENEFITS, e.display));
 
     addServerLink = new Link(container, SWT.NONE);
     var gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
@@ -135,8 +138,8 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
         .setText("Bound to the project '" + projectBinding.get().projectKey() + "' on connection '" + serverName(projectBinding.get().connectionId()) + "'");
       bindLink.setText("<a>Update project binding</a>");
     } else {
+      boundDetails.setText("Using SonarLint in connected mode with SonarQube/SonarCloud will offer you a lot of benefits. <a>Learn more</a>");
       bindLink.setText("<a>Bind this Eclipse project to SonarQube/SonarCloud...</a>");
-      boundDetails.setText("");
     }
     if (projectBinding.isPresent() && SonarLintCorePlugin.getServersManager().resolveBinding(getProject()).isEmpty()) {
       addServerLink.setText("<a>Re-create SonarQube/SonarCloud connection '" + projectBinding.get().connectionId() + "'</a>");

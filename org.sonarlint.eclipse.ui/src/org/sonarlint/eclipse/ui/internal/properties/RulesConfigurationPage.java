@@ -28,16 +28,19 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
 
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
@@ -53,7 +56,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
 
   @Override
   public void init(IWorkbench workbench) {
-    setDescription("Configure rules used for SonarLint analysis. When a project is connected to a SonarQube/SonarCloud server, configuration from the server applies.");
+    setDescription("Configure rules used for SonarLint analysis for projects not in connected mode.");
   }
 
   @Override
@@ -62,6 +65,13 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     var layout = new GridLayout();
     layout.marginWidth = 0;
     pageComponent.setLayout(layout);
+    
+    var label = new Link(pageComponent, SWT.NONE);
+    label.setText("When a project is connected to <a>SonarQube/SonarCloud</a>, "
+      + "configuration from the server applies.");
+    label.addListener(SWT.Selection,
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_LINK, e.display)
+    );
 
     initialRuleConfigs = SonarLintGlobalConfiguration.readRulesConfig();
     rulesConfigurationPart = new RulesConfigurationPart(() -> loadRuleDetails(), initialRuleConfigs);
