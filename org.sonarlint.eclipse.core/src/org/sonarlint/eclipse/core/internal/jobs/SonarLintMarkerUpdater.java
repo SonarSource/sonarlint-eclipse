@@ -280,6 +280,9 @@ public class SonarLintMarkerUpdater {
       if (position != null) {
         marker.setAttribute(IMarker.CHAR_START, position.getOffset());
         marker.setAttribute(IMarker.CHAR_END, position.getOffset() + position.getLength());
+      } else {
+        SonarLintLogger.get().debug("Position cannot be set for taint issue '" + taintIssue.getKey() + "' in '"
+          + taintIssue.getFilePath() + "'");
       }
 
       marker.setAttribute(IMarker.PRIORITY, getPriority(taintIssue.getSeverity()));
@@ -406,6 +409,8 @@ public class SonarLintMarkerUpdater {
         if (position != null) {
           marker.setAttribute(IMarker.CHAR_START, position.getOffset());
           marker.setAttribute(IMarker.CHAR_END, position.getOffset() + position.getLength());
+        } else {
+          SonarLintLogger.get().debug("Position cannot be set on resource '" + resource.getFullPath());
         }
       }
       return Optional.of(marker);
@@ -463,6 +468,8 @@ public class SonarLintMarkerUpdater {
       if (flowPosition != null) {
         marker.setAttribute(IMarker.CHAR_START, flowPosition.getOffset());
         marker.setAttribute(IMarker.CHAR_END, flowPosition.getOffset() + flowPosition.getLength());
+      } else {
+        SonarLintLogger.get().debug("Position cannot be set for flow on '" + file.getProjectRelativePath());
       }
       return marker;
     }
