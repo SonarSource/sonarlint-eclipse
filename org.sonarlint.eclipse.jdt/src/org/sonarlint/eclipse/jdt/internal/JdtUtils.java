@@ -258,7 +258,14 @@ public class JdtUtils {
     final String libPath;
     var member = findPath(javaProject.getProject(), entry.getPath());
     if (member != null) {
-      libPath = member.getLocation().toOSString();
+      var location = member.getLocation();
+      if (location == null) {
+        SonarLintLogger.get().error("Library at '" + entry.getPath() + "' could not be resolved correctly on project '"
+          + javaProject.getPath() + "' from workspace member: " + member);
+        return null;
+      }
+      
+      libPath = location.toOSString();
     } else {
       libPath = entry.getPath().makeAbsolute().toOSString();
     }
