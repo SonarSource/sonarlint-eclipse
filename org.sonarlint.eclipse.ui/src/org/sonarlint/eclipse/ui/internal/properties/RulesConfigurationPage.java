@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
@@ -38,7 +39,6 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
-import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
 
@@ -76,7 +76,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     } catch (Exception err) {
       SonarLintLogger.get().error("Loading all standalone rules for the configuration page failed", err);
     }
-    
+
     return Collections.emptyList();
   }
 

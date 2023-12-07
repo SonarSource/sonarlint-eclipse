@@ -28,9 +28,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarsource.sonarlint.core.clientapi.client.progress.ProgressUpdateNotification;
 import org.sonarsource.sonarlint.core.clientapi.client.progress.StartProgressParams;
-import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 /**
  *  As the backend is now in charge of synchronization we want the user to see the progress even though it was not
@@ -39,15 +39,15 @@ import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
  */
 public class BackendProgressJobScheduler {
   private static final BackendProgressJobScheduler INSTANCE = new BackendProgressJobScheduler();
-  private ConcurrentHashMap<String, BackendProgressJob> jobPool = new ConcurrentHashMap<>();
-  
+  private final ConcurrentHashMap<String, BackendProgressJob> jobPool = new ConcurrentHashMap<>();
+
   private BackendProgressJobScheduler() {
   }
-  
+
   public static BackendProgressJobScheduler get() {
     return INSTANCE;
   }
-  
+
   /** Start a new progress bar by using an IDE job */
   public CompletableFuture<Void> startProgress(StartProgressParams params) {
     var taskId = params.getTaskId();
@@ -56,17 +56,17 @@ public class BackendProgressJobScheduler {
       SonarLintLogger.get().debug(errorMessage);
       return CompletableFuture.failedFuture(new IllegalArgumentException(errorMessage));
     }
-    
+
     var jobAdded = jobPool.computeIfAbsent(taskId, k -> {
       var jobStartFuture = new CompletableFuture<Void>();
       var job = new BackendProgressJob(params, jobStartFuture);
       job.schedule();
       return job;
     });
-    
+
     return jobAdded.getJobStartFuture();
   }
-  
+
   /** Update the progress bar IDE job */
   public void update(String taskId, ProgressUpdateNotification notification) {
     var job = jobPool.get(taskId);
@@ -76,7 +76,7 @@ public class BackendProgressJobScheduler {
     }
     job.update(notification);
   }
-  
+
   /** Complete the progress bar IDE job */
   public void complete(String taskId) {
     var job = jobPool.remove(taskId);
@@ -86,23 +86,23 @@ public class BackendProgressJobScheduler {
     }
     job.complete();
   }
-  
+
   /** This job is only an IDE frontend for a job running in the SonarLintBackend */
   private static class BackendProgressJob extends Job {
-    private Object waitMonitor = new Object();
-    private CompletableFuture<Void> jobStartFuture;
-    private AtomicReference<String> message;
-    private AtomicInteger percentage = new AtomicInteger(0);
-    private AtomicBoolean complete = new AtomicBoolean(false);
-    
+    private final Object waitMonitor = new Object();
+    private final CompletableFuture<Void> jobStartFuture;
+    private final AtomicReference<String> message;
+    private final AtomicInteger percentage = new AtomicInteger(0);
+    private final AtomicBoolean complete = new AtomicBoolean(false);
+
     public BackendProgressJob(StartProgressParams params, CompletableFuture<Void> jobStartFuture) {
       super(params.getTitle());
       setPriority(DECORATE);
-      
+
       this.jobStartFuture = jobStartFuture;
       this.message = new AtomicReference<>(params.getMessage());
     }
-    
+
     public CompletableFuture<Void> getJobStartFuture() {
       return this.jobStartFuture;
     }
@@ -112,33 +112,33 @@ public class BackendProgressJobScheduler {
       monitor.setTaskName(message.get());
       monitor.worked(percentage.get());
       jobStartFuture.complete(null);
-      
+
       while (!complete.get()) {
-        synchronized(waitMonitor) {
+        synchronized (waitMonitor) {
           monitor.setTaskName(message.get());
           monitor.worked(percentage.get());
         }
       }
-      
+
       monitor.done();
       return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
     }
-    
+
     public void update(ProgressUpdateNotification notification) {
       var newMessage = notification.getMessage();
       if (newMessage != null) {
         message.set(newMessage);
       }
       percentage.set(notification.getPercentage());
-      
-      synchronized(waitMonitor) {
+
+      synchronized (waitMonitor) {
         waitMonitor.notify();
       }
     }
-    
+
     public void complete() {
       complete.set(true);
-      synchronized(waitMonitor) {
+      synchronized (waitMonitor) {
         waitMonitor.notify();
       }
     }

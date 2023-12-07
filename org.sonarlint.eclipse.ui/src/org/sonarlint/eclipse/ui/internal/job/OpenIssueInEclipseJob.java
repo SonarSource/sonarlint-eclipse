@@ -33,6 +33,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
@@ -52,7 +53,6 @@ import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
 import org.sonarlint.eclipse.ui.internal.views.issues.TaintVulnerabilitiesView;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 import org.sonarsource.sonarlint.core.clientapi.client.issue.ShowIssueParams;
-import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 /**
  *  "Open in IDE": After covering most of cases where we cannot match the issue locally, this tries to match with the
@@ -61,17 +61,17 @@ import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 public class OpenIssueInEclipseJob extends Job {
   @Nullable
   private ISonarLintFile file;
-  
+
   private final String name;
   private final ShowIssueParams params;
   private final ISonarLintProject project;
   private final ResolvedBinding binding;
   private final boolean recreatedMarkersAlready;
   private final boolean askedForPreferenceChangeAlready;
-  
+
   public OpenIssueInEclipseJob(OpenIssueContext context) {
     super(context.getName());
-    
+
     this.name = context.getName();
     this.params = context.getParams();
     this.project = context.getProject();
@@ -83,32 +83,32 @@ public class OpenIssueInEclipseJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     // 1) Check if matching between remote and local path does work / branches match
-    //    INFO: When we re-run this job we don't have to do all the checks again!
+    // INFO: When we re-run this job we don't have to do all the checks again!
     if (file == null) {
       var fileOpt = tryGetLocalFile();
       if (fileOpt.isEmpty()) {
         return Status.CANCEL_STATUS;
       }
       file = fileOpt.get();
-      
+
       if (!tryMatchBranches()) {
         return Status.CANCEL_STATUS;
       }
     }
-    
+
     try {
       // 2) Handle normal issues / Taint Vulnerabilities differently
       return params.isTaint() ? handleTaintIssue() : handleNormalIssue();
     } catch (CoreException e) {
       var message = "An error occured while trying to match the issue locally.";
-      
+
       MessageDialogUtils.openInIdeError(message + " Please see the console for the full error log!");
       SonarLintLogger.get().error(message, e);
     }
-    
+
     return Status.CANCEL_STATUS;
   }
-  
+
   /** File check: We try to convert the server path to IDE path in order to find the correct file */
   private Optional<ISonarLintFile> tryGetLocalFile() {
     // Check if the server file path can be matched to a local file path
@@ -118,7 +118,7 @@ public class OpenIssueInEclipseJob extends Job {
         + project.getName() + "'. Maybe it was already changed locally!");
       return Optional.empty();
     }
-    
+
     // Check if file exists in project based on the server to IDE path matching
     var fileOpt = project.find(filePathOpt.get());
     if (fileOpt.isEmpty()) {
@@ -126,14 +126,14 @@ public class OpenIssueInEclipseJob extends Job {
         + project.getName() + "'. Maybe it was already changed locally!");
       return Optional.empty();
     }
-    
+
     return fileOpt;
   }
-  
+
   /** Branch check: Local and remote information should match (if no local branch found, at least try your best) */
   private boolean tryMatchBranches() {
     var branch = params.getBranch();
-    
+
     var localBranch = VcsService.getServerBranch(project);
     if (localBranch.isEmpty()) {
       // This error message may be misleading to COBOL / ABAP developers but that is okay for now :>
@@ -146,7 +146,7 @@ public class OpenIssueInEclipseJob extends Job {
       BrowserUtils.openExternalBrowser(SonarLintDocumentation.BRANCH_AWARENESS, Display.getDefault());
       return false;
     }
-    
+
     return true;
   }
 
@@ -163,18 +163,18 @@ public class OpenIssueInEclipseJob extends Job {
           var job = new AnalyzeProjectsJob(Map.of(file.getProject(), List.of(new FileWithDocument(file, null))));
           addJobChangeListener(job);
           job.schedule();
-          
+
           return Status.OK_STATUS;
         }
-        
+
         // Maybe the issue could not be found due to the workspace preferences hiding some markers
         return handlePossibleHiddenIssue();
       }
     }
-    
+
     // Update the UI and open the correct editor and views
     updateUI(markerOpt.get());
-    
+
     return Status.OK_STATUS;
   }
 
@@ -184,24 +184,24 @@ public class OpenIssueInEclipseJob extends Job {
     if (markerOpt.isEmpty()) {
       if (!recreatedMarkersAlready) {
         // Sync Taint Vulnerabilities and re-run this job
-        var job = new TaintIssuesUpdateAfterSyncJob((ConnectedEngineFacade)binding.getEngineFacade(), project,
+        var job = new TaintIssuesUpdateAfterSyncJob((ConnectedEngineFacade) binding.getEngineFacade(), project,
           List.of(file));
         addJobChangeListener(job);
         job.schedule();
-        
+
         return Status.OK_STATUS;
       }
-      
+
       // Maybe the issue could not be found due to the workspace preferences hiding some markers
       return handlePossibleHiddenIssue();
     }
-    
+
     // Update the UI and open the correct editor and views
     updateUI(markerOpt.get());
-    
+
     return Status.OK_STATUS;
   }
-  
+
   /** When invoking an external job we want to hop onto its result to re-run this job once again */
   private void addJobChangeListener(Job job) {
     job.addJobChangeListener(new JobChangeAdapter() {
@@ -217,7 +217,7 @@ public class OpenIssueInEclipseJob extends Job {
       }
     });
   }
-  
+
   /** When the workspace preferences are not in our favor we want the consent from the user to change them */
   private IStatus handlePossibleHiddenIssue() {
     // When we already asked the user to change his workspace preferences, he agreed but did not change anything we
@@ -227,7 +227,7 @@ public class OpenIssueInEclipseJob extends Job {
         + "resolved or the resources has moved / was deleted.");
       return Status.CANCEL_STATUS;
     }
-    
+
     // Ask the user if we are allowed to change the workspace preferences
     MessageDialogUtils.openInIdeQuestion("The issue might not be found due to the workspace preferences "
       + "on the display of SonarLint markers. Please change the preferences and 'Apply and Close' them to continue!",
@@ -238,16 +238,16 @@ public class OpenIssueInEclipseJob extends Job {
           new OpenIssueContext(name, params, project, binding, file, true, true));
         preferences.open();
       });
-    
+
     return Status.OK_STATUS;
   }
-  
+
   /** Update the UI based on the marker information */
   private void updateUI(IMarker marker) {
     Display.getDefault().asyncExec(() -> {
       // Open the editor at the position of the marker
       PlatformUtils.openEditor(marker);
-      
+
       try {
         // Open either Taint Vulnerabilities or On The Fly view
         if (params.isTaint()) {
@@ -255,14 +255,14 @@ public class OpenIssueInEclipseJob extends Job {
         } else {
           PlatformUtils.showView(OnTheFlyIssuesView.ID).setFocus();
         }
-        
+
         // Show Issue Locations view only when there are some flows
         if (!params.getFlows().isEmpty()) {
           var issueLocationsView = (IssueLocationsView) PlatformUtils.showView(IssueLocationsView.ID);
           issueLocationsView.markerSelected(Optional.of(marker));
           issueLocationsView.setFocus();
         }
-        
+
         // Open Rule Description view
         var ruleDescriptionView = (RuleDescriptionWebView) PlatformUtils.showView(RuleDescriptionWebView.ID);
         ruleDescriptionView.setInput(marker);
@@ -272,19 +272,18 @@ public class OpenIssueInEclipseJob extends Job {
       }
     });
   }
-  
-  
+
   public static class OpenIssueContext {
     @Nullable
     private ISonarLintFile file;
-    
+
     private final String name;
     private final ShowIssueParams params;
     private final ISonarLintProject project;
     private final ResolvedBinding binding;
     private final boolean recreatedMarkersAlready;
     private final boolean askedForPreferenceChangeAlready;
-    
+
     public OpenIssueContext(String name, ShowIssueParams params, ISonarLintProject project,
       ResolvedBinding binding) {
       this.name = name;
@@ -294,7 +293,7 @@ public class OpenIssueInEclipseJob extends Job {
       this.recreatedMarkersAlready = false;
       this.askedForPreferenceChangeAlready = false;
     }
-    
+
     public OpenIssueContext(String name, ShowIssueParams params, ISonarLintProject project,
       ResolvedBinding binding, ISonarLintFile file, boolean recreatedMarkersAlready) {
       this.name = name;
@@ -305,7 +304,7 @@ public class OpenIssueInEclipseJob extends Job {
       this.recreatedMarkersAlready = recreatedMarkersAlready;
       this.askedForPreferenceChangeAlready = false;
     }
-    
+
     public OpenIssueContext(String name, ShowIssueParams params, ISonarLintProject project,
       ResolvedBinding binding, ISonarLintFile file, boolean recreatedMarkersAlready,
       boolean askedForPreferenceChangeAlready) {
@@ -317,32 +316,32 @@ public class OpenIssueInEclipseJob extends Job {
       this.recreatedMarkersAlready = recreatedMarkersAlready;
       this.askedForPreferenceChangeAlready = askedForPreferenceChangeAlready;
     }
-    
+
     @Nullable
     public ISonarLintFile getFile() {
       return file;
     }
-    
+
     public String getName() {
       return name;
     }
-    
+
     public ShowIssueParams getParams() {
       return params;
     }
-    
+
     public ISonarLintProject getProject() {
       return project;
     }
-    
+
     public ResolvedBinding getBinding() {
       return binding;
     }
-    
+
     public boolean getRecreatedMarkersAlready() {
       return recreatedMarkersAlready;
     }
-    
+
     public boolean getAskedForPreferenceChangeAlready() {
       return askedForPreferenceChangeAlready;
     }
