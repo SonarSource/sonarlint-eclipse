@@ -23,11 +23,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarsource.sonarlint.core.commons.Language;
 
-/***/
+/**
+ *  Pop-up shown to users analyzing (multiple) files in standalone mode while one (or more) are of languages that are
+ *  only available in connected mode.
+ */
 public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
   private final List<Language> languages;
   
@@ -39,25 +44,23 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
   protected String getMessage() {
     if (languages.size() == 1) {
       return "You tried to analyze a " + languages.get(0).getLabel()
-        + " file. This language analyzer is only available in connected mode.";
+        + " file. This language analyzer is only available in Connected Mode.";
     }
     
     var languagesList = String.join(" / ", languages.stream().map(l -> l.getLabel()).collect(Collectors.toList()));
     return "You tried to analyze " + languagesList
-      + " files. These language analyzers are only available in connected mode.";
+      + " files. These language analyzers are only available in Connected Mode.";
   }
 
   @Override
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
     
-    addLink("Learn more", e -> {
-      // TODO: Implement
-    });
+    addLink("Learn more",
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.RULES, getShell().getDisplay()));
     
-    addLink("Try SonarCloud for free", e -> {
-      // TODO: Implement
-    });
+    addLink("Try SonarCloud for free",
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.SONARCLOUD_SIGNUP_LINK, getShell().getDisplay()));
     
     addLink("Don't show again", e -> {
       SonarLintGlobalConfiguration.setIgnoreMissingFeatureNotifications();
@@ -75,7 +78,7 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
     return SonarLintImages.BALLOON_IMG;
   }
   
-  /**  */
+  /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
   public static void displayPopupIfNotIgnored(List<Language> languages) {
     if (languages.isEmpty() || SonarLintGlobalConfiguration.ignoreMissingFeatureNotifications() ) {
       return;

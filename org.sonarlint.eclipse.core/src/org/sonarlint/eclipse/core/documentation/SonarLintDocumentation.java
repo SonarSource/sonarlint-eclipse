@@ -33,11 +33,13 @@ public class SonarLintDocumentation {
   public static final String ISSUE_PERIOD_LINK = BASE_DOCS_URL + "/using-sonarlint/investigating-issues/#focusing-on-new-code";
   public static final String MARK_ISSUES_LINK = BASE_DOCS_URL + "/using-sonarlint/fixing-issues/#marking-issues";
   public static final String FILE_EXCLUSIONS = BASE_DOCS_URL + "/using-sonarlint/file-exclusions/";
+  public static final String RULES = BASE_DOCS_URL + "/using-sonarlint/rules/";
 
   private static final String BASE_MARKETING_URL = "https://www.sonarsource.com";
   public static final String COMPARE_SERVER_PRODUCTS_LINK = BASE_MARKETING_URL + "/open-source-editions";
   public static final String SONARQUBE_EDITIONS_LINK = BASE_MARKETING_URL + "/open-source-editions/sonarqube-community-edition";
   public static final String SONARCLOUD_PRODUCT_LINK = BASE_MARKETING_URL + "/products/sonarcloud";
+  public static final String SONARCLOUD_SIGNUP_LINK = SONARCLOUD_PRODUCT_LINK + "/signup";
 
   private SonarLintDocumentation() {
     // utility class

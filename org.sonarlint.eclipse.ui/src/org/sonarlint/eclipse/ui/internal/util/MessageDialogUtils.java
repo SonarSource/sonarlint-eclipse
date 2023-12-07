@@ -22,6 +22,8 @@ package org.sonarlint.eclipse.ui.internal.util;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 
 /** When we want to display simple dialogs we can use the JFace MessageDialog */
 public class MessageDialogUtils {
@@ -50,6 +52,24 @@ public class MessageDialogUtils {
         OPEN_IN_IDE_TITLE, message);
       if (result) {
         yesHandler.run();
+      }
+    });
+  }
+  
+  /** For notifying about features enhances with connected mode we want to display some information */
+  public static void enhancedWithConnectedModeInformation(String title, String message) {
+    Display.getDefault().asyncExec(() -> {
+      var display = Display.getDefault();
+      
+      var result = new MessageDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title, null,
+        message, MessageDialog.INFORMATION,
+        new String[] { "Learn more" , "Try SonarCloud for free", "Don't ask again"}, 0).open();
+      if (result == 0) {
+        BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_BENEFITS, display);
+      } else if (result == 1) {
+        BrowserUtils.openExternalBrowser(SonarLintDocumentation.SONARCLOUD_SIGNUP_LINK, display);
+      } else {
+        SonarLintGlobalConfiguration.setIgnoreEnhancedFeatureNotifications();
       }
     });
   }
