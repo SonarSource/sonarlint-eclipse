@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.command;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -48,6 +49,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
+import org.sonarsource.sonarlint.core.commons.Language;
 
 public class AnalyzeCommand extends AbstractHandler {
 
@@ -78,6 +80,9 @@ public class AnalyzeCommand extends AbstractHandler {
     if (totalFileCount > 1 && !askConfirmation(shell)) {
       return;
     }
+    
+    var unavailableLanguagesReference = EnumSet.noneOf(Language.class);
+    
     if (filesPerProject.size() == 1) {
       var entry = filesPerProject.entrySet().iterator().next();
       var req = new AnalyzeProjectRequest(entry.getKey(), entry.getValue(), TriggerType.MANUAL, true);
@@ -88,12 +93,14 @@ public class AnalyzeCommand extends AbstractHandler {
       } else {
         reportTitle = fileCount + " files of project " + entry.getKey().getName();
       }
-      var job = AbstractAnalyzeProjectJob.create(req);
-      AnalyzeChangeSetCommand.registerJobListener(job, reportTitle);
+      
+      var job = AbstractAnalyzeProjectJob.create(req, unavailableLanguagesReference);
+      AnalyzeChangeSetCommand.registerJobListener(job, reportTitle, unavailableLanguagesReference);
       job.schedule();
     } else {
-      var job = new AnalyzeProjectsJob(filesPerProject);
-      AnalyzeChangeSetCommand.registerJobListener(job, "All files of " + filesPerProject.size() + " projects");
+      var job = new AnalyzeProjectsJob(filesPerProject, unavailableLanguagesReference);
+      AnalyzeChangeSetCommand.registerJobListener(job, "All files of " + filesPerProject.size() + " projects",
+        unavailableLanguagesReference);
       job.schedule();
     }
   }

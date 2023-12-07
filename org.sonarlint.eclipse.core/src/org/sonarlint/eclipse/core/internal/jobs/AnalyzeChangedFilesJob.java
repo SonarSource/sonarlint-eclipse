@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -35,15 +36,19 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDo
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.commons.Language;
 
 public class AnalyzeChangedFilesJob extends WorkspaceJob {
   private static final String UNABLE_TO_ANALYZE_CHANGED_FILES = "Unable to analyze changed files";
   private final Collection<ISonarLintProject> projects;
+  private final EnumSet<Language> unavailableLanguagesReference;
 
-  public AnalyzeChangedFilesJob(Collection<ISonarLintProject> projects) {
+  public AnalyzeChangedFilesJob(Collection<ISonarLintProject> projects,
+    EnumSet<Language> unavailableLanguagesReference) {
     super("Analyze changed files");
     this.projects = projects;
     setPriority(Job.LONG);
+    this.unavailableLanguagesReference = unavailableLanguagesReference;
   }
 
   @Override
@@ -81,7 +86,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
           .map(f -> new FileWithDocument(f, null))
           .collect(Collectors.toList());
         var req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.MANUAL_CHANGESET);
-        var job = AbstractAnalyzeProjectJob.create(req);
+        var job = AbstractAnalyzeProjectJob.create(req, unavailableLanguagesReference);
         var subMonitor = analysisMonitor.newChild(1);
         job.run(subMonitor);
         subMonitor.done();

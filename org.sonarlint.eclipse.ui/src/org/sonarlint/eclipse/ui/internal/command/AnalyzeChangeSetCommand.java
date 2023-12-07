@@ -19,8 +19,11 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -36,8 +39,10 @@ import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeChangedFilesJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.popup.LanguageFromConnectedModePopup;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
+import org.sonarsource.sonarlint.core.commons.Language;
 
 public class AnalyzeChangeSetCommand extends AbstractHandler {
 
@@ -61,18 +66,20 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
   }
 
   private static void triggerAnalysis(Collection<ISonarLintProject> selectedProjects) {
-    var job = new AnalyzeChangedFilesJob(selectedProjects);
+    var unavailableLanguagesReference = EnumSet.noneOf(Language.class);
+    
+    var job = new AnalyzeChangedFilesJob(selectedProjects, unavailableLanguagesReference);
     String reportTitle;
     if (selectedProjects.size() == 1) {
       reportTitle = "Changed files reported by the SCM on project " + selectedProjects.iterator().next().getName();
     } else {
       reportTitle = "Changed files reported by the SCM on " + selectedProjects.size() + " projects";
     }
-    registerJobListener(job, reportTitle);
+    registerJobListener(job, reportTitle, unavailableLanguagesReference);
     job.schedule();
   }
 
-  static void registerJobListener(Job job, String reportTitle) {
+  static void registerJobListener(Job job, String reportTitle, Set<Language> unavailableLanguagesReference) {
     job.addJobChangeListener(new JobChangeAdapter() {
       @Override
       public void done(IJobChangeEvent event) {
@@ -86,6 +93,7 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
             } catch (PartInitException e) {
               SonarLintLogger.get().error("Unable to open SonarLint Report View", e);
             }
+            LanguageFromConnectedModePopup.displayPopupIfNotIgnored(new ArrayList<>(unavailableLanguagesReference));
           });
         } else if (Status.CANCEL_STATUS == event.getResult()) {
           Display.getDefault().asyncExec(() -> SonarLintReportView.setReportTitle(null));

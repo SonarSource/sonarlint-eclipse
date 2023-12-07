@@ -80,6 +80,10 @@ public class SonarLintGlobalConfiguration {
   private static final String PREF_SECRETS_EVER_DETECTED = "secretsEverDetected";
   private static final String PREF_USER_SURVEY_LAST_LINK = "userSurveyLastLink"; //$NON-NLS-1$
   private static final String PREF_SOON_UNSUPPORTED_CONNECTIONS = "soonUnsupportedSonarQubeConnections"; //$NON-NLS-1$
+  
+  // notifications on missing features from standalone mode / enhanced features from connected mode
+  public static final String PREF_IGNORE_MISSING_FEATURES = "ignoreNotificationsAboutMissingFeatures"; //$NON-NLS-1$
+  public static final String PREF_IGNORE_ENHANCED_FEATURES = "ignoreNotificationsAboutEnhancedFeatures"; //$NON-NLS-1$
 
   private SonarLintGlobalConfiguration() {
     // Utility class
@@ -351,5 +355,21 @@ public class SonarLintGlobalConfiguration {
     currentConnections.add(connectionVersionCombination);
     
     setPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS, String.join(",", currentConnections));
+  }
+  
+  public static boolean ignoreMissingFeatureNotifications() {
+    return getPreferenceBoolean(PREF_IGNORE_MISSING_FEATURES);
+  }
+  
+  public static void setIgnoreMissingFeatureNotifications() {
+    setPreferenceBoolean(PREF_IGNORE_MISSING_FEATURES, true);
+  }
+  
+  public static boolean ignoreEnhancedFeatureNotifications() {
+    return getPreferenceBoolean(PREF_IGNORE_ENHANCED_FEATURES);
+  }
+  
+  public static void setIgnoreEnhancedFeatureNotifications() {
+    setPreferenceBoolean(PREF_IGNORE_ENHANCED_FEATURES, true);
   }
 }
