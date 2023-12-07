@@ -36,6 +36,24 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 public class SonarLintUtils {
+  /**
+   *  Enabled languages should be consistent with https://www.sonarsource.com/products/sonarlint/features/eclipse!
+   *  
+   *  Other sub-plugins bringing their own languages should have two fields
+   *  <ul>
+   *    <li>STANDALONE_MODE_LANGUAGES for languages shipped with packaged analyzer</li>
+   *    <li>CONNECTED_MODE_LANGUAGES for languages coming from connected mode</li>
+   *  </ul>
+   *  in the class implementing {@link org.sonarlint.eclipse.core.analysis.IAnalysisConfiguratior}
+   *  
+   *  Currently the only sub-plugins bringing their own languages are JDT (Java/JSP) and CDT (C/C++).
+   */
+  public static final Set<Language> STANDALONE_MODE_LANGUAGES = EnumSet.of(Language.PYTHON, Language.JS, Language.TS,
+    Language.HTML, Language.CSS, Language.PHP, Language.XML, Language.SECRETS);
+  public static final Set<Language> STANDALONE_MODE_LANGUAGES_JDT = EnumSet.of(Language.JAVA, Language.JSP);
+  public static final Set<Language> CONNECTED_MODE_LANGUAGES = EnumSet.of(Language.ABAP, Language.APEX, Language.COBOL,
+    Language.KOTLIN, Language.PLI, Language.PLSQL, Language.RPG, Language.RUBY, Language.SCALA, Language.TSQL);
+  public static final Set<Language> CONNECTED_MODE_LANGUAGES_CDT = EnumSet.of(Language.C, Language.CPP);
 
   private SonarLintUtils() {
     // utility class, forbidden constructor
@@ -62,15 +80,11 @@ public class SonarLintUtils {
     return SonarLintCorePlugin.getInstance().getBundle().getVersion().toString();
   }
 
-  /**
-   *  Enabled language should be consistent with https://www.sonarsource.com/products/sonarlint/features/eclipse!
-   *  Exceptions are: - C/C++ only available with CDT (see CProjectConfiguratorExtension.whitelistedLanguages)
-   *                  - Java/JSP only available with JDT (see JavaProjectConfiguratorExtension.whitelistedLanguages)
-   */
   public static Set<Language> getEnabledLanguages() {
-    var enabledLanguages = EnumSet.of(Language.ABAP, Language.APEX, Language.CSS, Language.COBOL, Language.HTML,
-      Language.JS, Language.KOTLIN, Language.PHP, Language.PLI, Language.PLSQL, Language.PYTHON, Language.RPG,
-      Language.RUBY, Language.SCALA, Language.SECRETS, Language.TSQL, Language.TS, Language.XML);
+    var enabledLanguages = EnumSet.noneOf(Language.class);
+    enabledLanguages.addAll(STANDALONE_MODE_LANGUAGES);
+    enabledLanguages.addAll(CONNECTED_MODE_LANGUAGES);
+    
     var configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
     for (var configurator : configurators) {
       enabledLanguages.addAll(configurator.whitelistedLanguages());

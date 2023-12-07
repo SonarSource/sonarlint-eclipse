@@ -57,7 +57,7 @@ public class OpenEditorAnalysisTrigger implements IPartListener2 {
       return;
     }
     var request = new AnalyzeProjectRequest(file.getProject(), List.of(fileWithDoc), TriggerType.EDITOR_OPEN);
-    AnalysisJobsScheduler.scheduleAutoAnalysisIfEnabled(request);
+    AnalysisJobsScheduler.scheduleAutoAnalysisIfEnabled(request, true);
   }
 
   @Override

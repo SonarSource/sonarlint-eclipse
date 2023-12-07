@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -78,20 +79,30 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   private final TriggerType triggerType;
   private final boolean shouldClearReport;
   private final Collection<FileWithDocument> files;
-
+  private EnumSet<Language> unavailableLanguagesReference;
+  
   protected AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
+    this(request, EnumSet.noneOf(Language.class));
+  }
+
+  protected AbstractAnalyzeProjectJob(AnalyzeProjectRequest request, EnumSet<Language> unavailableLanguagesReference) {
     super(jobTitle(request), request.getProject());
     this.extraProps = SonarLintGlobalConfiguration.getExtraPropertiesForLocalAnalysis(request.getProject());
     this.files = request.getFiles();
     this.triggerType = request.getTriggerType();
     this.shouldClearReport = request.shouldClearReport();
+    this.unavailableLanguagesReference = unavailableLanguagesReference;
   }
 
   public static AbstractSonarProjectJob create(AnalyzeProjectRequest request) {
+    return create(request, EnumSet.noneOf(Language.class));
+  }
+
+  public static AbstractSonarProjectJob create(AnalyzeProjectRequest request, EnumSet<Language> unsupportedLanguages) {
     return SonarLintCorePlugin.getServersManager()
       .resolveBinding(request.getProject())
       .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request, b.getProjectBinding(), (ConnectedEngineFacade) b.getEngineFacade()))
-      .orElseGet(() -> new AnalyzeStandaloneProjectJob(request));
+      .orElseGet(() -> new AnalyzeStandaloneProjectJob(request, unsupportedLanguages));
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
@@ -202,6 +213,18 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     if (!monitor.isCanceled()) {
       updateMarkers(docPerFiles, issuesPerResource, result, triggerType, monitor);
       updateTelemetry(result, start, issuesPerResource);
+      
+      // Collect all the languages we just analyzed and that are unavailable in standalone mode. This will be re-used
+      // to handle it accordingly in the UI (e.g. display notification to the user).
+      var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(getProject());
+      if (bindingOpt.isEmpty()) {
+        var languages = result.languagePerFile().values().stream().collect(Collectors.toSet());
+        var languagesConnectedMode = EnumSet.noneOf(Language.class);
+        languagesConnectedMode.addAll(SonarLintUtils.CONNECTED_MODE_LANGUAGES);
+        languagesConnectedMode.addAll(SonarLintUtils.CONNECTED_MODE_LANGUAGES_CDT);
+        languages.retainAll(languagesConnectedMode);
+        unavailableLanguagesReference.addAll(languages);
+      }
     }
   }
 

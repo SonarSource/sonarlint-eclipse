@@ -313,9 +313,10 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
               .collect(Collectors.toList());
             new TaintIssuesUpdateAfterSyncJob(connection, project, files).schedule();
 
-            // also schedule analyze of opened files based on synced information
+            // Also schedule analyze of opened files based on synced information, we can ignore unavailable languages
+            // as this project is actually bound to SonarQube / SonarCloud!
             AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE,
-              f -> SonarLintUtils.isBoundToConnection(f, connection));
+              f -> SonarLintUtils.isBoundToConnection(f, connection), false);
           }
         }
       });

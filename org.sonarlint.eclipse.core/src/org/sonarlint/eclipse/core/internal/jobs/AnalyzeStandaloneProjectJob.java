@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,14 +33,15 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 import static java.util.stream.Collectors.toList;
 
 public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob<StandaloneAnalysisConfiguration> {
 
-  public AnalyzeStandaloneProjectJob(AnalyzeProjectRequest request) {
-    super(request);
+  public AnalyzeStandaloneProjectJob(AnalyzeProjectRequest request, EnumSet<Language> unavailableLanguagesReference) {
+    super(request, unavailableLanguagesReference);
   }
 
   @Override

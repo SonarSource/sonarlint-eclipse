@@ -89,7 +89,7 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
   private static void scheduleAnalysis(FileWithDocument fileWithDoc) {
     var file = fileWithDoc.getFile();
     var request = new AnalyzeProjectRequest(file.getProject(), List.of(fileWithDoc), TriggerType.QUICK_FIX);
-    AnalysisJobsScheduler.scheduleAutoAnalysisIfEnabled(request);
+    AnalysisJobsScheduler.scheduleAutoAnalysisIfEnabled(request, true);
   }
 
   @Nullable

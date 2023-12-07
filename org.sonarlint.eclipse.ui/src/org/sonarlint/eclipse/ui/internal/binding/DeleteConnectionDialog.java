@@ -100,7 +100,7 @@ public class DeleteConnectionDialog extends MessageDialog {
   protected void buttonPressed(int buttonId) {
     if (buttonId == OK && !servers.isEmpty()) {
       var job = new DeleteServerJob();
-      servers.forEach(server -> AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(job, server.getBoundProjects(), TriggerType.BINDING_CHANGE));
+      servers.forEach(server -> AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(job, server.getBoundProjects(), TriggerType.BINDING_CHANGE, true));
       job.setPriority(Job.BUILD);
       job.schedule();
     }

@@ -55,7 +55,7 @@ public class ProjectBindingProcess {
       }
     });
 
-    AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(job, projects, TriggerType.BINDING_CHANGE);
+    AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(job, projects, TriggerType.BINDING_CHANGE, false);
     job.schedule();
     return job;
   }
