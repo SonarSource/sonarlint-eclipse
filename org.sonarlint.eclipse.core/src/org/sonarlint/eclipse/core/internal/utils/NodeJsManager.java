@@ -25,13 +25,13 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.NodeJsHelper;
 import org.sonarsource.sonarlint.core.commons.Version;
-import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 /**
  *  Disclaimer on macOS:
@@ -40,7 +40,7 @@ import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
  *  shell configuration (e.g. .bashrc for Bash, .zprofile for Zsh) and due to running the command from within Eclipse,
  *  the underlying shell spawned via {@link NodeJsHelper#computePathEnvForMacOs} has an incomplete $PATH variable.
  *  Therefore integration tests running in such an environment will fail as we assume Node.js to be found on $PATH!
- *  
+ *
  *  For further information, see <a href="https://gist.github.com/Linerre/f11ad4a6a934dcf01ee8415c9457e7b2">here</a>!
  */
 public class NodeJsManager {
@@ -58,7 +58,7 @@ public class NodeJsManager {
     if (!Objects.equals(Paths.get(SonarLintGlobalConfiguration.getNodejsPath()), nodeJsPath)) {
       clear();
       // Node.js path is passed at engine startup, so we have to restart them all to ensure the new value is taken
-      //  into account for the next analysis.
+      // into account for the next analysis.
       SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().stop();
       SonarLintCorePlugin.getServersManager().getServers().forEach(f -> ((ConnectedEngineFacade) f).stop());
       AnalysisRequirementNotifications.resetCachedMessages();
@@ -78,16 +78,16 @@ public class NodeJsManager {
       this.nodeInit = true;
       this.nodeJsPath = helper.getNodeJsPath();
       this.nodeJsVersion = helper.getNodeJsVersion();
-      
+
       if (this.nodeJsPath == null) {
-        SonarLintLogger.get().warn(
+        SonarLintLogger.get().info(
           "Node.js could not be automatically detected, has to be configured manually in the SonarLint preferences!");
-        
+
         var isMac = isMac();
         if (isMac.isEmpty() || isMac.get().booleanValue()) {
           // In case of macOS or could not be found, just add the warning for the user and us if we have to provide
           // support on that matter at some point.
-          SonarLintLogger.get().warn(
+          SonarLintLogger.get().info(
             "Automatic detection does not work on macOS when added to PATH from user shell configuration (e.g. Bash)");
         }
       }
@@ -118,11 +118,11 @@ public class NodeJsManager {
     }
     return null;
   }
-  
+
   public static Optional<Boolean> isMac() {
     try {
       var os = System.getProperty("os.name");
-      
+
       // To be or not to be macOS
       if (os == null) {
         return Optional.empty();

@@ -51,6 +51,7 @@ import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.navigator.CommonViewerSiteFactory;
 import org.eclipse.ui.navigator.NavigatorActionService;
 import org.eclipse.ui.part.PageBook;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeLifecycleListener;
@@ -60,7 +61,6 @@ import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
-import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 /**
  * A view of connections, their modules, and status.
@@ -102,7 +102,7 @@ public class BindingsView extends CommonNavigator {
 
   /**
    * Creates a page displayed when there are no servers defined.
-   * 
+   *
    * @param kit
    * @return Control
    */
@@ -166,8 +166,8 @@ public class BindingsView extends CommonNavigator {
   }
 
   /**
-   * Switch between the servers and default/empty page. 
-   * 
+   * Switch between the servers and default/empty page.
+   *
    */
   void toggleDefaultPage() {
     if (tableViewer.getTree().getItemCount() < 1) {
@@ -277,11 +277,11 @@ public class BindingsView extends CommonNavigator {
         shouldRefresh.set(true);
       } else if (event.getDelta() != null) {
         try {
-          event.getDelta().accept((IResourceDelta delta) -> {
+          event.getDelta().accept((var delta) -> {
             if (delta.getKind() == IResourceDelta.CHANGED && (delta.getResource().getType() & IResource.ROOT) != 0) {
               // INFO: With adding "IResourceDelta.ADDED" to the mask we can also update the binding view when
-              //       importing a project. Therefore the user can see if a newly imported project is already
-              //       correctly binded.
+              // importing a project. Therefore the user can see if a newly imported project is already
+              // correctly binded.
               for (var child : delta.getAffectedChildren(IResourceDelta.CHANGED)) {
                 var resource = child.getResource();
 

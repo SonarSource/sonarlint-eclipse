@@ -31,11 +31,11 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 
 /**
  * A handler for a command on an issue
@@ -63,7 +63,7 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
     }
     return !selectedSonarMarkers.isEmpty() ? selectedSonarMarkers.get(0) : null;
   }
-  
+
   /** Check for issue binding: Either SonarQube or SonarCloud */
   protected static Optional<ResolvedBinding> getBinding(IMarker marker) {
     var slFile = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class);
@@ -72,7 +72,7 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
         + marker.toString() + "' was not possible due to the file not being adaptable.");
       return Optional.empty();
     }
-    
+
     return SonarLintCorePlugin.getServersManager().resolveBinding(slFile.getProject());
   }
 

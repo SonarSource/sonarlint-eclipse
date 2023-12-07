@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 import org.sonarsource.sonarlint.core.commons.objectstore.HashingPathMapper;
 import org.sonarsource.sonarlint.core.commons.objectstore.Reader;
 import org.sonarsource.sonarlint.core.commons.objectstore.Writer;
@@ -77,7 +77,7 @@ public class PersistentLocalIssueStore {
         .map(PersistentLocalIssueStore::transform)
         .orElse(null);
     } catch (IOException e) {
-      SonarLintLogger.get().error("Unable to read issue storage for basePath={} and key={}", basePath, key);
+      SonarLintLogger.get().error("Unable to read issue storage for basePath=" + basePath + " and key=" + key);
       return List.of();
     }
   }
