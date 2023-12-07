@@ -41,6 +41,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
+import org.sonarlint.eclipse.ui.internal.util.MessageDialogUtils;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
 
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
@@ -97,6 +98,12 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     if (!newRuleConfigs.equals(initialRuleConfigs)) {
       initialRuleConfigs = newRuleConfigs;
       AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
+      
+      if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
+        MessageDialogUtils.enhancedWithConnectedModeInformation("Are you working in a team?",
+          "When using Connected Mode you can benefit from having the rule configuration synchronized to all "
+          + "developers in your team instead of everyone having to configure it locally!");
+      }
     }
     return true;
   }

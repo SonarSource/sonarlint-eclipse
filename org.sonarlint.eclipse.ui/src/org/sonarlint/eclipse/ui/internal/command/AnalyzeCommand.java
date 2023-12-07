@@ -77,7 +77,10 @@ public class AnalyzeCommand extends AbstractHandler {
 
   private static void runAnalysisJob(Shell shell, Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject) {
     var totalFileCount = filesPerProject.values().stream().mapToInt(Collection::size).sum();
-    if (totalFileCount > 1 && !askConfirmation(shell)) {
+    
+    // Asking for a few files (e.g. analyzing a package) is annoying, increasing the threshold in order to not spam
+    // pop-ups to the user!
+    if (totalFileCount > 10 && !askConfirmation(shell)) {
       return;
     }
     
