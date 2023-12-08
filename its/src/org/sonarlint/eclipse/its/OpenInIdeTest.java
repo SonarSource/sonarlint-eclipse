@@ -106,7 +106,10 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/maven-taint", MAVEN_TAINT_PROJECT_KEY);
     createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY);
-    new DefaultShell("SonarLint Binding Suggestion").close();
+    try {
+      new DefaultShell("SonarLint Binding Suggestion").close();
+    } catch (Exception ignored) { }
+    
     
     // 3) delete file
     rootProject.getResource("src/main/java", "taint", "Variables.java").delete();
