@@ -95,20 +95,21 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
     var dialog = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
-    dialog.learnMore();
+    doAndWaitForSonarLintAnalysisJob(dialog::learnMore);
     
     notAnalyzed = new DefaultShell("SonarLint - Languages could not be analyzed");
     new DefaultLink(notAnalyzed, "Don't show again").click();
     
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
-    dialog = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
-    dialog.trySonarCloudForFree();
+    var dialog2 = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
+    doAndWaitForSonarLintAnalysisJob(dialog2::trySonarCloudForFree);
     
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
-    dialog = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
-    dialog.dontAskAgain();
+    var dialog3 = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
+    doAndWaitForSonarLintAnalysisJob(dialog3::dontAskAgain);
     
-    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    doAndWaitForSonarLintAnalysisJob(
+      () -> new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select());
   }
 
   @Test
@@ -177,7 +178,16 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .extracting(item -> item.getCell(0), item -> item.getCell(2))
       .containsExactlyInAnyOrder(
         tuple("Hello.java", "Replace this use of System.out by a logger."),
-        tuple("Hello2.java", "Replace this use of System.out by a logger."));
+        tuple("Hello2.java", "Replace this use of System.out by a logger."),
+        tuple("Hello3.java", "Replace this use of System.out by a logger."),
+        tuple("Hello4.java", "Replace this use of System.out by a logger."),
+        tuple("Hello5.java", "Replace this use of System.out by a logger."),
+        tuple("Hello6.java", "Replace this use of System.out by a logger."),
+        tuple("Hello7.java", "Replace this use of System.out by a logger."),
+        tuple("Hello8.java", "Replace this use of System.out by a logger."),
+        tuple("Hello9.java", "Replace this use of System.out by a logger."),
+        tuple("Hello10.java", "Replace this use of System.out by a logger."),
+        tuple("Hello11.java", "Replace this use of System.out by a logger."));
   }
 
   @Test
