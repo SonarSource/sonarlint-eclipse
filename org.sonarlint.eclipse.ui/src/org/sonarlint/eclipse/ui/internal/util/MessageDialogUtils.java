@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.util;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -56,21 +57,28 @@ public class MessageDialogUtils {
     });
   }
   
-  /** For notifying about features enhances with connected mode we want to display some information */
+  /** When not in UI thread, run it in UI thread */
   public static void enhancedWithConnectedModeInformation(String title, String message) {
     Display.getDefault().asyncExec(() -> {
-      var display = Display.getDefault();
-      
-      var result = new MessageDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title, null,
-        message, MessageDialog.INFORMATION,
-        new String[] { "Learn more" , "Try SonarCloud for free", "Don't ask again"}, 0).open();
-      if (result == 0) {
-        BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_BENEFITS, display);
-      } else if (result == 1) {
-        BrowserUtils.openExternalBrowser(SonarLintDocumentation.SONARCLOUD_SIGNUP_LINK, display);
-      } else {
-        SonarLintGlobalConfiguration.setIgnoreEnhancedFeatureNotifications();
-      }
+      enhancedWithConnectedModeInformation(
+        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title, message);
     });
+  }
+  
+  /** For notifying about features enhances with connected mode we want to display some information */
+  public static void enhancedWithConnectedModeInformation(Shell shell, String title, String message) {    
+    var result = new MessageDialog(shell, title, null,
+      message, MessageDialog.INFORMATION,
+      new String[] { "Learn more" , "Try SonarCloud for free", "Don't ask again"}, 0).open();
+    
+    // The result corresponds to the index in the array; totally confusing as the pre-selected button (in our case
+    // "Learn more") is always the rightmost one.
+    if (result == 0) {
+      BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_BENEFITS, shell.getDisplay());
+    } else if (result == 1) {
+      BrowserUtils.openExternalBrowser(SonarLintDocumentation.SONARCLOUD_SIGNUP_LINK, shell.getDisplay());
+    } else {
+      SonarLintGlobalConfiguration.setIgnoreEnhancedFeatureNotifications();
+    }
   }
 }

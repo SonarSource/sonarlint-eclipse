@@ -18,3 +18,5 @@ org.sonarlint.eclipse.ui/lib/
 # macOS files
 **/.DS_Store
 
+# Integration tests
+!/its/projects/connected/.project
