@@ -104,8 +104,17 @@ public abstract class AbstractSonarLintTest {
   @ClassRule
   public static final TemporaryFolder tempFolder = new TemporaryFolder();
   
+  @BeforeClass
+  public static final void setUpBeforeClass() {
+    System.setProperty("sonarlint.internal.ignoreEnhancedFeature", "true");
+    System.setProperty("sonarlint.internal.ignoreMissingFeature", "true");
+  }
+  
   @AfterClass
   public static final void cleanupAfterClass() {
+    System.setProperty("sonarlint.internal.ignoreEnhancedFeature", "");
+    System.setProperty("sonarlint.internal.ignoreMissingFeature", "");
+    
     // remove warning about soon unsupported version (there can be multiple)
     if ("oldest".equals(System.getProperty("target.platform"))) {
       while (true) {

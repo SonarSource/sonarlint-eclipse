@@ -67,6 +67,10 @@ public class RuleConfigurationPreferences extends PropertyPage {
   public Spinner getRuleParamSpinner() {
     return new DefaultSpinner();
   }
+  
+  public void cancel() {
+    ((WorkbenchPreferenceDialog) referencedComposite).cancel();
+  }
 
   public void ok() {
     ((WorkbenchPreferenceDialog) referencedComposite).ok();

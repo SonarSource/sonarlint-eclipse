@@ -41,6 +41,7 @@ import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.condition.ShellIsAvailable;
 import org.eclipse.reddeer.swt.impl.button.OkButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
+import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
@@ -51,6 +52,7 @@ import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.hamcrest.core.StringContains;
 import org.junit.Assume;
 import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.sonarlint.eclipse.its.reddeer.conditions.OnTheFlyViewIsEmpty;
@@ -62,11 +64,52 @@ import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.PydevPackageExplorer;
 import org.sonarlint.eclipse.its.reddeer.views.ReportView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
+import org.sonarlint.eclipse.its.reddeer.wizards.EnhancedWithConnectedModeInformationDialog;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 public class StandaloneAnalysisTest extends AbstractSonarLintTest {
+  @Before
+  public void removeEnhancedConnectedModeInformationPerTest() {
+    System.setProperty("sonarlint.internal.ignoreEnhancedFeature", "true");
+    System.setProperty("sonarlint.internal.ignoreMissingFeature", "true");
+  }
+  
+  @Test
+  public void analyzeProjectWithMissingLanguageAnalyzers() {
+    // INFO: This test case should display everything!
+    System.setProperty("sonarlint.internal.ignoreEnhancedFeature", "");
+    System.setProperty("sonarlint.internal.ignoreMissingFeature", "");
+    
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("connected", "connected");
+
+    var abapFile = rootProject.getResource("Test.abap");
+    openFileAndWaitForAnalysisCompletion(abapFile);
+    
+    var notAnalyzed = new DefaultShell("SonarLint - Language could not be analyzed");
+    new DefaultLink(notAnalyzed, "Learn more").click();
+    new DefaultLink(notAnalyzed, "Try SonarCloud for free").click();
+    notAnalyzed.close();
+    
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    var dialog = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
+    dialog.learnMore();
+    
+    notAnalyzed = new DefaultShell("SonarLint - Languages could not be analyzed");
+    new DefaultLink(notAnalyzed, "Don't show again").click();
+    
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    dialog = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
+    dialog.trySonarCloudForFree();
+    
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    dialog = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
+    dialog.dontAskAgain();
+    
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+  }
 
   @Test
   public void shouldAnalyseJava() {

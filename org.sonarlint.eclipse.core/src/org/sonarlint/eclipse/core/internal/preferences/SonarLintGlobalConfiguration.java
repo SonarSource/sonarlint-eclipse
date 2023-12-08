@@ -358,7 +358,11 @@ public class SonarLintGlobalConfiguration {
   }
   
   public static boolean ignoreMissingFeatureNotifications() {
-    return getPreferenceBoolean(PREF_IGNORE_MISSING_FEATURES);
+    // For integration tests we need to disable the notifications
+    var property = System.getProperty("sonarlint.internal.ignoreMissingFeature");
+    return property == null || property.isBlank()
+      ? getPreferenceBoolean(PREF_IGNORE_MISSING_FEATURES)
+      : Boolean.parseBoolean(property);
   }
   
   public static void setIgnoreMissingFeatureNotifications() {
@@ -366,7 +370,11 @@ public class SonarLintGlobalConfiguration {
   }
   
   public static boolean ignoreEnhancedFeatureNotifications() {
-    return getPreferenceBoolean(PREF_IGNORE_ENHANCED_FEATURES);
+    // For integration tests we need to disable the notifications
+    var property = System.getProperty("sonarlint.internal.ignoreEnhancedFeature");
+    return property == null || property.isBlank()
+      ? getPreferenceBoolean(PREF_IGNORE_ENHANCED_FEATURES)
+      : Boolean.parseBoolean(property);
   }
   
   public static void setIgnoreEnhancedFeatureNotifications() {
