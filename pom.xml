@@ -59,7 +59,7 @@
     <tycho.version>4.0.2</tycho.version>
     <jdk.min.version>11</jdk.min.version>
     <!-- Same protobuf version than the one in SonarLint Core-->
-    <protobuf.version>3.21.9</protobuf.version>
+    <protobuf.version>3.25.1</protobuf.version>
     <jacoco.version>0.8.8</jacoco.version>
     <jarsigner.version>3.0.0</jarsigner.version>
 
