@@ -317,6 +317,11 @@ public class ConnectedEngineFacadeManager {
   public List<IConnectedEngineFacade> getServers() {
     return List.copyOf(facadesByConnectionId.values());
   }
+  
+  /** Checks if there is at least one connection to a SonarCloud project */
+  public boolean checkForSonarCloud() {
+    return facadesByConnectionId.values().stream().anyMatch(facade -> facade.isSonarCloud());
+  }
 
   /**
    * Returns the server with the given id.

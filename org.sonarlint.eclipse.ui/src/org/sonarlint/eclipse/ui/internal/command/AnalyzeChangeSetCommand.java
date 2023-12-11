@@ -75,11 +75,11 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
     } else {
       reportTitle = "Changed files reported by the SCM on " + selectedProjects.size() + " projects";
     }
-    registerJobListener(job, reportTitle, unavailableLanguagesReference);
+    registerJobListener(job, reportTitle, selectedProjects, unavailableLanguagesReference);
     job.schedule();
   }
 
-  static void registerJobListener(Job job, String reportTitle, Set<Language> unavailableLanguagesReference) {
+  static void registerJobListener(Job job, String reportTitle, Collection<ISonarLintProject> selectedProjects, Set<Language> unavailableLanguagesReference) {
     job.addJobChangeListener(new JobChangeAdapter() {
       @Override
       public void done(IJobChangeEvent event) {
@@ -93,7 +93,8 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
             } catch (PartInitException e) {
               SonarLintLogger.get().error("Unable to open SonarLint Report View", e);
             }
-            LanguageFromConnectedModePopup.displayPopupIfNotIgnored(new ArrayList<>(unavailableLanguagesReference));
+            LanguageFromConnectedModePopup.displayPopupIfNotIgnored(new ArrayList<>(selectedProjects),
+              new ArrayList<>(unavailableLanguagesReference));
           });
         } else if (Status.CANCEL_STATUS == event.getResult()) {
           Display.getDefault().asyncExec(() -> SonarLintReportView.setReportTitle(null));

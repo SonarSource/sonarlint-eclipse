@@ -67,7 +67,7 @@ public class AnalysisJobsScheduler {
           public void done(IJobChangeEvent event) {
             if (event.getResult() == Status.OK_STATUS) {
               Display.getDefault().asyncExec(() -> LanguageFromConnectedModePopup.displayPopupIfNotIgnored(
-                new ArrayList<>(unavailableLanguagesReference)));
+                List.of(project), new ArrayList<>(unavailableLanguagesReference)));
             }
           }
         });

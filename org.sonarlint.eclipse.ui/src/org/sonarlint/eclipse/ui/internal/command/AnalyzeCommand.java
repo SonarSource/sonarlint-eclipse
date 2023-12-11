@@ -89,6 +89,7 @@ public class AnalyzeCommand extends AbstractHandler {
       return;
     }
     
+    var projects = new ArrayList<>(filesPerProject.keySet());
     var unavailableLanguagesReference = EnumSet.noneOf(Language.class);
     
     if (filesPerProject.size() == 1) {
@@ -103,12 +104,12 @@ public class AnalyzeCommand extends AbstractHandler {
       }
       
       var job = AbstractAnalyzeProjectJob.create(req, unavailableLanguagesReference);
-      AnalyzeChangeSetCommand.registerJobListener(job, reportTitle, unavailableLanguagesReference);
+      AnalyzeChangeSetCommand.registerJobListener(job, reportTitle, projects, unavailableLanguagesReference);
       job.schedule();
     } else {
       var job = new AnalyzeProjectsJob(filesPerProject, unavailableLanguagesReference);
       AnalyzeChangeSetCommand.registerJobListener(job, "All files of " + filesPerProject.size() + " projects",
-        unavailableLanguagesReference);
+        projects, unavailableLanguagesReference);
       job.schedule();
     }
   }
