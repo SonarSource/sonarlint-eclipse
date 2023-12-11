@@ -469,7 +469,7 @@ public class SonarLintMarkerUpdater {
         marker.setAttribute(IMarker.CHAR_START, flowPosition.getOffset());
         marker.setAttribute(IMarker.CHAR_END, flowPosition.getOffset() + flowPosition.getLength());
       } else {
-        SonarLintLogger.get().debug("Position cannot be set for flow on '" + file.getProjectRelativePath());
+        SonarLintLogger.get().debug("Position cannot be set for flow on '" + file.getProjectRelativePath() + "'");
       }
       return marker;
     }
