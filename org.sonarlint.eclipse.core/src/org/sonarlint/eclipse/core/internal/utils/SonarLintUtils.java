@@ -39,13 +39,6 @@ public class SonarLintUtils {
   /**
    *  Enabled languages should be consistent with https://www.sonarsource.com/products/sonarlint/features/eclipse!
    *  
-   *  Other sub-plugins bringing their own languages should have two fields
-   *  <ul>
-   *    <li>STANDALONE_MODE_LANGUAGES for languages shipped with packaged analyzer</li>
-   *    <li>CONNECTED_MODE_LANGUAGES for languages coming from connected mode</li>
-   *  </ul>
-   *  in the class implementing {@link org.sonarlint.eclipse.core.analysis.IAnalysisConfiguratior}
-   *  
    *  Currently the only sub-plugins bringing their own languages are JDT (Java/JSP) and CDT (C/C++).
    */
   public static final Set<Language> STANDALONE_MODE_LANGUAGES = EnumSet.of(Language.PYTHON, Language.JS, Language.TS,
@@ -102,6 +95,13 @@ public class SonarLintUtils {
       result.setDaemon(daemon);
       return result;
     };
+  }
+  
+  /** Check whether a file is bound to SQ / SC via its project */
+  public static boolean isBoundToConnection(ISonarLintIssuable f) {
+    var config = SonarLintCorePlugin.loadConfig(f.getProject());
+    return config.isBound()
+      && config.getProjectBinding().isPresent();
   }
 
   /** Check whether a file is bound to SQ / SC via its project */

@@ -24,9 +24,14 @@ import java.util.stream.Collectors;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
+import org.sonarlint.eclipse.ui.internal.util.PopupUtils;
 import org.sonarsource.sonarlint.core.commons.Language;
 
 /**
@@ -34,9 +39,11 @@ import org.sonarsource.sonarlint.core.commons.Language;
  *  only available in connected mode.
  */
 public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
+  private final List<ISonarLintProject> projects;
   private final List<Language> languages;
   
-  public LanguageFromConnectedModePopup(List<Language> languages) {
+  public LanguageFromConnectedModePopup(List<ISonarLintProject> projects, List<Language> languages) {
+    this.projects = projects;
     this.languages = languages;
   }
   
@@ -44,12 +51,12 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
   protected String getMessage() {
     if (languages.size() == 1) {
       return "You tried to analyze a " + languages.get(0).getLabel()
-        + " file. This language analyzer is only available in Connected Mode.";
+        + " file. This language analysis is only available in Connected Mode.";
     }
     
     var languagesList = String.join(" / ", languages.stream().map(l -> l.getLabel()).collect(Collectors.toList()));
     return "You tried to analyze " + languagesList
-      + " files. These language analyzers are only available in Connected Mode.";
+      + " files. These language analyses are only available in Connected Mode.";
   }
 
   @Override
@@ -59,13 +66,19 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
     addLink("Learn more",
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.RULES, getShell().getDisplay()));
     
-    addLink("Try SonarCloud for free",
-      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.SONARCLOUD_SIGNUP_LINK, getShell().getDisplay()));
+    if (SonarLintCorePlugin.getServersManager().checkForSonarCloud()) {
+      addLink("Bind to SonarCloud", e -> ProjectBindingWizard.createDialog(getParentShell(), projects));
+    } else {
+      addLink("Try SonarCloud for free",
+        e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.SONARCLOUD_SIGNUP_LINK, getShell().getDisplay()));
+    }
     
     addLink("Don't show again", e -> {
       SonarLintGlobalConfiguration.setIgnoreMissingFeatureNotifications();
       close();
     });
+    
+    composite.getShell().addDisposeListener(e -> PopupUtils.removeCurrentlyDisplayedPopup(getClass()));
   }
 
   @Override
@@ -79,12 +92,20 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
   }
   
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
-  public static void displayPopupIfNotIgnored(List<Language> languages) {
-    if (languages.isEmpty() || SonarLintGlobalConfiguration.ignoreMissingFeatureNotifications() ) {
+  public static void displayPopupIfNotIgnored(List<ISonarLintProject> projects, List<Language> languages) {
+    if (languages.isEmpty() || PopupUtils.popupCurrentlyDisplayed(LanguageFromConnectedModePopup.class)
+      || SonarLintGlobalConfiguration.ignoreMissingFeatureNotifications() ) {
       return;
     }
     
-    var popup = new LanguageFromConnectedModePopup(languages);
+    PopupUtils.addCurrentlyDisplayedPopup(LanguageFromConnectedModePopup.class);
+    
+    // Because we can analyze multiple projects at the same time and maybe some of them are already bound, we have to
+    // filter out the ones already bound.
+    var projectsNotBound = projects.stream()
+      .filter(project -> !SonarLintUtils.isBoundToConnection(project)).collect(Collectors.toList());
+    
+    var popup = new LanguageFromConnectedModePopup(projectsNotBound, languages);
     popup.setFadingEnabled(false);
     popup.setDelayClose(0L);
     popup.open();
