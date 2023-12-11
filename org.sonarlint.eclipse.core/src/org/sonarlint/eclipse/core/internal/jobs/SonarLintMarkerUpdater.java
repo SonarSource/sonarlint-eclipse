@@ -410,7 +410,7 @@ public class SonarLintMarkerUpdater {
           marker.setAttribute(IMarker.CHAR_START, position.getOffset());
           marker.setAttribute(IMarker.CHAR_END, position.getOffset() + position.getLength());
         } else {
-          SonarLintLogger.get().debug("Position cannot be set on resource '" + resource.getFullPath());
+          SonarLintLogger.get().debug("Position cannot be set on resource '" + resource.getFullPath() + "'");
         }
       }
       return Optional.of(marker);
