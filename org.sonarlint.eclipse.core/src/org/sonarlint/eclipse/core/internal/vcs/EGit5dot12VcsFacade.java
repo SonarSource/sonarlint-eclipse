@@ -35,16 +35,27 @@ public class EGit5dot12VcsFacade extends AbstractEGitVcsFacade {
 
   @Override
   public boolean isIgnored(ISonarLintFile file) {
-    GitInfo gitInfo = Adapters.adapt(file.getResource(), GitInfo.class);
-    if (gitInfo == null) {
+    try {
+      var gitInfo = Adapters.adapt(file.getResource(), GitInfo.class);
+      if (gitInfo == null) {
+        return false;
+      }
+      return gitInfo.getGitState().isIgnored();
+    } catch (NoClassDefFoundError notFound) {
+      // SLE-785 Workaround for IDz
       return false;
     }
-    return gitInfo.getGitState().isIgnored();
   }
 
+  @Override
   Optional<Repository> getRepo(IResource resource) {
-    GitInfo gitInfo = Adapters.adapt(resource, GitInfo.class);
-    return Optional.ofNullable(gitInfo).map(GitInfo::getRepository);
+    try {
+      var gitInfo = Adapters.adapt(resource, GitInfo.class);
+      return Optional.ofNullable(gitInfo).map(GitInfo::getRepository);
+    } catch (NoClassDefFoundError notFound) {
+      // SLE-785 Workaround for IDz
+      return Optional.empty();
+    }
   }
 
 }
