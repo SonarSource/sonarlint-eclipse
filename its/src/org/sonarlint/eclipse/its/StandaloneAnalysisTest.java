@@ -79,8 +79,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   public void analyzeProjectWithMissingLanguageAnalyzers() {
     // INFO: This test case should display everything!
-    System.setProperty("sonarlint.internal.ignoreEnhancedFeature", "");
-    System.setProperty("sonarlint.internal.ignoreMissingFeature", "");
+    System.clearProperty("sonarlint.internal.ignoreEnhancedFeature");
+    System.clearProperty("sonarlint.internal.ignoreMissingFeature");
     
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("connected", "connected");

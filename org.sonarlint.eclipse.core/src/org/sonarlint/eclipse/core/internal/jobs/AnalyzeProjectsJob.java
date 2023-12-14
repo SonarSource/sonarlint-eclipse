@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.Map;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -32,25 +31,17 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.commons.Language;
 
 public class AnalyzeProjectsJob extends WorkspaceJob {
   private static final String UNABLE_TO_ANALYZE_FILES = "Unable to analyze files";
   private final Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject;
-  private final EnumSet<Language> unavailableLanguagesReference;
   
-  /** Sometimes we trigger an analysis but don't care about unsupported languages, e.g. already in connected mode */
   public AnalyzeProjectsJob(Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject) {
-    this(filesPerProject, EnumSet.noneOf(Language.class));
-  }
-
-  public AnalyzeProjectsJob(Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject,
-    EnumSet<Language> unavailableLanguagesReference) {
     super("Analyze all files");
     this.filesPerProject = filesPerProject;
     setPriority(Job.LONG);
-    this.unavailableLanguagesReference = unavailableLanguagesReference;
   }
 
   @Override
@@ -70,8 +61,12 @@ public class AnalyzeProjectsJob extends WorkspaceJob {
           continue;
         }
         global.setTaskName("Analyzing project " + project.getName());
-        var req = new AnalyzeProjectRequest(project, entry.getValue(), TriggerType.MANUAL);
-        var job = AbstractAnalyzeProjectJob.create(req, unavailableLanguagesReference);
+        
+        // If the project is bound, we don't have to check for unsupported languages.
+        var req = new AnalyzeProjectRequest(project, entry.getValue(), TriggerType.MANUAL, false,
+          !SonarLintUtils.isBoundToConnection(project));
+        
+        var job = AbstractAnalyzeProjectJob.create(req);
         var subMonitor = analysisMonitor.newChild(1);
         job.run(subMonitor);
         subMonitor.done();

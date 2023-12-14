@@ -17,25 +17,18 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.event;
+package org.sonarlint.eclipse.ui.internal;
 
 import java.util.ArrayList;
-import java.util.List;
+import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
+import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
+import org.sonarlint.eclipse.ui.internal.popup.LanguageFromConnectedModePopup;
 
-public class AnalysisListenerManager {
-
-  private List<AnalysisListener> listeners = new ArrayList<>();
-
-  public void addListener(AnalysisListener listener) {
-    listeners.add(listener);
+/** Service to handle languages from connected mode after analysis -> applies to standalone projects only */
+public class SonarLintLanguageFromConnectedModeService implements AnalysisListener {
+  @Override
+  public void usedAnalysis(AnalysisEvent event) {
+    LanguageFromConnectedModePopup.displayPopupIfNotIgnored(new ArrayList<>(event.getProjects()),
+      new ArrayList<>(event.getUnavailableLanguages()));
   }
-
-  public void removeListener(AnalysisListener listener) {
-    listeners.remove(listener);
-  }
-
-  public void notifyListeners(AnalysisEvent event) {
-    listeners.forEach(l -> l.usedAnalysis(event));
-  }
-
 }

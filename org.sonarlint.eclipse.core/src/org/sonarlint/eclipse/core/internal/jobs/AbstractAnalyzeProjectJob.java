@@ -26,12 +26,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -51,6 +53,7 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
@@ -78,31 +81,24 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   private final List<SonarLintProperty> extraProps;
   private final TriggerType triggerType;
   private final boolean shouldClearReport;
+  private final boolean checkUnsupportedLanguages;
   private final Collection<FileWithDocument> files;
-  private EnumSet<Language> unavailableLanguagesReference;
-  
-  protected AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
-    this(request, EnumSet.noneOf(Language.class));
-  }
+  private EnumSet<Language> unavailableLanguagesReference = EnumSet.noneOf(Language.class);
 
-  protected AbstractAnalyzeProjectJob(AnalyzeProjectRequest request, EnumSet<Language> unavailableLanguagesReference) {
+  protected AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
     this.extraProps = SonarLintGlobalConfiguration.getExtraPropertiesForLocalAnalysis(request.getProject());
     this.files = request.getFiles();
     this.triggerType = request.getTriggerType();
     this.shouldClearReport = request.shouldClearReport();
-    this.unavailableLanguagesReference = unavailableLanguagesReference;
+    this.checkUnsupportedLanguages = request.checkUnsupportedLanguages();
   }
 
   public static AbstractSonarProjectJob create(AnalyzeProjectRequest request) {
-    return create(request, EnumSet.noneOf(Language.class));
-  }
-
-  public static AbstractSonarProjectJob create(AnalyzeProjectRequest request, EnumSet<Language> unsupportedLanguages) {
     return SonarLintCorePlugin.getServersManager()
       .resolveBinding(request.getProject())
       .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request, b.getProjectBinding(), (ConnectedEngineFacade) b.getEngineFacade()))
-      .orElseGet(() -> new AnalyzeStandaloneProjectJob(request, unsupportedLanguages));
+      .orElseGet(() -> new AnalyzeStandaloneProjectJob(request));
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
@@ -169,7 +165,19 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
-      SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners();
+      
+      SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners(new AnalysisEvent() {
+        @Override
+        public Set<Language> getUnavailableLanguages() {
+          return unavailableLanguagesReference;
+        }
+
+        @Override
+        public Set<ISonarLintProject> getProjects() {
+          return Set.of(getProject());
+        }
+      });
+      
       SonarLintLogger.get().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
     } catch (CanceledException e) {
       return Status.CANCEL_STATUS;
@@ -214,16 +222,18 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       updateMarkers(docPerFiles, issuesPerResource, result, triggerType, monitor);
       updateTelemetry(result, start, issuesPerResource);
       
-      // Collect all the languages we just analyzed and that are unavailable in standalone mode. This will be re-used
-      // to handle it accordingly in the UI (e.g. display notification to the user).
-      var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(getProject());
-      if (bindingOpt.isEmpty()) {
-        var languages = result.languagePerFile().values().stream().collect(Collectors.toSet());
-        var languagesConnectedMode = EnumSet.noneOf(Language.class);
-        languagesConnectedMode.addAll(SonarLintUtils.CONNECTED_MODE_LANGUAGES);
-        languagesConnectedMode.addAll(SonarLintUtils.CONNECTED_MODE_LANGUAGES_CDT);
-        languages.retainAll(languagesConnectedMode);
-        unavailableLanguagesReference.addAll(languages);
+      if (checkUnsupportedLanguages) {
+        // Collect all the languages we just analyzed and that are unavailable in standalone mode. This will be re-used
+        // to handle it accordingly in the UI (e.g. display notification to the user).
+        var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(getProject());
+        if (bindingOpt.isEmpty()) {
+          var languages = result.languagePerFile().values().stream().collect(Collectors.toCollection(HashSet::new));
+          var languagesConnectedMode = EnumSet.noneOf(Language.class);
+          languagesConnectedMode.addAll(SonarLintUtils.CONNECTED_MODE_LANGUAGES);
+          languagesConnectedMode.addAll(SonarLintUtils.CONNECTED_MODE_LANGUAGES_CDT);
+          languages.retainAll(languagesConnectedMode);
+          unavailableLanguagesReference.addAll(languages);
+        }
       }
     }
   }

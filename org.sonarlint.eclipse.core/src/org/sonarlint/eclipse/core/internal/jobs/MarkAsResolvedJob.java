@@ -75,7 +75,8 @@ public class MarkAsResolvedJob extends Job {
       if (isTaint) {
         new TaintIssuesUpdateAfterSyncJob(facade, project, List.of(file)).schedule();
       } else {
-        var request = new AnalyzeProjectRequest(project, List.of(new FileWithDocument(file, null)), TriggerType.AFTER_RESOLVE);
+        var request = new AnalyzeProjectRequest(project, List.of(new FileWithDocument(file, null)),
+          TriggerType.AFTER_RESOLVE, false, false);
         AbstractAnalyzeProjectJob.create(request).schedule();
       }
       return Status.OK_STATUS;

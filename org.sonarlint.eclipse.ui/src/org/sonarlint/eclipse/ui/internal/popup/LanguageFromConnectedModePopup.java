@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -98,16 +99,18 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
       return;
     }
     
-    PopupUtils.addCurrentlyDisplayedPopup(LanguageFromConnectedModePopup.class);
-    
-    // Because we can analyze multiple projects at the same time and maybe some of them are already bound, we have to
-    // filter out the ones already bound.
-    var projectsNotBound = projects.stream()
-      .filter(project -> !SonarLintUtils.isBoundToConnection(project)).collect(Collectors.toList());
-    
-    var popup = new LanguageFromConnectedModePopup(projectsNotBound, languages);
-    popup.setFadingEnabled(false);
-    popup.setDelayClose(0L);
-    popup.open();
+    Display.getDefault().asyncExec(() -> {
+      PopupUtils.addCurrentlyDisplayedPopup(LanguageFromConnectedModePopup.class);
+      
+      // Because we can analyze multiple projects at the same time and maybe some of them are already bound, we have to
+      // filter out the ones already bound.
+      var projectsNotBound = projects.stream()
+        .filter(project -> !SonarLintUtils.isBoundToConnection(project)).collect(Collectors.toList());
+      
+      var popup = new LanguageFromConnectedModePopup(projectsNotBound, languages);
+      popup.setFadingEnabled(false);
+      popup.setDelayClose(0L);
+      popup.open();
+    });
   }
 }

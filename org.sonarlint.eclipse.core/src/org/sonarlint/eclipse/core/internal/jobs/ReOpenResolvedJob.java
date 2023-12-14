@@ -57,7 +57,7 @@ public class ReOpenResolvedJob extends Job {
       new TaintIssuesUpdateAfterSyncJob(facade, project, List.of(file)).schedule();
     } else {
       var request = new AnalyzeProjectRequest(project, List.of(new FileWithDocument(file, null)),
-        TriggerType.AFTER_RESOLVE);
+        TriggerType.AFTER_RESOLVE, false, false);
       AbstractAnalyzeProjectJob.create(request).schedule();
     }
     return Status.OK_STATUS;
