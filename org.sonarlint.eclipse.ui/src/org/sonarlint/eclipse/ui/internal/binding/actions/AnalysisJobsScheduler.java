@@ -19,17 +19,11 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding.actions;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
@@ -41,9 +35,7 @@ import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
-import org.sonarlint.eclipse.ui.internal.popup.LanguageFromConnectedModePopup;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
-import org.sonarsource.sonarlint.core.commons.Language;
 
 public class AnalysisJobsScheduler {
 
@@ -51,29 +43,14 @@ public class AnalysisJobsScheduler {
     // utility class, forbidden constructor
   }
   
-  public static void scheduleAutoAnalysisIfEnabled(AnalyzeProjectRequest request, boolean unsupportedLanguageCheck) {
+  public static void scheduleAutoAnalysisIfEnabled(AnalyzeProjectRequest request) {
     var project = request.getProject();
     if (!project.isOpen()) {
       return;
     }
     var projectConfiguration = SonarLintCorePlugin.loadConfig(project);
     if (projectConfiguration.isAutoEnabled()) {
-      var unavailableLanguagesReference = EnumSet.noneOf(Language.class);
-      var job = AbstractAnalyzeProjectJob.create(request, unavailableLanguagesReference);
-      
-      if (unsupportedLanguageCheck) {
-        job.addJobChangeListener(new JobChangeAdapter() {
-          @Override
-          public void done(IJobChangeEvent event) {
-            if (event.getResult() == Status.OK_STATUS) {
-              Display.getDefault().asyncExec(() -> LanguageFromConnectedModePopup.displayPopupIfNotIgnored(
-                List.of(project), new ArrayList<>(unavailableLanguagesReference)));
-            }
-          }
-        });
-      }
-      
-      job.schedule();
+      AbstractAnalyzeProjectJob.create(request).schedule();
     }
   }
 
@@ -87,8 +64,8 @@ public class AnalysisJobsScheduler {
 
     for (var entry : filesByProject.entrySet()) {
       var aProject = entry.getKey();
-      var request = new AnalyzeProjectRequest(aProject, entry.getValue(), triggerType);
-      scheduleAutoAnalysisIfEnabled(request, unavailableLanguagesCheck);
+      var request = new AnalyzeProjectRequest(aProject, entry.getValue(), triggerType, false, unavailableLanguagesCheck);
+      scheduleAutoAnalysisIfEnabled(request);
     }
   }
 

@@ -106,8 +106,9 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
           .filter(Objects::nonNull)
           .collect(Collectors.toList());
         if (!filesToAnalyze.isEmpty()) {
-          var request = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.EDITOR_CHANGE);
-          AnalysisJobsScheduler.scheduleAutoAnalysisIfEnabled(request, true);
+          var request = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.EDITOR_CHANGE, false,
+            !SonarLintUtils.isBoundToConnection(project));
+          AnalysisJobsScheduler.scheduleAutoAnalysisIfEnabled(request);
         }
       }
       return Status.OK_STATUS;

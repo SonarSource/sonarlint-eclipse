@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -52,7 +51,6 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
-import org.sonarsource.sonarlint.core.commons.Language;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -112,7 +110,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     SonarLintGlobalConfiguration.saveRulesConfig(List.of(ruleConfig));
 
     var underTest = new AnalyzeStandaloneProjectJob(new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze),
-      TriggerType.EDITOR_CHANGE), EnumSet.noneOf(Language.class));
+      TriggerType.EDITOR_CHANGE, false, true));
     underTest.schedule();
     assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
     var status = underTest.getResult();
@@ -134,8 +132,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
     try {
       var underTest = new AnalyzeStandaloneProjectJob(
-        new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.EDITOR_CHANGE),
-        EnumSet.noneOf(Language.class));
+        new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.EDITOR_CHANGE, false, false));
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
@@ -172,8 +169,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
     try {
       var underTest = new AnalyzeStandaloneProjectJob(
-        new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.MANUAL, true),
-        EnumSet.noneOf(Language.class));
+        new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.MANUAL, true, false));
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
@@ -208,8 +204,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     var fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);
 
     var underTest = new AnalyzeStandaloneProjectJob(
-      new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze), TriggerType.EDITOR_CHANGE),
-      EnumSet.noneOf(Language.class));
+      new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze), TriggerType.EDITOR_CHANGE, false, false));
     underTest.schedule();
     assertThat(underTest.join(20_000, new NullProgressMonitor())).isTrue();
     var status = underTest.getResult();

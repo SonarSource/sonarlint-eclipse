@@ -19,8 +19,9 @@
  */
 package org.sonarlint.eclipse.ui.internal.util;
 
+import java.util.Collections;
 import java.util.HashSet;
-
+import java.util.Set;
 import org.sonarlint.eclipse.ui.internal.notifications.AbstractNotificationPopup;
 
 /** Utility used for reducing stacked up notifications */
@@ -29,7 +30,7 @@ public class PopupUtils {
     // utility class
   }
   
-  private static HashSet<Class<? extends AbstractNotificationPopup>> popupsCurrentlyDisplayed = new HashSet<>();
+  private static Set<Class<? extends AbstractNotificationPopup>> popupsCurrentlyDisplayed = Collections.synchronizedSet(new HashSet<>());
   
   public static boolean popupCurrentlyDisplayed(Class<? extends AbstractNotificationPopup> popupClass) {
     return popupsCurrentlyDisplayed.contains(popupClass);

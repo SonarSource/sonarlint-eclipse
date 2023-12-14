@@ -19,6 +19,11 @@
  */
 package org.sonarlint.eclipse.core.internal.event;
 
-public interface AnalysisEvent {
+import java.util.Set;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.commons.Language;
 
+public interface AnalysisEvent {
+  Set<ISonarLintProject> getProjects();
+  Set<Language> getUnavailableLanguages();
 }
