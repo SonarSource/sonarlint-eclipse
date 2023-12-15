@@ -50,6 +50,7 @@ import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.hamcrest.core.StringContains;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.sonarlint.eclipse.its.reddeer.conditions.OnTheFlyViewIsEmpty;
@@ -266,10 +267,11 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   // Need PyDev
   @Test
+  @Ignore("12/2023: Removal of iBuilds axis, PyDev has to be updated in latest.target to work")
   @Category(RequiresExtraDependency.class)
   public void shouldAnalysePython() {
-    // The PydevPerspective is not working correctly in older PyDev versions, therefore only run in iBuilds
-    Assume.assumeTrue("ibuilds".equals(System.getProperty("target.platform", "ibuilds")));
+    // The PydevPerspective is not working correctly in older PyDev versions, therefore only run in latest
+    Assume.assumeTrue("latest".equals(System.getProperty("target.platform", "latest")));
     
     new PydevPerspective().open();
     importExistingProjectIntoWorkspace("python");

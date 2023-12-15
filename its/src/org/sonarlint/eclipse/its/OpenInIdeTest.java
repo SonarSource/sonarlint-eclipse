@@ -54,7 +54,7 @@ import org.sonarqube.ws.client.project.DeleteRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- *  Integration tests on the "Open in IDE" feature only available on ibuilds as it is available since SonarQube 10.2+
+ *  Integration tests on the "Open in IDE" feature only available since SonarQube 10.2+
  */
 public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   private static final String MAVEN_TAINT_PROJECT_KEY = "maven-taint";
@@ -86,7 +86,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   /** as we re-use the same project we have to delete it on SonarQube after every test */
   @After
   public void deleteSonarQubeProjects() {
-    if ("ibuilds".equals(System.getProperty("target.platform", "ibuilds"))) {
+    if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
       adminWsClient.projects().delete(DeleteRequest.builder().setKey(MAVEN_TAINT_PROJECT_KEY).build());
     }
   }
@@ -94,8 +94,8 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   /** integration test for when the feature fails due to the local file not being found */
   @Test
   public void test_open_in_ide_without_corner_cases() throws IOException, InterruptedException {
-    // Only available since SonarQube 10.2+ (ibuilds / locally)
-    Assume.assumeTrue("ibuilds".equals(System.getProperty("target.platform", "ibuilds")));
+    // Only available since SonarQube 10.2+ (LATEST_RELEASE / locally)
+    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 2));
     
     // 1) create project on server / run first analysis
     createProjectOnSonarQube(orchestrator, MAVEN_TAINT_PROJECT_KEY, "SonarLint IT New Code");
