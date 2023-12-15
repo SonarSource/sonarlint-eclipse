@@ -117,7 +117,7 @@ public class SonarLintBackendService {
         try {
           backend.initialize(new InitializeParams(
             new ClientInfoDto(getIdeName(), "eclipse", "SonarLint Eclipse " + SonarLintUtils.getPluginVersion()),
-            new FeatureFlagsDto(true, true, true, true, false, true),
+            new FeatureFlagsDto(true, true, true, true, false, true, false),
             StoragePathManager.getStorageDir(),
             StoragePathManager.getDefaultWorkDir(),
             Set.copyOf(embeddedPluginPaths),
