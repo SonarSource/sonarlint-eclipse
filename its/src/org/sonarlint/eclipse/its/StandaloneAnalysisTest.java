@@ -56,6 +56,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.sonarlint.eclipse.its.reddeer.conditions.OnTheFlyViewIsEmpty;
+import org.sonarlint.eclipse.its.reddeer.dialogs.EnhancedWithConnectedModeInformationDialog;
 import org.sonarlint.eclipse.its.reddeer.perspectives.PhpPerspective;
 import org.sonarlint.eclipse.its.reddeer.perspectives.PydevPerspective;
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences;
@@ -64,7 +65,6 @@ import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.PydevPackageExplorer;
 import org.sonarlint.eclipse.its.reddeer.views.ReportView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
-import org.sonarlint.eclipse.its.reddeer.wizards.EnhancedWithConnectedModeInformationDialog;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;

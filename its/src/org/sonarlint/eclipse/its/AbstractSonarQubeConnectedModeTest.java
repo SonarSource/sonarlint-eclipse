@@ -37,9 +37,9 @@ import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.swt.widgets.Label;
 import org.junit.Before;
 import org.osgi.framework.FrameworkUtil;
+import org.sonarlint.eclipse.its.reddeer.dialogs.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
-import org.sonarlint.eclipse.its.reddeer.wizards.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.project.CreateRequest;
@@ -144,7 +144,7 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     projectsToBindPage.clickAdd();
 
     var projectSelectionDialog = new ProjectSelectionDialog();
-    projectSelectionDialog.setProjectName(projectKey);
+    projectSelectionDialog.filterProjectName(projectKey);
     projectSelectionDialog.ok();
 
     projectBindingWizard.next();

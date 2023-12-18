@@ -17,40 +17,27 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.its.reddeer.conditions;
+package org.sonarlint.eclipse.its.reddeer.dialogs;
 
-import org.eclipse.reddeer.common.condition.WaitCondition;
-import org.sonarlint.eclipse.its.reddeer.dialogs.OpenInIdeDialog;
+import org.eclipse.reddeer.swt.impl.button.OkButton;
+import org.eclipse.reddeer.swt.impl.label.DefaultLabel;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
+import org.eclipse.reddeer.swt.impl.text.DefaultText;
 
-/** Await the "Open in IDE" dialog is opened (no matter what the content is) */
-public class OpenInIdeDialogOpened implements WaitCondition {
-  @Override
-  public boolean test() {
-    try {
-      new OpenInIdeDialog().isEnabled();
-      return true;
-    } catch (Exception ignored) {
-      return false;
-    }
+public class ProjectSelectionDialog extends DefaultShell {
+  public ProjectSelectionDialog() {
+    super("SonarLint - Project Selection");
   }
 
-  @Override
-  public OpenInIdeDialog getResult() {
-    return new OpenInIdeDialog();
+  public void filterProjectName(String projectName) {
+    new DefaultText(this).setText(projectName);
   }
 
-  @Override
-  public String description() {
-    return "'Open in IDE' dialog is opened";
+  public void ok() {
+    new OkButton(this).click();
   }
 
-  @Override
-  public String errorMessageWhile() {
-    return "'Open in IDE' dialog is still opened";
-  }
-
-  @Override
-  public String errorMessageUntil() {
-    return "'Open in IDE' dialog is not yet opened";
+  public String getMessage() {
+    return new DefaultLabel().getText();
   }
 }

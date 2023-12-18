@@ -48,7 +48,15 @@ public class ServerConnectionWizard extends NewMenuWizard {
     }
 
     public void selectSonarQube() {
-      new RadioButton(this, 1).click();
+      getSonarQubeRB().click();
+    }
+
+    public boolean isSonarQubeSelected() {
+      return getSonarQubeRB().isSelected();
+    }
+
+    private RadioButton getSonarQubeRB() {
+      return new RadioButton(this, 1);
     }
   }
 
@@ -60,6 +68,10 @@ public class ServerConnectionWizard extends NewMenuWizard {
 
     public void setUrl(String url) {
       new DefaultText(this).setText(url);
+    }
+
+    public String getUrl() {
+      return new DefaultText(this).getText();
     }
   }
 
@@ -77,7 +89,7 @@ public class ServerConnectionWizard extends NewMenuWizard {
   public static class AuthenticationPage extends WizardPage {
     public final String DEPRECATION_MESSAGE = "Authentication via username and password is deprecated and will "
       + "be removed in the future. Please use a token instead.";
-    
+
     public AuthenticationPage(ReferencedComposite referencedComposite) {
       super(referencedComposite);
     }
@@ -93,7 +105,7 @@ public class ServerConnectionWizard extends NewMenuWizard {
     public void setPassword(String password) {
       new DefaultText(this, 1).setText(password);
     }
-    
+
     public String getDeprecationMessage() {
       return new DefaultLabel(this, 2).getText();
     }

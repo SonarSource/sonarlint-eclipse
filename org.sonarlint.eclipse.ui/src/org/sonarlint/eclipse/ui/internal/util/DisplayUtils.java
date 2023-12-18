@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 public class DisplayUtils {
@@ -46,11 +47,7 @@ public class DisplayUtils {
     return r.getFuture();
   }
 
-  public static CompletableFuture<Void> bringToFrontAsync() {
-    return asyncExec(DisplayUtils::bringToFront);
-  }
-
-  public static void bringToFront() {
+  public static Shell bringToFront() {
     var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
     var shell = window.getShell();
     if (shell != null) {
@@ -58,7 +55,9 @@ public class DisplayUtils {
         shell.setMinimized(false);
       }
       shell.forceActive();
+      return shell;
     }
+    throw new IllegalStateException("No shell available");
   }
 
   private static class RunnableWithResult<T> implements Runnable {

@@ -17,33 +17,21 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.its.reddeer.wizards;
+package org.sonarlint.eclipse.its.reddeer.dialogs;
 
 import org.eclipse.reddeer.core.reference.ReferencedComposite;
 import org.eclipse.reddeer.swt.impl.button.PredefinedButton;
-import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.swt.SWT;
 
-public class EnhancedWithConnectedModeInformationDialog extends DefaultShell {
-  public EnhancedWithConnectedModeInformationDialog(String title) {
-    super(title);
+public class TrustButton extends PredefinedButton {
+
+  public TrustButton(ReferencedComposite referencedComposite) {
+    this(referencedComposite, 0);
+
   }
-  
-  public void learnMore() {
-    new CustomButton(this, "Learn more").click();
+
+  public TrustButton(ReferencedComposite referencedComposite, int index) {
+    super(referencedComposite, index, "Connect to this SonarQube server", SWT.PUSH);
   }
-  
-  public void trySonarCloudForFree() {
-    new CustomButton(this, "Try SonarCloud for free").click();
-  }
-  
-  public void dontAskAgain() {
-    new CustomButton(this, "Don't ask again").click();
-  }
-  
-  private static class CustomButton extends PredefinedButton {
-    public CustomButton(ReferencedComposite referencedComposite, String title) {
-      super(referencedComposite, 0, title, SWT.PUSH);
-    }
-  }
+
 }
