@@ -29,43 +29,22 @@ import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.ElementListSelectionDialog;
-import org.eclipse.ui.ide.IDE.SharedImages;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.binding.ProjectToBindSelectionDialog;
+import org.sonarlint.eclipse.ui.internal.binding.SonarLintProjectLabelProvider;
 import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ViewersObservablesCompat;
 
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.toList;
-
 public class ProjectsSelectionWizardPage extends AbstractProjectBindingWizardPage {
-
-  private static final class SonarLintProjectLabelProvider extends LabelProvider {
-    @Override
-    public String getText(Object element) {
-      var current = (ISonarLintProject) element;
-      return current.getName();
-    }
-
-    @Override
-    public Image getImage(Object element) {
-      return PlatformUI.getWorkbench().getSharedImages().getImage(SharedImages.IMG_OBJ_PROJECT);
-    }
-  }
 
   private TableViewer projectsViewer;
   private Button btnRemove;
@@ -151,20 +130,10 @@ public class ProjectsSelectionWizardPage extends AbstractProjectBindingWizardPag
   }
 
   protected void addSonarLintProjectsAction() {
-    var projects = ProjectsProviderUtils.allProjects()
-      .stream()
-      .filter(p -> !((List) projectsViewer.getInput()).contains(p))
-      .sorted(comparing(ISonarLintProject::getName))
-      .collect(toList());
-    var dialog = new ElementListSelectionDialog(getShell(), new SonarLintProjectLabelProvider());
-    dialog.setElements(projects.toArray());
-    dialog.setMessage("Select projects to add:");
-    dialog.setTitle("Project selection");
-    dialog.setHelpAvailable(false);
-    dialog.setMultipleSelection(true);
-    if (dialog.open() == Window.OK) {
+    var selected = ProjectToBindSelectionDialog.selectProjectsToAdd(getShell(), (List) projectsViewer.getInput());
+    if (!selected.isEmpty()) {
       var newInput = new ArrayList<ISonarLintProject>((List) projectsViewer.getInput());
-      List.of(dialog.getResult()).forEach(o -> newInput.add((ISonarLintProject) o));
+      newInput.addAll(selected);
       observableInput.setValue(newInput);
     }
   }

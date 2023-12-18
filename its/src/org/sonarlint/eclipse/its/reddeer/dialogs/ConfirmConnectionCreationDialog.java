@@ -17,28 +17,21 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.its.reddeer.wizards;
+package org.sonarlint.eclipse.its.reddeer.dialogs;
 
-import org.eclipse.reddeer.swt.impl.button.NoButton;
-import org.eclipse.reddeer.swt.impl.button.OkButton;
-import org.eclipse.reddeer.swt.impl.button.YesButton;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 
-/** We use {@link org.eclipse.jface.dialogs.MessageDialog} to display messages on that feature */
-public class OpenInIdeDialog extends DefaultShell {
-  public OpenInIdeDialog() {
-    super("Open in IDE");
+public class ConfirmConnectionCreationDialog extends DefaultShell {
+  public ConfirmConnectionCreationDialog() {
+    super("Do you trust this SonarQube server?");
   }
-  
-  public void ok() {
-    new OkButton(this).click();
+
+  public void trust() {
+    new TrustButton(this).click();
   }
-  
-  public void no() {
-    new NoButton(this).click();
+
+  public void donottrust() {
+    new DoNotTrustButton(this).click();
   }
-  
-  public void yes() {
-    new YesButton(this).click();
-  }
+
 }

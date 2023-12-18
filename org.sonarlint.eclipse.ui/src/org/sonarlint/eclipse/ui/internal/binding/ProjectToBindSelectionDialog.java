@@ -20,50 +20,56 @@
 package org.sonarlint.eclipse.ui.internal.binding;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
-import org.eclipse.jface.viewers.LabelProvider;
+import java.util.stream.Stream;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.window.Window;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
-import org.eclipse.ui.ide.IDE.SharedImages;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-public class ProjectSelectionDialog {
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
 
+public class ProjectToBindSelectionDialog extends ElementListSelectionDialog {
+
+  public ProjectToBindSelectionDialog(Shell parent, String message, List<ISonarLintProject> projects) {
+    super(parent, new SonarLintProjectLabelProvider());
+    setElements(projects.toArray());
+    setTitle("SonarLint - Project Selection");
+    setMessage(message);
+    setHelpAvailable(false);
+  }
+
+  @Nullable
   public static ISonarLintProject pickProject(String projectKey, String connectionId) {
     var projects = ProjectsProviderUtils.allProjects()
       .stream()
       .sorted(Comparator.comparing(ISonarLintProject::getName))
       .collect(Collectors.toList());
-    var dialog = new ElementListSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-      new SonarLintProjectLabelProvider());
-    dialog.setElements(projects.toArray());
-    dialog.setMessage("Select a project.\nThis Eclipse project will be bound to the project '" + projectKey + "' using connection '" + connectionId + "'");
-    dialog.setTitle("SonarLint - Project binding");
-    dialog.setHelpAvailable(false);
+    var dialog = new ProjectToBindSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+      "Select a project.\nThis Eclipse project will be bound to the Sonar project '" + projectKey + "' using connection '" + connectionId + "'", projects);
     if (dialog.open() == Window.OK) {
       return (ISonarLintProject) dialog.getResult()[0];
     }
     return null;
   }
 
-  private static final class SonarLintProjectLabelProvider extends LabelProvider {
-    @Override
-    public String getText(Object element) {
-      var current = (ISonarLintProject) element;
-      return current.getName();
+  public static List<ISonarLintProject> selectProjectsToAdd(Shell parent, List<ISonarLintProject> alreadySelected) {
+    var projects = ProjectsProviderUtils.allProjects()
+      .stream()
+      .filter(p -> !alreadySelected.contains(p))
+      .sorted(comparing(ISonarLintProject::getName))
+      .collect(toList());
+    var dialog = new ProjectToBindSelectionDialog(parent, "Select projects to add:", projects);
+    dialog.setMultipleSelection(true);
+    if (dialog.open() == Window.OK) {
+      return Stream.of(dialog.getResult()).map(ISonarLintProject.class::cast).collect(Collectors.toList());
     }
-
-    @Override
-    public Image getImage(Object element) {
-      return PlatformUI.getWorkbench().getSharedImages().getImage(SharedImages.IMG_OBJ_PROJECT);
-    }
-  }
-
-  private ProjectSelectionDialog() {
-    // utility class
+    return List.of();
   }
 
 }

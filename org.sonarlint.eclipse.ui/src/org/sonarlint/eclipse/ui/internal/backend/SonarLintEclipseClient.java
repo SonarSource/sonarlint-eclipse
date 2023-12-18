@@ -24,11 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
@@ -40,19 +42,15 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessClient;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.binding.ProjectSelectionDialog;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
-import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
-import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
-import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
-import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
+import org.sonarlint.eclipse.ui.internal.binding.assist.AssistBindingJob;
+import org.sonarlint.eclipse.ui.internal.binding.assist.AssistCreatingConnectionJob;
 import org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView;
 import org.sonarlint.eclipse.ui.internal.job.BackendProgressJobScheduler;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
@@ -162,18 +160,45 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
   @Override
   public CompletableFuture<AssistCreatingConnectionResponse> assistCreatingConnection(AssistCreatingConnectionParams params) {
-    return DisplayUtils.bringToFrontAsync()
-      .thenComposeAsync(unused -> createConnection(params.getServerUrl()))
-      .thenApplyAsync(connection -> new AssistCreatingConnectionResponse(connection.getId()));
+    return CompletableFuture.supplyAsync(() -> {
+      try {
+        SonarLintLogger.get().debug("Assist creating a new connection...");
+        var job = new AssistCreatingConnectionJob(params.getServerUrl());
+        job.schedule();
+        job.join();
+        if (job.getResult().isOK()) {
+          SonarLintLogger.get().debug("Successfully created connection '" + job.getConnectionId() + "'");
+          return new AssistCreatingConnectionResponse(job.getConnectionId());
+        } else if (job.getResult().getCode() == IStatus.CANCEL) {
+          SonarLintLogger.get().debug("Assist creating connection was cancelled.");
+          return new AssistCreatingConnectionResponse(null);
+        }
+        throw new IllegalStateException(job.getResult().getMessage(), job.getResult().getException());
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new CancellationException("Interrupted!");
+      }
+    });
   }
 
   @Override
   public CompletableFuture<AssistBindingResponse> assistBinding(AssistBindingParams params) {
-    var connectionId = params.getConnectionId();
-    var projectKey = params.getProjectKey();
-    return DisplayUtils.bringToFrontAsync()
-      .thenComposeAsync(unused -> bindProjectTo(connectionId, projectKey))
-      .thenApplyAsync(project -> new AssistBindingResponse(ConfigScopeSynchronizer.getConfigScopeId(project)));
+    return CompletableFuture.supplyAsync(() -> {
+      try {
+        SonarLintLogger.get().debug("Assist creating a new binding...");
+        var job = new AssistBindingJob(params.getConnectionId(), params.getProjectKey());
+        job.schedule();
+        job.join();
+        if (job.getResult().isOK()) {
+          SonarLintLogger.get().debug("Successfully created binding");
+          return new AssistBindingResponse(ConfigScopeSynchronizer.getConfigScopeId(job.getProject()));
+        }
+        throw new IllegalStateException(job.getResult().getMessage(), job.getResult().getException());
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new CancellationException("Interrupted!");
+      }
+    });
   }
 
   private static Optional<ISonarLintFile> findHotspotFile(String hotspotFilePath, ISonarLintProject project) {
@@ -232,35 +257,6 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
       var popup = new MessagePopup(type, message);
       popup.open();
     });
-  }
-
-  @Nullable
-  private static CompletableFuture<IConnectedEngineFacade> createConnection(String serverUrl) {
-    var model = new ServerConnectionModel();
-    model.setConnectionType(ConnectionType.ONPREMISE);
-    model.setServerUrl(serverUrl);
-    var wizard = new ServerConnectionWizard(model);
-    wizard.setSkipBindingWizard(true);
-    return DisplayUtils.asyncExec(() -> {
-      var dialog = ServerConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
-      dialog.setBlockOnOpen(true);
-      dialog.open();
-      return wizard.getResultServer();
-    });
-  }
-
-  private static CompletableFuture<ISonarLintProject> bindProjectTo(String connectionId, String projectKey) {
-    return DisplayUtils.asyncExec(() -> ProjectSelectionDialog.pickProject(projectKey, connectionId))
-      .thenComposeAsync(pickedProject -> {
-        var bindingJob = ProjectBindingProcess.scheduleProjectBinding(connectionId, List.of(pickedProject), projectKey);
-        try {
-          bindingJob.join();
-        } catch (InterruptedException e) {
-          SonarLintLogger.get().error("Cannot bind project", e);
-          Thread.currentThread().interrupt();
-        }
-        return CompletableFuture.completedFuture(pickedProject);
-      });
   }
 
   @Override
@@ -328,7 +324,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
     if (SonarLintGlobalConfiguration.alreadySoonUnsupportedConnection(connectionVersionCombination)) {
       return;
     }
-    
+
     Display.getDefault().syncExec(() -> {
       var popup = new SoonUnsupportedPopup(params.getDoNotShowAgainId(), params.getText());
       popup.setFadingEnabled(false);
@@ -355,7 +351,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
       return;
     }
     var project = projectOpt.get();
-    
+
     // We were just asked to connect and create a binding, this cannot happen -> Only log the information
     var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
     if (bindingOpt.isEmpty()) {
@@ -363,7 +359,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
         + "' removed its binding in the middle of running the action on '" + params + "'");
       return;
     }
-    
+
     // Handle expensive checks and actual logic in separate job to not block the thread
     new OpenIssueInEclipseJob(new OpenIssueContext("Open in IDE", params, project, bindingOpt.get()))
       .schedule();
