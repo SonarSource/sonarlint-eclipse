@@ -33,6 +33,13 @@
     <module>org.sonarlint.eclipse.jdt</module>
     <module>org.sonarlint.eclipse.cdt</module>
     <module>org.sonarlint.eclipse.pydev</module>
+    
+    <module>org.sonarlint.eclipse.sloop.linux.aarch64</module>
+    <module>org.sonarlint.eclipse.sloop.linux.x64</module>
+    <module>org.sonarlint.eclipse.sloop.macosx.aarch64</module>
+    <module>org.sonarlint.eclipse.sloop.macosx.x64</module>
+    <module>org.sonarlint.eclipse.sloop.windows.x64</module>
+    <module>org.sonarlint.eclipse.sloop.no-arch</module>
 
     <module>org.sonarlint.eclipse.site</module>
 
@@ -62,6 +69,9 @@
     <protobuf.version>3.25.1</protobuf.version>
     <jacoco.version>0.8.8</jacoco.version>
     <jarsigner.version>3.0.0</jarsigner.version>
+    
+    <!-- Sloop embedded CLI version for fragment projects -->
+    <sloop.version>10.0.0.76670</sloop.version>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
@@ -195,6 +205,8 @@
           </includes>
         </configuration>
       </plugin>
+      
+      <!-- The environments must be in sync with Sloop embedded CLI distributions (see ITs pom) -->
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>target-platform-configuration</artifactId>
@@ -203,24 +215,19 @@
             <file>../target-platforms/build.target</file>
           </target>
           <environments>
-            <environment>
-              <os>linux</os>
-              <ws>gtk</ws>
+		    <environment>
+              <os>win32</os>
+              <ws>win32</ws>
               <arch>x86_64</arch>
             </environment>
             <environment>
               <os>linux</os>
               <ws>gtk</ws>
-              <arch>x86</arch>
+              <arch>aarch64</arch>
             </environment>
             <environment>
-              <os>win32</os>
-              <ws>win32</ws>
-              <arch>x86</arch>
-            </environment>
-            <environment>
-              <os>win32</os>
-              <ws>win32</ws>
+              <os>linux</os>
+              <ws>gtk</ws>
               <arch>x86_64</arch>
             </environment>
             <environment>

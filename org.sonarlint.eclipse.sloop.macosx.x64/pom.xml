@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonarsource.sonarlint.eclipse</groupId>
+    <artifactId>sonarlint-eclipse-parent</artifactId>
+    <version>9.3.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>org.sonarlint.eclipse.sloop.macosx.x64</artifactId>
+  <packaging>eclipse-plugin</packaging>
+
+  <name>SonarLint Sloop MacOSX x64</name>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${project.basedir}/sloop</directory>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>download-sloop</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.sonarsource.sonarlint.core</groupId>
+                  <artifactId>sonarlint-backend-cli</artifactId>
+                  <version>${sloop.version}</version>
+                  <classifier>macosx_x64</classifier>
+                  <type>tar.gz</type>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.basedir}/sloop</outputDirectory>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
