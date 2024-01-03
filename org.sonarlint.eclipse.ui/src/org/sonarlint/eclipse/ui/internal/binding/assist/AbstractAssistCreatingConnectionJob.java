@@ -23,36 +23,40 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
-import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 
-public class AssistCreatingConnectionJob extends UIJob {
-
-  private final String serverUrl;
+public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
+  protected final String serverUrl;
   @Nullable
-  private String connectionId;
+  protected String connectionId;
+  protected final boolean automaticSetUp;
 
-  public AssistCreatingConnectionJob(String serverUrl) {
-    super("Assist creating SonarLint connection");
+  protected AbstractAssistCreatingConnectionJob(String title, String serverUrl, boolean automaticSetUp) {
+    super(title);
     // We don't want to have this job visible to the user, as there should be a dialog anyway
     setSystem(true);
+    
     this.serverUrl = serverUrl;
+    this.automaticSetUp = automaticSetUp;
   }
-
+  
   @Override
   public IStatus runInUIThread(IProgressMonitor monitor) {
     var shell = DisplayUtils.bringToFront();
-    var dialog = new ConfirmConnectionCreationDialog(shell, serverUrl);
-    var result = dialog.open();
-    if (result != 0) {
+    var dialog = new ConfirmConnectionCreationDialog(shell, serverUrl, automaticSetUp);
+    if (dialog.open() != 0) {
       return Status.CANCEL_STATUS;
     }
-    var connection = createConnection(serverUrl);
+    
+    var model = new ServerConnectionModel();
+    model.setConnectionType(ConnectionType.ONPREMISE);
+    model.setServerUrl(serverUrl);
+    
+    var connection = createConnection(model);
     if (connection != null) {
       this.connectionId = connection.getId();
       return Status.OK_STATUS;
@@ -60,23 +64,12 @@ public class AssistCreatingConnectionJob extends UIJob {
 
     return Status.CANCEL_STATUS;
   }
-
+  
   @Nullable
-  private static IConnectedEngineFacade createConnection(String serverUrl) {
-    var model = new ServerConnectionModel();
-    model.setConnectionType(ConnectionType.ONPREMISE);
-    model.setServerUrl(serverUrl);
-    var wizard = new ServerConnectionWizard(model);
-    wizard.setSkipBindingWizard(true);
-    var dialog = ServerConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
-    dialog.setBlockOnOpen(true);
-    dialog.open();
-    return wizard.getResultServer();
-  }
-
-  @Nullable
-  public String getConnectionId() {
+  public final String getConnectionId() {
     return connectionId;
   }
-
+  
+  @Nullable
+  protected abstract IConnectedEngineFacade createConnection(ServerConnectionModel model);
 }
