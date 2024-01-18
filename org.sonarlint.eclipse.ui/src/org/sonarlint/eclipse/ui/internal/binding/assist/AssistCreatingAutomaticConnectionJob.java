@@ -36,7 +36,7 @@ public class AssistCreatingAutomaticConnectionJob extends AbstractAssistCreating
   @Nullable
   protected IConnectedEngineFacade createConnection(ServerConnectionModel model) {
     var connection = SonarLintCorePlugin.getServersManager().create(model.getConnectionId(), model.getServerUrl(),
-      model.getOrganization(), tokenValue, model.getPassword(), model.getNotificationsDisabled());
+      model.getOrganization(), tokenValue, null, model.getNotificationsDisabled());
     SonarLintCorePlugin.getServersManager().addServer(connection, tokenValue, model.getPassword());
     return connection;
   }
