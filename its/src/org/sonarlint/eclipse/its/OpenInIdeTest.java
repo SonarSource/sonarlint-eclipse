@@ -29,16 +29,19 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.core.condition.WidgetIsFound;
 import org.eclipse.reddeer.core.exception.CoreLayerException;
 import org.eclipse.reddeer.core.matcher.WithTextMatcher;
+import org.eclipse.reddeer.eclipse.jdt.ui.wizards.NewClassCreationWizard;
+import org.eclipse.reddeer.eclipse.jdt.ui.wizards.NewClassWizardPage;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.swt.widgets.Label;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -59,6 +62,7 @@ import org.sonarqube.ws.Issues.Issue;
 import org.sonarqube.ws.WsBranches.Branch;
 import org.sonarqube.ws.client.issue.SearchWsRequest;
 import org.sonarqube.ws.client.project.DeleteRequest;
+import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -90,43 +94,44 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   @BeforeClass
   public static void prepare() {
     prepare(orchestrator);
+    
+    if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
+      createProjectOnSonarQube(orchestrator, MAVEN_TAINT_PROJECT_KEY, "SonarLint IT New Code");
+      runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml",
+        Map.of("sonar.branch.name", "main"));
+    }
   }
-
-  /** as we re-use the same project we have to delete it on SonarQube after every test */
-  @After
-  public void deleteSonarQubeProjects() {
+  
+  @AfterClass
+  public static void deleteSonarQubeProjects() {
     if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
       adminWsClient.projects().delete(DeleteRequest.builder().setKey(MAVEN_TAINT_PROJECT_KEY).build());
     }
   }
 
   @Test
-  public void test_open_in_ide_assist_binding() throws IOException, InterruptedException {
-    // Only available since SonarQube 10.2+ (LATEST_RELEASE / locally)
-    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 2));
+  public void test_open_in_ide_assist_manual_binding() throws IOException, InterruptedException {
+    // Only available since SonarQube 10.2+, enhanced with token by SonarQube 10.4
+    var version = orchestrator.getServer().version();
+    Assume.assumeTrue(version.isGreaterThanOrEquals(10, 2));
 
-    // 1) create project on server / run first analysis
-    createProjectOnSonarQube(orchestrator, MAVEN_TAINT_PROJECT_KEY, "SonarLint IT New Code");
-    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml",
-      Map.of("sonar.branch.name", "main"));
-
-    // 2) import project
+    // 1) import project
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/maven-taint", MAVEN_TAINT_PROJECT_KEY);
 
-    // 3) get S1481 issue key / branch name from SonarQube
+    // 2) get S1481 issue key / branch name from SonarQube
     var s101 = getFirstIssue(S101);
     assertThat(s101).isNotNull();
 
     var branch = getFirstBranch();
     assertThat(branch).isNotNull();
 
-    // 4) trigger "Open in IDE" feature, but cancel
+    // 3) trigger "Open in IDE" feature, but cancel
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey());
     new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
     new ConfirmConnectionCreationDialog().donottrust();
 
-    // 5) trigger "Open in IDE" feature, but accept this time
+    // 4) trigger "Open in IDE" feature, but accept this time
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey());
     new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
     new ConfirmConnectionCreationDialog().trust();
@@ -168,6 +173,71 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     closeTaintPopupIfAny();
   }
+  
+  @Test
+  public void test_open_in_ide_assist_automated_binding() throws IOException, InterruptedException {
+    // Only available since SonarQube 10.4+
+    var version = orchestrator.getServer().version();
+    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
+    
+    // 1) Generate first token
+    var tokenName = "tokenName";
+    var tokenValue = adminWsClient
+      .userTokens()
+      .generate(new GenerateWsRequest().setName(tokenName).setLogin(Server.ADMIN_LOGIN))
+      .getToken();
+
+    // 2) import project
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("java/maven-taint", MAVEN_TAINT_PROJECT_KEY);
+
+    // 3) get S1481 issue key / branch name from SonarQube
+    var s101 = getFirstIssue(S101);
+    assertThat(s101).isNotNull();
+
+    var branch = getFirstBranch();
+    assertThat(branch).isNotNull();
+
+    // 4) trigger "Open in IDE" feature, but cancel
+    triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey(), tokenName, tokenValue);
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
+    new ConfirmConnectionCreationDialog().donottrust();
+    
+    // 5) Check that token was revoked
+    var userTokens = adminWsClient
+      .userTokens()
+      .search(new org.sonarqube.ws.client.usertoken.SearchWsRequest().setLogin(Server.ADMIN_LOGIN))
+      .getUserTokensList();
+    assertThat(userTokens.stream().filter(token -> tokenName.equals(token.getName())).collect(Collectors.toList())).isEmpty();
+    
+    // 6) Generate second token
+    tokenValue = adminWsClient
+      .userTokens()
+      .generate(new GenerateWsRequest().setName(tokenName).setLogin(Server.ADMIN_LOGIN))
+      .getToken();
+
+    // 7) trigger "Open in IDE" feature, but accept this time
+    triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey(), tokenName, tokenValue);
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
+    new ConfirmConnectionCreationDialog().trust();
+
+    var projectSelectionDialog = new ProjectSelectionDialog();
+    assertThat(projectSelectionDialog.getMessage()).contains("This Eclipse project will be bound to the Sonar project 'maven-taint' using connection '127.0.0.1'");
+    projectSelectionDialog.filterProjectName(MAVEN_TAINT_PROJECT_KEY);
+    projectSelectionDialog.ok();
+
+    var ruleDescriptionView = new RuleDescriptionView();
+    new WaitUntil(new RuleDescriptionViewOpenedWithContent(ruleDescriptionView, S101), TimePeriod.DEFAULT);
+    
+    // 8) Check that token still exists
+    userTokens = adminWsClient
+      .userTokens()
+      .search(new org.sonarqube.ws.client.usertoken.SearchWsRequest().setLogin(Server.ADMIN_LOGIN))
+      .getUserTokensList();
+    assertThat(userTokens.stream().filter(token -> tokenName.equals(token.getName())).collect(Collectors.toList())).hasSize(1);
+
+    closeTaintPopupIfAny();
+  }
 
   private void closeTaintPopupIfAny() {
     try {
@@ -182,12 +252,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     // Only available since SonarQube 10.2+ (LATEST_RELEASE / locally)
     Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 2));
 
-    // 1) create project on server / run first analysis
-    createProjectOnSonarQube(orchestrator, MAVEN_TAINT_PROJECT_KEY, "SonarLint IT New Code");
-    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml",
-      Map.of("sonar.branch.name", "main"));
-
-    // 2) import project and bind to SonarQube
+    // 1) import project and bind to SonarQube
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/maven-taint", MAVEN_TAINT_PROJECT_KEY);
     createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY);
@@ -196,25 +261,29 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     } catch (Exception ignored) {
     }
 
-    // 3) delete file
+    // 2) delete file
     rootProject.getResource("src/main/java", "taint", "Variables.java").delete();
 
-    // 4) get S1481 issue key / branch name from SonarQube
+    // 3) get S1481 issue key / branch name from SonarQube
     var s1481 = getFirstIssue(S1481);
     assertThat(s1481).isNotNull();
 
     var branch = getFirstBranch();
     assertThat(branch).isNotNull();
 
-    // 5) trigger "Open in IDE" feature: issue not found because file not found
+    // 4) trigger "Open in IDE" feature: issue not found because file not found
     // -> because the API is quite slow we have to await the opening of the error dialog
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s1481.getKey());
     new WaitUntil(new OpenInIdeDialogOpened(), TimePeriod.DEFAULT);
     new OpenInIdeDialog().ok();
 
-    // 6) change preferences regarding new code / issue filter + change file content
+    // 5) change preferences regarding new code / issue filter + change file content
     setNewCodePreference(IssuePeriod.NEW_CODE);
-    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src/main/java", "taint", "SysOut.java"));
+    
+    // INFO: We get rid of the file and create a new one from scratch to simulate actual changes happening after the
+    //       last SonarQube analysis. Doing it by just changing the file was too flaky in the build pipeline!
+    rootProject.getResource("src/main/java", "taint", "SysOut.java").delete();
+    createClass("taint", "SysOut.java");
     var textEditor = new TextEditor("SysOut.java");
     textEditor.setText("package taint;\n"
       + "\n"
@@ -224,13 +293,14 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
       + "}\n"
       + "");
     textEditor.save();
-    Thread.sleep(1000); // we have to wait for the analysis to finish
+    textEditor.close();
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src/main/java", "taint", "SysOut.java"));
 
-    // 7) get S106 issue key from SonarQube
+    // 6) get S106 issue key from SonarQube
     var s106 = getFirstIssue(S106);
     assertThat(s106).isNotNull();
 
-    // 8) trigger "Open in IDE" feature: issue not found because workspace preferences
+    // 7) trigger "Open in IDE" feature: issue not found because workspace preferences
     // -> after we acknowledge SL to change preferences the dialog will open again
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s106.getKey());
     new WaitUntil(new OpenInIdeDialogOpened(), TimePeriod.DEFAULT);
@@ -242,21 +312,21 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     new WaitUntil(new OpenInIdeDialogOpened(), TimePeriod.DEFAULT);
     new OpenInIdeDialog().ok();
 
-    // 9) get S101 issue key from SonarQube
+    // 8) get S101 issue key from SonarQube
     var s101 = getFirstIssue(S101);
     assertThat(s101).isNotNull();
 
-    // 10) trigger "Open in IDE" feature: issue opens correctly including On-The-Fly / Rule Description view
+    // 9) trigger "Open in IDE" feature: issue opens correctly including On-The-Fly / Rule Description view
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey());
     var ruleDescriptionView = new RuleDescriptionView();
     new WaitUntil(new RuleDescriptionViewOpenedWithContent(ruleDescriptionView, S101), TimePeriod.DEFAULT);
     ruleDescriptionView.open();
 
-    // 11) get S2083 issue key from SonarQube
+    // 10) get S2083 issue key from SonarQube
     var s2083 = getFirstIssue(S2083);
     assertThat(s2083).isNotNull();
 
-    // 12) trigger "Open in IDE" feature: taint vulnerability opens correctly including Taint Vulnerabilities view
+    // 11) trigger "Open in IDE" feature: taint vulnerability opens correctly including Taint Vulnerabilities view
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s2083.getKey());
     var sonarLintTaintVulnerabilitiesView = new SonarLintTaintVulnerabilitiesView();
     new WaitUntil(new SonarLintTaintVulnerabilitiesViewOpened(sonarLintTaintVulnerabilitiesView), TimePeriod.DEFAULT);
@@ -264,6 +334,13 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     assertThat(sonarLintTaintVulnerabilitiesView.getItems()).isNotEmpty();
 
     closeTaintPopupIfAny();
+  }
+  
+  /**
+   *  To emulate a user clicking on "Open in IDE" on their SonarQube on an issue without any token
+   */
+  private void triggerOpenInIDE(String serverURL, String branch, String issueKey) throws InterruptedException, IOException {
+    triggerOpenInIDE(serverURL, branch, issueKey, null, null);
   }
 
   /**
@@ -273,23 +350,37 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
    *  @param branch issue branch
    *  @param projectKey project containing the issue
    *  @param issueKey specific issue
+   *  @param tokenName (optional) token name for automatic connected mode setup
+   *  @param tokenValue (optional) token value for automatic connected mode setup
    *  @throws IOException when connection fails
    * @throws InterruptedException
    */
-  private void triggerOpenInIDE(String serverURL, String branch, String issueKey) throws InterruptedException, IOException {
+  private void triggerOpenInIDE(String serverURL, String branch, String issueKey, String tokenName, String tokenValue) throws InterruptedException, IOException {
     assertThat(hotspotServerPort).isNotEqualTo(-1);
 
     var request = HttpRequest.newBuilder()
       .uri(URI.create("http://localhost:" + hotspotServerPort + "/sonarlint/api/issues/show?server=" + URLEncoder.encode(serverURL)
         + "&project=" + MAVEN_TAINT_PROJECT_KEY
         + "&issue=" + issueKey
-        + "&branch=" + branch))
+        + "&branch=" + branch
+        + (tokenName != null ? "&tokenName=" + tokenName : "")
+        + (tokenValue != null ? "&tokenValue=" + tokenValue : "")))
       .header("Origin", serverURL)
       .header("Referer", serverURL)
       .GET().build();
 
     var response = HttpClient.newHttpClient().send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
     assertThat(response.statusCode()).isEqualTo(200);
+  }
+  
+  /** To create a new Java class in a specific package */
+  private void createClass(String javaPackage, String className) {
+    var dialog = new NewClassCreationWizard();
+    dialog.open();
+    var page = new NewClassWizardPage(dialog);
+    page.setName(className);
+    page.setPackage(javaPackage);
+    dialog.finish();
   }
 
   /** Get first issue from project matching the rule key provided (does not contain branch information???) */

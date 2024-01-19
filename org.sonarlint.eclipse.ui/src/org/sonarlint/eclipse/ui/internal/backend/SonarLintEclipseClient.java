@@ -40,6 +40,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessClient;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
@@ -49,8 +50,10 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
+import org.sonarlint.eclipse.ui.internal.binding.assist.AbstractAssistCreatingConnectionJob;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistBindingJob;
-import org.sonarlint.eclipse.ui.internal.binding.assist.AssistCreatingConnectionJob;
+import org.sonarlint.eclipse.ui.internal.binding.assist.AssistCreatingAutomaticConnectionJob;
+import org.sonarlint.eclipse.ui.internal.binding.assist.AssistCreatingManualConnectionJob;
 import org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView;
 import org.sonarlint.eclipse.ui.internal.job.BackendProgressJobScheduler;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
@@ -64,6 +67,7 @@ import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.BindingSuggestionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.usertoken.RevokeTokenParams;
 import org.sonarsource.sonarlint.core.clientapi.client.OpenUrlInBrowserParams;
 import org.sonarsource.sonarlint.core.clientapi.client.binding.AssistBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.client.binding.AssistBindingResponse;
@@ -161,20 +165,36 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
   @Override
   public CompletableFuture<AssistCreatingConnectionResponse> assistCreatingConnection(AssistCreatingConnectionParams params) {
     return CompletableFuture.supplyAsync(() -> {
+      var baseUrl = params.getServerUrl();
+      
       try {
+        AbstractAssistCreatingConnectionJob job;
+        
         SonarLintLogger.get().debug("Assist creating a new connection...");
-        var job = new AssistCreatingConnectionJob(params.getServerUrl());
+        if (params.getTokenName() != null && params.getTokenValue() != null) {
+          job = new AssistCreatingAutomaticConnectionJob(baseUrl, params.getTokenValue());
+        } else {
+          job = new AssistCreatingManualConnectionJob(baseUrl);
+        }
+        
         job.schedule();
         job.join();
         if (job.getResult().isOK()) {
           SonarLintLogger.get().debug("Successfully created connection '" + job.getConnectionId() + "'");
           return new AssistCreatingConnectionResponse(job.getConnectionId());
-        } else if (job.getResult().getCode() == IStatus.CANCEL) {
+        } else if (job.getResult().matches(IStatus.CANCEL)) {
+          if (job instanceof AssistCreatingAutomaticConnectionJob) {
+            SonarLintBackendService.get()
+              .getBackend()
+              .getUserTokenService()
+              .revokeToken(new RevokeTokenParams(baseUrl, params.getTokenName(), params.getTokenValue()));
+          }
+          
           SonarLintLogger.get().debug("Assist creating connection was cancelled.");
-          return new AssistCreatingConnectionResponse(null);
         }
         throw new IllegalStateException(job.getResult().getMessage(), job.getResult().getException());
       } catch (InterruptedException e) {
+        SonarLintLogger.get().debug("Assist creating connection was interrupted.");
         Thread.currentThread().interrupt();
         throw new CancellationException("Interrupted!");
       }

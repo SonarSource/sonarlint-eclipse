@@ -74,7 +74,7 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
   }
   
   /** Create a project on SonarQube via Web API with corresponding quality profile assigned */
-  public void createProjectOnSonarQube(OrchestratorRule orchestrator, String projectKey, String qualityProfile) {
+  public static void createProjectOnSonarQube(OrchestratorRule orchestrator, String projectKey, String qualityProfile) {
     adminWsClient.projects()
       .create(CreateRequest.builder()
         .setName(projectKey)
@@ -84,7 +84,7 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
   }
   
   /** Run Maven build on specific project in folder with optional additional analysis properties */
-  public void runMavenBuild(OrchestratorRule orchestrator, String projectKey, String folder, String path,
+  public static void runMavenBuild(OrchestratorRule orchestrator, String projectKey, String folder, String path,
     Map<String, String> analysisProperties) {
     var build = MavenBuild.create(new File(folder, path))
       .setCleanPackageSonarGoals()

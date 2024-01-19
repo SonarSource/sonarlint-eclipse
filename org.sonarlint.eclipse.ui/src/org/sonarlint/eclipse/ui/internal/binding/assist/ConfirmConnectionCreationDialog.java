@@ -31,10 +31,12 @@ import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 class ConfirmConnectionCreationDialog extends MessageDialog {
 
-  public ConfirmConnectionCreationDialog(Shell parentShell, String serverUrl) {
-    super(parentShell, "Do you trust this SonarQube server?", SonarLintImages.BALLOON_IMG, "The \"" + serverUrl
-      + "\" server is attempting to set up a connection with SonarLint. Letting SonarLint connect to an untrusted server is potentially dangerous.", MessageDialog.WARNING,
-      new String[] {"Connect to this SonarQube server", "I don't trust this server"}, 0);
+  public ConfirmConnectionCreationDialog(Shell parentShell, String serverUrl, boolean automaticSetUp) {
+    super(parentShell, "Do you trust this SonarQube server?", SonarLintImages.BALLOON_IMG,
+      "The server at \"" + serverUrl + "\" is attempting to set up a connection with SonarLint. Letting SonarLint "
+      + "connect to an untrusted server is potentially dangerous."
+      + (automaticSetUp ? " The following setup will be done automatically." : ""),
+      MessageDialog.WARNING, new String[] {"Connect to this SonarQube server", "I don't trust this server"}, 0);
   }
 
   @Override
