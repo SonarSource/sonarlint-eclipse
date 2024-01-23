@@ -50,6 +50,7 @@ import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.hamcrest.core.StringContains;
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Before;
@@ -59,6 +60,7 @@ import org.sonarlint.eclipse.its.reddeer.conditions.OnTheFlyViewIsEmpty;
 import org.sonarlint.eclipse.its.reddeer.dialogs.EnhancedWithConnectedModeInformationDialog;
 import org.sonarlint.eclipse.its.reddeer.perspectives.PhpPerspective;
 import org.sonarlint.eclipse.its.reddeer.perspectives.PydevPerspective;
+import org.sonarlint.eclipse.its.reddeer.preferences.GeneralWorkspaceBuildPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintProperties;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
@@ -74,6 +76,56 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void removeEnhancedConnectedModeInformationPerTest() {
     System.setProperty("sonarlint.internal.ignoreEnhancedFeature", "true");
     System.setProperty("sonarlint.internal.ignoreMissingFeature", "true");
+    System.setProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning", "true");
+  }
+  
+  @After
+  public void enableAutomaticWorkspaceBuild() {
+    if ("oldest".equals(System.getProperty("target.platform"))) {
+      var preferences = GeneralWorkspaceBuildPreferences.open();
+      preferences.enableAutomaticBuild();
+      preferences.ok();
+    }
+  }
+  
+  @Test
+  public void analyze_automatic_workspace_build_disabled() {
+    // INFO: We only want to run it on one axis and the "oldest" ITs take the shortest!
+    Assume.assumeTrue("oldest".equals(System.getProperty("target.platform")));
+    
+    System.clearProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning");
+    
+    // 1) Configure preferences
+    var preferences = GeneralWorkspaceBuildPreferences.open();
+    preferences.disableAutomaticBuild();
+    preferences.ok();
+    
+    // 2) Import project
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
+
+    // 3) Open file and click pop-up but don't enable automatic build
+    var helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
+    openFileAndWaitForAnalysisCompletion(helloJavaFile);
+    new DefaultEditor().close();
+    
+    var popUp = new DefaultShell("Automatic build of workspace disabled");
+    new DefaultLink(popUp, "Enable automatic build of workspace").click();
+    preferences = GeneralWorkspaceBuildPreferences.open();
+    preferences.ok();
+    
+    // 4) Open file and click pop-up but don't show again
+    helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
+    openFileAndWaitForAnalysisCompletion(helloJavaFile);
+    new DefaultEditor().close();
+    
+    popUp = new DefaultShell("Automatic build of workspace disabled");
+    new DefaultLink(popUp, "Don't show again").click();
+    
+    // 5) Reset preferences
+    preferences = GeneralWorkspaceBuildPreferences.open();
+    preferences.enableAutomaticBuild();
+    preferences.ok();
   }
   
   @Test

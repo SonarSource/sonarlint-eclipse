@@ -108,12 +108,14 @@ public abstract class AbstractSonarLintTest {
   public static final void setUpBeforeClass() {
     System.setProperty("sonarlint.internal.ignoreEnhancedFeature", "true");
     System.setProperty("sonarlint.internal.ignoreMissingFeature", "true");
+    System.setProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning", "true");
   }
   
   @AfterClass
   public static final void cleanupAfterClass() {
     System.clearProperty("sonarlint.internal.ignoreEnhancedFeature");
     System.clearProperty("sonarlint.internal.ignoreMissingFeature");
+    System.clearProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning");
     
     // remove warning about soon unsupported version (there can be multiple)
     if ("oldest".equals(System.getProperty("target.platform"))) {
