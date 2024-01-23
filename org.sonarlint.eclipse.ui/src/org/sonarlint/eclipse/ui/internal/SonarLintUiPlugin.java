@@ -85,6 +85,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private static final SonarLintVcsCacheCleaner SONARLINT_VCS_CACHE_CLEANER = new SonarLintVcsCacheCleaner();
   private static final SonarLintFlowLocationsService SONARLINT_FLOW_LOCATION_SERVICE = new SonarLintFlowLocationsService();
   private static final SonarLintLanguageFromConnectedModeService SONARLINT_LANUGAGE_CONNECTED_MODE_SERVICE = new SonarLintLanguageFromConnectedModeService();
+  private static final SonarLintNoAutomaticBuildWarningService SONARLINT_AUTOMATIC_BUILD_SERVICE = new SonarLintNoAutomaticBuildWarningService();
 
   public SonarLintUiPlugin() {
     plugin = this;
@@ -160,6 +161,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_VCS_CACHE_CLEANER);
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_FLOW_LOCATION_SERVICE);
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_LANUGAGE_CONNECTED_MODE_SERVICE);
+    SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_AUTOMATIC_BUILD_SERVICE);
 
     prefListener = event -> {
       if (event.getProperty().equals(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY)) {
@@ -195,6 +197,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_VCS_CACHE_CLEANER);
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_FLOW_LOCATION_SERVICE);
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_LANUGAGE_CONNECTED_MODE_SERVICE);
+    SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_AUTOMATIC_BUILD_SERVICE);
     SonarLintLogger.get().removeLogListener(logListener);
     logListener.shutdown();
     SonarLintNotifications.get().removeNotificationListener(notifListener);

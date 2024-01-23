@@ -80,6 +80,7 @@ public class SonarLintGlobalConfiguration {
   private static final String PREF_SECRETS_EVER_DETECTED = "secretsEverDetected";
   private static final String PREF_USER_SURVEY_LAST_LINK = "userSurveyLastLink"; //$NON-NLS-1$
   private static final String PREF_SOON_UNSUPPORTED_CONNECTIONS = "soonUnsupportedSonarQubeConnections"; //$NON-NLS-1$
+  private static final String PREF_NO_AUTOMATIC_BUILD_WARNING = "noAutomaticBuildWarning"; //$NON-NLS-1$
   
   // notifications on missing features from standalone mode / enhanced features from connected mode
   public static final String PREF_IGNORE_MISSING_FEATURES = "ignoreNotificationsAboutMissingFeatures"; //$NON-NLS-1$
@@ -379,5 +380,17 @@ public class SonarLintGlobalConfiguration {
   
   public static void setIgnoreEnhancedFeatureNotifications() {
     setPreferenceBoolean(PREF_IGNORE_ENHANCED_FEATURES, true);
+  }
+  
+  public static boolean noAutomaticBuildWarning() {
+    // For integration tests we need to disable the notifications
+    var property = System.getProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning");
+    return property == null || property.isBlank()
+      ? getPreferenceBoolean(PREF_NO_AUTOMATIC_BUILD_WARNING)
+      : Boolean.parseBoolean(property);
+  }
+  
+  public static void setNoAutomaticBuildWarning() {
+    setPreferenceBoolean(PREF_NO_AUTOMATIC_BUILD_WARNING, true);
   }
 }
