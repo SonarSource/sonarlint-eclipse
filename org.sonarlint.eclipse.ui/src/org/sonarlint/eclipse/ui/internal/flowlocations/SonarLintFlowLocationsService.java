@@ -30,7 +30,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -40,7 +39,6 @@ import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
-import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
@@ -160,7 +158,7 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
       lastSelectedFlow = Optional.empty();
       lastSelectedFlowLocation = Optional.empty();
       if (selectedMarker != null) {
-        MarkerFlows issueFlow = MarkerUtils.getIssueFlows(selectedMarker);
+        var issueFlow = MarkerUtils.getIssueFlows(selectedMarker);
         if (!issueFlow.isSecondaryLocations() && !issueFlow.isEmpty()) {
           // Select the first flow
           lastSelectedFlow = Optional.of(issueFlow.getFlows().get(0));
@@ -177,8 +175,8 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
 
   private static void openIssueLocationsView(boolean forceShowAnnotationsInEditor, boolean bringToTop) {
     try {
-      IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-      IssueLocationsView view = (IssueLocationsView) activePage.findView(IssueLocationsView.ID);
+      var activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+      var view = (IssueLocationsView) activePage.findView(IssueLocationsView.ID);
       if (view == null) {
         view = (IssueLocationsView) activePage.showView(IssueLocationsView.ID);
       }

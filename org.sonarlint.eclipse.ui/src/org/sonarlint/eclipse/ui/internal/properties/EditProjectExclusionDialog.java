@@ -286,7 +286,7 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
       @Override
       public boolean select(Viewer viewer, Object parentElement, Object element) {
         if (element instanceof IFolder) {
-          IFolder folder = (IFolder) element;
+          var folder = (IFolder) element;
           return SonarLintUtils.isSonarLintFileCandidate(folder);
         }
         return false;
@@ -328,8 +328,8 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
       if (arr.length == 0) {
         return ValidationStatus.ok();
       }
-      Object obj = arr[0];
-      ISonarLintFile file = Adapters.adapt(obj, ISonarLintFile.class);
+      var obj = arr[0];
+      var file = Adapters.adapt(obj, ISonarLintFile.class);
       return file != null ? ValidationStatus.ok() : ValidationStatus.error("Select a file");
     };
 

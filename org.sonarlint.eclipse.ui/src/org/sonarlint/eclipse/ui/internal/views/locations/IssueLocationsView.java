@@ -112,7 +112,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       if (!(obj instanceof FlowLocationNode)) {
         return false;
       }
-      FlowLocationNode other = (FlowLocationNode) obj;
+      var other = (FlowLocationNode) obj;
       return Objects.equals(location.getParent().getNumber(), other.location.getParent().getNumber()) && Objects.equals(location.getNumber(), other.location.getNumber());
     }
 

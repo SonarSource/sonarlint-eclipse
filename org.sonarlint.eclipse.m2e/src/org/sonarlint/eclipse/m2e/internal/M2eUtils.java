@@ -53,7 +53,7 @@ public class M2eUtils {
   }
 
   private static IFile toSpecificFile(IFile file) {
-    IFile finalFile = file;
+    var finalFile = file;
     var rawLocation = file.getRawLocation();
     if (rawLocation != null) {
       var moreSpecific = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(rawLocation);

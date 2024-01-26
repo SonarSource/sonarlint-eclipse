@@ -73,8 +73,8 @@ public class IssueDescriptionField extends MarkerField {
 
   @Override
   public int compare(MarkerItem item1, MarkerItem item2) {
-    int severity1 = getSeverity(item1);
-    int severity2 = getSeverity(item2);
+    var severity1 = getSeverity(item1);
+    var severity2 = getSeverity(item2);
     if (severity1 == severity2) {
       return super.compare(item1, item2);
     }

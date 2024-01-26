@@ -39,7 +39,7 @@ public class WrappedProgressMonitor implements ClientProgressMonitor {
 
   @Override
   public void setFraction(float fraction) {
-    int total = (int) (fraction * 100);
+    var total = (int) (fraction * 100);
     wrapped.worked(total - worked);
     this.worked = total;
   }
