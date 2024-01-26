@@ -83,11 +83,10 @@ qa_ibuilds_task:
     ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording_${QA_CATEGORY}.mp4
   run_its_script: |
     echo "Run Maven ITs for Eclipse iBuilds and Server ${SQ_VERSION}"
-    mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify -f its/pom.xml -Pcoverage \
+    mvn -B -e -V verify -f its/pom.xml \
       -Dtarget.platform=${TARGET_PLATFORM} -Dtycho.localArtifacts=ignore \
       -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.site/target/repository" \
-      -Dsonar.runtimeVersion=${SQ_VERSION} \
-      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
+      -Dsonar.runtimeVersion=${SQ_VERSION}
   cleanup_before_cache_script: cleanup_maven_repository
   always:
     stop_recording_script: |
