@@ -74,6 +74,7 @@ public final class WorkspaceHelpers {
   private static void doCleanWorkspace() throws InterruptedException, CoreException, IOException {
     final var workspace = ResourcesPlugin.getWorkspace();
     workspace.run(new IWorkspaceRunnable() {
+      @Override
       public void run(IProgressMonitor monitor) throws CoreException {
         var projects = workspace.getRoot().getProjects();
         for (var project : projects) {

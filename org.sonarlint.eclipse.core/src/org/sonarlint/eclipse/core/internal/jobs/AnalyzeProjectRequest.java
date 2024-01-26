@@ -79,7 +79,7 @@ public class AnalyzeProjectRequest {
   public boolean shouldClearReport() {
     return shouldClearReport;
   }
-  
+
   public boolean checkUnsupportedLanguages() {
     return checkUnsupportedLanguages;
   }

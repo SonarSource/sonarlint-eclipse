@@ -98,7 +98,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
       "      \"taint_vulnerabilities\": {\n" +
       "            \"investigated_locally_count\": 3,\n" +
       "            \"investigated_remotely_count\": 4\n" +
-      "      },\n" + 
+      "      },\n" +
       "      \"rules\": {\n" +
       "            \"raised_issues\": [\n" +
       "                \"secrets:S6290\",\n" +
@@ -132,7 +132,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
     var layoutData = new GridData();
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
-    
+
     /** Information on SonarLint for Eclipse user surveys */
     var surveyHeader = new Link(composite, SWT.NONE);
     surveyHeader.setLayoutData(textGd);

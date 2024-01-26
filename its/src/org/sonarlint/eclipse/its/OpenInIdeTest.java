@@ -39,7 +39,6 @@ import org.eclipse.reddeer.eclipse.jdt.ui.wizards.NewClassCreationWizard;
 import org.eclipse.reddeer.eclipse.jdt.ui.wizards.NewClassWizardPage;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
-import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.swt.widgets.Label;
@@ -96,14 +95,14 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   @BeforeClass
   public static void prepare() {
     prepare(orchestrator);
-    
+
     if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
       createProjectOnSonarQube(orchestrator, MAVEN_TAINT_PROJECT_KEY, "SonarLint IT New Code");
       runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml",
         Map.of("sonar.branch.name", "main"));
     }
   }
-  
+
   @AfterClass
   public static void deleteSonarQubeProjects() {
     if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
@@ -168,7 +167,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     wizard.next();
     wizard.finish();
-    
+
     try {
       var projectSelectionDialog = new ProjectSelectionDialog();
       assertThat(projectSelectionDialog.getMessage()).contains("This Eclipse project will be bound to the Sonar project 'maven-taint' using connection 'from open IDE'");
@@ -190,7 +189,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     closeTaintPopupIfAny();
   }
-  
+
   /**
    *  Integration test for the following case: Connected to SQ 10.4+ (therefore "Open in IDE" provides a token) but
    *  workspace is empty -> SLCORE cannot match any project, so the user has to manually bind the project
@@ -199,30 +198,30 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   public void test_open_in_ide_assist_automated_binding_empty_workspace() throws InterruptedException, IOException {
     // Only available since SonarQube 10.4+
     Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
-    
+
     // 1) Generate first token
     var tokenName = "tokenName1";
     var tokenValue = adminWsClient
       .userTokens()
       .generate(new GenerateWsRequest().setName(tokenName).setLogin(Server.ADMIN_LOGIN))
       .getToken();
-    
+
     // 2) get S1481 issue key / branch name from SonarQube
     var s101 = getFirstIssue(S101);
     assertThat(s101).isNotNull();
 
     var branch = getFirstBranch();
     assertThat(branch).isNotNull();
-    
+
     // 3) trigger "Open in IDE" feature and accept
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey(), tokenName, tokenValue);
     new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
     new ConfirmConnectionCreationDialog().trust();
-    
+
     // 4) await pop-up saying that automatic binding is not possible
     var popUp = new DefaultShell("SonarLint - No mathing open project found");
     new DefaultLink(popUp, "Open Troubleshooting documentation").click();
-    
+
     // 5) Check that token still exists
     var userTokens = adminWsClient
       .userTokens()
@@ -230,12 +229,12 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
       .getUserTokensList();
     assertThat(userTokens.stream().filter(token -> tokenName.equals(token.getName())).collect(Collectors.toList())).hasSize(1);
   }
-  
+
   @Test
   public void test_open_in_ide_assist_automated_binding() throws IOException, InterruptedException {
     // Only available since SonarQube 10.4+
     Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
-    
+
     // 1) Generate first token
     var tokenName = "tokenName";
     var tokenValue = adminWsClient
@@ -258,14 +257,14 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey(), tokenName, tokenValue);
     new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
     new ConfirmConnectionCreationDialog().donottrust();
-    
+
     // 5) Check that token was revoked
     var userTokens = adminWsClient
       .userTokens()
       .search(new org.sonarqube.ws.client.usertoken.SearchWsRequest().setLogin(Server.ADMIN_LOGIN))
       .getUserTokensList();
     assertThat(userTokens.stream().filter(token -> tokenName.equals(token.getName())).collect(Collectors.toList())).isEmpty();
-    
+
     // 6) Generate second token
     tokenValue = adminWsClient
       .userTokens()
@@ -276,7 +275,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey(), tokenName, tokenValue);
     new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
     new ConfirmConnectionCreationDialog().trust();
-    
+
     try {
       var projectSelectionDialog = new ProjectSelectionDialog();
       assertThat(projectSelectionDialog.getMessage()).contains("This Eclipse project will be bound to the Sonar project 'maven-taint' using connection '127.0.0.1'");
@@ -294,7 +293,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     var ruleDescriptionView = new RuleDescriptionView();
     new WaitUntil(new RuleDescriptionViewOpenedWithContent(ruleDescriptionView, S101), TimePeriod.DEFAULT);
-    
+
     // 8) Check that token still exists
     userTokens = adminWsClient
       .userTokens()
@@ -345,9 +344,9 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     // 5) change preferences regarding new code / issue filter + change file content
     setNewCodePreference(IssuePeriod.NEW_CODE);
-    
+
     // INFO: We get rid of the file and create a new one from scratch to simulate actual changes happening after the
-    //       last SonarQube analysis. Doing it by just changing the file was too flaky in the build pipeline!
+    // last SonarQube analysis. Doing it by just changing the file was too flaky in the build pipeline!
     rootProject.getResource("src/main/java", "taint", "SysOut.java").delete();
     createClass("taint", "SysOut.java");
     var textEditor = new TextEditor("SysOut.java");
@@ -401,7 +400,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     closeTaintPopupIfAny();
   }
-  
+
   /**
    *  To emulate a user clicking on "Open in IDE" on their SonarQube on an issue without any token
    */
@@ -438,7 +437,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     var response = HttpClient.newHttpClient().send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
     assertThat(response.statusCode()).isEqualTo(200);
   }
-  
+
   /** To create a new Java class in a specific package */
   private void createClass(String javaPackage, String className) {
     var dialog = new NewClassCreationWizard();

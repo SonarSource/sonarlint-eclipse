@@ -47,7 +47,6 @@ import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateOnFileOpenedJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
@@ -267,7 +266,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
           WindowOpenCloseListener.addListenerToAllPages(window);
         }
       }
-      
+
       // Display user survey pop-up (comment out if not needed, comment in again if needed and replace link)
       //Display.getDefault().syncExec(() -> SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed(""));
 
@@ -281,7 +280,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         var aProject = entry.getKey();
         var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(aProject);
         if (bindingOpt.isPresent()) {
-          new TaintIssuesUpdateOnFileOpenedJob((ConnectionFacade) bindingOpt.get().getEngineFacade(),
+          new TaintIssuesUpdateOnFileOpenedJob(bindingOpt.get().getEngineFacade(),
             aProject, entry.getValue().stream().map(f -> f.getFile()).collect(Collectors.toList()), bindingOpt.get().getProjectBinding()).schedule();
         }
       }

@@ -28,10 +28,11 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class MandatoryURLValidator implements IValidator {
 
-  /**      
-  * validates the given string is a URL. Validation passes only if the given value is      
-  * not <tt>null</tt> and it is a valid URL      
+  /**
+  * validates the given string is a URL. Validation passes only if the given value is
+  * not <tt>null</tt> and it is a valid URL
   */
+  @Override
   public IStatus validate(Object value) {
     if (!((value instanceof String) && ((String) value).length() > 0)) {
       return ValidationStatus.error("You must provide a server URL");

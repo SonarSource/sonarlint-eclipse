@@ -118,16 +118,16 @@ public class TrackedIssue implements MatchableIssue {
   public boolean isResolved() {
     return resolved;
   }
-  
+
   public boolean isNewCode() {
     return isNewCode;
   }
-  
+
   @Nullable
   public UUID getId() {
     return id;
   }
-  
+
   public void setId(@Nullable UUID id) {
     this.id = id;
   }

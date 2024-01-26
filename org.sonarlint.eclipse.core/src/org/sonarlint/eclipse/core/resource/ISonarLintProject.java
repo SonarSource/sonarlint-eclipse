@@ -31,7 +31,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Represents a project for SonarLint. A project will contain the 
+ * Represents a project for SonarLint. A project will contain the
  * project level specific SonarLint configuration (binding, exclusions, ...).
  * Should implement hashCode and equals.
  * @since 3.0

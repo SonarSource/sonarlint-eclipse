@@ -103,20 +103,20 @@ public abstract class AbstractSonarLintTest {
 
   @ClassRule
   public static final TemporaryFolder tempFolder = new TemporaryFolder();
-  
+
   @BeforeClass
   public static final void setUpBeforeClass() {
     System.setProperty("sonarlint.internal.ignoreEnhancedFeature", "true");
     System.setProperty("sonarlint.internal.ignoreMissingFeature", "true");
     System.setProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning", "true");
   }
-  
+
   @AfterClass
   public static final void cleanupAfterClass() {
     System.clearProperty("sonarlint.internal.ignoreEnhancedFeature");
     System.clearProperty("sonarlint.internal.ignoreMissingFeature");
     System.clearProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning");
-    
+
     // remove warning about soon unsupported version (there can be multiple)
     if ("oldest".equals(System.getProperty("target.platform"))) {
       while (true) {
@@ -127,7 +127,7 @@ public abstract class AbstractSonarLintTest {
         }
       }
     }
-    
+
     // File associations must be set explicitly on macOS!
     restoreDefaultFileAssociationConfiguration();
   }
@@ -137,7 +137,7 @@ public abstract class AbstractSonarLintTest {
     // first wait for previous analyzes to finish properly
     // this prevents trying to clear the console in the middle of a job
     waitSonarLintAnalysisJobs();
-    
+
     // remove PyDev default preferences window if shown
     try {
       new DefaultShell("Default Eclipse preferences for PyDev").close();
@@ -150,7 +150,7 @@ public abstract class AbstractSonarLintTest {
 
     new WorkbenchShell().maximize();
     new CleanWorkspaceRequirement().fulfill();
-    
+
     restoreDefaultRulesConfiguration();
 
     setNewCodePreference(IssuePeriod.ALL_TIME);
@@ -166,7 +166,7 @@ public abstract class AbstractSonarLintTest {
     preferences.setNewCodePreference(period);
     preferenceDialog.ok();
   }
-  
+
   protected static void setIssueFilterPreference(IssueFilter filter) {
     var preferenceDialog = new WorkbenchPreferenceDialog();
     preferenceDialog.open();
@@ -206,7 +206,7 @@ public abstract class AbstractSonarLintTest {
   public static final void beforeClass() throws BackingStoreException {
     System.out.println("Eclipse: " + platformVersion());
     System.out.println("GTK: " + System.getProperty("org.eclipse.swt.internal.gtk.version"));
-    
+
     // Integration tests should not open the external browser
     System.setProperty("sonarlint.internal.externalBrowser.disabled", "true");
 
@@ -258,7 +258,7 @@ public abstract class AbstractSonarLintTest {
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
-    
+
     // If we have any SonarLint for Eclipse user survey, just click it away as we don't test the behavior!
     try {
       new DefaultShell("SonarLint - New Eclipse user survey").close();
@@ -370,18 +370,18 @@ public abstract class AbstractSonarLintTest {
     ruleConfigurationPreferences.restoreDefaults();
     ruleConfigurationPreferences.ok();
   }
-  
+
   /** Some tests are not able to run on macOS due to issues with Node.js and Eclipse running in different contexts */
   protected final void ignoreMacOS() {
     var ignoreMacOS = false;
-    
+
     try {
       var os = System.getProperty("os.name");
       ignoreMacOS = os == null || os.toLowerCase().contains("mac");
     } catch (Exception ignored) {
       ignoreMacOS = false;
     }
-    
+
     Assume.assumeFalse(ignoreMacOS);
   }
 }

@@ -45,7 +45,7 @@ public class MarkerUtilsTest extends SonarTestCase {
     // Configure the project
     SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), "A Project");
   }
-  
+
   /** While we couldn't test this via integration tests, this must do it otherwise promotion failed due to SQ QG failing */
   @Test
   public void test_MarkerAttributesEncodingDecoding() {

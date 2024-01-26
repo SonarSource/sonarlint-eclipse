@@ -25,19 +25,19 @@ import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
 public class RuleDescriptionViewOpenedWithContent implements WaitCondition {
   private final RuleDescriptionView ruleDescriptionView;
   private final String content;
-  
+
   public RuleDescriptionViewOpenedWithContent(RuleDescriptionView ruleDescriptionView, String content) {
     this.ruleDescriptionView = ruleDescriptionView;
     this.content = content;
   }
-  
+
   @Override
   public boolean test() {
     if (!ruleDescriptionView.isOpen()) {
       return false;
     }
     ruleDescriptionView.open();
-    
+
     return ruleDescriptionView.getFlatTextContent().contains(content);
   }
 

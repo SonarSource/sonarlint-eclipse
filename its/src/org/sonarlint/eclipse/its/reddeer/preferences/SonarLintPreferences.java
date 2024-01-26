@@ -39,7 +39,7 @@ public class SonarLintPreferences extends PropertyPage {
   public void setMarkersSeverity(MarkerSeverity severity) {
     new DefaultCombo(this, new WithLabelMatcher("SonarLint markers severity:")).setSelection(severity.getTextInCombo());
   }
-  
+
   public void setIssueFilterPreference(IssueFilter filter) {
     new DefaultCombo(this, new WithLabelMatcher("SonarLint markers shown for:")).setSelection(filter.getTextInCombo());
   }
@@ -76,7 +76,7 @@ public class SonarLintPreferences extends PropertyPage {
       return textInCombo;
     }
   }
-  
+
   public enum IssueFilter {
     NON_RESOLVED("Non-resolved issues"),
     ALL_ISSUES("All issues (including resolved)");

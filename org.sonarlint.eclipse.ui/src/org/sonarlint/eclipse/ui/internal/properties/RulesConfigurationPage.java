@@ -66,7 +66,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     var layout = new GridLayout();
     layout.marginWidth = 0;
     pageComponent.setLayout(layout);
-    
+
     var label = new Link(pageComponent, SWT.NONE);
     label.setText("When a project is connected to <a>SonarQube/SonarCloud</a>, "
       + "configuration from the server applies.");
@@ -98,7 +98,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     if (!newRuleConfigs.equals(initialRuleConfigs)) {
       initialRuleConfigs = newRuleConfigs;
       AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
-      
+
       if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
         MessageDialogUtils.enhancedWithConnectedModeInformation("Are you working in a team?",
           "When using Connected Mode you can benefit from having the rule configuration synchronized to all "

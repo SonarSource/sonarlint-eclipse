@@ -81,7 +81,7 @@ public class SonarLintGlobalConfiguration {
   private static final String PREF_USER_SURVEY_LAST_LINK = "userSurveyLastLink"; //$NON-NLS-1$
   private static final String PREF_SOON_UNSUPPORTED_CONNECTIONS = "soonUnsupportedSonarQubeConnections"; //$NON-NLS-1$
   private static final String PREF_NO_AUTOMATIC_BUILD_WARNING = "noAutomaticBuildWarning"; //$NON-NLS-1$
-  
+
   // notifications on missing features from standalone mode / enhanced features from connected mode
   public static final String PREF_IGNORE_MISSING_FEATURES = "ignoreNotificationsAboutMissingFeatures"; //$NON-NLS-1$
   public static final String PREF_IGNORE_ENHANCED_FEATURES = "ignoreNotificationsAboutEnhancedFeatures"; //$NON-NLS-1$
@@ -93,13 +93,13 @@ public class SonarLintGlobalConfiguration {
   public static String getTestFileGlobPatterns() {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_TEST_FILE_GLOB_PATTERNS, PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT, null);
   }
-  
+
   // INFO: Not to be confused with Eclipse marker view filters
   public static String getIssueFilter() {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_ISSUE_DISPLAY_FILTER,
       PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, null);
   }
-  
+
   public static String getIssuePeriod() {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_ISSUE_PERIOD, PREF_ISSUE_PERIOD_ALLTIME, null);
   }
@@ -328,22 +328,22 @@ public class SonarLintGlobalConfiguration {
   public static String getUserSurveyLastLink() {
     return getPreferenceString(PREF_USER_SURVEY_LAST_LINK);
   }
-  
+
   /** See {@link org.sonarlint.eclipse.ui.internal.popup.SurveyPopup} for more information */
   public static void setUserSurveyLastLink(String link) {
     setPreferenceString(PREF_USER_SURVEY_LAST_LINK, link);
   }
-  
+
   /** See {@link org.sonarlint.eclipse.ui.internal.popup.SoonUnsupportedPopup} for more information */
   public static boolean alreadySoonUnsupportedConnection(String connectionVersionCombination) {
     var currentPreference = getPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS);
     if (PREF_DEFAULT.equals(currentPreference)) {
       return false;
     }
-    
+
     return Set.of(currentPreference.split(",")).contains(connectionVersionCombination);
   }
-  
+
   /** See {@link org.sonarlint.eclipse.ui.internal.popup.SoonUnsupportedPopup} for more information */
   public static void addSoonUnsupportedConnection(String connectionVersionCombination) {
     var currentPreference = getPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS);
@@ -351,13 +351,13 @@ public class SonarLintGlobalConfiguration {
       setPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS, connectionVersionCombination);
       return;
     }
-    
-    var currentConnections = new HashSet<String>(Arrays.asList(currentPreference.split(",")));
+
+    var currentConnections = new HashSet<>(Arrays.asList(currentPreference.split(",")));
     currentConnections.add(connectionVersionCombination);
-    
+
     setPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS, String.join(",", currentConnections));
   }
-  
+
   public static boolean ignoreMissingFeatureNotifications() {
     // For integration tests we need to disable the notifications
     var property = System.getProperty("sonarlint.internal.ignoreMissingFeature");
@@ -365,11 +365,11 @@ public class SonarLintGlobalConfiguration {
       ? getPreferenceBoolean(PREF_IGNORE_MISSING_FEATURES)
       : Boolean.parseBoolean(property);
   }
-  
+
   public static void setIgnoreMissingFeatureNotifications() {
     setPreferenceBoolean(PREF_IGNORE_MISSING_FEATURES, true);
   }
-  
+
   public static boolean ignoreEnhancedFeatureNotifications() {
     // For integration tests we need to disable the notifications
     var property = System.getProperty("sonarlint.internal.ignoreEnhancedFeature");
@@ -377,11 +377,11 @@ public class SonarLintGlobalConfiguration {
       ? getPreferenceBoolean(PREF_IGNORE_ENHANCED_FEATURES)
       : Boolean.parseBoolean(property);
   }
-  
+
   public static void setIgnoreEnhancedFeatureNotifications() {
     setPreferenceBoolean(PREF_IGNORE_ENHANCED_FEATURES, true);
   }
-  
+
   public static boolean noAutomaticBuildWarning() {
     // For integration tests we need to disable the notifications
     var property = System.getProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning");
@@ -389,7 +389,7 @@ public class SonarLintGlobalConfiguration {
       ? getPreferenceBoolean(PREF_NO_AUTOMATIC_BUILD_WARNING)
       : Boolean.parseBoolean(property);
   }
-  
+
   public static void setNoAutomaticBuildWarning() {
     setPreferenceBoolean(PREF_NO_AUTOMATIC_BUILD_WARNING, true);
   }

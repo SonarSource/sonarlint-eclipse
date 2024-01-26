@@ -43,7 +43,7 @@ import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 public class UsernamePasswordWizardPage extends AbstractServerConnectionWizardPage {
   public static final String DEPRECATION_MESSAGE = "Authentication via username and password is deprecated and will "
     + "be removed in the future. Please use a token instead.";
-  
+
   private Text connectionUsernameText;
   private Text connectionPasswordText;
 
@@ -82,20 +82,20 @@ public class UsernamePasswordWizardPage extends AbstractServerConnectionWizardPa
 
     WizardPageSupport.create(this, dataBindingContext);
   }
-  
+
   private static void createDeprecationLabel(final Composite container) {
     var deprecationContainer = new Composite(container, SWT.NONE);
     deprecationContainer.setLayout(new GridLayout(3, false));
     deprecationContainer.setLayoutData(new GridData(SWT.LEFT, SWT.DOWN, true, false, Integer.MAX_VALUE, 1));
-    
+
     // icon on the left
     new Label(deprecationContainer, SWT.NULL).setImage(SonarLintImages.IMG_SEVERITY_BLOCKER);
-    
+
     var labelDeprecation = new Label(deprecationContainer, SWT.NULL);
     labelDeprecation.setText(DEPRECATION_MESSAGE);
     labelDeprecation.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     labelDeprecation.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
-    
+
     // icon on the right
     new Label(deprecationContainer, SWT.NULL).setImage(SonarLintImages.IMG_SEVERITY_BLOCKER);
   }

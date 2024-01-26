@@ -45,9 +45,9 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
 
   public static final String TITLE = Messages.SonarConsole_title;
 
-  private MessageConsoleStream infoStream;
-  private MessageConsoleStream warnStream;
-  private MessageConsoleStream debugStream;
+  private final MessageConsoleStream infoStream;
+  private final MessageConsoleStream warnStream;
+  private final MessageConsoleStream debugStream;
 
   public SonarLintConsole(ImageDescriptor imageDescriptor) {
     super(TITLE, imageDescriptor);
@@ -93,8 +93,8 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
   private static boolean isVisible() {
     var conMan = ConsolePlugin.getDefault().getConsoleManager();
     var existing = conMan.getConsoles();
-    for (var i = 0; i < existing.length; i++) {
-      if (SonarLintConsole.TITLE.equals(existing[i].getName())) {
+    for (IConsole element : existing) {
+      if (SonarLintConsole.TITLE.equals(element.getName())) {
         return true;
       }
     }

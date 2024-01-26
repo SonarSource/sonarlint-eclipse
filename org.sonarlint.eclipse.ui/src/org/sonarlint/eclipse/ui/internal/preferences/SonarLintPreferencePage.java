@@ -62,7 +62,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
   // when we ask the user to change the preferences on "Open in IDE" feature;
   @Nullable
   private OpenIssueContext openIssueContext;
-  
+
   public SonarLintPreferencePage() {
     super(Messages.SonarPreferencePage_title, GRID);
   }
@@ -76,7 +76,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
   @Override
   protected void createFieldEditors() {
     var labelLayoutData = new GridData(SWT.LEFT, SWT.DOWN, true, false, Integer.MAX_VALUE, 1);
-    
+
     addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY,
       Messages.SonarPreferencePage_label_marker_severity,
       new String[][] {
@@ -96,14 +96,14 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     issueFilterLabel.setLayoutData(labelLayoutData);
     issueFilterLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.MARK_ISSUES_LINK, e.display));
-    
+
     addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER,
       Messages.SonarPreferencePage_label_issue_filter,
       new String[][] {
         {"Non-resolved issues", SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED},
         {"All issues (including resolved)", SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_ALL}},
       getFieldEditorParent()));
-    
+
     var issuePeriodLabel = new Link(getFieldEditorParent(), SWT.NONE);
     issuePeriodLabel.setText("<a>Learn how</a> SonarLint markers can help you focus on new code to deliver Clean Code.");
     issuePeriodLabel.setLayoutData(labelLayoutData);
@@ -177,7 +177,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     var previousNodeJsPath = SonarLintGlobalConfiguration.getNodejsPath();
     var result = super.performOk();
     var anyPreferenceChanged = false;
-    
+
     var issueFilterChanged = !previousIssueFilter.equals(SonarLintGlobalConfiguration.getIssueFilter());
     var issuePeriodChanged = !previousIssuePeriod.equals(SonarLintGlobalConfiguration.getIssuePeriod());
     if (issueFilterChanged || issuePeriodChanged) {
@@ -208,7 +208,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
     return result;
   }
-  
+
   public void setOpenIssueInEclipseJobParams(OpenIssueContext context) {
     this.openIssueContext = context;
   }

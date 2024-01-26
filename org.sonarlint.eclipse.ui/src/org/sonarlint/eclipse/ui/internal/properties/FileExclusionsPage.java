@@ -258,7 +258,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     fLink.addListener(SWT.Selection,
       e -> PreferencesUtil.createPreferenceDialogOn(ancestor.getShell(), PREFERENCE_ID, null, null).open());
   }
-  
+
   private static void createLinkToDocumentation(Composite parent, boolean isSonarCloud) {
     var fLink = new Link(parent, SWT.NONE);
     fLink.setText("As this project is bound to " + (isSonarCloud ? "SonarCloud" : "SonarQube")

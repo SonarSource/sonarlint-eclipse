@@ -103,7 +103,7 @@ public class SonarLintMarkerUpdater {
     config.getProjectBinding().ifPresent(binding -> {
       var includeResolvedByPreference = Objects.equals(
         SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_ALL, issueFilterPreference);
-      
+
       var taintVulnerabilities = facade.getServerTaintIssues(binding, branchName,
         currentFile.getProjectRelativePath(), includeResolvedByPreference)
         .stream()
@@ -550,7 +550,7 @@ public class SonarLintMarkerUpdater {
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_TAINT_FLOW_ID);
       });
   }
-  
+
   /** Markers should not be set / should be removed for issues already resolved when preference is set */
   private static boolean shouldHideResolvedIssueMarker(TrackedIssue issue, final String issueFilterPreference) {
     return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, issueFilterPreference)
@@ -566,7 +566,7 @@ public class SonarLintMarkerUpdater {
       && Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE, issuePeriodPreference)
       && !issue.isNewCode();
   }
-  
+
   /** Taint marker should not be set / should be removed for issues already resolved when preference is set */
   private static boolean shouldHideResolvedTaintMarker(ServerTaintIssue issue, final String issueFilterPreference) {
     return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, issueFilterPreference)

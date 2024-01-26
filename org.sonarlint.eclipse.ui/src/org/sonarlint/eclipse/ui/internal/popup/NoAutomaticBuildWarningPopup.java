@@ -37,7 +37,7 @@ public class NoAutomaticBuildWarningPopup extends AbstractSonarLintPopup {
   protected String getPopupShellTitle() {
     return "Automatic build of workspace disabled";
   }
-  
+
   @Override
   protected String getMessage() {
     return "The accuracy of analysis results might be slightly impacted as some rules require the context of the "
@@ -48,26 +48,26 @@ public class NoAutomaticBuildWarningPopup extends AbstractSonarLintPopup {
   protected Image getPopupShellImage(int maximumHeight) {
     return SonarLintImages.BALLOON_IMG;
   }
-  
+
   @Override
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
-    
+
     addLink("Enable automatic build of workspace", e -> {
       PreferencesUtil.createPreferenceDialogOn(getParentShell(),
         "org.eclipse.ui.preferencePages.BuildOrder",
         null, null).open();
       close();
     });
-    
+
     addLink("Don't show again", e -> {
       SonarLintGlobalConfiguration.setNoAutomaticBuildWarning();
       close();
     });
-    
+
     composite.getShell().addDisposeListener(e -> PopupUtils.removeCurrentlyDisplayedPopup(getClass()));
   }
-  
+
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
   public static void displayPopupIfNotIgnored() {
     if (ResourcesPlugin.getWorkspace().getDescription().isAutoBuilding()
@@ -75,10 +75,10 @@ public class NoAutomaticBuildWarningPopup extends AbstractSonarLintPopup {
       || SonarLintGlobalConfiguration.noAutomaticBuildWarning() ) {
       return;
     }
-    
+
     Display.getDefault().asyncExec(() -> {
       PopupUtils.addCurrentlyDisplayedPopup(NoAutomaticBuildWarningPopup.class);
-      
+
       var popup = new NoAutomaticBuildWarningPopup();
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);

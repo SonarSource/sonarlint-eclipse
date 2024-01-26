@@ -40,6 +40,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessClient;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
@@ -68,6 +69,7 @@ import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.BindingSuggestionDto;
+import org.sonarsource.sonarlint.core.clientapi.backend.usertoken.RevokeTokenParams;
 import org.sonarsource.sonarlint.core.clientapi.client.OpenUrlInBrowserParams;
 import org.sonarsource.sonarlint.core.clientapi.client.binding.AssistBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.client.binding.AssistBindingResponse;
@@ -167,17 +169,17 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
   public CompletableFuture<AssistCreatingConnectionResponse> assistCreatingConnection(AssistCreatingConnectionParams params) {
     return CompletableFuture.supplyAsync(() -> {
       var baseUrl = params.getServerUrl();
-      
+
       try {
         AbstractAssistCreatingConnectionJob job;
-        
+
         SonarLintLogger.get().debug("Assist creating a new connection...");
         if (params.getTokenName() != null && params.getTokenValue() != null) {
           job = new AssistCreatingAutomaticConnectionJob(baseUrl, params.getTokenValue());
         } else {
           job = new AssistCreatingManualConnectionJob(baseUrl);
         }
-        
+
         job.schedule();
         job.join();
         if (job.getResult().isOK()) {
@@ -186,6 +188,12 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
           return new AssistCreatingConnectionResponse(job.getConnectionId(),
             ProjectsProviderUtils.allConfigurationScopeIds());
         } else if (job.getResult().matches(IStatus.CANCEL)) {
+          if (job instanceof AssistCreatingAutomaticConnectionJob) {
+            SonarLintBackendService.get()
+              .getBackend()
+              .getUserTokenService()
+              .revokeToken(new RevokeTokenParams(baseUrl, params.getTokenName(), params.getTokenValue()));
+          }
           SonarLintLogger.get().debug("Assist creating connection was cancelled.");
         }
         throw new IllegalStateException(job.getResult().getMessage(), job.getResult().getException());
@@ -196,7 +204,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
       }
     });
   }
-  
+
   @Override
   public void noBindingSuggestionFound(NoBindingSuggestionFoundParams params) {
     NoBindingSuggestionFoundPopup.displayPopupIfNotIgnored(params.getProjectKey());
@@ -322,7 +330,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
         if (!openedFiles.isEmpty() && openedFiles.containsKey(project)) {
           var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(project);
           if (bindingOpt.isPresent()) {
-            var connection = (ConnectionFacade) bindingOpt.get().getEngineFacade();
+            var connection = bindingOpt.get().getEngineFacade();
 
             // present taint vulnerabilities without re-fetching them from the server
             var files = openedFiles.get(project).stream()
@@ -395,14 +403,14 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
       // FIXME Very inefficient implementation. Should be acceptable as we don't expect to have too many taint vulnerabilities
       if (event instanceof TaintVulnerabilityClosedEvent) {
         var projectKey = ((TaintVulnerabilityClosedEvent) event).getProjectKey();
-        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectionFacade) facade, projectKey);
+        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey(facade, projectKey);
       } else if (event instanceof TaintVulnerabilityRaisedEvent) {
         var projectKey = ((TaintVulnerabilityRaisedEvent) event).getProjectKey();
-        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectionFacade) facade, projectKey);
+        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey(facade, projectKey);
       } else if (event instanceof IssueChangedEvent) {
         var issueChangedEvent = (IssueChangedEvent) event;
         var projectKey = issueChangedEvent.getProjectKey();
-        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectionFacade) facade, projectKey);
+        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey(facade, projectKey);
       }
     });
   }

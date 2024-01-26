@@ -58,7 +58,7 @@ public class OpenEditorAnalysisTrigger implements IPartListener2 {
     if (!SonarLintCorePlugin.loadConfig(project).isAutoEnabled()) {
       return;
     }
-    
+
     var request = new AnalyzeProjectRequest(project, List.of(fileWithDoc), TriggerType.EDITOR_OPEN, false,
       !SonarLintUtils.isBoundToConnection(project));
     AnalysisJobsScheduler.scheduleAutoAnalysisIfEnabled(request);

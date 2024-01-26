@@ -74,7 +74,7 @@ public class DeactivateRuleUtils {
     }
 
     Predicate<ISonarLintFile> filter = f -> !SonarLintCorePlugin.loadConfig(f.getProject()).isBound();
-    
+
     // Assuming the user is willingly changing the rules for a standalone project, don't check for unsupported
     // languages as this is not the correct trigger in this moment!
     AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE,

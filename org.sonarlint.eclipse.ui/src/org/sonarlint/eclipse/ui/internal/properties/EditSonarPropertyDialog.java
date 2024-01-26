@@ -44,11 +44,11 @@ public class EditSonarPropertyDialog extends StatusDialog {
   private Text fNameText;
   private Text fValueText;
 
-  private StatusInfo fValidationStatus;
+  private final StatusInfo fValidationStatus;
   // https://bugs.eclipse.org/bugs/show_bug.cgi?id=4354
   private boolean fSuppressError = true;
 
-  private boolean fIsNameModifiable;
+  private final boolean fIsNameModifiable;
 
   /**
    * Creates a new dialog.

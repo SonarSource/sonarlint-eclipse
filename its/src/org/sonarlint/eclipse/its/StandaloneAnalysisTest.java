@@ -78,7 +78,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     System.setProperty("sonarlint.internal.ignoreMissingFeature", "true");
     System.setProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning", "true");
   }
-  
+
   @After
   public void enableAutomaticWorkspaceBuild() {
     if ("oldest".equals(System.getProperty("target.platform"))) {
@@ -87,19 +87,19 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       preferences.ok();
     }
   }
-  
+
   @Test
   public void analyze_automatic_workspace_build_disabled() {
     // INFO: We only want to run it on one axis and the "oldest" ITs take the shortest!
     Assume.assumeTrue("oldest".equals(System.getProperty("target.platform")));
-    
+
     System.clearProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning");
-    
+
     // 1) Configure preferences
     var preferences = GeneralWorkspaceBuildPreferences.open();
     preferences.disableAutomaticBuild();
     preferences.ok();
-    
+
     // 2) Import project
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
@@ -108,58 +108,58 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
     openFileAndWaitForAnalysisCompletion(helloJavaFile);
     new DefaultEditor().close();
-    
+
     var popUp = new DefaultShell("Automatic build of workspace disabled");
     new DefaultLink(popUp, "Enable automatic build of workspace").click();
     preferences = GeneralWorkspaceBuildPreferences.open();
     preferences.ok();
-    
+
     // 4) Open file and click pop-up but don't show again
     helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
     openFileAndWaitForAnalysisCompletion(helloJavaFile);
     new DefaultEditor().close();
-    
+
     popUp = new DefaultShell("Automatic build of workspace disabled");
     new DefaultLink(popUp, "Don't show again").click();
-    
+
     // 5) Reset preferences
     preferences = GeneralWorkspaceBuildPreferences.open();
     preferences.enableAutomaticBuild();
     preferences.ok();
   }
-  
+
   @Test
   public void analyzeProjectWithMissingLanguageAnalyzers() {
     // INFO: This test case should display everything!
     System.clearProperty("sonarlint.internal.ignoreEnhancedFeature");
     System.clearProperty("sonarlint.internal.ignoreMissingFeature");
-    
+
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("connected", "connected");
 
     var abapFile = rootProject.getResource("Test.abap");
     openFileAndWaitForAnalysisCompletion(abapFile);
-    
+
     var notAnalyzed = new DefaultShell("SonarLint - Language could not be analyzed");
     new DefaultLink(notAnalyzed, "Learn more").click();
     new DefaultLink(notAnalyzed, "Try SonarCloud for free").click();
     notAnalyzed.close();
-    
+
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
     var dialog = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
     doAndWaitForSonarLintAnalysisJob(dialog::learnMore);
-    
+
     notAnalyzed = new DefaultShell("SonarLint - Languages could not be analyzed");
     new DefaultLink(notAnalyzed, "Don't show again").click();
-    
+
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
     var dialog2 = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
     doAndWaitForSonarLintAnalysisJob(dialog2::trySonarCloudForFree);
-    
+
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
     var dialog3 = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
     doAndWaitForSonarLintAnalysisJob(dialog3::dontAskAgain);
-    
+
     doAndWaitForSonarLintAnalysisJob(
       () -> new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select());
   }
@@ -302,7 +302,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void shouldAnalyseJsInYamlFile() {
     // Don't run this test on macOS devices as Node.js might not be found!
     ignoreMacOS();
-    
+
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("js/js-simple", "js-simple");
 
@@ -319,7 +319,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void shouldAnalyseCSS() {
     // Don't run this test on macOS devices as Node.js might not be found!
     ignoreMacOS();
-    
+
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("css/css-simple", "css-simple");
 
@@ -336,7 +336,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void shouldAnalyseTypeScript() {
     // Don't run this test on macOS devices as Node.js might not be found!
     ignoreMacOS();
-    
+
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("ts/ts-simple", "ts-simple");
 
@@ -377,7 +377,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void shouldAnalysePython() {
     // The PydevPerspective is not working correctly in older PyDev versions, therefore only run in latest
     Assume.assumeTrue("latest".equals(System.getProperty("target.platform", "latest")));
-    
+
     new PydevPerspective().open();
     importExistingProjectIntoWorkspace("python");
 

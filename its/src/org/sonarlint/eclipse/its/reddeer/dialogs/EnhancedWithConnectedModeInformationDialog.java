@@ -28,19 +28,19 @@ public class EnhancedWithConnectedModeInformationDialog extends DefaultShell {
   public EnhancedWithConnectedModeInformationDialog(String title) {
     super(title);
   }
-  
+
   public void learnMore() {
     new CustomButton(this, "Learn more").click();
   }
-  
+
   public void trySonarCloudForFree() {
     new CustomButton(this, "Try SonarCloud for free").click();
   }
-  
+
   public void dontAskAgain() {
     new CustomButton(this, "Don't ask again").click();
   }
-  
+
   private static class CustomButton extends PredefinedButton {
     public CustomButton(ReferencedComposite referencedComposite, String title) {
       super(referencedComposite, 0, title, SWT.PUSH);

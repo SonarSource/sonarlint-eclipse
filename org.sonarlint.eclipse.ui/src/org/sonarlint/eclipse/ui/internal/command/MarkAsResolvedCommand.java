@@ -31,7 +31,6 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.MarkAsResolvedJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
@@ -54,7 +53,7 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
   static {
     TITLE = "Mark Issue as Resolved";
   }
-  
+
   @Override
   protected void execute(IMarker marker, ISonarLintFile file, ISonarLintProject project, String issueKey, boolean isTaint) {
     var checkJob = new Job("Check user permissions for setting the issue resolution") {
@@ -108,13 +107,13 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
         var newStatus = dialog.getFinalTransition();
         var comment = dialog.getFinalComment();
 
-        var job = new MarkAsResolvedJob(project, (ConnectionFacade) resolvedBinding.getEngineFacade(), file,
+        var job = new MarkAsResolvedJob(project, resolvedBinding.getEngineFacade(), file,
           issueKey, newStatus, StringUtils.trimToNull(comment), isTaintVulnerability);
         job.schedule();
       }
     });
   }
-  
+
   /** Get the correct dialog (differing for server / anticipated issues) */
   protected MarkAsResolvedDialog createDialog(IMarker marker, Shell parentShell, List<ResolutionStatus> transitions,
     String hostURL, boolean isSonarCloud) {

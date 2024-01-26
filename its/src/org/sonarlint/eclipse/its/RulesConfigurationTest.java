@@ -91,7 +91,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
     new ContextMenu(cognitiveComplexityRuleItem).getItem("Activate").select();
     assertThat(ruleConfigurationPreferences.getRuleParamSpinner().isEnabled()).isTrue();
-    
+
     ruleConfigurationPreferences.cancel();
   }
 
@@ -105,7 +105,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     assertThat(paramRestoreDefaultLink()).isNotNull();
     ruleConfigurationPreferences.setRuleParameter(15);
     assertThat(paramRestoreDefaultLink()).isNull();
-    
+
     ruleConfigurationPreferences.cancel();
   }
 
@@ -120,7 +120,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
     cssNode.expand();
     assertThat(cssNode.getItems().get(0).getText()).isEqualTo("\"!important\" should not be used on \"keyframes\"");
-    
+
     ruleConfigurationPreferences.cancel();
   }
 

@@ -59,7 +59,7 @@ public abstract class EditExclusionDialog extends TitleAreaDialog implements Sup
   protected boolean isResizable() {
     return true;
   }
-  
+
   /**
    * Creates and configures this dialog's main composite.
    *
@@ -82,7 +82,7 @@ public abstract class EditExclusionDialog extends TitleAreaDialog implements Sup
     setMessage(standardMessage());
     return contents;
   }
-  
+
   /**
    * Configures this dialog's shell, setting the shell's text.
    *

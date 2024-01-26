@@ -86,7 +86,7 @@ public class RuleParameterPanel extends Composite {
     var layout = new GridLayout();
     layout.numColumns = 2;
     paramInputsContainer.setLayout(layout);
-    
+
     selectedRuleMetadata.getParamsByKey().values().forEach(it -> addParamInput(paramInputsContainer, it));
 
     sc.setMinSize(paramInputsContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT));

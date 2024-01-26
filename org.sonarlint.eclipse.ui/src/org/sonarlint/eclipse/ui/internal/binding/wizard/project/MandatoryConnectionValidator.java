@@ -32,6 +32,7 @@ public class MandatoryConnectionValidator implements IValidator {
     this.msg = msg;
   }
 
+  @Override
   public IStatus validate(Object value) {
     if (!(value instanceof ConnectionFacade)) {
       return ValidationStatus.error(msg);

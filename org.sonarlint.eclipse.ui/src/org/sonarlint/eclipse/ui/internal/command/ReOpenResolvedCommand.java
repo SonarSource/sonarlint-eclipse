@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.ReOpenResolvedJob;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
@@ -43,7 +42,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
   static {
     TITLE = "Re-Opening resolved Issue";
   }
-  
+
   @Override
   protected void execute(IMarker marker, ISonarLintFile file, ISonarLintProject project, String issueKey,
     boolean isTaint) {
@@ -77,7 +76,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
       checkJob.resolvedBinding));
     checkJob.schedule();
   }
-  
+
   private void afterCheckSuccessful(ISonarLintProject project, ISonarLintFile file, Boolean isTaintVulnerability,
     ReopenIssueResponse result, ResolvedBinding resolvedBinding) {
     var isSonarCloud = resolvedBinding.getEngineFacade().isSonarCloud();
@@ -91,7 +90,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
     }
 
     currentWindow.getShell().getDisplay().asyncExec(() -> {
-      var job = new ReOpenResolvedJob(project, (ConnectionFacade) resolvedBinding.getEngineFacade(), file,
+      var job = new ReOpenResolvedJob(project, resolvedBinding.getEngineFacade(), file,
         isTaintVulnerability);
       job.schedule();
     });

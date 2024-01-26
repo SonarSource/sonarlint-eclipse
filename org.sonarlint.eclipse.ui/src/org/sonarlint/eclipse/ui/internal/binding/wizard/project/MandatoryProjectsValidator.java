@@ -32,6 +32,7 @@ public class MandatoryProjectsValidator implements IValidator {
     this.msg = msg;
   }
 
+  @Override
   public IStatus validate(Object value) {
     if (!(value instanceof List) || ((List) value).isEmpty()) {
       return ValidationStatus.error(msg);

@@ -65,14 +65,14 @@ public class DisplayProjectRuleDescriptionJob extends AbstractSonarProjectJob {
     try {
       Display.getDefault().syncExec(ruleDetailsPanel::displayLoadingIndicator);
       // Getting the CompletableFuture<...> object before running the UI update to not block the UI thread
-      var ruleDetails = SonarLintBackendService.get().getEffectiveRuleDetails(project, ruleKey, contextKey).details();      
-      
+      var ruleDetails = SonarLintBackendService.get().getEffectiveRuleDetails(project, ruleKey, contextKey).details();
+
       // Add the actual issue type / severity / impacts
       var actualDetails = new EffectiveRuleDetailsDto(ruleKey, ruleDetails.getName(),
         issueSeverity != null ? issueSeverity : ruleDetails.getSeverity(),
         issueType != null ? issueType : ruleDetails.getType(), ruleDetails.getCleanCodeAttribute().orElse(null),
         issueImpacts, ruleDetails.getDescription(), ruleDetails.getParams(), ruleDetails.getLanguage());
-      
+
       Display.getDefault().syncExec(() -> ruleDetailsPanel.updateRule(actualDetails, actualDetails.getDescription()));
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to display project rule description for rule " + ruleKey, e);

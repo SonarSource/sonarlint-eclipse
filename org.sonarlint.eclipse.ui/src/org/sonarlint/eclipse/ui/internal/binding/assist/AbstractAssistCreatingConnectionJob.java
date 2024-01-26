@@ -39,11 +39,11 @@ public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
     super(title);
     // We don't want to have this job visible to the user, as there should be a dialog anyway
     setSystem(true);
-    
+
     this.serverUrl = serverUrl;
     this.automaticSetUp = automaticSetUp;
   }
-  
+
   @Override
   public IStatus runInUIThread(IProgressMonitor monitor) {
     var shell = DisplayUtils.bringToFront();
@@ -51,11 +51,11 @@ public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
     if (dialog.open() != 0) {
       return Status.CANCEL_STATUS;
     }
-    
+
     var model = new ServerConnectionModel();
     model.setConnectionType(ConnectionType.ONPREMISE);
     model.setServerUrl(serverUrl);
-    
+
     var connection = createConnection(model);
     if (connection != null) {
       this.connectionId = connection.getId();
@@ -64,12 +64,12 @@ public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
 
     return Status.CANCEL_STATUS;
   }
-  
+
   @Nullable
   public final String getConnectionId() {
     return connectionId;
   }
-  
+
   @Nullable
   protected abstract ConnectionFacade createConnection(ServerConnectionModel model);
 }

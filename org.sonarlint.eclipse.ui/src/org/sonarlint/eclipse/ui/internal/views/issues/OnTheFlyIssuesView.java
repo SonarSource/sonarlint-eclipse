@@ -42,7 +42,7 @@ public class OnTheFlyIssuesView extends MarkerViewWithBottomPanel {
     bottom.setLayout(bottomLayout);
     var bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     bottom.setLayoutData(bottomLayoutData);
-    
+
     var label = new Link(bottom, SWT.NONE);
     label.setText(
       "Issues reported \"on the fly\" by SonarLint on files you have recently opened/edited. <a>Learn more</a>");

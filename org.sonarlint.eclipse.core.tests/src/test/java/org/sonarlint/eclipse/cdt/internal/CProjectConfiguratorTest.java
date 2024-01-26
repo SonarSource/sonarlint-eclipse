@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
+import org.mockito.ArgumentMatchers;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
@@ -105,8 +105,8 @@ public class CProjectConfiguratorTest {
     verify(context).setAnalysisProperty("sonar.cfamily.useCache", "false");
 
     // no errors
-    verify(logger, never()).error(Mockito.any(), Mockito.any());
-    verify(logger, never()).error(Mockito.any());
+    verify(logger, never()).error(ArgumentMatchers.any(), ArgumentMatchers.any());
+    verify(logger, never()).error(ArgumentMatchers.any());
   }
 
 }

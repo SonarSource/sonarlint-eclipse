@@ -43,7 +43,7 @@ public class OnTheFlyView extends AbstractMarkersSupportView {
   public OnTheFlyView() {
     super("SonarLint On-The-Fly");
   }
-  
+
   public List<TreeItem> getItems() {
     activate();
     new WaitUntil(new OnTheFlyIssuesViewMarkerIsUpdating(), TimePeriod.MEDIUM, false);
@@ -67,17 +67,17 @@ public class OnTheFlyView extends AbstractMarkersSupportView {
   public void selectItem(int index) {
     getIssues().get(index).select();
   }
-  
+
   public void groupByImpact() {
     this.activate();
     new WorkbenchPartMenuItem("Group By", "Impact").select();
   }
-  
+
   public void groupBySeverityLegacy() {
     this.activate();
     new WorkbenchPartMenuItem("Group By", "Severity (Legacy)").select();
   }
-  
+
   public void resetGrouping() {
     this.activate();
     new WorkbenchPartMenuItem("Group By", "None").select();

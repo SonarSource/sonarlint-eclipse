@@ -40,7 +40,7 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
 
   public RuleHeaderPanel(Composite parent) {
     super(parent, 5);
-    
+
     ruleCleanCodeAttributeLabel = new Label(this, SWT.NONE);
     firstSoftwareQualityImpact= new SoftwareQualityImpactPanel(this, SWT.NONE);
     secondSoftwareQualityImpact = new SoftwareQualityImpactPanel(this, SWT.NONE);
@@ -48,7 +48,7 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
     ruleKeyLabel = new Label(this, SWT.LEFT);
     ruleKeyLabel.setLayoutData(new GridData(SWT.END, SWT.FILL, true, true));
   }
-  
+
   @Override
   public void updateRule(AbstractRuleDto ruleInformation) {
     /** INFO: We assume that the Optional#isPresent() check was already done */
@@ -57,10 +57,10 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
       clean(attribute.getAttributeCategory().getIssueLabel()) + " | " + clean(attribute.getIssueLabel()));
     ruleCleanCodeAttributeLabel.setToolTipText(
       "Clean Code attributes are characteristics code needs to have to be considered clean.");
-    
+
     var impacts = ruleInformation.getDefaultImpacts();
-    var keys = new ArrayList<SoftwareQuality>(impacts.keySet());
-    
+    var keys = new ArrayList<>(impacts.keySet());
+
     firstSoftwareQualityImpact.updateRule(keys.get(0), impacts.get(keys.get(0)));
     if (keys.size() > 1) {
       secondSoftwareQualityImpact.updateRule(keys.get(1), impacts.get(keys.get(1)));
@@ -68,11 +68,11 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
         thirdSoftwareQualityImpact.updateRule(keys.get(2), impacts.get(keys.get(2)));
       }
     }
-    
+
     ruleKeyLabel.setText(ruleInformation.getKey());
     layout();
   }
-  
+
   private static class SoftwareQualityImpactPanel extends Composite {
     private final Label softwareQualityLabel;
     private final Label impactSeverityIcon;
@@ -80,20 +80,20 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
     SoftwareQualityImpactPanel(Composite parent, int style) {
       super(parent, style);
       setLayout(new GridLayout(2, false));
-      
+
       softwareQualityLabel = new Label(this, SWT.NONE);
       impactSeverityIcon = new Label(this, SWT.LEFT);
     }
-    
+
     public void updateRule(SoftwareQuality quality, ImpactSeverity impact) {
       var tooltip = createImpactToolTip(quality, impact);
-      
+
       softwareQualityLabel.setText(quality.getDisplayLabel());
       softwareQualityLabel.setToolTipText(tooltip);
       impactSeverityIcon.setImage(SonarLintImages.getImpactImage(impact));
       impactSeverityIcon.setToolTipText(tooltip);
     }
-    
+
     private static String createImpactToolTip(SoftwareQuality quality, ImpactSeverity impact) {
       return "Issues found for this rule will have a " + impact.getDisplayLabel() +
         " impact on the " + quality.getDisplayLabel() + " of your software.";

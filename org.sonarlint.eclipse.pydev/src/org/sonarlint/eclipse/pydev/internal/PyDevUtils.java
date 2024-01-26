@@ -30,7 +30,7 @@ import org.python.pydev.ui.ColorAndStyleCache;
 public class PyDevUtils {
   private PyDevUtils() {
   }
-  
+
   public static SourceViewerConfiguration sourceViewerConfiguration() {
     IPreferenceStore chainedPrefStore = PyDevUiPrefs.getChainedPrefStore();
     return new PyEditConfiguration(new ColorAndStyleCache(chainedPrefStore), null, chainedPrefStore);

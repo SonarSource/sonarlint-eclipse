@@ -27,7 +27,7 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
  *  The rule descriptions containing code snippet require the correct syntax highlighting of the language to display
  *  everything correctly and in the same manner as the UI theme. The configuration is provided by the specific Eclipse
  *  plug-in.
- *  
+ *
  *  @since 7.12
  */
 public interface ISyntaxHighlightingProvider {
@@ -37,7 +37,7 @@ public interface ISyntaxHighlightingProvider {
   Optional<SourceViewerConfiguration> sourceViewerConfiguration(String ruleLanguage);
 
   /**
-   *  @return the SourceViewer and its document requiring 
+   *  @return the SourceViewer and its document requiring
    */
   Optional<IDocumentPartitioner> documentPartitioner(String ruleLanguage);
 }

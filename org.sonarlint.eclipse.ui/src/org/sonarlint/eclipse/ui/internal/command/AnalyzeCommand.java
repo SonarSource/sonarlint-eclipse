@@ -76,7 +76,7 @@ public class AnalyzeCommand extends AbstractHandler {
 
   private static void runAnalysisJob(Shell shell, Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject) {
     var totalFileCount = filesPerProject.values().stream().mapToInt(Collection::size).sum();
-    
+
     if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
       MessageDialogUtils.enhancedWithConnectedModeInformation(shell, "Are you working with a CI/CD pipeline?",
         "Running an analysis with SonarQube / SonarCloud in your pipeline might be better suited for analyzing "
@@ -86,7 +86,7 @@ public class AnalyzeCommand extends AbstractHandler {
       // pop-ups to the user!
       return;
     }
-    
+
     if (filesPerProject.size() == 1) {
       var entry = filesPerProject.entrySet().iterator().next();
       var req = new AnalyzeProjectRequest(entry.getKey(), entry.getValue(), TriggerType.MANUAL, true, true);
@@ -97,7 +97,7 @@ public class AnalyzeCommand extends AbstractHandler {
       } else {
         reportTitle = fileCount + " files of project " + entry.getKey().getName();
       }
-      
+
       var job = AbstractAnalyzeProjectJob.create(req);
       AnalyzeChangeSetCommand.registerJobListener(job, reportTitle);
       job.schedule();

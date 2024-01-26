@@ -95,7 +95,7 @@ public abstract class AbstractListPropertyPage extends PropertyPage {
       }
     }
   }
-  
+
   /** Check for issue binding: Either SonarQube or SonarCloud */
   protected static Optional<ResolvedBinding> getBinding(ISonarLintProject project) {
     return SonarLintCorePlugin.getConnectionManager().resolveBinding(project);
