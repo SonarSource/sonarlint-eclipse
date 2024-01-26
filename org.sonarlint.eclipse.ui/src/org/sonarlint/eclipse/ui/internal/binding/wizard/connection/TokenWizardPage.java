@@ -47,12 +47,12 @@ import org.sonarsource.sonarlint.core.clientapi.backend.connection.auth.HelpGene
 
 public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 
-  private Text serverTokenText;
+  private Text connectionTokenText;
 
   private Binding tokenTextBinding;
 
   public TokenWizardPage(ServerConnectionModel model) {
-    super("server_token_page", null, model, 3);
+    super("connection_token_page", null, model, 3);
   }
 
   @SuppressWarnings("unchecked")
@@ -64,7 +64,7 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 
     var dataBindingContext = new DataBindingContext();
     tokenTextBinding = dataBindingContext.bindValue(
-      WidgetPropertiesCompat.text(SWT.Modify).observe(serverTokenText),
+      WidgetPropertiesCompat.text(SWT.Modify).observe(connectionTokenText),
       BeanPropertiesCompat.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_USERNAME)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(
@@ -78,10 +78,10 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
   private void createTokenField(final Composite container) {
     var labelUsername = new Label(container, SWT.NULL);
     labelUsername.setText("Token:");
-    serverTokenText = new Text(container, SWT.BORDER | SWT.SINGLE | SWT.PASSWORD);
+    connectionTokenText = new Text(container, SWT.BORDER | SWT.SINGLE | SWT.PASSWORD);
     var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
-    serverTokenText.setLayoutData(gd);
+    connectionTokenText.setLayoutData(gd);
   }
 
   private void createOpenSecurityPageButton(Composite container) {
@@ -112,7 +112,7 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 
   private void handleReceivedToken(String token) {
     DisplayUtils.asyncExec(() -> {
-      serverTokenText.setText(token);
+      connectionTokenText.setText(token);
       DisplayUtils.bringToFront();
     });
   }

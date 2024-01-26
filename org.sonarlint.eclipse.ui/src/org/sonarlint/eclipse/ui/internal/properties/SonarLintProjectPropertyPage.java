@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -103,9 +103,9 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     addServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        var serverId = getProjectConfig().getProjectBinding().map(EclipseProjectBinding::connectionId)
+        var connectionId = getProjectConfig().getProjectBinding().map(EclipseProjectBinding::connectionId)
           .orElseThrow(() -> new IllegalStateException("This link should only be visible when there is a serverId"));
-        var wd = ServerConnectionWizard.createDialog(container.getShell(), serverId);
+        var wd = ServerConnectionWizard.createDialog(container.getShell(), connectionId);
         if (wd.open() == Window.OK) {
           updateState();
         }
@@ -141,7 +141,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
       boundDetails.setText("Using SonarLint in connected mode with SonarQube/SonarCloud will offer you a lot of benefits. <a>Learn more</a>");
       bindLink.setText("<a>Bind this Eclipse project to SonarQube/SonarCloud...</a>");
     }
-    if (projectBinding.isPresent() && SonarLintCorePlugin.getServersManager().resolveBinding(getProject()).isEmpty()) {
+    if (projectBinding.isPresent() && SonarLintCorePlugin.getConnectionManager().resolveBinding(getProject()).isEmpty()) {
       addServerLink.setText("<a>Re-create SonarQube/SonarCloud connection '" + projectBinding.get().connectionId() + "'</a>");
       addServerLink.setVisible(true);
     } else {
@@ -150,12 +150,12 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     container.requestLayout();
   }
 
-  private static String serverName(final String serverId) {
-    if (serverId == null) {
+  private static String serverName(final String connectionId) {
+    if (connectionId == null) {
       return "";
     }
-    var server = SonarLintCorePlugin.getServersManager().findById(serverId);
-    return server.map(IConnectedEngineFacade::getId).orElseGet(() -> "Unknown server: '" + serverId + "'");
+    var connection = SonarLintCorePlugin.getConnectionManager().findById(connectionId);
+    return connection.map(ConnectionFacade::getId).orElseGet(() -> "Unknown connection: '" + connectionId + "'");
   }
 
   @Override

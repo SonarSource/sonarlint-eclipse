@@ -29,42 +29,43 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 
 /**
- * Dialog that prompts a user to delete server(s).
+ * Dialog that prompts a user to delete connection(s).
  */
 public class DeleteConnectionDialog extends MessageDialog {
-  protected List<IConnectedEngineFacade> servers;
+  protected List<ConnectionFacade> connections;
 
-  public DeleteConnectionDialog(Shell parentShell, List<IConnectedEngineFacade> servers) {
-    super(parentShell, Messages.deleteServerDialogTitle, null, getMessage(servers), getImage(servers), new String[] {IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL}, 0);
-    this.servers = servers;
+  public DeleteConnectionDialog(Shell parentShell, List<ConnectionFacade> connections) {
+    super(parentShell, Messages.deleteConnectionDialogTitle, null,
+      getMessage(connections), getImage(connections), new String[] {IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL}, 0);
+    this.connections = connections;
 
   }
 
-  private static int getImage(List<IConnectedEngineFacade> servers) {
-    for (var iServer : servers) {
-      if (!iServer.getBoundProjects().isEmpty()) {
+  private static int getImage(List<ConnectionFacade> connections) {
+    for (var connection : connections) {
+      if (!connection.getBoundProjects().isEmpty()) {
         return WARNING;
       }
     }
     return QUESTION;
   }
 
-  private static String getMessage(List<IConnectedEngineFacade> servers) {
+  private static String getMessage(List<ConnectionFacade> connections) {
     var sb = new StringBuilder();
-    if (servers.size() == 1) {
-      sb.append(NLS.bind(Messages.deleteServerDialogMessage, servers.get(0).getId()));
+    if (connections.size() == 1) {
+      sb.append(NLS.bind(Messages.deleteConnectionDialogMessage, connections.get(0).getId()));
     } else {
-      sb.append(NLS.bind(Messages.deleteServerDialogMessageMany, Integer.toString(servers.size())));
+      sb.append(NLS.bind(Messages.deleteConnectionDialogMessageMany, Integer.toString(connections.size())));
     }
     var boundCount = 0;
-    for (var iServer : servers) {
-      boundCount += iServer.getBoundProjects().size();
+    for (var connection : connections) {
+      boundCount += connection.getBoundProjects().size();
     }
     if (boundCount > 0) {
       sb.append("\n").append(NLS.bind(Messages.deleteServerDialogBoundProject, boundCount));
@@ -80,12 +81,12 @@ public class DeleteConnectionDialog extends MessageDialog {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
       try {
-        for (var server : servers) {
+        for (var connection : connections) {
           if (monitor.isCanceled()) {
             return Status.CANCEL_STATUS;
           }
-          var boundProjects = server.getBoundProjects();
-          server.delete();
+          var boundProjects = connection.getBoundProjects();
+          connection.delete();
           // All bound projects have been unbound, so refresh issues
           boundProjects.forEach(p -> AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE));
         }
@@ -98,9 +99,9 @@ public class DeleteConnectionDialog extends MessageDialog {
 
   @Override
   protected void buttonPressed(int buttonId) {
-    if (buttonId == OK && !servers.isEmpty()) {
+    if (buttonId == OK && !connections.isEmpty()) {
       var job = new DeleteServerJob();
-      servers.forEach(server -> AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(job, server.getBoundProjects(), TriggerType.BINDING_CHANGE, true));
+      connections.forEach(connection -> AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(job, connection.getBoundProjects(), TriggerType.BINDING_CHANGE, true));
       job.setPriority(Job.BUILD);
       job.schedule();
     }

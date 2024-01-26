@@ -36,7 +36,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
@@ -44,46 +44,46 @@ import org.sonarlint.eclipse.ui.internal.util.wizard.ViewersObservablesCompat;
 
 public class ConnectionSelectionWizardPage extends AbstractProjectBindingWizardPage {
 
-  private Binding serverBinding;
+  private Binding connectionBinding;
 
   public ConnectionSelectionWizardPage(ProjectBindingModel model) {
-    super("server_id_page", "Choose the SonarQube or SonarCloud server connection", model, 2);
+    super("connection_select_page", "Choose the SonarQube or SonarCloud server connection", model, 2);
   }
 
   @Override
   protected void doCreateControl(Composite container) {
-    var serverCombo = new ComboViewer(container, SWT.READ_ONLY);
-    serverCombo.setContentProvider(ArrayContentProvider.getInstance());
-    serverCombo.setLabelProvider(new LabelProvider() {
+    var connectionCombo = new ComboViewer(container, SWT.READ_ONLY);
+    connectionCombo.setContentProvider(ArrayContentProvider.getInstance());
+    connectionCombo.setLabelProvider(new LabelProvider() {
       @Override
       public String getText(Object element) {
-        var current = (IConnectedEngineFacade) element;
+        var current = (ConnectionFacade) element;
         return current.getId();
       }
 
       @Override
       public Image getImage(Object element) {
-        if (((IConnectedEngineFacade) element).isSonarCloud()) {
+        if (((ConnectionFacade) element).isSonarCloud()) {
           return SonarLintImages.SONARCLOUD_SERVER_ICON_IMG;
         } else {
           return SonarLintImages.SONARQUBE_SERVER_ICON_IMG;
         }
       }
     });
-    serverCombo.setInput(SonarLintCorePlugin.getServersManager().getServers());
-    var server = model.getServer();
-    if (server != null) {
-      final var selection = new StructuredSelection(server);
-      serverCombo.setSelection(selection);
+    connectionCombo.setInput(SonarLintCorePlugin.getConnectionManager().getConnections());
+    var connection = model.getConnection();
+    if (connection != null) {
+      final var selection = new StructuredSelection(connection);
+      connectionCombo.setSelection(selection);
     }
 
     var dataBindingContext = new DataBindingContext();
-    serverBinding = dataBindingContext.bindValue(
-      ViewersObservablesCompat.observeSingleSelection(serverCombo),
-      BeanPropertiesCompat.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_SERVER)
+    connectionBinding = dataBindingContext.bindValue(
+      ViewersObservablesCompat.observeSingleSelection(connectionCombo),
+      BeanPropertiesCompat.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_CONNECTION)
         .observe(model),
-      new UpdateValueStrategy().setBeforeSetValidator(new MandatoryServerValidator("You must select a server connection")), null);
-    ControlDecorationSupport.create(serverBinding, SWT.LEFT | SWT.TOP);
+      new UpdateValueStrategy().setBeforeSetValidator(new MandatoryConnectionValidator("You must select a connection")), null);
+    ControlDecorationSupport.create(connectionBinding, SWT.LEFT | SWT.TOP);
 
     WizardPageSupport.create(this, dataBindingContext);
 
@@ -104,7 +104,7 @@ public class ConnectionSelectionWizardPage extends AbstractProjectBindingWizardP
   public void setVisible(boolean visible) {
     super.setVisible(visible);
     if (visible) {
-      serverBinding.validateTargetToModel();
+      connectionBinding.validateTargetToModel();
     }
   }
 

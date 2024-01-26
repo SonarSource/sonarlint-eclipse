@@ -40,8 +40,8 @@ public class ProjectStorageUpdateJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-      var server = SonarLintCorePlugin.getServersManager().findById(connectionId);
-      server.ifPresent(s -> {
+      var connectionFacade = SonarLintCorePlugin.getConnectionManager().findById(connectionId);
+      connectionFacade.ifPresent(s -> {
         s.updateProjectStorage(projectKey, monitor);
         s.manualSync(Set.of(projectKey), monitor);
       });

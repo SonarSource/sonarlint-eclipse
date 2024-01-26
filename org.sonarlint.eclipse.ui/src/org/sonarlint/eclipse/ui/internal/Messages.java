@@ -59,7 +59,7 @@ public final class Messages extends NLS {
 
   public static String ServersView_noServers;
   public static String ServersView_noServers_connectedMode;
-  public static String jobInitializingServersView;
+  public static String jobInitializingBindingView;
   public static String viewInitializing;
 
   public static String actionDelete;
@@ -67,14 +67,14 @@ public final class Messages extends NLS {
   public static String actionUpdate;
   public static String actionChangeBinding;
   public static String actionEdit;
-  public static String actionNewServer;
+  public static String actionNewConnection;
 
   public static String toolTipEnableFocus;
   public static String toolTipDisableFocus;
 
-  public static String deleteServerDialogTitle;
-  public static String deleteServerDialogMessage;
-  public static String deleteServerDialogMessageMany;
+  public static String deleteConnectionDialogTitle;
+  public static String deleteConnectionDialogMessage;
+  public static String deleteConnectionDialogMessageMany;
   public static String deleteServerDialogBoundProject;
   public static String deleteServerTask;
 

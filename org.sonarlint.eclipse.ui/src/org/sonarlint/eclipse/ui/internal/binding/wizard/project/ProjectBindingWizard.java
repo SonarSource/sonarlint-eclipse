@@ -43,7 +43,7 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -58,7 +58,7 @@ import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isEmpty;
 
 public class ProjectBindingWizard extends Wizard implements INewWizard, IPageChangedListener {
 
-  private static final String STORE_LAST_SELECTED_SERVER_ID = "ProjectBindingWizard.last_selected_server";
+  private static final String STORE_LAST_SELECTED_CONNECTION_ID = "ProjectBindingWizard.last_selected_server";
 
   private final ProjectBindingModel model;
   private final ConnectionSelectionWizardPage serverSelectionWizardPage;
@@ -77,22 +77,22 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
     remoteProjectSelectionWizardPage = new RemoteProjectSelectionWizardPage(model);
   }
 
-  private ProjectBindingWizard(Collection<ISonarLintProject> selectedProjects, @Nullable ConnectedEngineFacade selectedServer) {
+  private ProjectBindingWizard(Collection<ISonarLintProject> selectedProjects, @Nullable ConnectionFacade selectedServer) {
     this("Bind to a SonarQube or SonarCloud project", new ProjectBindingModel());
     this.model.setProjects(selectedProjects.stream()
       .sorted(comparing(ISonarLintProject::getName))
       .collect(toCollection(ArrayList::new)));
     if (selectedServer != null) {
-      this.model.setServer(selectedServer);
+      this.model.setConnection(selectedServer);
       this.model.setSkipServer(true);
-    } else if (SonarLintCorePlugin.getServersManager().getServers().size() == 1) {
+    } else if (SonarLintCorePlugin.getConnectionManager().getConnections().size() == 1) {
       // Only one server configured, pre-select it
-      this.model.setServer((ConnectedEngineFacade) SonarLintCorePlugin.getServersManager().getServers().get(0));
+      this.model.setConnection(SonarLintCorePlugin.getConnectionManager().getConnections().get(0));
     } else {
-      var lastSelectedServer = this.getDialogSettings().get(STORE_LAST_SELECTED_SERVER_ID);
-      if (lastSelectedServer != null) {
-        SonarLintCorePlugin.getServersManager().findById(lastSelectedServer)
-          .ifPresent(s -> this.model.setServer((ConnectedEngineFacade) s));
+      var lastSelectedConnection = this.getDialogSettings().get(STORE_LAST_SELECTED_CONNECTION_ID);
+      if (lastSelectedConnection != null) {
+        SonarLintCorePlugin.getConnectionManager().findById(lastSelectedConnection)
+          .ifPresent(this.model::setConnection);
       }
     }
     var projectKeys = selectedProjects.stream()
@@ -108,12 +108,12 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
     }
   }
 
-  public static WizardDialog createDialogSkipServerSelection(Shell activeShell, Collection<ISonarLintProject> selectedProjects, ConnectedEngineFacade selectedServer) {
+  public static WizardDialog createDialogSkipServerSelection(Shell activeShell, Collection<ISonarLintProject> selectedProjects, ConnectionFacade selectedServer) {
     return new SonarLintWizardDialog(activeShell, new ProjectBindingWizard(selectedProjects, selectedServer));
   }
 
   public static WizardDialog createDialog(Shell activeShell, Collection<ISonarLintProject> selectedProjects) {
-    if (SonarLintCorePlugin.getServersManager().getServers().isEmpty()) {
+    if (SonarLintCorePlugin.getConnectionManager().getConnections().isEmpty()) {
       return ServerConnectionWizard.createDialog(activeShell);
     }
     return new SonarLintWizardDialog(activeShell, new ProjectBindingWizard(selectedProjects, null));
@@ -173,13 +173,13 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
 
   @Override
   public boolean performFinish() {
-    var server = model.getServer();
-    if (server == null) {
+    var connection = model.getConnection();
+    if (connection == null) {
       return false;
     } else {
-      var serverId = server.getId();
-      getDialogSettings().put(STORE_LAST_SELECTED_SERVER_ID, serverId);
-      ProjectBindingProcess.scheduleProjectBinding(serverId, model.getEclipseProjects(), model.getRemoteProjectKey());
+      var connectionId = connection.getId();
+      getDialogSettings().put(STORE_LAST_SELECTED_CONNECTION_ID, connectionId);
+      ProjectBindingProcess.scheduleProjectBinding(connectionId, model.getEclipseProjects(), model.getRemoteProjectKey());
       return true;
     }
   }
@@ -226,7 +226,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   }
 
   private boolean tryLoadProjectList(WizardPage currentPage) {
-    var server = model.getServer();
+    var server = model.getConnection();
     if (server == null) {
       return false;
     }

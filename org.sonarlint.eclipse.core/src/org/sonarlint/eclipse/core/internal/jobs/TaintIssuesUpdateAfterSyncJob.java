@@ -26,7 +26,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -39,9 +39,9 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 public class TaintIssuesUpdateAfterSyncJob extends Job {
   private final Collection<ISonarLintFile> issuables;
   private final ISonarLintProject project;
-  private final ConnectedEngineFacade engineFacade;
+  private final ConnectionFacade engineFacade;
 
-  public TaintIssuesUpdateAfterSyncJob(ConnectedEngineFacade engineFacade,
+  public TaintIssuesUpdateAfterSyncJob(ConnectionFacade engineFacade,
     ISonarLintProject project,
     Collection<ISonarLintFile> issuables) {
     super("Refresh synced taint issues for " + project.getName());

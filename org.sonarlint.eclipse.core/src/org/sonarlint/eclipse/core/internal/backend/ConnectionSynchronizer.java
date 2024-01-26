@@ -21,8 +21,8 @@ package org.sonarlint.eclipse.core.internal.backend;
 
 import java.util.List;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeLifecycleListener;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectionManagerListener;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintBackend;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.DidUpdateConnectionsParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarCloudConnectionConfigurationDto;
@@ -30,7 +30,7 @@ import org.sonarsource.sonarlint.core.clientapi.backend.connection.config.SonarQ
 
 import static java.util.stream.Collectors.toList;
 
-class ConnectionSynchronizer implements IConnectedEngineFacadeLifecycleListener {
+class ConnectionSynchronizer implements IConnectionManagerListener {
 
   private final SonarLintBackend backend;
 
@@ -39,17 +39,17 @@ class ConnectionSynchronizer implements IConnectedEngineFacadeLifecycleListener 
   }
 
   @Override
-  public void connectionRemoved(IConnectedEngineFacade facade) {
+  public void connectionRemoved(ConnectionFacade facade) {
     didUpdateConnections();
   }
 
   @Override
-  public void connectionChanged(IConnectedEngineFacade facade) {
+  public void connectionChanged(ConnectionFacade facade) {
     didUpdateConnections();
   }
 
   @Override
-  public void connectionAdded(IConnectedEngineFacade facade) {
+  public void connectionAdded(ConnectionFacade facade) {
     didUpdateConnections();
   }
 
@@ -60,15 +60,15 @@ class ConnectionSynchronizer implements IConnectedEngineFacadeLifecycleListener 
   }
 
   static List<SonarQubeConnectionConfigurationDto> buildSqConnectionDtos() {
-    return SonarLintCorePlugin.getServersManager().getServers().stream()
+    return SonarLintCorePlugin.getConnectionManager().getConnections().stream()
       .filter(c -> !c.isSonarCloud())
       .map(c -> new SonarQubeConnectionConfigurationDto(c.getId(), c.getHost(), c.areNotificationsDisabled()))
       .collect(toList());
   }
 
   static List<SonarCloudConnectionConfigurationDto> buildScConnectionDtos() {
-    return SonarLintCorePlugin.getServersManager().getServers().stream()
-      .filter(IConnectedEngineFacade::isSonarCloud)
+    return SonarLintCorePlugin.getConnectionManager().getConnections().stream()
+      .filter(ConnectionFacade::isSonarCloud)
       .map(c -> new SonarCloudConnectionConfigurationDto(c.getId(), c.getOrganization(), c.areNotificationsDisabled()))
       .collect(toList());
   }

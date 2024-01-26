@@ -45,8 +45,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.ConnectionStorageUpdateJob;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -78,13 +77,13 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   private final ConnectionIdWizardPage connectionIdPage;
   private final NotificationsWizardPage notifPage;
   private final ConfirmWizardPage confirmPage;
-  private final IConnectedEngineFacade editedServer;
+  private final ConnectionFacade editedServer;
   private boolean redirectedAfterNotificationCheck;
   private boolean skipBindingWizard;
 
-  private IConnectedEngineFacade resultServer;
+  private ConnectionFacade resultServer;
 
-  private ServerConnectionWizard(String title, ServerConnectionModel model, IConnectedEngineFacade editedServer) {
+  private ServerConnectionWizard(String title, ServerConnectionModel model, ConnectionFacade editedServer) {
     super();
     this.model = model;
     this.editedServer = editedServer;
@@ -113,7 +112,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     this("Connect to SonarQube or SonarCloud", model, null);
   }
 
-  private ServerConnectionWizard(IConnectedEngineFacade sonarServer) {
+  private ServerConnectionWizard(ConnectionFacade sonarServer) {
     this(sonarServer.isSonarCloud() ? "Edit SonarCloud connection" : "Edit SonarQube connection", new ServerConnectionModel(sonarServer), sonarServer);
   }
 
@@ -133,8 +132,8 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     return new SonarLintWizardDialog(parent, new ServerConnectionWizard(model));
   }
 
-  public static WizardDialog createDialog(Shell parent, IConnectedEngineFacade sonarServer) {
-    return new SonarLintWizardDialog(parent, new ServerConnectionWizard(sonarServer));
+  public static WizardDialog createDialog(Shell parent, ConnectionFacade connection) {
+    return new SonarLintWizardDialog(parent, new ServerConnectionWizard(connection));
   }
 
   public static WizardDialog createDialog(Shell parent, ServerConnectionWizard wizard) {
@@ -248,16 +247,16 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     } catch (Exception e) {
       var currentPage = (DialogPage) getContainer().getCurrentPage();
       currentPage.setErrorMessage("Cannot create connection: " + e.getMessage());
-      SonarLintLogger.get().error("Error when finishing server connection wizard", e);
+      SonarLintLogger.get().error("Error when finishing connection wizard", e);
       return false;
     }
   }
 
   private void finalizeConnectionCreation() {
-    resultServer = SonarLintCorePlugin.getServersManager().create(model.getConnectionId(), model.getServerUrl(), model.getOrganization(), model.getUsername(),
+    resultServer = SonarLintCorePlugin.getConnectionManager().create(model.getConnectionId(), model.getServerUrl(), model.getOrganization(), model.getUsername(),
       model.getPassword(),
       model.getNotificationsDisabled());
-    SonarLintCorePlugin.getServersManager().addServer(resultServer, model.getUsername(), model.getPassword());
+    SonarLintCorePlugin.getConnectionManager().addConnection(resultServer, model.getUsername(), model.getPassword());
     try {
       PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BindingsView.ID);
     } catch (PartInitException e) {
@@ -275,17 +274,17 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     if (!skipBindingWizard) {
       if (selectedProjects != null && !selectedProjects.isEmpty()) {
         ProjectBindingWizard
-          .createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, (ConnectedEngineFacade) resultServer)
+          .createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, resultServer)
           .open();
       } else if (boundProjects.isEmpty()) {
         ProjectBindingWizard
-          .createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), (ConnectedEngineFacade) resultServer)
+          .createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), resultServer)
           .open();
       }
     }
   }
 
-  public IConnectedEngineFacade getResultServer() {
+  public ConnectionFacade getResultServer() {
     return resultServer;
   }
 

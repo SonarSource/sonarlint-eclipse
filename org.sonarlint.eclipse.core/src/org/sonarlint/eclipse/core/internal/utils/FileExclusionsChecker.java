@@ -67,7 +67,7 @@ public class FileExclusionsChecker {
       .filter(file -> !isExcludedByLocalConfiguration(file, log))
       .collect(toCollection(HashSet::new));
 
-    SonarLintCorePlugin.getServersManager()
+    SonarLintCorePlugin.getConnectionManager()
       .resolveBinding(project)
       .ifPresent(binding -> {
         var testFileClassifier = TestFileClassifier.get();

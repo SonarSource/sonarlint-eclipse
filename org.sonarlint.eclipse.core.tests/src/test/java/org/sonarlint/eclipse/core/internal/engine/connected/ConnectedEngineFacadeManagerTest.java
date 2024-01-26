@@ -31,12 +31,12 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager.AUTH_ATTRIBUTE;
-import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager.ORG_ATTRIBUTE;
-import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager.PASSWORD_ATTRIBUTE;
-import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager.PREF_SERVERS;
-import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager.URL_ATTRIBUTE;
-import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager.USERNAME_ATTRIBUTE;
+import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.AUTH_ATTRIBUTE;
+import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.ORG_ATTRIBUTE;
+import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.PASSWORD_ATTRIBUTE;
+import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.PREF_CONNECTIONS;
+import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.URL_ATTRIBUTE;
+import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.USERNAME_ATTRIBUTE;
 
 /**
  * To have this test pass when launched from the IDE, you have to set -pluginCustomization argument (see pom.xml).
@@ -45,76 +45,76 @@ public class ConnectedEngineFacadeManagerTest {
 
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID);
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID);
-  private ConnectedEngineFacadeManager manager;
+  private ConnectionManager manager;
 
   @Before
   public void prepare() throws Exception {
-    manager = SonarLintCorePlugin.getServersManager();
-    ROOT.node(PREF_SERVERS).removeNode();
-    ROOT_SECURE.node(PREF_SERVERS).removeNode();
+    manager = SonarLintCorePlugin.getConnectionManager();
+    ROOT.node(PREF_CONNECTIONS).removeNode();
+    ROOT_SECURE.node(PREF_CONNECTIONS).removeNode();
     manager.stop();
     manager.init();
   }
 
   @Test
   public void roundTripUsingPublicMethods() throws Exception {
-    assertThat(ROOT.nodeExists(PREF_SERVERS)).isFalse();
-    assertThat(ROOT_SECURE.nodeExists(PREF_SERVERS)).isFalse();
+    assertThat(ROOT.nodeExists(PREF_CONNECTIONS)).isFalse();
+    assertThat(ROOT_SECURE.nodeExists(PREF_CONNECTIONS)).isFalse();
     var id = "foo/bar";
-    var server = manager.create(id, "http://foo", "bar", "login", "pwd", false);
-    manager.addServer(server, "login", "pwd");
-    assertThat(manager.getServers()).containsExactly(server);
-    assertThat(manager.findById(id)).contains(server);
-    assertThat(ConnectedEngineFacadeManager.getUsername(server)).isEqualTo("login");
-    assertThat(ConnectedEngineFacadeManager.getPassword(server)).isEqualTo("pwd");
-    assertThat(ROOT.nodeExists(PREF_SERVERS)).isTrue();
-    assertThat(ROOT_SECURE.nodeExists(PREF_SERVERS)).isTrue();
-    assertThat(ROOT.node(PREF_SERVERS).nodeExists("foo%2Fbar")).isTrue();
-    assertThat(ROOT_SECURE.node(PREF_SERVERS).nodeExists("foo%2Fbar")).isTrue();
-    assertThat(ROOT.node(PREF_SERVERS).node("foo%2Fbar").get(URL_ATTRIBUTE, null)).isEqualTo("http://foo");
-    assertThat(ROOT.node(PREF_SERVERS).node("foo%2Fbar").getBoolean(AUTH_ATTRIBUTE, false)).isTrue();
-    assertThat(ROOT.node(PREF_SERVERS).node("foo%2Fbar").get(ORG_ATTRIBUTE, null)).isEqualTo("bar");
-    assertThat(ROOT_SECURE.node(PREF_SERVERS).node("foo%2Fbar").get(USERNAME_ATTRIBUTE, null)).isEqualTo("login");
-    assertThat(ROOT_SECURE.node(PREF_SERVERS).node("foo%2Fbar").get(PASSWORD_ATTRIBUTE, null)).isEqualTo("pwd");
+    var connection = manager.create(id, "http://foo", "bar", "login", "pwd", false);
+    manager.addConnection(connection, "login", "pwd");
+    assertThat(manager.getConnections()).containsExactly(connection);
+    assertThat(manager.findById(id)).contains(connection);
+    assertThat(ConnectionManager.getUsername(connection)).isEqualTo("login");
+    assertThat(ConnectionManager.getPassword(connection)).isEqualTo("pwd");
+    assertThat(ROOT.nodeExists(PREF_CONNECTIONS)).isTrue();
+    assertThat(ROOT_SECURE.nodeExists(PREF_CONNECTIONS)).isTrue();
+    assertThat(ROOT.node(PREF_CONNECTIONS).nodeExists("foo%2Fbar")).isTrue();
+    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).nodeExists("foo%2Fbar")).isTrue();
+    assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(URL_ATTRIBUTE, null)).isEqualTo("http://foo");
+    assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").getBoolean(AUTH_ATTRIBUTE, false)).isTrue();
+    assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(ORG_ATTRIBUTE, null)).isEqualTo("bar");
+    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(USERNAME_ATTRIBUTE, null)).isEqualTo("login");
+    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(PASSWORD_ATTRIBUTE, null)).isEqualTo("pwd");
 
-    var serverUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
+    var connectionUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
     try {
-      manager.addServer(serverUpdated, "login2", "pwd2");
+      manager.addConnection(connectionUpdated, "login2", "pwd2");
       fail("Expected exception");
     } catch (Exception e) {
       assertThat(e).isInstanceOf(IllegalStateException.class).hasMessage("There is already a connection with id '" + id + "'");
     }
 
-    manager.updateConnection(serverUpdated, "login2", "pwd2");
-    assertThat(manager.getServers()).containsExactly(server);
-    assertThat(manager.findById(id)).contains(server);
-    assertThat(ROOT.node(PREF_SERVERS).node("foo%2Fbar").get(URL_ATTRIBUTE, null)).isEqualTo("http://foo2");
-    assertThat(ROOT.node(PREF_SERVERS).node("foo%2Fbar").getBoolean(AUTH_ATTRIBUTE, false)).isTrue();
-    assertThat(ROOT.node(PREF_SERVERS).node("foo%2Fbar").get(ORG_ATTRIBUTE, null)).isEqualTo("bar2");
-    assertThat(ROOT_SECURE.node(PREF_SERVERS).node("foo%2Fbar").get(USERNAME_ATTRIBUTE, null)).isEqualTo("login2");
-    assertThat(ROOT_SECURE.node(PREF_SERVERS).node("foo%2Fbar").get(PASSWORD_ATTRIBUTE, null)).isEqualTo("pwd2");
+    manager.updateConnection(connectionUpdated, "login2", "pwd2");
+    assertThat(manager.getConnections()).containsExactly(connection);
+    assertThat(manager.findById(id)).contains(connection);
+    assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(URL_ATTRIBUTE, null)).isEqualTo("http://foo2");
+    assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").getBoolean(AUTH_ATTRIBUTE, false)).isTrue();
+    assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(ORG_ATTRIBUTE, null)).isEqualTo("bar2");
+    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(USERNAME_ATTRIBUTE, null)).isEqualTo("login2");
+    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(PASSWORD_ATTRIBUTE, null)).isEqualTo("pwd2");
 
-    manager.removeServer(serverUpdated);
-    assertThat(manager.getServers()).isEmpty();
-    assertThat(ROOT.node(PREF_SERVERS).nodeExists("foo%2Fbar")).isFalse();
-    assertThat(ROOT_SECURE.node(PREF_SERVERS).nodeExists("foo%2Fbar")).isFalse();
+    manager.removeConnection(connectionUpdated);
+    assertThat(manager.getConnections()).isEmpty();
+    assertThat(ROOT.node(PREF_CONNECTIONS).nodeExists("foo%2Fbar")).isFalse();
+    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).nodeExists("foo%2Fbar")).isFalse();
   }
 
   @Test
   public void should_use_defaults_from_plugin_customization() throws Exception {
-    assertThat(ROOT.nodeExists(PREF_SERVERS)).isFalse();
-    assertThat(manager.getServers()).hasSize(1);
+    assertThat(ROOT.nodeExists(PREF_CONNECTIONS)).isFalse();
+    assertThat(manager.getConnections()).hasSize(1);
     var iServer = manager.findById("default").get();
     assertThat(iServer.getId()).isEqualTo("default");
     assertThat(iServer.getOrganization()).isEqualTo("myOrg");
     assertThat(iServer.hasAuth()).isTrue();
-    assertThat(ROOT.nodeExists(PREF_SERVERS)).isFalse();
+    assertThat(ROOT.nodeExists(PREF_CONNECTIONS)).isFalse();
   }
 
   @Test
   public void edit_defaults_from_plugin_customization() throws Exception {
-    assertThat(ROOT.nodeExists(PREF_SERVERS)).isFalse();
-    assertThat(manager.getServers()).hasSize(1);
+    assertThat(ROOT.nodeExists(PREF_CONNECTIONS)).isFalse();
+    assertThat(manager.getConnections()).hasSize(1);
     var iServer = manager.findById("default").get();
     assertThat(iServer.getId()).isEqualTo("default");
 
@@ -127,14 +127,14 @@ public class ConnectedEngineFacadeManagerTest {
 
   @Test
   public void test_listeners() {
-    var removed = new ArrayList<IConnectedEngineFacade>();
-    var changed = new ArrayList<IConnectedEngineFacade>();
-    var added = new ArrayList<IConnectedEngineFacade>();
+    var removed = new ArrayList<ConnectionFacade>();
+    var changed = new ArrayList<ConnectionFacade>();
+    var added = new ArrayList<ConnectionFacade>();
     addListener(removed, changed, added);
 
     var defaultServer = manager.findById("default").get();
-    manager.removeServer(defaultServer);
-    assertThat(manager.getServers()).isEmpty();
+    manager.removeConnection(defaultServer);
+    assertThat(manager.getConnections()).isEmpty();
     assertThat(removed).containsExactly(defaultServer);
     assertThat(changed).isEmpty();
     assertThat(added).isEmpty();
@@ -143,17 +143,17 @@ public class ConnectedEngineFacadeManagerTest {
 
     var id = "foo/bar";
     var newServer = manager.create(id, "http://foo", "bar", "login", "pwd", false);
-    manager.addServer(newServer, "login", "pwd");
+    manager.addConnection(newServer, "login", "pwd");
     assertThat(removed).isEmpty();
     assertThat(changed).isEmpty();
     assertThat(added).containsExactly(newServer);
 
     added.clear();
 
-    var serverUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
-    manager.updateConnection(serverUpdated, "login2", "pwd2");
+    var connectionUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
+    manager.updateConnection(connectionUpdated, "login2", "pwd2");
     assertThat(removed).isEmpty();
-    assertThat(changed).containsExactly(serverUpdated);
+    assertThat(changed).containsExactly(connectionUpdated);
     assertThat(added).isEmpty();
   }
 
@@ -161,14 +161,14 @@ public class ConnectedEngineFacadeManagerTest {
   @Test
   public void test_external_changes() throws Exception {
     var defaultServer = manager.findById("default").get();
-    manager.removeServer(defaultServer);
+    manager.removeConnection(defaultServer);
 
-    var removed = new ArrayList<IConnectedEngineFacade>();
-    var changed = new ArrayList<IConnectedEngineFacade>();
-    var added = new ArrayList<IConnectedEngineFacade>();
+    var removed = new ArrayList<ConnectionFacade>();
+    var changed = new ArrayList<ConnectionFacade>();
+    var added = new ArrayList<ConnectionFacade>();
     addListener(removed, changed, added);
 
-    ROOT.node(PREF_SERVERS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo");
+    ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo");
     ROOT.node("another").removeNode();
     assertThat(removed).isEmpty();
     assertThat(changed).isEmpty();
@@ -176,31 +176,31 @@ public class ConnectedEngineFacadeManagerTest {
 
     added.clear();
 
-    var server = manager.findById("foo/bar").get();
+    var connection = manager.findById("foo/bar").get();
 
-    ROOT.node(PREF_SERVERS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo:9000");
-    ROOT.node(PREF_SERVERS).node("foo%2Fbar").putBoolean(AUTH_ATTRIBUTE, true);
+    ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo:9000");
+    ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").putBoolean(AUTH_ATTRIBUTE, true);
     assertThat(removed).isEmpty();
     assertThat(changed).hasSize(2);
     assertThat(added).isEmpty();
 
     changed.clear();
 
-    ROOT.node(PREF_SERVERS).node("foo%2Fbar").put(ORG_ATTRIBUTE, "bar");
+    ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").put(ORG_ATTRIBUTE, "bar");
     assertThat(removed).isEmpty();
     assertThat(changed).hasSize(1);
     assertThat(added).isEmpty();
 
     changed.clear();
 
-    assertThat(manager.getServers()).hasSize(1);
-    assertThat(server.getId()).isEqualTo("foo/bar");
-    assertThat(server.getHost()).isEqualTo("http://foo:9000");
-    assertThat(server.getOrganization()).isEqualTo("bar");
-    assertThat(server.hasAuth()).isTrue();
+    assertThat(manager.getConnections()).hasSize(1);
+    assertThat(connection.getId()).isEqualTo("foo/bar");
+    assertThat(connection.getHost()).isEqualTo("http://foo:9000");
+    assertThat(connection.getOrganization()).isEqualTo("bar");
+    assertThat(connection.hasAuth()).isTrue();
 
-    ROOT.node(PREF_SERVERS).removeNode();
-    assertThat(manager.getServers()).hasSize(1);
+    ROOT.node(PREF_CONNECTIONS).removeNode();
+    assertThat(manager.getConnections()).hasSize(1);
     assertThat(manager.findById("default")).isPresent();
 
     assertThat(removed).hasSize(1);
@@ -212,63 +212,63 @@ public class ConnectedEngineFacadeManagerTest {
 
   @Test
   public void test_external_changes_on_existing_servers() throws Exception {
-    var defaultServer = manager.findById("default").get();
-    manager.removeServer(defaultServer);
+    var defaultConnection = manager.findById("default").get();
+    manager.removeConnection(defaultConnection);
 
     manager.stop();
 
-    // Add a server entry like if it was existing previously
-    ROOT.node(PREF_SERVERS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo");
+    // Add a connection entry like if it was existing previously
+    ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo");
 
     manager.init();
 
-    var removed = new ArrayList<IConnectedEngineFacade>();
-    var changed = new ArrayList<IConnectedEngineFacade>();
-    var added = new ArrayList<IConnectedEngineFacade>();
+    var removed = new ArrayList<ConnectionFacade>();
+    var changed = new ArrayList<ConnectionFacade>();
+    var added = new ArrayList<ConnectionFacade>();
     addListener(removed, changed, added);
 
-    var server = manager.findById("foo/bar").get();
-    assertThat(server.getId()).isEqualTo("foo/bar");
-    assertThat(server.getHost()).isEqualTo("http://foo");
+    var connection = manager.findById("foo/bar").get();
+    assertThat(connection.getId()).isEqualTo("foo/bar");
+    assertThat(connection.getHost()).isEqualTo("http://foo");
 
-    ROOT.node(PREF_SERVERS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo:9000");
-    ROOT.node(PREF_SERVERS).node("foo%2Fbar").putBoolean(AUTH_ATTRIBUTE, true);
+    ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo:9000");
+    ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").putBoolean(AUTH_ATTRIBUTE, true);
     assertThat(removed).isEmpty();
     assertThat(changed).hasSize(2);
     assertThat(added).isEmpty();
 
     changed.clear();
 
-    assertThat(manager.getServers()).hasSize(1);
-    assertThat(server.getId()).isEqualTo("foo/bar");
-    assertThat(server.getHost()).isEqualTo("http://foo:9000");
+    assertThat(manager.getConnections()).hasSize(1);
+    assertThat(connection.getId()).isEqualTo("foo/bar");
+    assertThat(connection.getHost()).isEqualTo("http://foo:9000");
   }
 
   @Test
   public void should_ignore_case_for_scheme_and_host_when_finding_connection() {
-    var server = manager.create("ID", "http://foo", "bar", "login", "pwd", false);
-    manager.addServer(server, "login", "pwd");
+    var connection = manager.create("ID", "http://foo", "bar", "login", "pwd", false);
+    manager.addConnection(connection, "login", "pwd");
 
     var facades = manager.findByUrl("HTTP://FOO");
-    assertThat(facades).contains(server);
+    assertThat(facades).contains(connection);
   }
 
-  private void addListener(List<IConnectedEngineFacade> removed, List<IConnectedEngineFacade> changed, List<IConnectedEngineFacade> added) {
-    manager.addServerLifecycleListener(new IConnectedEngineFacadeLifecycleListener() {
+  private void addListener(List<ConnectionFacade> removed, List<ConnectionFacade> changed, List<ConnectionFacade> added) {
+    manager.addServerLifecycleListener(new IConnectionManagerListener() {
 
       @Override
-      public void connectionRemoved(IConnectedEngineFacade server) {
-        removed.add(server);
+      public void connectionRemoved(ConnectionFacade facade) {
+        removed.add(facade);
       }
 
       @Override
-      public void connectionChanged(IConnectedEngineFacade server) {
-        changed.add(server);
+      public void connectionChanged(ConnectionFacade facade) {
+        changed.add(facade);
       }
 
       @Override
-      public void connectionAdded(IConnectedEngineFacade server) {
-        added.add(server);
+      public void connectionAdded(ConnectionFacade facade) {
+        added.add(facade);
       }
     });
   }

@@ -36,10 +36,10 @@ import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
 public class ConnectionIdWizardPage extends AbstractServerConnectionWizardPage {
 
-  private Binding serverIdTextBinding;
+  private Binding connectionIdTextBinding;
 
   public ConnectionIdWizardPage(ServerConnectionModel model) {
-    super("server_id_page", null, model, 2);
+    super("connection_id_page", null, model, 2);
   }
 
   @SuppressWarnings("unchecked")
@@ -47,20 +47,20 @@ public class ConnectionIdWizardPage extends AbstractServerConnectionWizardPage {
   protected void doCreateControl(Composite container) {
     var labelId = new Label(container, SWT.NULL);
     labelId.setText(Messages.ServerLocationWizardPage_label_id);
-    var serverIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
+    var connectionIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
     var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
-    serverIdText.setLayoutData(gd);
+    connectionIdText.setLayoutData(gd);
 
     var dataBindingContext = new DataBindingContext();
-    serverIdTextBinding = dataBindingContext.bindValue(
-      WidgetPropertiesCompat.text(SWT.Modify).observe(serverIdText),
+    connectionIdTextBinding = dataBindingContext.bindValue(
+      WidgetPropertiesCompat.text(SWT.Modify).observe(connectionIdText),
       BeanPropertiesCompat.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_CONNECTION_ID)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(
         new MandatoryAndUniqueServerIdValidator(model.isEdit())),
       null);
-    ControlDecorationSupport.create(serverIdTextBinding, SWT.LEFT | SWT.TOP);
+    ControlDecorationSupport.create(connectionIdTextBinding, SWT.LEFT | SWT.TOP);
 
     WizardPageSupport.create(this, dataBindingContext);
   }
@@ -70,7 +70,7 @@ public class ConnectionIdWizardPage extends AbstractServerConnectionWizardPage {
     super.setVisible(visible);
     if (visible) {
       setTitle(model.getConnectionType() == ConnectionType.SONARCLOUD ? "SonarCloud Connection Identifier" : "SonarQube Connection Identifier");
-      serverIdTextBinding.validateTargetToModel();
+      connectionIdTextBinding.validateTargetToModel();
     }
   }
 

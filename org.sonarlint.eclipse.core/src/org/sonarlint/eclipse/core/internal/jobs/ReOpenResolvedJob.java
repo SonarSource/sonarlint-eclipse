@@ -27,7 +27,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -36,10 +36,10 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 public class ReOpenResolvedJob extends Job {
   private final ISonarLintProject project;
   private final boolean isTaint;
-  private final ConnectedEngineFacade facade;
+  private final ConnectionFacade facade;
   private final ISonarLintFile file;
 
-  public ReOpenResolvedJob(ISonarLintProject project, ConnectedEngineFacade facade, ISonarLintFile file,
+  public ReOpenResolvedJob(ISonarLintProject project, ConnectionFacade facade, ISonarLintFile file,
     boolean isTaint) {
     super("Re-Opening resolved Issue");
     this.project = project;

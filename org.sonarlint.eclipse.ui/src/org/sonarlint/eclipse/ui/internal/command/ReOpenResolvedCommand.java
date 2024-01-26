@@ -28,7 +28,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.ReOpenResolvedJob;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
@@ -91,7 +91,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
     }
 
     currentWindow.getShell().getDisplay().asyncExec(() -> {
-      var job = new ReOpenResolvedJob(project, (ConnectedEngineFacade) resolvedBinding.getEngineFacade(), file,
+      var job = new ReOpenResolvedJob(project, (ConnectionFacade) resolvedBinding.getEngineFacade(), file,
         isTaintVulnerability);
       job.schedule();
     });

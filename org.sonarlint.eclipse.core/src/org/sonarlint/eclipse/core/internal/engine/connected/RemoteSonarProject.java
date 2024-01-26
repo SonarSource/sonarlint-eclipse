@@ -23,43 +23,31 @@ import java.util.Objects;
 
 public class RemoteSonarProject {
 
-  private String serverId;
-  private String name;
-  private String projectKey;
+  private final String connectionId;
+  private final String name;
+  private final String projectKey;
 
-  public RemoteSonarProject(String serverId, String projectKey, String name) {
-    this.serverId = serverId;
+  public RemoteSonarProject(String connectionId, String projectKey, String name) {
+    this.connectionId = connectionId;
     this.projectKey = projectKey;
     this.name = name;
   }
 
-  public String getServerId() {
-    return serverId;
-  }
-
-  public void setUrl(String url) {
-    this.serverId = url;
+  public String getConnectionId() {
+    return connectionId;
   }
 
   public String getProjectKey() {
     return projectKey;
   }
 
-  public void setProjectKey(String projectKey) {
-    this.projectKey = projectKey;
-  }
-
   public String getName() {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   @Override
   public int hashCode() {
-    return Objects.hash(projectKey, serverId, name);
+    return Objects.hash(projectKey, connectionId, name);
   }
 
   @Override
@@ -74,7 +62,7 @@ public class RemoteSonarProject {
       return false;
     }
     var other = (RemoteSonarProject) obj;
-    return Objects.equals(projectKey, other.projectKey) && Objects.equals(serverId, other.serverId) && Objects.equals(name, other.name);
+    return Objects.equals(projectKey, other.projectKey) && Objects.equals(connectionId, other.connectionId) && Objects.equals(name, other.name);
   }
 
 }

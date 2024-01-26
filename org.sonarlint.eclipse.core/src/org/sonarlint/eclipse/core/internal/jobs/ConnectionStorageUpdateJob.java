@@ -26,20 +26,20 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarsource.sonarlint.core.commons.progress.CanceledException;
 
 public class ConnectionStorageUpdateJob extends Job {
-  private final IConnectedEngineFacade server;
+  private final ConnectionFacade connectionFacade;
 
-  public ConnectionStorageUpdateJob(IConnectedEngineFacade server) {
-    super("Update SonarLint local storage for connection '" + server.getId() + "'");
-    this.server = server;
+  public ConnectionStorageUpdateJob(ConnectionFacade connectionFacade) {
+    super("Update SonarLint local storage for connection '" + connectionFacade.getId() + "'");
+    this.connectionFacade = connectionFacade;
   }
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
-    var projectKeysToUpdate = server.getBoundProjectKeys();
+    var projectKeysToUpdate = connectionFacade.getBoundProjectKeys();
     monitor.beginTask("Update SonarLint local storage for all associated projects", projectKeysToUpdate.size());
 
     var failures = new ArrayList<IStatus>();
@@ -48,7 +48,7 @@ public class ConnectionStorageUpdateJob extends Job {
         return Status.CANCEL_STATUS;
       }
       try {
-        server.updateProjectStorage(projectKeyToUpdate, monitor);
+        connectionFacade.updateProjectStorage(projectKeyToUpdate, monitor);
       } catch (Exception e) {
         if (e instanceof CanceledException && monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
@@ -58,8 +58,8 @@ public class ConnectionStorageUpdateJob extends Job {
       monitor.worked(1);
     }
 
-    server.manualSync(projectKeysToUpdate, monitor);
-    server.notifyAllListenersStateChanged();
+    connectionFacade.manualSync(projectKeysToUpdate, monitor);
+    connectionFacade.notifyAllListenersStateChanged();
 
     monitor.done();
     if (!failures.isEmpty()) {

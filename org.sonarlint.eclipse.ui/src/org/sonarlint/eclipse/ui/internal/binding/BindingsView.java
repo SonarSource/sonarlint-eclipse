@@ -53,9 +53,9 @@ import org.eclipse.ui.navigator.NavigatorActionService;
 import org.eclipse.ui.part.PageBook;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeLifecycleListener;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeListener;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectionManagerListener;
 import org.sonarlint.eclipse.core.internal.telemetry.LinkTelemetry;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -72,11 +72,11 @@ public class BindingsView extends CommonNavigator {
 
   protected CommonViewer tableViewer;
   private Control mainPage;
-  private Control noServersPage;
+  private Control noConnectionsPage;
   private PageBook book;
 
-  private IConnectedEngineFacadeLifecycleListener serverResourceListener;
-  private IConnectedEngineFacadeListener serverListener;
+  private IConnectionManagerListener connectionResourceListener;
+  private IConnectedEngineFacadeListener connectionListener;
   private IResourceChangeListener projectListener;
 
   public BindingsView() {
@@ -92,7 +92,7 @@ public class BindingsView extends CommonNavigator {
     // Main page for the Servers tableViewer
     mainPage = getCommonViewer().getControl();
     // Page prompting to define a new server
-    noServersPage = createDefaultPage(toolkit);
+    noConnectionsPage = createDefaultPage(toolkit);
     book.showPage(mainPage);
 
     var contextSupport = getSite().getService(IContextService.class);
@@ -152,8 +152,8 @@ public class BindingsView extends CommonNavigator {
         var menu = menuManager.createContextMenu(body);
 
         // It is necessary to set the menu in two places:
-        // 1. The white space in the server view
-        // 2. The text and link in the server view. If this menu is not set, if the
+        // 1. The white space in the binding view
+        // 2. The text and link in the binding view. If this menu is not set, if the
         // user right clicks on the text or uses shortcut keys to open the context menu,
         // the context menu will not come up
         body.setMenu(menu);
@@ -166,19 +166,19 @@ public class BindingsView extends CommonNavigator {
   }
 
   /**
-   * Switch between the servers and default/empty page.
+   * Switch between the bindings and default/empty page.
    *
    */
   void toggleDefaultPage() {
     if (tableViewer.getTree().getItemCount() < 1) {
-      book.showPage(noServersPage);
+      book.showPage(noConnectionsPage);
     } else {
       book.showPage(mainPage);
     }
   }
 
   private void deferInitialization() {
-    var job = new Job(Messages.jobInitializingServersView) {
+    var job = new Job(Messages.jobInitializingBindingView) {
       @Override
       public IStatus run(IProgressMonitor monitor) {
         deferredInitialize();
@@ -199,7 +199,7 @@ public class BindingsView extends CommonNavigator {
         tableViewer = getCommonViewer();
         getSite().setSelectionProvider(tableViewer);
 
-        tryLoadInitialServers();
+        tryLoadInitialConnections();
       } catch (Exception e2) {
         // ignore - view has already been closed
       }
@@ -207,7 +207,7 @@ public class BindingsView extends CommonNavigator {
 
   }
 
-  private void tryLoadInitialServers() {
+  private void tryLoadInitialConnections() {
     try {
       if (tableViewer.getTree().getItemCount() > 0) {
         var obj = tableViewer.getTree().getItem(0).getData();
@@ -216,14 +216,14 @@ public class BindingsView extends CommonNavigator {
         toggleDefaultPage();
       }
     } catch (Exception e1) {
-      throw new IllegalStateException("Unable to update servers", e1);
+      throw new IllegalStateException("Unable to update connections", e1);
     }
   }
 
-  protected void refreshConnectionContent(final IConnectedEngineFacade server) {
+  protected void refreshConnectionContent(final ConnectionFacade connection) {
     Display.getDefault().asyncExec(() -> {
       if (!tableViewer.getTree().isDisposed()) {
-        tableViewer.refresh(server, true);
+        tableViewer.refresh(connection, true);
       }
     });
   }
@@ -239,35 +239,35 @@ public class BindingsView extends CommonNavigator {
   }
 
   protected void addListener() {
-    // To enable the UI updating of servers and its childrens
-    serverResourceListener = new IConnectedEngineFacadeLifecycleListener() {
+    // To enable the UI updating of connections and its childrens
+    connectionResourceListener = new IConnectionManagerListener() {
       @Override
-      public void connectionAdded(IConnectedEngineFacade server) {
-        addServer(server);
-        server.addConnectedEngineListener(serverListener);
+      public void connectionAdded(ConnectionFacade facade) {
+        addConnection(facade);
+        facade.addConnectedEngineListener(connectionListener);
       }
 
       @Override
-      public void connectionChanged(IConnectedEngineFacade server) {
-        refreshConnectionContent(server);
+      public void connectionChanged(ConnectionFacade facade) {
+        refreshConnectionContent(facade);
       }
 
       @Override
-      public void connectionRemoved(IConnectedEngineFacade server) {
-        removeServer(server);
-        server.removeConnectedEngineListener(serverListener);
+      public void connectionRemoved(ConnectionFacade facade) {
+        removeConnection(facade);
+        facade.removeConnectedEngineListener(connectionListener);
       }
     };
-    SonarLintCorePlugin.getServersManager().addServerLifecycleListener(serverResourceListener);
+    SonarLintCorePlugin.getConnectionManager().addServerLifecycleListener(connectionResourceListener);
 
-    serverListener = facade -> {
+    connectionListener = facade -> {
       refreshConnectionState();
       refreshConnectionContent(facade);
     };
 
-    // add listeners to servers
-    for (var server : SonarLintCorePlugin.getServersManager().getServers()) {
-      server.addConnectedEngineListener(serverListener);
+    // add listeners to connections
+    for (var connection : SonarLintCorePlugin.getConnectionManager().getConnections()) {
+      connection.addConnectedEngineListener(connectionListener);
     }
     // add listener for when project is opened / closed / deleted
     projectListener = event -> {
@@ -308,28 +308,28 @@ public class BindingsView extends CommonNavigator {
 
   private void refreshView() {
     refreshConnectionState();
-    for (var server : SonarLintCorePlugin.getServersManager().getServers()) {
-      refreshConnectionContent(server);
+    for (var connection : SonarLintCorePlugin.getConnectionManager().getConnections()) {
+      refreshConnectionContent(connection);
     }
   }
 
-  protected void addServer(final IConnectedEngineFacade server) {
+  protected void addConnection(final ConnectionFacade connection) {
     Display.getDefault().asyncExec(() -> {
-      tableViewer.add(tableViewer.getInput(), server);
+      tableViewer.add(tableViewer.getInput(), connection);
       toggleDefaultPage();
     });
   }
 
-  protected void removeServer(final IConnectedEngineFacade server) {
+  protected void removeConnection(final ConnectionFacade connection) {
     Display.getDefault().asyncExec(() -> {
-      tableViewer.remove(tableViewer.getInput(), new Object[] {server});
+      tableViewer.remove(tableViewer.getInput(), new Object[] {connection});
       toggleDefaultPage();
     });
   }
 
   @Override
   public void dispose() {
-    SonarLintCorePlugin.getServersManager().removeServerLifecycleListener(serverResourceListener);
+    SonarLintCorePlugin.getConnectionManager().removeServerLifecycleListener(connectionResourceListener);
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(projectListener);
     super.dispose();
   }

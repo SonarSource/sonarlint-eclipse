@@ -24,7 +24,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE.SharedImages;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.RemoteSonarProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -35,9 +35,9 @@ public class BindingsViewLabelProvider extends BaseCellLabelProvider {
 
   @Override
   public String getText(Object element) {
-    if (element instanceof IConnectedEngineFacade) {
-      var server = (IConnectedEngineFacade) element;
-      return StringUtils.defaultString(server.getId());
+    if (element instanceof ConnectionFacade) {
+      var connection = (ConnectionFacade) element;
+      return StringUtils.defaultString(connection.getId());
     }
     if (element instanceof RemoteSonarProject) {
       return ((RemoteSonarProject) element).getName();
@@ -54,8 +54,8 @@ public class BindingsViewLabelProvider extends BaseCellLabelProvider {
 
   @Override
   public Image getImage(Object element) {
-    if (element instanceof IConnectedEngineFacade) {
-      if (((IConnectedEngineFacade) element).isSonarCloud()) {
+    if (element instanceof ConnectionFacade) {
+      if (((ConnectionFacade) element).isSonarCloud()) {
         return SonarLintImages.SONARCLOUD_SERVER_ICON_IMG;
       } else {
         return SonarLintImages.SONARQUBE_SERVER_ICON_IMG;

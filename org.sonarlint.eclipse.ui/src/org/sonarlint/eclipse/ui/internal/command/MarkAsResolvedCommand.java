@@ -31,7 +31,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.MarkAsResolvedJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
@@ -108,7 +108,7 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
         var newStatus = dialog.getFinalTransition();
         var comment = dialog.getFinalComment();
 
-        var job = new MarkAsResolvedJob(project, (ConnectedEngineFacade) resolvedBinding.getEngineFacade(), file,
+        var job = new MarkAsResolvedJob(project, (ConnectionFacade) resolvedBinding.getEngineFacade(), file,
           issueKey, newStatus, StringUtils.trimToNull(comment), isTaintVulnerability);
         job.schedule();
       }

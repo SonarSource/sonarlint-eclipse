@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.ui.internal.binding.assist;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 
@@ -32,7 +32,7 @@ public class AssistCreatingManualConnectionJob extends AbstractAssistCreatingCon
 
   @Override
   @Nullable
-  protected IConnectedEngineFacade createConnection(ServerConnectionModel model) {
+  protected ConnectionFacade createConnection(ServerConnectionModel model) {
     var wizard = new ServerConnectionWizard(model);
     wizard.setSkipBindingWizard(true);
     var dialog = ServerConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);

@@ -41,7 +41,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.clientapi.SonarLintClient;
@@ -102,7 +102,7 @@ public abstract class SonarLintEclipseHeadlessClient implements SonarLintClient 
 
   @Override
   public CompletableFuture<GetCredentialsResponse> getCredentials(GetCredentialsParams params) {
-    var connectionOpt = SonarLintCorePlugin.getServersManager().findById(params.getConnectionId());
+    var connectionOpt = SonarLintCorePlugin.getConnectionManager().findById(params.getConnectionId());
     if (connectionOpt.isEmpty()) {
       return CompletableFuture.failedFuture(new IllegalArgumentException("Unable to find connection with id: " + params.getConnectionId()));
     }
@@ -116,8 +116,8 @@ public abstract class SonarLintEclipseHeadlessClient implements SonarLintClient 
       @Nullable
       String password;
       try {
-        username = ConnectedEngineFacadeManager.getUsername(engineFacade);
-        password = ConnectedEngineFacadeManager.getPassword(engineFacade);
+        username = ConnectionManager.getUsername(engineFacade);
+        password = ConnectionManager.getPassword(engineFacade);
       } catch (StorageException e) {
         throw new IllegalStateException("Unable to read server credentials from storage: " + e.getMessage(), e);
       }

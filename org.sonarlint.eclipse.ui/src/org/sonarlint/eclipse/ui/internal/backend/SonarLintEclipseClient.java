@@ -41,7 +41,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessClient;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -223,7 +223,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
   }
 
   private static Optional<ISonarLintFile> findHotspotFile(String hotspotFilePath, ISonarLintProject project) {
-    return SonarLintCorePlugin.getServersManager().resolveBinding(project)
+    return SonarLintCorePlugin.getConnectionManager().resolveBinding(project)
       .flatMap(binding -> binding.getProjectBinding().serverPathToIdePath(hotspotFilePath))
       .flatMap(project::find);
   }
@@ -282,7 +282,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
 
   @Override
   public void showSmartNotification(ShowSmartNotificationParams params) {
-    var connectionOpt = SonarLintCorePlugin.getServersManager().findById(params.getConnectionId());
+    var connectionOpt = SonarLintCorePlugin.getConnectionManager().findById(params.getConnectionId());
     if (connectionOpt.isEmpty()) {
       return;
     }
@@ -320,9 +320,9 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
       .forEach(project -> {
         var openedFiles = PlatformUtils.collectOpenedFiles(project, f -> true);
         if (!openedFiles.isEmpty() && openedFiles.containsKey(project)) {
-          var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+          var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(project);
           if (bindingOpt.isPresent()) {
-            var connection = (ConnectedEngineFacade) bindingOpt.get().getEngineFacade();
+            var connection = (ConnectionFacade) bindingOpt.get().getEngineFacade();
 
             // present taint vulnerabilities without re-fetching them from the server
             var files = openedFiles.get(project).stream()
@@ -374,7 +374,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
     var project = projectOpt.get();
 
     // We were just asked to connect and create a binding, this cannot happen -> Only log the information
-    var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+    var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(project);
     if (bindingOpt.isEmpty()) {
       SonarLintLogger.get().error("Open in IDE: The project '" + configScopeId
         + "' removed its binding in the middle of running the action on '" + params + "'");
@@ -390,24 +390,24 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
   public void didReceiveServerEvent(DidReceiveServerEventParams params) {
     var event = params.getServerEvent();
     var connectionId = params.getConnectionId();
-    var facadeOpt = SonarLintCorePlugin.getServersManager().findById(connectionId);
+    var facadeOpt = SonarLintCorePlugin.getConnectionManager().findById(connectionId);
     facadeOpt.ifPresent(facade -> {
       // FIXME Very inefficient implementation. Should be acceptable as we don't expect to have too many taint vulnerabilities
       if (event instanceof TaintVulnerabilityClosedEvent) {
         var projectKey = ((TaintVulnerabilityClosedEvent) event).getProjectKey();
-        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectedEngineFacade) facade, projectKey);
+        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectionFacade) facade, projectKey);
       } else if (event instanceof TaintVulnerabilityRaisedEvent) {
         var projectKey = ((TaintVulnerabilityRaisedEvent) event).getProjectKey();
-        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectedEngineFacade) facade, projectKey);
+        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectionFacade) facade, projectKey);
       } else if (event instanceof IssueChangedEvent) {
         var issueChangedEvent = (IssueChangedEvent) event;
         var projectKey = issueChangedEvent.getProjectKey();
-        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectedEngineFacade) facade, projectKey);
+        refreshTaintVulnerabilitiesForProjectsBoundToProjectKey((ConnectionFacade) facade, projectKey);
       }
     });
   }
 
-  private static void refreshTaintVulnerabilitiesForProjectsBoundToProjectKey(ConnectedEngineFacade facade, String sonarProjectKey) {
+  private static void refreshTaintVulnerabilitiesForProjectsBoundToProjectKey(ConnectionFacade facade, String sonarProjectKey) {
     doWithAffectedProjects(facade, sonarProjectKey, p -> {
       var openedFiles = PlatformUtils.collectOpenedFiles(p, f -> true);
       var files = openedFiles.get(p).stream()
@@ -417,7 +417,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
     });
   }
 
-  private static void doWithAffectedProjects(ConnectedEngineFacade facade, String sonarProjectKey, Consumer<ISonarLintProject> consumer) {
+  private static void doWithAffectedProjects(ConnectionFacade facade, String sonarProjectKey, Consumer<ISonarLintProject> consumer) {
     var possiblyAffectedProjects = facade.getBoundProjects(sonarProjectKey);
     possiblyAffectedProjects.forEach(consumer::accept);
   }

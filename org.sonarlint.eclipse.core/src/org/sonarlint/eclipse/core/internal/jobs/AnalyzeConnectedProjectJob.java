@@ -32,7 +32,7 @@ import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
@@ -48,9 +48,9 @@ import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
 public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<ConnectedAnalysisConfiguration> {
 
   private final EclipseProjectBinding binding;
-  private final ConnectedEngineFacade engineFacade;
+  private final ConnectionFacade engineFacade;
 
-  public AnalyzeConnectedProjectJob(AnalyzeProjectRequest request, EclipseProjectBinding binding, ConnectedEngineFacade engineFacade) {
+  public AnalyzeConnectedProjectJob(AnalyzeProjectRequest request, EclipseProjectBinding binding, ConnectionFacade engineFacade) {
     super(request);
     this.binding = binding;
     this.engineFacade = engineFacade;

@@ -66,7 +66,7 @@ public class VcsService {
   @Nullable
   private static String electBestMatchingBranch(VcsFacade facade, ISonarLintProject project) {
     LOG.debug("Elect best matching branch for project " + project.getName() + "...");
-    var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+    var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(project);
     if (bindingOpt.isEmpty()) {
       electedServerBranchCache.remove(project);
       previousCommitRefCache.remove(project);
@@ -136,7 +136,7 @@ public class VcsService {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
       affectedProjects.forEach(project -> {
-        var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+        var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(project);
         if (bindingOpt.isEmpty()) {
           return;
         }

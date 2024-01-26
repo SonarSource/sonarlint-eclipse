@@ -52,7 +52,7 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
@@ -95,9 +95,9 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   }
 
   public static AbstractSonarProjectJob create(AnalyzeProjectRequest request) {
-    return SonarLintCorePlugin.getServersManager()
+    return SonarLintCorePlugin.getConnectionManager()
       .resolveBinding(request.getProject())
-      .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request, b.getProjectBinding(), (ConnectedEngineFacade) b.getEngineFacade()))
+      .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request, b.getProjectBinding(), (ConnectionFacade) b.getEngineFacade()))
       .orElseGet(() -> new AnalyzeStandaloneProjectJob(request));
   }
 
@@ -225,7 +225,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       if (checkUnsupportedLanguages) {
         // Collect all the languages we just analyzed and that are unavailable in standalone mode. This will be re-used
         // to handle it accordingly in the UI (e.g. display notification to the user).
-        var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(getProject());
+        var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(getProject());
         if (bindingOpt.isEmpty()) {
           var languages = result.languagePerFile().values().stream().collect(Collectors.toCollection(HashSet::new));
           var languagesConnectedMode = EnumSet.noneOf(Language.class);

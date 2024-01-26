@@ -71,14 +71,14 @@
          class="org.sonarlint.eclipse.ui.internal.binding.BindingsViewDecorator"
          icon="icons/full/eview16/bindings.png"
          id="org.sonarlint.eclipse.ui.navigatorDecorator"
-         label="SonarLint Server State Decorator"
+         label="SonarLint Connection State Decorator"
          lightweight="true"
          location="BOTTOM_RIGHT"
          state="true">
       <enablement>
           <or>
             <objectClass
-                  name="org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade">
+                  name="org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade">
             </objectClass>
             <objectClass
                   name="org.sonarlint.eclipse.core.internal.engine.connected.RemoteSonarProject">
@@ -187,7 +187,7 @@
 	      <triggerPoints>
 	         <or>
 	            <instanceof
-	                  value="org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade">
+	                  value="org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade">
 	            </instanceof>
 	            <instanceof
 	                  value="org.sonarlint.eclipse.core.resource.ISonarLintProject">
@@ -211,7 +211,7 @@
 					<enablement>
 		             <or>
 		                <instanceof
-		                      value="org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade">
+		                      value="org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade">
 		                </instanceof>
 		                <instanceof
 		                      value="org.sonarlint.eclipse.core.resource.ISonarLintProject">
@@ -267,9 +267,6 @@
               visible="true"/>
         <markerFieldReference
               id="org.sonarlint.eclipse.ui.views.issues.issueRuleKeyField"
-              visible="false"/>
-        <markerFieldReference
-              id="org.sonarlint.eclipse.ui.views.issues.issueRuleNameField"
               visible="false"/>
         <markerFieldReference
               id="org.sonarlint.eclipse.ui.views.issues.serverIssueKeyField"
@@ -419,9 +416,6 @@
               visible="true"/>
         <markerFieldReference
               id="org.sonarlint.eclipse.ui.views.issues.issueRuleKeyField"
-              visible="false"/>
-        <markerFieldReference
-              id="org.sonarlint.eclipse.ui.views.issues.issueRuleNameField"
               visible="false"/>
         <markerFieldReference
               id="org.sonarlint.eclipse.ui.views.issues.serverIssueKeyField"

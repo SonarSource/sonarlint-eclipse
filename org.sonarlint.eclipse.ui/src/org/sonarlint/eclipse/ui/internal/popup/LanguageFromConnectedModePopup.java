@@ -67,7 +67,7 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
     addLink("Learn more",
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.RULES, getShell().getDisplay()));
     
-    if (SonarLintCorePlugin.getServersManager().checkForSonarCloud()) {
+    if (SonarLintCorePlugin.getConnectionManager().checkForSonarCloud()) {
       addLink("Bind to SonarCloud", e -> ProjectBindingWizard.createDialog(getParentShell(), projects));
     } else {
       addLink("Try SonarCloud for free",

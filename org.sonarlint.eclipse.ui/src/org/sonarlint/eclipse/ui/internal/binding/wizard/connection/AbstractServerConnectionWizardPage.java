@@ -34,7 +34,7 @@ public abstract class AbstractServerConnectionWizardPage extends WizardPage {
   private final int numCols;
 
   protected AbstractServerConnectionWizardPage(String pageName, @Nullable String title, ServerConnectionModel model, int numCols) {
-    super(pageName, title, SonarLintImages.IMG_WIZBAN_NEW_SERVER);
+    super(pageName, title, SonarLintImages.IMG_WIZBAN_NEW_CONNECTION);
     this.model = model;
     this.numCols = numCols;
   }

@@ -35,7 +35,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -147,7 +147,7 @@ public class SonarLintTelemetry {
 
     @Override
     public boolean devNotificationsDisabled() {
-      return SonarLintCorePlugin.getServersManager().getServers().stream().anyMatch(IConnectedEngineFacade::areNotificationsDisabled);
+      return SonarLintCorePlugin.getConnectionManager().getConnections().stream().anyMatch(ConnectionFacade::areNotificationsDisabled);
     }
 
     @Override
@@ -294,10 +294,10 @@ public class SonarLintTelemetry {
   public static boolean isAnyOpenProjectBoundToSonarCloud() {
     return ProjectsProviderUtils.allProjects().stream()
       .filter(p -> p.isOpen() && SonarLintCorePlugin.loadConfig(p).isBound())
-      .map(SonarLintCorePlugin.getServersManager()::resolveBinding)
+      .map(SonarLintCorePlugin.getConnectionManager()::resolveBinding)
       .flatMap(Optional::stream)
       .map(ResolvedBinding::getEngineFacade)
-      .anyMatch(IConnectedEngineFacade::isSonarCloud);
+      .anyMatch(ConnectionFacade::isSonarCloud);
   }
 
   @Nullable

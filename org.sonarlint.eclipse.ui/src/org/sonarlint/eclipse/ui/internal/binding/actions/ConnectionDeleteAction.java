@@ -28,13 +28,13 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.SelectionProviderAction;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.binding.DeleteConnectionDialog;
 
 public class ConnectionDeleteAction extends SelectionProviderAction {
-  private List<IConnectedEngineFacade> selectedServers;
-  private Shell shell;
+  private List<ConnectionFacade> selectedConnections;
+  private final Shell shell;
 
   public ConnectionDeleteAction(Shell shell, ISelectionProvider selectionProvider) {
     super(selectionProvider, Messages.actionDelete);
@@ -50,42 +50,42 @@ public class ConnectionDeleteAction extends SelectionProviderAction {
       setEnabled(false);
       return;
     }
-    selectedServers = new ArrayList<>();
+    selectedConnections = new ArrayList<>();
     var iterator = sel.iterator();
     while (iterator.hasNext()) {
       var obj = iterator.next();
-      if (obj instanceof IConnectedEngineFacade) {
-        var server = (IConnectedEngineFacade) obj;
-        selectedServers.add(server);
+      if (obj instanceof ConnectionFacade) {
+        var connection = (ConnectionFacade) obj;
+        selectedConnections.add(connection);
       } else {
         setEnabled(false);
         return;
       }
     }
-    setEnabled(!selectedServers.isEmpty());
+    setEnabled(!selectedConnections.isEmpty());
   }
 
   @Override
   public void run() {
-    // It is possible that the server is created and added to the server view on workbench
-    // startup. As a result, when the user switches to the server view, the server is
-    // selected, but the selectionChanged event is not called, which results in servers
-    // being null. When servers is null the server will not be deleted and the error log
+    // It is possible that the connection is created and added to the connection view on workbench
+    // startup. As a result, when the user switches to the connection view, the connection is
+    // selected, but the selectionChanged event is not called, which results in connections
+    // being null. When connections is null the connection will not be deleted and the error log
     // will have an IllegalArgumentException.
     //
-    // To handle the case where servers is null, the selectionChanged method is called
-    // to ensure servers will be populated.
-    if (selectedServers == null) {
+    // To handle the case where connections is null, the selectionChanged method is called
+    // to ensure connections will be populated.
+    if (selectedConnections == null) {
       var sel = getStructuredSelection();
       if (sel != null) {
         selectionChanged(sel);
       }
     }
 
-    if (selectedServers != null && !selectedServers.isEmpty()) {
+    if (selectedConnections != null && !selectedConnections.isEmpty()) {
       // No check is made for valid parameters at this point, since if there is a failure, it
       // should be output to the error log instead of failing silently.
-      var dialog = new DeleteConnectionDialog(shell, selectedServers);
+      var dialog = new DeleteConnectionDialog(shell, selectedConnections);
       dialog.open();
     }
   }

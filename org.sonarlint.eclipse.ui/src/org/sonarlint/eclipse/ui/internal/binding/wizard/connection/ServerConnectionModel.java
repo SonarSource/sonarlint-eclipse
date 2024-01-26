@@ -27,8 +27,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -76,23 +76,23 @@ public class ServerConnectionModel extends ModelObject {
     this.edit = false;
   }
 
-  public ServerConnectionModel(IConnectedEngineFacade server) {
+  public ServerConnectionModel(ConnectionFacade connection) {
     this.edit = true;
-    this.connectionId = server.getId();
-    this.serverUrl = server.getHost();
+    this.connectionId = connection.getId();
+    this.serverUrl = connection.getHost();
     this.connectionType = SonarLintUtils.getSonarCloudUrl().equals(serverUrl) ? ConnectionType.SONARCLOUD : ConnectionType.ONPREMISE;
-    this.organization = server.getOrganization();
-    if (server.hasAuth()) {
+    this.organization = connection.getOrganization();
+    if (connection.hasAuth()) {
       try {
-        this.username = ConnectedEngineFacadeManager.getUsername(server);
-        this.password = ConnectedEngineFacadeManager.getPassword(server);
+        this.username = ConnectionManager.getUsername(connection);
+        this.password = ConnectionManager.getPassword(connection);
       } catch (StorageException e) {
         SonarLintLogger.get().error(ERROR_READING_SECURE_STORAGE, e);
         MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_READING_SECURE_STORAGE, "Unable to read password from secure storage: " + e.getMessage());
       }
       this.authMethod = StringUtils.isBlank(password) ? AuthMethod.TOKEN : AuthMethod.PASSWORD;
     }
-    this.notificationsDisabled = server.areNotificationsDisabled();
+    this.notificationsDisabled = connection.areNotificationsDisabled();
   }
 
   public boolean isEdit() {

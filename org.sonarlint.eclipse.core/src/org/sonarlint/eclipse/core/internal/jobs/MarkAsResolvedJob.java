@@ -31,7 +31,7 @@ import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -45,10 +45,10 @@ public class MarkAsResolvedJob extends Job {
   private final ResolutionStatus newStatus;
   private final boolean isTaint;
   private final @Nullable String comment;
-  private final ConnectedEngineFacade facade;
+  private final ConnectionFacade facade;
   private final ISonarLintFile file;
 
-  public MarkAsResolvedJob(ISonarLintProject project, ConnectedEngineFacade facade, ISonarLintFile file, String serverIssueKey, ResolutionStatus newStatus, @Nullable String comment,
+  public MarkAsResolvedJob(ISonarLintProject project, ConnectionFacade facade, ISonarLintFile file, String serverIssueKey, ResolutionStatus newStatus, @Nullable String comment,
     boolean isTaint) {
     super("Marking issue as resolved");
     this.project = project;
