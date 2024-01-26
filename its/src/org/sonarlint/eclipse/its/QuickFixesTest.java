@@ -49,7 +49,6 @@ import org.eclipse.reddeer.workbench.condition.TextEditorContainsText;
 import org.eclipse.reddeer.workbench.exception.WorkbenchLayerException;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
-import org.eclipse.swt.widgets.Shell;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;

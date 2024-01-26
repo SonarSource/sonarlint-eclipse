@@ -65,7 +65,6 @@ import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintTaintVulnerabilitiesView;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
-import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard.AuthenticationPage;
 import org.sonarqube.ws.QualityProfiles.SearchWsResponse.QualityProfile;
 import org.sonarqube.ws.client.PostRequest;
 import org.sonarqube.ws.client.permission.AddGroupWsRequest;
