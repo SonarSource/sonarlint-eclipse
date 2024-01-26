@@ -90,7 +90,7 @@ public abstract class AbstractSonarLintExtensionTracker implements IExtensionCha
   private void instanciateAndRegister(IExtensionTracker tracker, IExtension extension, final IConfigurationElement element) throws CoreException {
     for (SonarLintEP ep : allEpsToWatch) {
       if (ep.id.equals(extension.getExtensionPointUniqueIdentifier())) {
-        Object instance = element.createExecutableExtension(ATTR_CLASS);
+        var instance = element.createExecutableExtension(ATTR_CLASS);
         ep.instances.add(instance);
         // register association between object and extension with the tracker
         tracker.registerObject(extension, instance, IExtensionTracker.REF_WEAK);

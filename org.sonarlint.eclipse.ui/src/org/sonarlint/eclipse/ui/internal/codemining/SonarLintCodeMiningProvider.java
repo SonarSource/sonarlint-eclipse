@@ -43,7 +43,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
-import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationSelectionListener;
@@ -178,7 +177,7 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
     }
     var textEditor = super.getAdapter(ITextEditor.class);
     var editorInput = textEditor.getEditorInput().getAdapter(IFileEditorInput.class);
-    MarkerFlows flowsMarkers = MarkerUtils.getIssueFlows(markerToUse);
+    var flowsMarkers = MarkerUtils.getIssueFlows(markerToUse);
     if (flowsMarkers.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }

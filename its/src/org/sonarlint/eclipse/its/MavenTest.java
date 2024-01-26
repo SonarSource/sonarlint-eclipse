@@ -45,7 +45,7 @@ public class MavenTest extends AbstractSonarLintTest {
     new WaitUntil(new ProjectExists("sample-module1", packageExplorer));
     var sampleModule1Project = packageExplorer.getProject("sample-module1");
 
-    int previousAnalysisJobCount = scheduledAnalysisJobCount.get();
+    var previousAnalysisJobCount = scheduledAnalysisJobCount.get();
     var rootProject = packageExplorer.getProject("sample-maven");
     rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open();
     assertThat(scheduledAnalysisJobCount.get()).isEqualTo(previousAnalysisJobCount);

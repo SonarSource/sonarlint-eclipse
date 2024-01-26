@@ -71,7 +71,7 @@ public class RuleConfig {
     if ((obj == null) || (getClass() != obj.getClass())) {
       return false;
     }
-    RuleConfig other = (RuleConfig) obj;
+    var other = (RuleConfig) obj;
     return isActive == other.isActive && Objects.equals(key, other.key) && Objects.equals(params, other.params);
   }
 

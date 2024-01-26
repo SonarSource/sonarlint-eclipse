@@ -37,7 +37,6 @@ import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleParamDefinitionDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleParamType;
 
 public class RuleParameterPanel extends Composite {
   private final Link defaultLink;
@@ -105,7 +104,7 @@ public class RuleParameterPanel extends Composite {
     ruleParameterLabel.setLayoutData(layoutData);
     ruleParameterLabel.setText(ruleParam.getName());
 
-    RuleParamType rp = ruleParam.getType();
+    var rp = ruleParam.getType();
     switch (rp) {
       case BOOLEAN:
         addCheckboxInput(parent, ruleParam);

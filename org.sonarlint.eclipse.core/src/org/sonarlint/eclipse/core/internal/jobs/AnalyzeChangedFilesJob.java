@@ -62,7 +62,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
 
       var changedFilesPerProject = collectChangedFiles.stream().collect(Collectors.groupingBy(ISonarLintFile::getProject));
 
-      long fileCount = changedFilesPerProject.values().stream().flatMap(Collection::stream).count();
+      var fileCount = changedFilesPerProject.values().stream().flatMap(Collection::stream).count();
 
       SonarLintLogger.get().info("Analyzing " + fileCount + " changed file(s) in " + changedFilesPerProject.size() + " project(s)");
 

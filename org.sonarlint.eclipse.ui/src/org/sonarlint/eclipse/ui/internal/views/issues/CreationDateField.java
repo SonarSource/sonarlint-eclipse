@@ -35,7 +35,7 @@ public class CreationDateField extends MarkerField {
     if (item == null) {
       return null;
     }
-    String time = item.getAttributeValue(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, null);
+    var time = item.getAttributeValue(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, null);
     if (time == null) {
       // Persistent markers before 1.2 don't have creation date attribute
       return null;

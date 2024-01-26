@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.core.runtime.preferences.DefaultScope;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
@@ -31,7 +30,7 @@ public class SonarLintPreferencesInitializer extends AbstractPreferenceInitializ
 
   @Override
   public void initializeDefaultPreferences() {
-    IEclipsePreferences node = DefaultScope.INSTANCE.getNode(SonarLintUiPlugin.PLUGIN_ID);
+    var node = DefaultScope.INSTANCE.getNode(SonarLintUiPlugin.PLUGIN_ID);
     node.put(SonarLintConsole.P_SHOW_CONSOLE, SonarLintConsole.P_SHOW_CONSOLE_ON_ERROR);
     node.putBoolean(SonarLintConsole.P_ANALYZER_OUTPUT, false);
     node.putInt(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY, SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY_DEFAULT);

@@ -43,7 +43,7 @@ public class RemoteProjectProvider implements IContentProposalProvider {
   public IContentProposal[] getProposals(String contents, int position) {
     var list = new ArrayList<IContentProposal>();
     var projectIndex = model.getProjectIndex();
-    Map<ServerProject, Double> filtered = projectIndex != null ? projectIndex.search(contents) : Collections.emptyMap();
+    var filtered = projectIndex != null ? projectIndex.search(contents) : Collections.<ServerProject, Double>emptyMap();
     if (filtered.isEmpty()) {
       parentPage.setMessage("No results", IMessageProvider.INFORMATION);
     } else {

@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.vcs;
 
-import java.lang.reflect.Method;
 import java.util.Optional;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.egit.core.project.RepositoryMapping;
@@ -40,12 +39,12 @@ public class OldEGitVcsFacade extends AbstractEGitVcsFacade {
   public boolean isIgnored(ISonarLintFile file) {
     try {
       Class resourceStateFactoryClass = Class.forName("org.eclipse.egit.ui.internal.resources.ResourceStateFactory");
-      Method getInstance = resourceStateFactoryClass.getMethod("getInstance");
-      Object resourceStateFactory = getInstance.invoke(null);
-      Method get = resourceStateFactoryClass.getMethod("get", IResource.class);
-      Object resourceState = get.invoke(resourceStateFactory, file.getResource());
+      var getInstance = resourceStateFactoryClass.getMethod("getInstance");
+      var resourceStateFactory = getInstance.invoke(null);
+      var get = resourceStateFactoryClass.getMethod("get", IResource.class);
+      var resourceState = get.invoke(resourceStateFactory, file.getResource());
       Class resourceStateClass = Class.forName("org.eclipse.egit.ui.internal.resources.ResourceState");
-      Method isIgnored = resourceStateClass.getMethod("isIgnored");
+      var isIgnored = resourceStateClass.getMethod("isIgnored");
       return (boolean) isIgnored.invoke(resourceState);
     } catch (Exception e) {
       LOG.debug("Unable to call eGit", e);

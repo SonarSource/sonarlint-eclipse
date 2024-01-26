@@ -188,7 +188,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
 
     var propertyNameColumn = new TableColumn(table, SWT.NONE);
     propertyNameColumn.setText("Name");
-    int minWidth = computeMinimumColumnWidth(gc, "Name");
+    var minWidth = computeMinimumColumnWidth(gc, "Name");
     columnLayout.setColumnData(propertyNameColumn, new ColumnWeightData(1, minWidth, true));
 
     var propertyValueColumn = new TableColumn(table, SWT.NONE);
