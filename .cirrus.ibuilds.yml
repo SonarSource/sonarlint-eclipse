@@ -1,0 +1,109 @@
+env:
+  CIRRUS_CLONE_DEPTH: "1"
+  CIRRUS_SHELL: bash
+
+  ARTIFACTORY_URL: VAULT[development/kv/data/repox data.url]
+  ARTIFACTORY_PRIVATE_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader
+  ARTIFACTORY_PRIVATE_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
+  ARTIFACTORY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
+  BURGR_URL: VAULT[development/kv/data/burgr data.url]
+  BURGR_USERNAME: VAULT[development/kv/data/burgr data.cirrus_username]
+  BURGR_PASSWORD: VAULT[development/kv/data/burgr data.cirrus_password]
+
+# We will only run this pipeline on dedicated branches
+only_dedicated_branches: &ONLY_IF
+  skip: "changesIncludeOnly('.github/*', 'docs/*', 'org.sonarlint.eclipse.core.tests/*', 'scripts/*', '**/README.md')"
+  only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == ""
+
+eks_container: &CONTAINER_DEFINITION
+  image: ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j17-m3.9-latest
+  region: eu-central-1
+  cluster_name: ${CIRRUS_CLUSTER_NAME}
+  namespace: default
+
+eks_builder_container: &BUILDER_CONTAINER_DEFINITION
+  <<: *CONTAINER_DEFINITION
+  dockerfile: .cirrus/Dockerfile
+  docker_arguments:
+    CIRRUS_AWS_ACCOUNT: ${CIRRUS_AWS_ACCOUNT}
+  builder_role: cirrus-builder
+  builder_image: docker-builder-v*
+  builder_instance_type: m6a.large
+  builder_subnet_id: ${CIRRUS_AWS_SUBNET}
+
+# Maven cache based on pom.xml files and the Eclipse (Tycho) target platforms
+maven_cache_qa: &SETUP_MAVEN_CACHE
+  maven_cache:
+    folder: ${CIRRUS_WORKING_DIR}/.m2/repository
+    fingerprint_script:
+      - echo $TARGET_PLATFORM
+      - /usr/bin/find . -name pom.xml -not -path './its/*' -exec cat {} \+
+      - cat target-platforms/build.target target-platforms/commons.target its/target-platforms/*.target
+
+# Run iBuilds compatibility tests (with packaged update site for that)
+qa_ibuilds_task:
+  <<: *ONLY_IF
+  allow_failures: true
+  skip_notifications: true
+  eks_container:
+    <<: *BUILDER_CONTAINER_DEFINITION
+    cpu: 4
+    memory: 12G
+  env:
+    ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
+    GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
+    SONARCLOUD_IT_PASSWORD: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.password]
+    DISPLAY: :10
+    MAVEN_OPTS: -Xmx3072m
+  matrix:
+    - env:
+        TARGET_PLATFORM: 'ibuilds'
+        SQ_VERSION: 'LATEST_RELEASE[8.9]'
+        QA_CATEGORY: 'Oldest'
+    - env:
+        TARGET_PLATFORM: 'ibuilds'
+        SQ_VERSION: 'LATEST_RELEASE[9.9]'
+        QA_CATEGORY: 'Latest-LTS'
+    - env:
+        TARGET_PLATFORM: 'ibuilds'
+        SQ_VERSION: 'DEV'
+        QA_CATEGORY: 'Latest'
+  <<: *SETUP_MAVEN_CACHE
+  prepare_update_site_script: |
+    set -euo pipefail
+    source cirrus-env QA
+    source .cirrus/set_maven_build_version "$BUILD_NUMBER"
+    mvn -B -e -V package
+  prepare_background_script: |
+    set -euo pipefail
+    /etc/init.d/xvfb start
+    metacity --sm-disable --replace &
+    sleep 10 # give metacity some time to start
+    echo 'Recording tests on video'
+    ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording_${QA_CATEGORY}.mp4
+  run_its_script: |
+    echo "Run Maven ITs for Eclipse iBuilds and Server ${SQ_VERSION}"
+    mvn -B -e -V verify -f its/pom.xml \
+      -Dtarget.platform=${TARGET_PLATFORM} -Dtycho.localArtifacts=ignore \
+      -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.site/target/repository" \
+      -Dsonar.runtimeVersion=${SQ_VERSION}
+  cleanup_before_cache_script: cleanup_maven_repository
+  always:
+    stop_recording_script: |
+      pkill -SIGINT -f ffmpeg
+      while pgrep ffmpeg >/dev/null; do sleep 1; done
+      /etc/init.d/xvfb stop
+    test_recording_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/recording_${QA_CATEGORY}.mp4"
+    log_artifacts:
+      path: "its/build/idea-sandbox/system/log"
+  on_failure:
+    xvfb_log_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/Xvfb.out"
+    reports_artifacts:
+      path: "**/reports/**/*"
+    junit_artifacts:
+      paths:
+      - "**/test-results/**/*.xml"
+      - "**/target/surefire-reports/TEST-*.xml"
+      format: junit
