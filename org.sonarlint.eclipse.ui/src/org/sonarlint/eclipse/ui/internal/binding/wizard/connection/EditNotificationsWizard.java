@@ -26,16 +26,16 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 
 public class EditNotificationsWizard extends Wizard implements INewWizard {
 
   private final ServerConnectionModel model;
   private final NotificationsWizardPage notifPage;
-  private final IConnectedEngineFacade editedServer;
+  private final ConnectionFacade editedServer;
 
-  private EditNotificationsWizard(String title, ServerConnectionModel model, IConnectedEngineFacade editedServer) {
+  private EditNotificationsWizard(String title, ServerConnectionModel model, ConnectionFacade editedServer) {
     super();
     this.model = model;
     // Assume that if we open this wizard, notifications are supported
@@ -47,12 +47,12 @@ public class EditNotificationsWizard extends Wizard implements INewWizard {
     notifPage = new NotificationsWizardPage(model);
   }
 
-  private EditNotificationsWizard(IConnectedEngineFacade sonarServer) {
-    this(sonarServer.isSonarCloud() ? "Edit SonarCloud notifications" : "Edit SonarQube notifications", new ServerConnectionModel(sonarServer), sonarServer);
+  private EditNotificationsWizard(ConnectionFacade connection) {
+    this(connection.isSonarCloud() ? "Edit SonarCloud notifications" : "Edit SonarQube notifications", new ServerConnectionModel(connection), connection);
   }
 
-  public static WizardDialog createDialog(Shell parent, IConnectedEngineFacade sonarServer) {
-    return new SonarLintWizardDialog(parent, new EditNotificationsWizard(sonarServer));
+  public static WizardDialog createDialog(Shell parent, ConnectionFacade connection) {
+    return new SonarLintWizardDialog(parent, new EditNotificationsWizard(connection));
   }
 
   @Override

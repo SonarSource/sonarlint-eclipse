@@ -32,7 +32,7 @@ import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 import org.eclipse.ui.navigator.ICommonViewerWorkbenchSite;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.ConnectionBindProjectsAction;
 import org.sonarlint.eclipse.ui.internal.binding.actions.ConnectionDeleteAction;
@@ -78,8 +78,8 @@ public class BindingsViewActionProvider extends CommonActionProvider {
     tableViewer.addOpenListener(event -> {
       var sel = (IStructuredSelection) event.getSelection();
       var data = sel.getFirstElement();
-      if (data instanceof IConnectedEngineFacade) {
-        var server = (IConnectedEngineFacade) data;
+      if (data instanceof ConnectionFacade) {
+        var server = (ConnectionFacade) data;
         ConnectionEditAction.openEditWizard(tableViewer.getTree().getShell(), server);
       } else if (data instanceof ISonarLintProject) {
         final var dialog = ProjectBindingWizard.createDialog(tableViewer.getTree().getShell(), List.of((ISonarLintProject) data));
@@ -118,7 +118,7 @@ public class BindingsViewActionProvider extends CommonActionProvider {
       selection = (IStructuredSelection) wsSite.getSelectionProvider().getSelection();
     }
 
-    var servers = new ArrayList<IConnectedEngineFacade>();
+    var servers = new ArrayList<ConnectionFacade>();
     var projects = new ArrayList<ISonarLintProject>();
     populateServersAndProjects(selection, servers, projects);
 
@@ -145,13 +145,13 @@ public class BindingsViewActionProvider extends CommonActionProvider {
 
   }
 
-  private static void populateServersAndProjects(IStructuredSelection selection, List<IConnectedEngineFacade> servers, List<ISonarLintProject> projects) {
+  private static void populateServersAndProjects(IStructuredSelection selection, List<ConnectionFacade> servers, List<ISonarLintProject> projects) {
     if (selection != null && !selection.isEmpty()) {
       var iterator = selection.iterator();
       while (iterator.hasNext()) {
         var obj = iterator.next();
-        if (obj instanceof IConnectedEngineFacade) {
-          servers.add((IConnectedEngineFacade) obj);
+        if (obj instanceof ConnectionFacade) {
+          servers.add((ConnectionFacade) obj);
         } else if (obj instanceof ISonarLintProject) {
           projects.add((ISonarLintProject) obj);
         }

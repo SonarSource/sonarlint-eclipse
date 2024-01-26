@@ -42,8 +42,8 @@ public class StoragePathManager {
   }
 
   /** Get the working directory for a specific connection */
-  public static Path getConnectionSpecificWorkDir(String serverId) {
-    return getSonarLintUserHome().resolve("work").resolve(serverId);
+  public static Path getConnectionSpecificWorkDir(String connectionId) {
+    return getSonarLintUserHome().resolve("work").resolve(connectionId);
   }
 
   /** Get the storage root directory */

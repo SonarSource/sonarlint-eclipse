@@ -44,7 +44,7 @@ public class ConnectionTypeWizardPage extends WizardPage {
   private final ServerConnectionModel model;
 
   public ConnectionTypeWizardPage(ServerConnectionModel model) {
-    super("server_type_page", "Choose connection type", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
+    super("connection_type_page", "Choose connection type", SonarLintImages.IMG_WIZBAN_NEW_CONNECTION);
     this.model = model;
   }
 

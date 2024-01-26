@@ -27,7 +27,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.AbstractAnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
@@ -83,25 +83,25 @@ public class AnalysisJobsScheduler {
     JobUtils.scheduleAfterSuccess(job, () -> scheduleAnalysisOfOpenFiles(projects, triggerType, unsupportedLanguageCheck));
   }
 
-  public static void scheduleAnalysisOfOpenFilesInBoundProjects(IConnectedEngineFacade server, TriggerType triggerType) {
-    scheduleAnalysisOfOpenFiles(server.getBoundProjects(), triggerType, false);
+  public static void scheduleAnalysisOfOpenFilesInBoundProjects(ConnectionFacade connection, TriggerType triggerType) {
+    scheduleAnalysisOfOpenFiles(connection.getBoundProjects(), triggerType, false);
   }
 
-  public static void scheduleAnalysisOfOpenFilesInBoundProjects(Job job, IConnectedEngineFacade server,
+  public static void scheduleAnalysisOfOpenFilesInBoundProjects(Job job, ConnectionFacade connection,
     TriggerType triggerType) {
-    scheduleAnalysisOfOpenFiles(job, server.getBoundProjects(), triggerType, false);
+    scheduleAnalysisOfOpenFiles(job, connection.getBoundProjects(), triggerType, false);
   }
 
-  public static void notifyServerViewAfterBindingChange(ISonarLintProject project, @Nullable String oldServerId) {
+  public static void notifyServerViewAfterBindingChange(ISonarLintProject project, @Nullable String oldConnectionId) {
     var projectConfig = SonarLintCorePlugin.loadConfig(project);
-    var serverId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
-    if (oldServerId != null && !Objects.equals(serverId, oldServerId)) {
-      var oldServer = SonarLintCorePlugin.getServersManager().findById(oldServerId);
-      oldServer.ifPresent(IConnectedEngineFacade::notifyAllListenersStateChanged);
+    var connectionId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
+    if (oldConnectionId != null && !Objects.equals(connectionId, oldConnectionId)) {
+      var oldServer = SonarLintCorePlugin.getConnectionManager().findById(oldConnectionId);
+      oldServer.ifPresent(ConnectionFacade::notifyAllListenersStateChanged);
     }
-    if (serverId != null) {
-      var server = SonarLintCorePlugin.getServersManager().findById(serverId);
-      server.ifPresent(IConnectedEngineFacade::notifyAllListenersStateChanged);
+    if (connectionId != null) {
+      var connection = SonarLintCorePlugin.getConnectionManager().findById(connectionId);
+      connection.ifPresent(ConnectionFacade::notifyAllListenersStateChanged);
     }
     var labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
     if (labelProvider != null) {

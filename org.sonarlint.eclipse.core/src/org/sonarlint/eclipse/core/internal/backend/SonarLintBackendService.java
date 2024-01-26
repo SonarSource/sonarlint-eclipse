@@ -38,7 +38,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
@@ -133,7 +133,7 @@ public class SonarLintBackendService {
           throw new IllegalStateException("Unable to initialize the SonarLint Backend", e);
         }
         connectionSynchronizer = new ConnectionSynchronizer(backend);
-        SonarLintCorePlugin.getServersManager().addServerLifecycleListener(connectionSynchronizer);
+        SonarLintCorePlugin.getConnectionManager().addServerLifecycleListener(connectionSynchronizer);
 
         configScopeSynchronizer = new ConfigScopeSynchronizer(backend);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(configScopeSynchronizer);
@@ -154,7 +154,7 @@ public class SonarLintBackendService {
     configScopeSynchronizer.branchChanged(project, newActiveBranchName);
   }
 
-  public void credentialsChanged(ConnectedEngineFacade connection) {
+  public void credentialsChanged(ConnectionFacade connection) {
     getBackend().getConnectionService().didChangeCredentials(new DidChangeCredentialsParams(connection.getId()));
   }
 
@@ -206,7 +206,7 @@ public class SonarLintBackendService {
       configScopeSynchronizer = null;
     }
     if (connectionSynchronizer != null) {
-      SonarLintCorePlugin.getServersManager().removeServerLifecycleListener(connectionSynchronizer);
+      SonarLintCorePlugin.getConnectionManager().removeServerLifecycleListener(connectionSynchronizer);
       connectionSynchronizer = null;
     }
     var backendLocalCopy = backend;

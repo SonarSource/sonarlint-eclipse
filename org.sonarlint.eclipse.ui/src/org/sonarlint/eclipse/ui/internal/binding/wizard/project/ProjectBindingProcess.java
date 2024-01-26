@@ -32,17 +32,17 @@ import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 
 public class ProjectBindingProcess {
 
-  public static Job scheduleProjectBinding(String serverId, List<ISonarLintProject> projects, String projectKey) {
-    var job = new ProjectStorageUpdateJob(serverId, projectKey);
+  public static Job scheduleProjectBinding(String connectionId, List<ISonarLintProject> projects, String projectKey) {
+    var job = new ProjectStorageUpdateJob(connectionId, projectKey);
     var projectToSubscribeToNotifications = new ArrayList<ISonarLintProject>();
     projects.forEach(p -> {
       var changed = false;
       var projectConfig = SonarLintCorePlugin.loadConfig(p);
-      var oldServerId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
+      var oldConnectionId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
       var oldProjectKey = projectConfig.getProjectBinding().map(EclipseProjectBinding::projectKey).orElse(null);
-      if (!Objects.equals(serverId, oldServerId) || !Objects.equals(projectKey, oldProjectKey)) {
+      if (!Objects.equals(connectionId, oldConnectionId) || !Objects.equals(projectKey, oldProjectKey)) {
         // We can ignore path prefixes for now, they will be update by the ProjectStorageUpdateJob
-        projectConfig.setProjectBinding(new EclipseProjectBinding(serverId, projectKey, "", ""));
+        projectConfig.setProjectBinding(new EclipseProjectBinding(connectionId, projectKey, "", ""));
         changed = true;
       }
       if (changed) {
@@ -50,7 +50,7 @@ public class ProjectBindingProcess {
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
         SonarLintCorePlugin.clearIssueTracker(p);
-        AnalysisJobsScheduler.notifyServerViewAfterBindingChange(p, oldServerId);
+        AnalysisJobsScheduler.notifyServerViewAfterBindingChange(p, oldConnectionId);
         projectToSubscribeToNotifications.add(p);
       }
     });

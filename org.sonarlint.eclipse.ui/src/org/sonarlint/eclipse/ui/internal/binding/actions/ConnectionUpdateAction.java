@@ -25,13 +25,13 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.actions.SelectionProviderAction;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.ConnectionStorageUpdateJob;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
 public class ConnectionUpdateAction extends SelectionProviderAction {
-  private List<IConnectedEngineFacade> servers;
+  private List<ConnectionFacade> connections;
 
   public ConnectionUpdateAction(ISelectionProvider selectionProvider) {
     super(selectionProvider, Messages.actionUpdate);
@@ -44,14 +44,14 @@ public class ConnectionUpdateAction extends SelectionProviderAction {
       setEnabled(false);
       return;
     }
-    servers = new ArrayList<>();
+    connections = new ArrayList<>();
     var enabled = false;
     var iterator = sel.iterator();
     while (iterator.hasNext()) {
       var obj = iterator.next();
-      if (obj instanceof IConnectedEngineFacade) {
-        var server = (IConnectedEngineFacade) obj;
-        servers.add(server);
+      if (obj instanceof ConnectionFacade) {
+        var connection = (ConnectionFacade) obj;
+        connections.add(connection);
         enabled = true;
       } else {
         setEnabled(false);
@@ -63,25 +63,25 @@ public class ConnectionUpdateAction extends SelectionProviderAction {
 
   @Override
   public void run() {
-    // It is possible that the server is created and added to the server view on workbench
-    // startup. As a result, when the user switches to the server view, the server is
-    // selected, but the selectionChanged event is not called, which results in servers
-    // being null. When servers is null the server will not be deleted and the error log
+    // It is possible that the connection is created and added to the connection view on workbench
+    // startup. As a result, when the user switches to the connection view, the connection is
+    // selected, but the selectionChanged event is not called, which results in connections
+    // being null. When connections is null the connection will not be deleted and the error log
     // will have an IllegalArgumentException.
     //
-    // To handle the case where servers is null, the selectionChanged method is called
-    // to ensure servers will be populated.
-    if (servers == null) {
+    // To handle the case where connections is null, the selectionChanged method is called
+    // to ensure connections will be populated.
+    if (connections == null) {
       var sel = getStructuredSelection();
       if (sel != null) {
         selectionChanged(sel);
       }
     }
 
-    if (servers != null) {
-      for (final var server : servers) {
-        var job = new ConnectionStorageUpdateJob(server);
-        AnalysisJobsScheduler.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
+    if (connections != null) {
+      for (final var connection : connections) {
+        var job = new ConnectionStorageUpdateJob(connection);
+        AnalysisJobsScheduler.scheduleAnalysisOfOpenFilesInBoundProjects(job, connection, TriggerType.BINDING_CHANGE);
         job.schedule();
       }
     }

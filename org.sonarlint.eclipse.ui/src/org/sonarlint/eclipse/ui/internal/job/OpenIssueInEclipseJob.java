@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectsJob;
@@ -184,7 +184,7 @@ public class OpenIssueInEclipseJob extends Job {
     if (markerOpt.isEmpty()) {
       if (!recreatedMarkersAlready) {
         // Sync Taint Vulnerabilities and re-run this job
-        var job = new TaintIssuesUpdateAfterSyncJob((ConnectedEngineFacade) binding.getEngineFacade(), project,
+        var job = new TaintIssuesUpdateAfterSyncJob((ConnectionFacade) binding.getEngineFacade(), project,
           List.of(file));
         addJobChangeListener(job);
         job.schedule();

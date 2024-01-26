@@ -19,11 +19,11 @@
  */
 package org.sonarlint.eclipse.core.internal.engine.connected;
 
-public interface IConnectedEngineFacadeLifecycleListener {
+public interface IConnectionManagerListener {
 
-  void connectionAdded(IConnectedEngineFacade facade);
+  void connectionAdded(ConnectionFacade facade);
 
-  void connectionChanged(IConnectedEngineFacade facade);
+  void connectionChanged(ConnectionFacade facade);
 
-  void connectionRemoved(IConnectedEngineFacade facade);
+  void connectionRemoved(ConnectionFacade facade);
 }

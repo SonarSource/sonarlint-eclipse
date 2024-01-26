@@ -65,14 +65,13 @@ public class ProjectChangeBindingAction extends SelectionProviderAction {
 
   @Override
   public void run() {
-    // It is possible that the server is created and added to the server view on workbench
-    // startup. As a result, when the user switches to the server view, the server is
-    // selected, but the selectionChanged event is not called, which results in servers
-    // being null. When servers is null the server will not be deleted and the error log
-    // will have an IllegalArgumentException.
+    // It is possible that the project is created and added to the connection view on workbench
+    // startup. As a result, when the user switches to the connection view, the project is
+    // selected, but the selectionChanged event is not called, which results in selectedProjects
+    // being null. When selectedProjects is null the project will not be processed
     //
-    // To handle the case where servers is null, the selectionChanged method is called
-    // to ensure servers will be populated.
+    // To handle the case where selectedProjects is null, the selectionChanged method is called
+    // to ensure selectedProjects will be populated.
     if (selectedProjects == null) {
       var sel = getStructuredSelection();
       if (sel != null) {

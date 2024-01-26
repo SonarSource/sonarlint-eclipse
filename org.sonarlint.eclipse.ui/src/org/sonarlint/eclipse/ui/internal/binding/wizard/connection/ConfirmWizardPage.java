@@ -32,7 +32,7 @@ public class ConfirmWizardPage extends WizardPage {
   private final ServerConnectionModel model;
 
   public ConfirmWizardPage(ServerConnectionModel model) {
-    super("connection_confirm_page", "Configuration completed", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
+    super("connection_confirm_page", "Configuration completed", SonarLintImages.IMG_WIZBAN_NEW_CONNECTION);
     this.model = model;
   }
 

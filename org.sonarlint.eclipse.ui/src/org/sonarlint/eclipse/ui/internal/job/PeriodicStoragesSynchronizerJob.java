@@ -46,9 +46,9 @@ public class PeriodicStoragesSynchronizerJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-      var subMonitor = SubMonitor.convert(monitor, SonarLintCorePlugin.getServersManager().getServers().size());
+      var subMonitor = SubMonitor.convert(monitor, SonarLintCorePlugin.getConnectionManager().getConnections().size());
       subMonitor.setTaskName("Checking SonarLint Binding Updates");
-      for (final var connection : SonarLintCorePlugin.getServersManager().getServers()) {
+      for (final var connection : SonarLintCorePlugin.getConnectionManager().getConnections()) {
         subMonitor.subTask("Checking SonarLint Binding Updates for connection '" + connection.getId() + "'");
         var serverMonitor = subMonitor.newChild(1);
 

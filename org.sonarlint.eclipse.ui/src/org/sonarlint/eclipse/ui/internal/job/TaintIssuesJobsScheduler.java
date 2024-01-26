@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.ui.internal.job;
 
 import java.util.stream.Collectors;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
@@ -38,9 +38,9 @@ public class TaintIssuesJobsScheduler {
   public static void scheduleUpdateAfterPreferenceChange() {
     var openedFiles = PlatformUtils.collectOpenedFiles(null, f -> true);
     openedFiles.keySet().forEach(project -> {
-      var bindingOpt = SonarLintCorePlugin.getServersManager().resolveBinding(project);
+      var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(project);
       if (bindingOpt.isPresent()) {
-        var facade = (ConnectedEngineFacade)bindingOpt.get().getEngineFacade();
+        var facade = (ConnectionFacade)bindingOpt.get().getEngineFacade();
         var files = openedFiles.get(project).stream()
           .map(file -> file.getFile())
           .collect(Collectors.toList());

@@ -30,7 +30,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
@@ -52,7 +52,7 @@ public class UnbindProjectsCommand extends AbstractHandler {
             var projectConfig = SonarLintCorePlugin.loadConfig(p);
             projectConfig.getProjectBinding().ifPresent(b -> {
               var oldServerId = b.connectionId();
-              ConnectedEngineFacade.unbind(p);
+              ConnectionFacade.unbind(p);
               AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
               AnalysisJobsScheduler.notifyServerViewAfterBindingChange(p, oldServerId);
             });

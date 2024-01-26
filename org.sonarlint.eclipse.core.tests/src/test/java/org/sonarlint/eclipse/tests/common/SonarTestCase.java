@@ -200,8 +200,8 @@ public abstract class SonarTestCase {
 
     cleanWorkspace();
 
-    // Clear all registered servers to prevent auto-binding or auto-sync to create unexpected logs
-    SonarLintCorePlugin.getServersManager().getServers().forEach(s -> SonarLintCorePlugin.getServersManager().removeServer(s));
+    // Clear all registered connections to prevent auto-binding or auto-sync to create unexpected logs
+    SonarLintCorePlugin.getConnectionManager().getConnections().forEach(s -> SonarLintCorePlugin.getConnectionManager().removeConnection(s));
   }
 
   @AfterClass
@@ -252,7 +252,7 @@ public abstract class SonarTestCase {
     JobHelpers.waitForJobsToComplete();
     return addedProjectList.get(0);
   }
-  
+
   /** Some tests are not able to run on macOS due to issues with Node.js and Eclipse running in different contexts */
   protected final void ignoreMacOS() {
     var isMacOsOpt = NodeJsManager.isMac();

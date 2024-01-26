@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.ui.internal.binding.assist;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 
 public class AssistCreatingAutomaticConnectionJob extends AbstractAssistCreatingConnectionJob {
@@ -34,10 +34,10 @@ public class AssistCreatingAutomaticConnectionJob extends AbstractAssistCreating
 
   @Override
   @Nullable
-  protected IConnectedEngineFacade createConnection(ServerConnectionModel model) {
-    var connection = SonarLintCorePlugin.getServersManager().create(model.getConnectionId(), model.getServerUrl(),
+  protected ConnectionFacade createConnection(ServerConnectionModel model) {
+    var connection = SonarLintCorePlugin.getConnectionManager().create(model.getConnectionId(), model.getServerUrl(),
       model.getOrganization(), tokenValue, null, model.getNotificationsDisabled());
-    SonarLintCorePlugin.getServersManager().addServer(connection, tokenValue, model.getPassword());
+    SonarLintCorePlugin.getConnectionManager().addConnection(connection, tokenValue, model.getPassword());
     return connection;
   }
 }

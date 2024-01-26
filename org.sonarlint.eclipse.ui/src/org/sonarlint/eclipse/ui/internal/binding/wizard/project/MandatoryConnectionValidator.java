@@ -22,18 +22,18 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.project;
 import org.eclipse.core.databinding.validation.IValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.IStatus;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 
-public class MandatoryServerValidator implements IValidator {
+public class MandatoryConnectionValidator implements IValidator {
 
   private final String msg;
 
-  public MandatoryServerValidator(String msg) {
+  public MandatoryConnectionValidator(String msg) {
     this.msg = msg;
   }
 
   public IStatus validate(Object value) {
-    if (!(value instanceof ConnectedEngineFacade)) {
+    if (!(value instanceof ConnectionFacade)) {
       return ValidationStatus.error(msg);
     }
     return ValidationStatus.ok();

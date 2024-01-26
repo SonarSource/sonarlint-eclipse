@@ -26,7 +26,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -43,9 +43,9 @@ public class TaintIssuesUpdateOnFileOpenedJob extends Job {
   private final ProjectBinding projectBinding;
   private final Collection<ISonarLintIssuable> issuables;
   private final ISonarLintProject project;
-  private final ConnectedEngineFacade engineFacade;
+  private final ConnectionFacade engineFacade;
 
-  public TaintIssuesUpdateOnFileOpenedJob(ConnectedEngineFacade engineFacade,
+  public TaintIssuesUpdateOnFileOpenedJob(ConnectionFacade engineFacade,
     ISonarLintProject project,
     Collection<ISonarLintIssuable> issuables, ProjectBinding projectBinding) {
     super("Fetch server taint issues for " + project.getName());
@@ -86,7 +86,7 @@ public class TaintIssuesUpdateOnFileOpenedJob extends Job {
     }
   }
 
-  public static void fetchServerTaintIssues(ConnectedEngineFacade engineFacade,
+  public static void fetchServerTaintIssues(ConnectionFacade engineFacade,
     ProjectBinding projectBinding,
     String branchName,
     ISonarLintFile file, IProgressMonitor monitor) {

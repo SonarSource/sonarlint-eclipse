@@ -24,7 +24,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.progress.UIJob;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
@@ -71,5 +71,5 @@ public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
   }
   
   @Nullable
-  protected abstract IConnectedEngineFacade createConnection(ServerConnectionModel model);
+  protected abstract ConnectionFacade createConnection(ServerConnectionModel model);
 }

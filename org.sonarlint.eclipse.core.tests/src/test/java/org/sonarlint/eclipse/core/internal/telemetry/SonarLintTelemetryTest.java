@@ -48,7 +48,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager.PREF_SERVERS;
+import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.PREF_CONNECTIONS;
 
 public class SonarLintTelemetryTest extends SonarTestCase {
   private SonarLintTelemetry telemetry;
@@ -72,9 +72,9 @@ public class SonarLintTelemetryTest extends SonarTestCase {
     this.telemetry = createTelemetry();
 
     project.open(MONITOR);
-    ROOT.node(PREF_SERVERS).removeNode();
-    SonarLintCorePlugin.getServersManager().stop();
-    SonarLintCorePlugin.getServersManager().init();
+    ROOT.node(PREF_CONNECTIONS).removeNode();
+    SonarLintCorePlugin.getConnectionManager().stop();
+    SonarLintCorePlugin.getConnectionManager().init();
   }
 
   private SonarLintTelemetry createTelemetry() {
@@ -192,7 +192,7 @@ public class SonarLintTelemetryTest extends SonarTestCase {
 
   @Test
   public void should_not_report_sonar_cloud_usage_when_project_is_bound_to_localhost() {
-    addServer("localhost", "http://localhost:9000");
+    addConnection("localhost", "http://localhost:9000");
     bindImportedProjectToServer("localhost");
 
     assertThat(SonarLintTelemetry.isAnyOpenProjectBoundToSonarCloud()).isFalse();
@@ -200,14 +200,14 @@ public class SonarLintTelemetryTest extends SonarTestCase {
 
   @Test
   public void should_not_report_sonar_cloud_usage_when_sonar_cloud_server_connected_but_project_is_not_bound() {
-    addServer("sonarcloud", "https://sonarcloud.io");
+    addConnection("sonarcloud", "https://sonarcloud.io");
 
     assertThat(SonarLintTelemetry.isAnyOpenProjectBoundToSonarCloud()).isFalse();
   }
 
   @Test
   public void should_report_sonar_cloud_usage_when_project_is_bound_to_sonar_cloud() {
-    addServer("sonarcloud", "https://sonarcloud.io");
+    addConnection("sonarcloud", "https://sonarcloud.io");
     bindImportedProjectToServer("sonarcloud");
 
     assertThat(SonarLintTelemetry.isAnyOpenProjectBoundToSonarCloud()).isTrue();
@@ -222,7 +222,7 @@ public class SonarLintTelemetryTest extends SonarTestCase {
 
   @Test
   public void should_report_connected_mode_usage_when_project_is_bound() {
-    addServer("localhost", "http://localhost:9000");
+    addConnection("localhost", "http://localhost:9000");
     bindImportedProjectToServer("localhost");
 
     assertThat(SonarLintTelemetry.isAnyOpenProjectBound()).isTrue();
@@ -230,7 +230,7 @@ public class SonarLintTelemetryTest extends SonarTestCase {
 
   @Test
   public void should_not_report_any_connected_usage_when_bound_project_is_closed() throws CoreException {
-    addServer("sonarcloud", "https://sonarcloud.io");
+    addConnection("sonarcloud", "https://sonarcloud.io");
     bindImportedProjectToServer("sonarcloud");
     project.close(MONITOR);
 
@@ -270,9 +270,9 @@ public class SonarLintTelemetryTest extends SonarTestCase {
     assertThat(defaultDisabledRules).isEmpty();
   }
 
-  private void addServer(String id, String url) {
-    var server = SonarLintCorePlugin.getServersManager().create(id, url, "", "", "", false);
-    SonarLintCorePlugin.getServersManager().addServer(server, "login", "pwd");
+  private void addConnection(String id, String url) {
+    var connection = SonarLintCorePlugin.getConnectionManager().create(id, url, "", "", "", false);
+    SonarLintCorePlugin.getConnectionManager().addConnection(connection, "login", "pwd");
   }
 
   private void bindImportedProjectToServer(String url) {

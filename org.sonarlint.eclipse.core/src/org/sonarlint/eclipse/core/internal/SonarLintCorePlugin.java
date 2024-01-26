@@ -33,7 +33,7 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.StandaloneEngineFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.AbstractSonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
@@ -69,7 +69,7 @@ public class SonarLintCorePlugin extends Plugin {
 
   private final AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
   private final SonarLintTelemetry telemetry = new SonarLintTelemetry();
-  private ConnectedEngineFacadeManager serversManager = null;
+  private ConnectionManager connectionsManager = null;
 
   private NodeJsManager nodeJsManager;
 
@@ -142,8 +142,8 @@ public class SonarLintCorePlugin extends Plugin {
 
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(issueTrackerRegistry);
     issueTrackerRegistry.shutdown();
-    if (serversManager != null) {
-      serversManager.stop();
+    if (connectionsManager != null) {
+      connectionsManager.stop();
     }
     SonarLintExtensionTracker.close();
     AbstractSonarLintExtensionTracker.closeTracker();
@@ -183,12 +183,12 @@ public class SonarLintCorePlugin extends Plugin {
     return getInstance().nodeJsManager;
   }
 
-  public static synchronized ConnectedEngineFacadeManager getServersManager() {
-    if (getInstance().serversManager == null) {
-      getInstance().serversManager = new ConnectedEngineFacadeManager();
-      getInstance().serversManager.init();
+  public static synchronized ConnectionManager getConnectionManager() {
+    if (getInstance().connectionsManager == null) {
+      getInstance().connectionsManager = new ConnectionManager();
+      getInstance().connectionsManager.init();
     }
-    return getInstance().serversManager;
+    return getInstance().connectionsManager;
   }
 
   public static SonarLintProjectConfiguration loadConfig(ISonarLintProject project) {

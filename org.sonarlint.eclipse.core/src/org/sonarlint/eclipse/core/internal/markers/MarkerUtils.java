@@ -181,7 +181,7 @@ public final class MarkerUtils {
       return FindingMatchingStatus.NOT_MATCHED;
     }
     
-    var bindingOptional = SonarLintCorePlugin.getServersManager().resolveBinding(slFile.getProject());
+    var bindingOptional = SonarLintCorePlugin.getConnectionManager().resolveBinding(slFile.getProject());
     if (bindingOptional.isEmpty() || markerServerKey == null) {
       return FindingMatchingStatus.NOT_MATCHED;
     }

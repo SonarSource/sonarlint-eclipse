@@ -73,7 +73,7 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
       return Optional.empty();
     }
 
-    return SonarLintCorePlugin.getServersManager().resolveBinding(slFile.getProject());
+    return SonarLintCorePlugin.getConnectionManager().resolveBinding(slFile.getProject());
   }
 
   @Nullable

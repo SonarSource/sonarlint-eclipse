@@ -21,6 +21,6 @@ package org.sonarlint.eclipse.core.internal.engine.connected;
 
 public interface IConnectedEngineFacadeListener {
 
-  void stateChanged(IConnectedEngineFacade facade);
+  void stateChanged(ConnectionFacade facade);
 
 }

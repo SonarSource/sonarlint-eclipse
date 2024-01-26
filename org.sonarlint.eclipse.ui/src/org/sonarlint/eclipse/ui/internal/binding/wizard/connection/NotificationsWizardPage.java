@@ -46,7 +46,7 @@ public class NotificationsWizardPage extends WizardPage {
   private Composite container;
 
   public NotificationsWizardPage(ServerConnectionModel model) {
-    super("connection_notification_page", "Configure Notifications", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
+    super("connection_notification_page", "Configure Notifications", SonarLintImages.IMG_WIZBAN_NEW_CONNECTION);
     this.model = model;
   }
 

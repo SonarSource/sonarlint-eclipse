@@ -69,7 +69,7 @@ import org.sonarsource.sonarlint.core.serverconnection.issues.ServerTaintIssue;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-public class ConnectedEngineFacade implements IConnectedEngineFacade {
+public class ConnectionFacade {
 
   public static final String OLD_SONARCLOUD_URL = "https://sonarqube.com";
 
@@ -85,7 +85,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
   // Cache the project list to avoid dead lock
   private final Map<String, ServerProject> allProjectsByKey = new ConcurrentHashMap<>();
 
-  ConnectedEngineFacade(String id) {
+  ConnectionFacade(String id) {
     this.id = id;
   }
 
@@ -144,56 +144,50 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     notifyAllListenersStateChanged();
   }
 
-  @Override
   public void notifyAllListenersStateChanged() {
     for (var listener : facadeListeners) {
       listener.stateChanged(this);
     }
   }
 
-  @Override
   public String getId() {
     return id;
   }
 
-  @Override
   public String getHost() {
     return host;
   }
 
-  public ConnectedEngineFacade setHost(String host) {
+  public ConnectionFacade setHost(String host) {
     this.host = host;
     return this;
   }
 
   @Nullable
-  @Override
   public String getOrganization() {
     return organization;
   }
 
-  public ConnectedEngineFacade setOrganization(@Nullable String organization) {
+  public ConnectionFacade setOrganization(@Nullable String organization) {
     this.organization = organization;
     return this;
   }
 
-  @Override
   public boolean hasAuth() {
     return hasAuth;
   }
 
-  public ConnectedEngineFacade setHasAuth(boolean hasAuth) {
+  public ConnectionFacade setHasAuth(boolean hasAuth) {
     this.hasAuth = hasAuth;
     return this;
   }
 
-  @Override
   public synchronized void delete() {
     doStop();
     for (var sonarLintProject : getBoundProjects()) {
       unbind(sonarLintProject);
     }
-    SonarLintCorePlugin.getServersManager().removeServer(this);
+    SonarLintCorePlugin.getConnectionManager().removeConnection(this);
   }
 
   public static void unbind(ISonarLintProject project) {
@@ -207,17 +201,15 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     SonarLintCorePlugin.clearIssueTracker(project);
   }
 
-  @Override
   public void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsDisabled) {
     this.host = url;
     this.organization = organization;
     this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
     this.notificationsDisabled = notificationsDisabled;
-    SonarLintCorePlugin.getServersManager().updateConnection(this, username, password);
+    SonarLintCorePlugin.getConnectionManager().updateConnection(this, username, password);
   }
 
   @Nullable
-  @Override
   public AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor) {
     return withEngine(engine -> {
       var analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
@@ -237,7 +229,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     }
   }
 
-  @Override
   public void updateProjectList(IProgressMonitor monitor) {
     doWithEngine(engine -> reloadProjects(engine, monitor));
   }
@@ -247,7 +238,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
       .filter(ISonarLintProject::isOpen);
   }
 
-  @Override
   public Set<String> getBoundProjectKeys() {
     return getOpenedProjects()
       .map(project -> SonarLintCorePlugin.loadConfig(project).getProjectBinding())
@@ -257,7 +247,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
       .collect(Collectors.toSet());
   }
 
-  @Override
   public List<ISonarLintProject> getBoundProjects() {
     return getOpenedProjects()
       .filter(p -> {
@@ -287,7 +276,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
       .collect(toList());
   }
 
-  @Override
   public List<ISonarLintProject> getBoundProjects(String projectKey) {
     return ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
@@ -297,7 +285,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
       }).collect(toList());
   }
 
-  @Override
   public void updateProjectStorage(String projectKey, IProgressMonitor monitor) {
     doWithEngine(engine -> {
       engine.updateProject(createEndpointParams(), SonarLintBackendService.get().getBackend().getHttpClient(getId()), projectKey,
@@ -326,7 +313,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     return createEndpointParams(getHost(), getOrganization());
   }
 
-  @Override
   public TextSearchIndex<ServerProject> computeProjectIndex() {
     var index = new TextSearchIndex<ServerProject>();
     for (ServerProject project : allProjectsByKey.values()) {
@@ -335,32 +321,28 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     return index;
   }
 
-  @Override
   public Optional<ServerProject> getCachedRemoteProject(String projectKey) {
     return Optional.ofNullable(allProjectsByKey.get(projectKey));
   }
 
-  @Override
   public List<ISonarLintFile> getServerFileExclusions(ProjectBinding binding, Collection<ISonarLintFile> files, Predicate<ISonarLintFile> testFilePredicate) {
     return withEngine(engine -> engine.getExcludedFiles(binding, files, ISonarLintFile::getProjectRelativePath, testFilePredicate)).orElse(emptyList());
   }
 
-  @Override
   public void addConnectedEngineListener(IConnectedEngineFacadeListener listener) {
     facadeListeners.add(listener);
   }
 
-  @Override
   public void removeConnectedEngineListener(IConnectedEngineFacadeListener listener) {
     facadeListeners.remove(listener);
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof ConnectedEngineFacade)) {
+    if (!(obj instanceof ConnectionFacade)) {
       return false;
     }
-    return ((ConnectedEngineFacade) obj).getId().equals(this.getId());
+    return ((ConnectionFacade) obj).getId().equals(this.getId());
   }
 
   @Override
@@ -368,17 +350,15 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     return getId().hashCode();
   }
 
-  @Override
   public boolean isSonarCloud() {
     return SonarLintUtils.getSonarCloudUrl().equals(this.host);
   }
 
-  @Override
   public boolean areNotificationsDisabled() {
     return notificationsDisabled;
   }
 
-  public ConnectedEngineFacade setNotificationsDisabled(boolean value) {
+  public ConnectionFacade setNotificationsDisabled(boolean value) {
     this.notificationsDisabled = value;
     return this;
   }
@@ -419,13 +399,11 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     return withEngine(engine -> engine.calculatePathPrefixes(projectKey, ideFilePaths)).orElse(new ProjectBinding(projectKey, "", ""));
   }
 
-  @Override
   public ProjectBranches getServerBranches(String projectKey) {
     return withEngine(engine -> engine.getServerBranches(projectKey))
       .orElseThrow(() -> new IllegalStateException("The connected engine could not be started"));
   }
 
-  @Override
   public void manualSync(Set<String> projectKeysToUpdate, IProgressMonitor monitor) {
     doWithEngine(engine -> {
       sync(projectKeysToUpdate, monitor, engine);
@@ -451,7 +429,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade {
     updateProjectList(monitor);
   }
 
-  @Override
   public void scheduledSync(Set<String> projectKeys, IProgressMonitor monitor) {
     doWithEngine(engine -> sync(projectKeys, monitor, engine));
   }

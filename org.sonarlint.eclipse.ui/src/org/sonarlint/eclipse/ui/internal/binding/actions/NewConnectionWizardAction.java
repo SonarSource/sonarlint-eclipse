@@ -26,18 +26,18 @@ import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 
 /**
- * An action to invoke the new server and server configuration wizard.
+ * An action to invoke the new connection and connection configuration wizard.
  */
 public class NewConnectionWizardAction extends Action {
 
   /**
-   * New server action.
+   * New connection action.
    */
   public NewConnectionWizardAction() {
     super();
 
     setImageDescriptor(SonarLintImages.WIZ_NEW_SERVER);
-    setText(Messages.actionNewServer);
+    setText(Messages.actionNewConnection);
   }
 
   @Override

@@ -39,7 +39,7 @@ import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
@@ -95,7 +95,7 @@ public class SonarLintMarkerUpdater {
   }
 
   public static void refreshMarkersForTaint(ISonarLintFile currentFile, String branchName,
-    ConnectedEngineFacade facade, final String issuePeriodPreference, final String issueFilterPreference) {
+    ConnectionFacade facade, final String issuePeriodPreference, final String issueFilterPreference) {
     deleteTaintMarkers(currentFile);
 
     var project = currentFile.getProject();

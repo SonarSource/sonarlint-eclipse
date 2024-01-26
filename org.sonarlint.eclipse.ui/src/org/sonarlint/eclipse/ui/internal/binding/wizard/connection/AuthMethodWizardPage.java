@@ -39,7 +39,7 @@ public class AuthMethodWizardPage extends WizardPage {
   private final ServerConnectionModel model;
 
   public AuthMethodWizardPage(ServerConnectionModel model) {
-    super("auth_method_page", "Choose authentication method", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
+    super("auth_method_page", "Choose authentication method", SonarLintImages.IMG_WIZBAN_NEW_CONNECTION);
     this.model = model;
   }
 
