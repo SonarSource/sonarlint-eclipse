@@ -168,7 +168,7 @@ public final class MarkerUtils {
 
   /**
    *  Get the matching status of a specific markers' issue by id
-   *  
+   *
    *  @param markerId for the marker <-> project connection
    *  @param markerServerKey marker information from the connection, null if not on server
    *  @return specific matching status of a markers' issue
@@ -180,7 +180,7 @@ public final class MarkerUtils {
         + "' was not possible due to the file not being adaptable.");
       return FindingMatchingStatus.NOT_MATCHED;
     }
-    
+
     var bindingOptional = SonarLintCorePlugin.getConnectionManager().resolveBinding(slFile.getProject());
     if (bindingOptional.isEmpty() || markerServerKey == null) {
       return FindingMatchingStatus.NOT_MATCHED;

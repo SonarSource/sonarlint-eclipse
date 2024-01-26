@@ -29,17 +29,17 @@ public class PopupUtils {
   private PopupUtils() {
     // utility class
   }
-  
+
   private static Set<Class<? extends AbstractNotificationPopup>> popupsCurrentlyDisplayed = Collections.synchronizedSet(new HashSet<>());
-  
+
   public static boolean popupCurrentlyDisplayed(Class<? extends AbstractNotificationPopup> popupClass) {
     return popupsCurrentlyDisplayed.contains(popupClass);
   }
-  
+
   public static void addCurrentlyDisplayedPopup(Class<? extends AbstractNotificationPopup> popupClass) {
     popupsCurrentlyDisplayed.add(popupClass);
   }
-  
+
   public static void removeCurrentlyDisplayedPopup(Class<? extends AbstractNotificationPopup> popupClass) {
     popupsCurrentlyDisplayed.remove(popupClass);
   }

@@ -42,19 +42,19 @@ import org.sonarsource.sonarlint.core.commons.Language;
 public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
   private final List<ISonarLintProject> projects;
   private final List<Language> languages;
-  
+
   public LanguageFromConnectedModePopup(List<ISonarLintProject> projects, List<Language> languages) {
     this.projects = projects;
     this.languages = languages;
   }
-  
+
   @Override
   protected String getMessage() {
     if (languages.size() == 1) {
       return "You tried to analyze a " + languages.get(0).getLabel()
         + " file. This language analysis is only available in Connected Mode.";
     }
-    
+
     var languagesList = String.join(" / ", languages.stream().map(l -> l.getLabel()).collect(Collectors.toList()));
     return "You tried to analyze " + languagesList
       + " files. These language analyses are only available in Connected Mode.";
@@ -63,22 +63,22 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
   @Override
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
-    
+
     addLink("Learn more",
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.RULES, getShell().getDisplay()));
-    
+
     if (SonarLintCorePlugin.getConnectionManager().checkForSonarCloud()) {
       addLink("Bind to SonarCloud", e -> ProjectBindingWizard.createDialog(getParentShell(), projects));
     } else {
       addLink("Try SonarCloud for free",
         e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.SONARCLOUD_SIGNUP_LINK, getShell().getDisplay()));
     }
-    
+
     addLink("Don't show again", e -> {
       SonarLintGlobalConfiguration.setIgnoreMissingFeatureNotifications();
       close();
     });
-    
+
     composite.getShell().addDisposeListener(e -> PopupUtils.removeCurrentlyDisplayedPopup(getClass()));
   }
 
@@ -91,22 +91,22 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
   protected Image getPopupShellImage(int maximumHeight) {
     return SonarLintImages.BALLOON_IMG;
   }
-  
+
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
   public static void displayPopupIfNotIgnored(List<ISonarLintProject> projects, List<Language> languages) {
     if (languages.isEmpty() || PopupUtils.popupCurrentlyDisplayed(LanguageFromConnectedModePopup.class)
       || SonarLintGlobalConfiguration.ignoreMissingFeatureNotifications() ) {
       return;
     }
-    
+
     Display.getDefault().asyncExec(() -> {
       PopupUtils.addCurrentlyDisplayedPopup(LanguageFromConnectedModePopup.class);
-      
+
       // Because we can analyze multiple projects at the same time and maybe some of them are already bound, we have to
       // filter out the ones already bound.
       var projectsNotBound = projects.stream()
         .filter(project -> !SonarLintUtils.isBoundToConnection(project)).collect(Collectors.toList());
-      
+
       var popup = new LanguageFromConnectedModePopup(projectsNotBound, languages);
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);

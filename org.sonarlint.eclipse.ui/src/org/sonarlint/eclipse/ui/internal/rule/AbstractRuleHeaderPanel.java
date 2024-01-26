@@ -32,9 +32,9 @@ public abstract class AbstractRuleHeaderPanel extends Composite {
     super(parent, SWT.NONE);
     setLayout(new GridLayout(numColumns, false));
   }
-  
+
   public abstract void updateRule(AbstractRuleDto ruleInformation);
-  
+
   protected static String clean(@Nullable String txt) {
     return txt == null
       ? ""

@@ -51,15 +51,15 @@ public class JobHelpers {
 
     /*
      * First, make sure refresh job gets all resource change events
-     * 
+     *
      * Resource change events are delivered after WorkspaceJob#runInWorkspace returns
      * and during IWorkspace#run. Each change notification is delivered by
      * only one thread/job, so we make sure no other workspaceJob is running then
      * call IWorkspace#run from this thread.
-     * 
+     *
      * Unfortunately, this does not catch other jobs and threads that call IWorkspace#run
      * so we have to hard-code workarounds
-     * 
+     *
      * See http://www.eclipse.org/articles/Article-Resource-deltas/resource-deltas.html
      */
     var workspace = ResourcesPlugin.getWorkspace();
@@ -67,12 +67,13 @@ public class JobHelpers {
     jobManager.suspend();
     try {
       var jobs = jobManager.find(null);
-      for (var i = 0; i < jobs.length; i++) {
-        if (jobs[i] instanceof WorkspaceJob || jobs[i].getClass().getName().endsWith("JREUpdateJob")) {
-          jobs[i].join();
+      for (Job job : jobs) {
+        if (job instanceof WorkspaceJob || job.getClass().getName().endsWith("JREUpdateJob")) {
+          job.join();
         }
       }
       workspace.run(new IWorkspaceRunnable() {
+        @Override
         public void run(IProgressMonitor monitor) {
         }
       }, workspace.getRoot(), 0, monitor);
@@ -117,6 +118,7 @@ public class JobHelpers {
 
     public static final Predicate<Job> INSTANCE = new LaunchJobMatcher();
 
+    @Override
     public boolean test(Job job) {
       return job.getClass().getName().matches("(.*\\.DebugUIPlugin.*)");
     }
@@ -127,6 +129,7 @@ public class JobHelpers {
 
     public static final Predicate<Job> INSTANCE = new BuildJobMatcher();
 
+    @Override
     public boolean test(Job job) {
       return (job instanceof WorkspaceJob) || job.getClass().getName().matches("(.*\\.AutoBuild.*)")
         || job.getClass().getName().endsWith("JREUpdateJob");

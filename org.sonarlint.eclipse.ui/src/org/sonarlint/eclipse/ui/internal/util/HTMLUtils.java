@@ -41,7 +41,7 @@ public final class HTMLUtils {
 
   /**
    *  Parse HTML into native elements and only fallback on {@link SonarLintWebView} for non-parseable elements
-   *  
+   *
    *  @param html to be parsed
    *  @param parent to add the elements to
    *  @param languageKey required for code snippet (for syntax highlighting)

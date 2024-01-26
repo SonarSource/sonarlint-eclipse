@@ -64,7 +64,7 @@ public class MarkAsResolvedDialog extends Dialog {
   protected Control createDialogArea(Composite parent) {
     return createDialogAreaInternally((Composite) super.createDialogArea(parent));
   }
-  
+
   protected Composite createDialogAreaInternally(Composite container) {
     var group = new Group(container, SWT.NONE);
     group.setLayout(new GridLayout(1, true));

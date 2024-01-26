@@ -24,7 +24,7 @@ import java.util.List;
 
 public class AnalysisListenerManager {
 
-  private List<AnalysisListener> listeners = new ArrayList<>();
+  private final List<AnalysisListener> listeners = new ArrayList<>();
 
   public void addListener(AnalysisListener listener) {
     listeners.add(listener);

@@ -35,32 +35,32 @@ import org.sonarsource.sonarlint.core.commons.TextRange;
  *  get with the markers we already have on the project files and not go via the
  *  {@link org.sonarlint.eclipse.core.internal.tracking.TrackedIssue} or
  *  {@link org.sonarsource.sonarlint.core.serverconnection.issues.ServerTaintIssue} objects.
- *  
+ *
  *  Sometimes issues might not be found because of the workspace preferences regarding new code / issue filter!
  */
 public class MarkerMatcher {
   private MarkerMatcher() {
     // utility class
   }
-  
+
   public static Optional<IMarker> tryMatchIssueWithOnTheFlyMarker(ShowIssueParams params,
     ISonarLintFile file) throws CoreException {
     return tryMatchIssueWithMarker(params, file, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
   }
-  
+
   public static Optional<IMarker> tryMatchIssueWithReportMarker(ShowIssueParams params,
     ISonarLintFile file) throws CoreException {
     return tryMatchIssueWithMarker(params, file, SonarLintCorePlugin.MARKER_REPORT_ID);
   }
-  
+
   public static Optional<IMarker> tryMatchIssueWithTaintMarker(ShowIssueParams params,
     ISonarLintFile file) throws CoreException {
     return tryMatchIssueWithMarker(params, file, SonarLintCorePlugin.MARKER_TAINT_ID);
   }
-  
+
   /**
    *  Tries to match {@link ShowIssueParams} with any marker of a specific file
-   *  
+   *
    *  @param params when using "Open in IDE" in SonarQube
    *  @param file the local file corresponding to the issue
    *  @param markerType the type of markers we take into account
@@ -72,27 +72,27 @@ public class MarkerMatcher {
     if (markers.length == 0) {
       return Optional.empty();
     }
-    
+
     var textRangeDto = params.getTextRange();
     var position = MarkerUtils.getPosition(file.getDocument(),
       new TextRange(textRangeDto.getStartLine(), textRangeDto.getStartLineOffset(), textRangeDto.getEndLine(),
         textRangeDto.getEndLineOffset()));
-    
+
     for (var marker : markers) {
       if (issueMatchesWithMarker(params, marker, position)) {
         return Optional.of(marker);
       }
     }
-    
+
     return Optional.empty();
   }
-  
+
   /**
    *  Check if an issue matches a specific marker
-   *  
+   *
    *  INFO: We don't match the creation date as the information is provided completely different on ShowIssueParams,
    *  ServerTaintIssue and TrackedIssue.
-   *  
+   *
    *  @param params when using "Open in IDE" in SonarQube
    *  @param marker the marker in the local file
    *  @param position position inside the file
@@ -109,7 +109,7 @@ public class MarkerMatcher {
         && position.getOffset() == marker.getAttribute(IMarker.CHAR_START, -1)
         && position.getOffset() + position.getLength() == marker.getAttribute(IMarker.CHAR_END, -1);
     }
-    
+
     return result;
   }
 }

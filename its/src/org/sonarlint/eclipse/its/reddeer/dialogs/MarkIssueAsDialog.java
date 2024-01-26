@@ -30,7 +30,7 @@ public class MarkIssueAsDialog extends DefaultShell {
   public MarkIssueAsDialog() {
     super("Mark Issue as Resolved on SonarQube");
   }
-  
+
   public void selectWontFix() {
     new RadioButton(this).click();
   }
@@ -38,16 +38,16 @@ public class MarkIssueAsDialog extends DefaultShell {
   public void selectFalsePositive() {
     new RadioButton(this, 1).click();
   }
-  
+
   public void setComment(String comment) {
     new DefaultText(this).setText(comment);
   }
 
   public void ok() {
     new MarkAsResolvedButton(this).click();
-    
+
   }
-  
+
   private static class MarkAsResolvedButton extends PredefinedButton {
     public MarkAsResolvedButton(ReferencedComposite referencedComposite) {
       super(referencedComposite, 0, "Mark as resolved", SWT.PUSH);

@@ -24,11 +24,11 @@ import org.sonarlint.eclipse.its.reddeer.views.SonarLintTaintVulnerabilitiesView
 
 public class SonarLintTaintVulnerabilitiesViewOpened implements WaitCondition {
 private final SonarLintTaintVulnerabilitiesView sonarLintTaintVulnerabilitiesView;
-  
+
   public SonarLintTaintVulnerabilitiesViewOpened(SonarLintTaintVulnerabilitiesView sonarLintTaintVulnerabilitiesView) {
     this.sonarLintTaintVulnerabilitiesView = sonarLintTaintVulnerabilitiesView;
   }
-  
+
   @Override
   public boolean test() {
     return sonarLintTaintVulnerabilitiesView.isOpen();

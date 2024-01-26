@@ -55,12 +55,12 @@ public final class PlatformUtils {
 
   private PlatformUtils() {
   }
-  
+
   /** Show a specific view (open it if not already in the workspace, otherwise bring to front) */
   public static IViewPart showView(String id) throws PartInitException {
     return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(id);
   }
-  
+
   /** Show a specific preference dialog */
   public static PreferenceDialog showPreferenceDialog(String id) {
     return PreferencesUtil.createPreferenceDialogOn(Display.getCurrent().getActiveShell(), id, null, null);
@@ -77,7 +77,7 @@ public final class PlatformUtils {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
   }
-  
+
   /**
    *  Opens editor for given marker.
    */
@@ -87,7 +87,7 @@ public final class PlatformUtils {
       IDE.openEditor(page, marker);
     } catch (PartInitException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
-    } 
+    }
   }
 
   /**

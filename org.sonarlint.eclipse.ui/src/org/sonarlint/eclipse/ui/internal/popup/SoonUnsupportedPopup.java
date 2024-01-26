@@ -30,7 +30,7 @@ import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 public class SoonUnsupportedPopup extends AbstractSonarLintPopup {
   private final String doNotShowAgainId;
   private final String message;
-  
+
   public SoonUnsupportedPopup(String doNotShowAgainId, String message) {
     this.doNotShowAgainId = doNotShowAgainId;
     this.message = message;
@@ -40,7 +40,7 @@ public class SoonUnsupportedPopup extends AbstractSonarLintPopup {
   protected String getMessage() {
     return message;
   }
-  
+
   @Override
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
@@ -51,7 +51,7 @@ public class SoonUnsupportedPopup extends AbstractSonarLintPopup {
       close();
     });
   }
-  
+
   @Override
   protected String getPopupShellTitle() {
     return "SonarQube - Soon unsupported version";

@@ -54,11 +54,11 @@ public class MarkerPropertyTester extends PropertyTester {
     }
     return false;
   }
-  
+
   private static boolean isResolved(IMarker marker) {
     return marker.getAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, false);
   }
-  
+
   private static boolean canBeResolved(IMarker marker) {
     return marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null) != null
       || marker.getAttribute(MarkerUtils.SONAR_MARKER_ANTICIPATED_ISSUE_ATTR, false);

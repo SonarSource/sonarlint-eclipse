@@ -51,7 +51,7 @@ public class RulesConfigurationPartTest {
   private static RuleKey mockRuleKey(String key) {
     return new RuleKey("squid", key);
   }
-  
+
   private RuleDefinitionDto mockRuleDetails(RuleKey ruleKey, boolean activeByDefault) {
     var ruleDetails = mock(RuleDefinitionDto.class);
     when(ruleDetails.getKey()).thenReturn(ruleKey.toString());

@@ -57,17 +57,17 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
     if (issuesPerFile.entrySet().isEmpty()) {
       return;
     }
-    
+
     // To access the preference service only once and not per issue
     var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
-    
+
     // To access the preference service only once and not per issue
     var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
-    
+
     // If the project connection offers changing the status on anticipated issues (SonarQube 10.2+) we can enable the
     // context menu option on the markers.
     var viableForStatusChange = SonarLintUtils.checkProjectSupportsAnticipatedStatusChange(getProject());
-    
+
     for (var entry : issuesPerFile.entrySet()) {
       var slFile = entry.getKey();
       var documentOrNull = docPerFile.get(slFile);

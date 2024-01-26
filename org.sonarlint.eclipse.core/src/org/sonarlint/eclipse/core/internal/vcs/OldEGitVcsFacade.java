@@ -53,6 +53,7 @@ public class OldEGitVcsFacade extends AbstractEGitVcsFacade {
     }
   }
 
+  @Override
   Optional<Repository> getRepo(IResource resource) {
     var mapping = RepositoryMapping.getMapping(resource);
     return Optional.ofNullable(mapping).map(RepositoryMapping::getRepository);

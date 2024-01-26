@@ -59,17 +59,17 @@ public class ProjectIssueTrackerTest {
   @Before
   public void setUp() throws IOException, URISyntaxException {
     var project = mock(ISonarLintProject.class);
-    
+
     // In order for "ProjectIssueTracker.trackWithServerIssues(...)" to work we have to mock a project resource
     var dummyResource = mock(File.class);
     when(dummyResource.getLocationURI()).thenReturn(new URI(DUMMY_FILE1_PATH));
     when(project.getResource()).thenReturn(dummyResource);
-    
+
     store = new PersistentLocalIssueStore(temporaryFolder.newFolder().toPath(), project);
     underTest = new ProjectIssueTracker(project, store);
     file1 = mock(ISonarLintFile.class);
     when(file1.getProjectRelativePath()).thenReturn(DUMMY_FILE1_PATH);
-    
+
     SonarLintLogger.get().addLogListener(new LogListener() {
       @Override
       public void info(String msg, boolean fromAnalyzer) {
@@ -84,7 +84,7 @@ public class ProjectIssueTrackerTest {
         debugs.add(msg);
       }
     });
-    
+
     debugs = new ArrayList<>();
   }
 
@@ -243,7 +243,7 @@ public class ProjectIssueTrackerTest {
   @Test
   public void test_trackWithServerIssues_path_null() {
     underTest.trackWithServerIssues(new ProjectBinding("testProject", "/", "/"), List.of(file1), false, new NullProgressMonitor());
-    
+
     assertThat(debugs)
       .contains("'dummyFile1' cannot be converted from IDE to server path for project binding: 'testProject' / '/' / '/'");
   }

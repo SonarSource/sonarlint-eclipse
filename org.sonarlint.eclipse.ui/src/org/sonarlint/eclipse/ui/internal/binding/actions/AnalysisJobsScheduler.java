@@ -42,7 +42,7 @@ public class AnalysisJobsScheduler {
   private AnalysisJobsScheduler() {
     // utility class, forbidden constructor
   }
-  
+
   public static void scheduleAutoAnalysisIfEnabled(AnalyzeProjectRequest request) {
     var project = request.getProject();
     if (!project.isOpen()) {

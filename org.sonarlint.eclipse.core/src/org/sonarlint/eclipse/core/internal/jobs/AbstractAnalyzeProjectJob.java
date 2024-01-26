@@ -52,7 +52,6 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
@@ -83,7 +82,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   private final boolean shouldClearReport;
   private final boolean checkUnsupportedLanguages;
   private final Collection<FileWithDocument> files;
-  private EnumSet<Language> unavailableLanguagesReference = EnumSet.noneOf(Language.class);
+  private final EnumSet<Language> unavailableLanguagesReference = EnumSet.noneOf(Language.class);
 
   protected AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
@@ -97,7 +96,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   public static AbstractSonarProjectJob create(AnalyzeProjectRequest request) {
     return SonarLintCorePlugin.getConnectionManager()
       .resolveBinding(request.getProject())
-      .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request, b.getProjectBinding(), (ConnectionFacade) b.getEngineFacade()))
+      .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request, b.getProjectBinding(), b.getEngineFacade()))
       .orElseGet(() -> new AnalyzeStandaloneProjectJob(request));
   }
 
@@ -165,7 +164,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
-      
+
       SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners(new AnalysisEvent() {
         @Override
         public Set<Language> getUnavailableLanguages() {
@@ -177,7 +176,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
           return Set.of(getProject());
         }
       });
-      
+
       SonarLintLogger.get().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
     } catch (CanceledException e) {
       return Status.CANCEL_STATUS;
@@ -221,7 +220,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     if (!monitor.isCanceled()) {
       updateMarkers(docPerFiles, issuesPerResource, result, triggerType, monitor);
       updateTelemetry(result, start, issuesPerResource);
-      
+
       if (checkUnsupportedLanguages) {
         // Collect all the languages we just analyzed and that are unavailable in standalone mode. This will be re-used
         // to handle it accordingly in the UI (e.g. display notification to the user).
@@ -335,19 +334,19 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     if (rawIssuesPerResource.entrySet().isEmpty()) {
       return;
     }
-    
+
     // To access the preference service only once and not per issue
     var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
-    
+
     // To access the preference service only once and not per issue
     var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
-    
+
     // If the project connection offers changing the status on anticipated issues (SonarQube 10.2+) we can enable the
     // context menu option on the markers.
     var viableForStatusChange = SonarLintUtils.checkProjectSupportsAnticipatedStatusChange(getProject());
 
     var issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getProject());
-    
+
     for (var entry : rawIssuesPerResource.entrySet()) {
       if (monitor.isCanceled()) {
         return;

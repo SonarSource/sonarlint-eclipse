@@ -31,6 +31,7 @@ public class MandatoryStringValidator implements IValidator {
     this.msg = msg;
   }
 
+  @Override
   public IStatus validate(Object value) {
     if (!((value instanceof String) && ((String) value).length() > 0)) {
       return ValidationStatus.error(msg);

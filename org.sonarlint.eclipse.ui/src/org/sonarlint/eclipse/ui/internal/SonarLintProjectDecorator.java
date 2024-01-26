@@ -33,7 +33,7 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
   public static final String ID = "org.sonarlint.eclipse.ui.sonarlintDecorator";
 
-  private ListenerList<ILabelProviderListener> fListeners = new ListenerList<>();
+  private final ListenerList<ILabelProviderListener> fListeners = new ListenerList<>();
 
   @Override
   public void decorate(Object element, IDecoration decoration) {
@@ -56,8 +56,8 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
   @Override
   public void dispose() {
     var listeners = fListeners.getListeners();
-    for (var i = 0; i < listeners.length; i++) {
-      fListeners.remove(listeners[i]);
+    for (Object listener : listeners) {
+      fListeners.remove(listener);
     }
   }
 
@@ -79,8 +79,8 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
     if (fListeners != null && !fListeners.isEmpty()) {
       var event = new LabelProviderChangedEvent(this, elements.stream().map(ISonarLintProject::getObjectToNotify).toArray());
       var listeners = fListeners.getListeners();
-      for (var i = 0; i < listeners.length; i++) {
-        ((ILabelProviderListener) listeners[i]).labelProviderChanged(event);
+      for (Object listener : listeners) {
+        ((ILabelProviderListener) listener).labelProviderChanged(event);
       }
     }
   }

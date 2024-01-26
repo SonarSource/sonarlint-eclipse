@@ -121,7 +121,7 @@ public abstract class AbstractNotificationPopup extends Window {
   private FadeJob fadeJob;
 
   private boolean fadingEnabled;
-  
+
   private static Listener resizeListener = new Listener() {
     @Override
     public void handleEvent(Event e) {
@@ -161,7 +161,7 @@ public abstract class AbstractNotificationPopup extends Window {
   protected void setParentShell(Shell newParentShell) {
     super.setParentShell(newParentShell);
     windowActivationHelper = createWindowActivationHelper(newParentShell);
-    
+
     if (!List.of(newParentShell.getListeners(SWT.Resize)).contains(resizeListener)) {
       newParentShell.addListener(SWT.Resize, resizeListener);
       newParentShell.addListener(SWT.Move, resizeListener);
@@ -456,7 +456,7 @@ public abstract class AbstractNotificationPopup extends Window {
     var initialSize = this.shell.computeSize(MAX_WIDTH, SWT.DEFAULT);
     var height = Math.max(initialSize.y, MIN_HEIGHT);
     var width = Math.min(initialSize.x, MAX_WIDTH);
-    
+
     var startY = clArea.height + clArea.y - PADDING_EDGE;
 
     var inSameParentShell = inSameParentShell(this.getParentShell());

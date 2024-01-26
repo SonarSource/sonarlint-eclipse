@@ -179,7 +179,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
     private final int groupIndex;
     private final String filePath;
-    private List<FlowLocationNode> children = new ArrayList<>();
+    private final List<FlowLocationNode> children = new ArrayList<>();
 
     public LocationFileGroupNode(int groupIndex, String filePath) {
       this.groupIndex = groupIndex;

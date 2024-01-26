@@ -38,7 +38,7 @@ import org.sonarsource.sonarlint.core.commons.Language;
 public class SonarLintUtils {
   /**
    *  Enabled languages should be consistent with https://www.sonarsource.com/products/sonarlint/features/eclipse!
-   *  
+   *
    *  Currently the only sub-plugins bringing their own languages are JDT (Java/JSP) and CDT (C/C++).
    */
   public static final Set<Language> STANDALONE_MODE_LANGUAGES = EnumSet.of(Language.PYTHON, Language.JS, Language.TS,
@@ -77,7 +77,7 @@ public class SonarLintUtils {
     var enabledLanguages = EnumSet.noneOf(Language.class);
     enabledLanguages.addAll(STANDALONE_MODE_LANGUAGES);
     enabledLanguages.addAll(CONNECTED_MODE_LANGUAGES);
-    
+
     var configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
     for (var configurator : configurators) {
       enabledLanguages.addAll(configurator.whitelistedLanguages());
@@ -96,7 +96,7 @@ public class SonarLintUtils {
       return result;
     };
   }
-  
+
   /** Check whether a file is bound to SQ / SC via its project */
   public static boolean isBoundToConnection(ISonarLintIssuable f) {
     var config = SonarLintCorePlugin.loadConfig(f.getProject());
@@ -116,7 +116,7 @@ public class SonarLintUtils {
    *  Check if a project has a connection to a SonarQube 10.2+ instance can therefore offer the user the option to
    *  transition anticipated issues. If the project is not bound to any connection, just log it and provide an error
    *  if checking the server failed for any reason.
-   *  
+   *
    *  INFO: Because it is costly, maybe cache the information in the future and only check periodically!
    */
   public static boolean checkProjectSupportsAnticipatedStatusChange(ISonarLintProject project) {

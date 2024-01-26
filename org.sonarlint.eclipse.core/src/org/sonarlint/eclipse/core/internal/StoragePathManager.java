@@ -35,7 +35,7 @@ public class StoragePathManager {
   private static Path getSonarLintUserHome() {
     return ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").toFile().toPath();
   }
-  
+
   /** Get the working directory for no connection set */
   public static Path getDefaultWorkDir() {
     return getSonarLintUserHome().resolve("default");

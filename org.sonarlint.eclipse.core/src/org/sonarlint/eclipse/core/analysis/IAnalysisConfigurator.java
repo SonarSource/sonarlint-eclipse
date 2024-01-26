@@ -28,7 +28,7 @@ import org.sonarsource.sonarlint.core.commons.Language;
 /**
  * Implemented by components that configure the analysis on certain environments.
  * For example, we have configurators for C/C++ projects in Eclipse CDT and for Java projects in JDT.
- * 
+ *
  * @since 3.0
  */
 public interface IAnalysisConfigurator {

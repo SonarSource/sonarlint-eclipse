@@ -253,7 +253,7 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
         validationStatus = IMessageProvider.ERROR;
       }
     } else {
-      
+
       try {
         var fs = FileSystems.getDefault();
         fs.getPathMatcher("glob:" + editItem);

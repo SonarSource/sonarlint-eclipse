@@ -98,10 +98,7 @@ public class IssueMatcher {
       if (this == o) {
         return true;
       }
-      if (o == null) {
-        return false;
-      }
-      if (this.getClass() != o.getClass()) {
+      if ((o == null) || (this.getClass() != o.getClass())) {
         return false;
       }
       var that = (LineAndTextRangeHashKey) o;
@@ -147,10 +144,7 @@ public class IssueMatcher {
       if (this == o) {
         return true;
       }
-      if (o == null) {
-        return false;
-      }
-      if (this.getClass() != o.getClass()) {
+      if ((o == null) || (this.getClass() != o.getClass())) {
         return false;
       }
       var that = (TextRangeHashAndMessageKey) o;
@@ -196,10 +190,7 @@ public class IssueMatcher {
       if (this == o) {
         return true;
       }
-      if (o == null) {
-        return false;
-      }
-      if (this.getClass() != o.getClass()) {
+      if ((o == null) || (this.getClass() != o.getClass())) {
         return false;
       }
       var that = (LineAndMessageKey) o;
@@ -242,10 +233,7 @@ public class IssueMatcher {
       if (this == o) {
         return true;
       }
-      if (o == null) {
-        return false;
-      }
-      if (this.getClass() != o.getClass()) {
+      if ((o == null) || (this.getClass() != o.getClass())) {
         return false;
       }
       var that = (TextRangeHashKey) o;

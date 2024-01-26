@@ -56,10 +56,10 @@ public class TaintIssuesUpdateAfterSyncJob extends Job {
     try {
       // To access the preference service only once and not per issue
       var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
-      
+
       // To access the preference service only once and not per issue
       var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
-      
+
       for (var issuable : issuables) {
         if (monitor.isCanceled()) {
           return Status.CANCEL_STATUS;

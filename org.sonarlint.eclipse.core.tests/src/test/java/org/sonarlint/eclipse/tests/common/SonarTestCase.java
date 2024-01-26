@@ -231,7 +231,7 @@ public abstract class SonarTestCase {
     getProject(projectName, dst);
 
     final var project = workspace.getRoot().getProject(projectName);
-    final List<IProject> addedProjectList = new ArrayList<IProject>();
+    final List<IProject> addedProjectList = new ArrayList<>();
 
     workspace.run(new IWorkspaceRunnable() {
 

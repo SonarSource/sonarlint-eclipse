@@ -254,7 +254,7 @@ public class SonarLintBackendService {
   public CompletableFuture<GetNewCodeDefinitionResponse> getNewCodeDefinition(ISonarLintProject project) {
     return getBackend().getNewCodeService().getNewCodeDefinition(new GetNewCodeDefinitionParams(ConfigScopeSynchronizer.getConfigScopeId(project)));
   }
-  
+
   public CompletableFuture<ReopenIssueResponse> reopenIssue(ISonarLintProject project, String issueKey, Boolean isTaintVulnerability) {
     return getBackend()
       .getIssueService()
@@ -265,7 +265,7 @@ public class SonarLintBackendService {
   public void notifyTelemetryAfterNewCodePreferenceChanged() {
     getBackend().getNewCodeService().didToggleFocus();
   }
-  
+
   public CompletableFuture<CheckAnticipatedStatusChangeSupportedResponse> checkAnticipatedStatusChangeSupported(ISonarLintProject project) {
     return getBackend()
       .getIssueService()

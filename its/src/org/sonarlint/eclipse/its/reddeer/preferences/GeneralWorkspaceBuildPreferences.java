@@ -29,31 +29,31 @@ public class GeneralWorkspaceBuildPreferences extends PropertyPage {
   public GeneralWorkspaceBuildPreferences(ReferencedComposite referencedComposite) {
     super(referencedComposite, "General", "Workspace", "Build");
   }
-  
+
   public void disableAutomaticBuild() {
     var checkBox = new CheckBox(this, new WithTextMatcher("&Build automatically"));
     if (checkBox.isChecked()) {
       checkBox.click();
     }
   }
-  
+
   public void enableAutomaticBuild() {
     var checkBox = new CheckBox(this, new WithTextMatcher("&Build automatically"));
     if (!checkBox.isChecked()) {
       checkBox.click();
     }
   }
-  
+
   public void ok() {
     ((WorkbenchPreferenceDialog) referencedComposite).ok();
   }
-  
+
   public static GeneralWorkspaceBuildPreferences open() {
     var preferenceDialog = new WorkbenchPreferenceDialog();
     if (!preferenceDialog.isOpen()) {
       preferenceDialog.open();
     }
-    
+
     var generalWorkspaceBuildPreferences = new GeneralWorkspaceBuildPreferences(preferenceDialog);
     preferenceDialog.select(generalWorkspaceBuildPreferences);
     return generalWorkspaceBuildPreferences;

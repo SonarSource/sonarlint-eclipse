@@ -142,10 +142,10 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
     var serverIssueKey = "dummy-serverIssueKey";
     when(trackable.getServerIssueKey()).thenReturn(serverIssueKey);
-    
+
     var id = UUID.randomUUID();
     when(trackable.getId()).thenReturn(id);
-    
+
     var resolved = false;
     when(trackable.isResolved()).thenReturn(resolved);
 

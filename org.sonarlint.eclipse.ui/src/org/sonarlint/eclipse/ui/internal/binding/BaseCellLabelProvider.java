@@ -52,7 +52,7 @@ public abstract class BaseCellLabelProvider extends ColumnLabelProvider {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.eclipse.jface.viewers.ColumnLabelProvider#update(org.eclipse.jface.viewers.ViewerCell)
    */
   @Override
@@ -98,7 +98,7 @@ public abstract class BaseCellLabelProvider extends ColumnLabelProvider {
   }
 
   /**
-   * Extenders of this class would implement this method to provide an image to the column based on the element 
+   * Extenders of this class would implement this method to provide an image to the column based on the element
    * being passed
    * @param element
    * @param index
@@ -108,7 +108,7 @@ public abstract class BaseCellLabelProvider extends ColumnLabelProvider {
 
   /**
     * Extenders of this class would implement this method to provide a text label to the column based on the element
-    * being passed 
+    * being passed
    * @param element
    * @param index
    * @return a string

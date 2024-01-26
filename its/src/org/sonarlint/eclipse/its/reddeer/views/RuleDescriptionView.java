@@ -39,19 +39,19 @@ public class RuleDescriptionView extends WorkbenchView {
   public Label getRuleName() {
     return new DefaultLabel(getCTabItem(), 0);
   }
-  
+
   public Label getCleanCodeAttributeCategory() {
     return new DefaultLabel(getCTabItem(), 1);
   }
-  
+
   public Label getFirstSoftwareQuality() {
     return new DefaultLabel(getCTabItem(), 2);
   }
-  
+
   public Label getSecondSoftwareQuality() {
     return new DefaultLabel(getCTabItem(), 4);
   }
-  
+
   public Label getThirdSoftwareQuality() {
     return new DefaultLabel(getCTabItem(), 6);
   }

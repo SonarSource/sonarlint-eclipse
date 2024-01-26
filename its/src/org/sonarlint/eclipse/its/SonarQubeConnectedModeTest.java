@@ -87,7 +87,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   private static final String INSUFFICIENT_PERMISSION_USER = "iHaveNoRights";
   private static final MarkerDescriptionMatcher ISSUE_MATCHER = new MarkerDescriptionMatcher(
     CoreMatchers.containsString("System.out"));
-  
+
   /** Orchestrator to not be re-used in order for ITs to not fail -> always use latest release locally (not LTS) */
   @ClassRule
   public static final OrchestratorRule orchestrator = OrchestratorRule.builderEnv()
@@ -102,7 +102,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     .setServerProperty("sonar.pushevents.polling.period", "1")
     .setServerProperty("sonar.pushevents.polling.last.timestamp", "1")
     .build();
-  
+
   @BeforeClass
   public static void prepare() {
     prepare(orchestrator);
@@ -154,7 +154,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     assertThat(wizard.isNextEnabled()).isFalse();
     authenticationPage.setPassword("wrong");
     assertThat(wizard.isNextEnabled()).isTrue();
-    
+
     // until we change the ITs with the removal of the username / password authentication we check here once
     assertThat(authenticationPage.getDeprecationMessage()).isEqualTo(authenticationPage.DEPRECATION_MESSAGE);
 
@@ -439,7 +439,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
         .setName(MAVEN_TAINT_PROJECT_KEY)
         .setKey(MAVEN_TAINT_PROJECT_KEY).build());
     orchestrator.getServer().associateProjectToQualityProfile(MAVEN_TAINT_PROJECT_KEY, "java", "SonarLint IT New Code");
-    
+
     runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml", Map.of());
 
     // 2) import project / check that new code period preference does nothing in standalone mode
@@ -481,10 +481,10 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     bindingsView.removeAllBindings();
 
     setNewCodePeriodToPreviousVersion(MAVEN_TAINT_PROJECT_KEY);
-    
+
     runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml",
       Map.of("sonar.projectVersion", "1.1-SNAPSHOT"));
-    
+
     // Because of a bug in SQ that returns the techncial issue creation date, we have to run another analysis
     // to be sure issues will be before the new code period
     runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml",

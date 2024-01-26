@@ -44,17 +44,17 @@ public class LegacyRuleHeaderPanel extends AbstractRuleHeaderPanel {
     ruleKeyLabel = new Label(this, SWT.LEFT);
     ruleKeyLabel.setLayoutData(new GridData(SWT.END, SWT.FILL, true, true));
   }
-  
+
   @Override
   public void updateRule(AbstractRuleDto ruleInformation) {
     var type = ruleInformation.getType();
     ruleTypeIcon.setImage(SonarLintImages.getTypeImage(type));
     ruleTypeLabel.setText(clean(type.toString()));
-    
+
     var severity = ruleInformation.getSeverity();
     ruleSeverityIcon.setImage(SonarLintImages.getSeverityImage(severity));
     ruleSeverityLabel.setText(clean(severity.toString()));
-    
+
     ruleKeyLabel.setText(ruleInformation.getKey());
     layout();
   }

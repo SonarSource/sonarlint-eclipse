@@ -29,15 +29,15 @@ public class OpenInIdeDialog extends DefaultShell {
   public OpenInIdeDialog() {
     super("Open in IDE");
   }
-  
+
   public void ok() {
     new OkButton(this).click();
   }
-  
+
   public void no() {
     new NoButton(this).click();
   }
-  
+
   public void yes() {
     new YesButton(this).click();
   }

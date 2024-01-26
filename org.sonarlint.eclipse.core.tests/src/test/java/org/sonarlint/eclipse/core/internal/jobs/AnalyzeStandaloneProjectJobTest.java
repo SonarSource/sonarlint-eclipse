@@ -101,7 +101,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
   public void analyzeWithRuleParameters() throws Exception {
     // Don't run this test on macOS devices as Node.js might not be found!
     ignoreMacOS();
-    
+
     var file = (IFile) project.findMember("src/main/sample.js");
     var slProject = new DefaultSonarLintProjectAdapter(project);
     var fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);

@@ -33,11 +33,11 @@ import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
  */
 public class SurveyPopup extends AbstractSonarLintPopup {
   private final String surveyURL;
-  
+
   public SurveyPopup(String surveyURL) {
     this.surveyURL = surveyURL;
   }
-  
+
   @Override
   protected String getMessage() {
     return "We are seeking your feedback to improve SonarLint for Eclipse with a short and simple user survey.";
@@ -65,11 +65,11 @@ public class SurveyPopup extends AbstractSonarLintPopup {
   protected Image getPopupShellImage(int maximumHeight) {
     return SonarLintImages.BALLOON_IMG;
   }
-  
+
   /**
    *  Will display the pop-up as long as the user hasn't checked out the survey. The link is stored in the preferences
    *  if the user wants to come back and for the next survey to check if the user has already attended it or not.
-   *  
+   *
    *  @param link to the survey
    */
   public static void displaySurveyPopupIfNotAlreadyAccessed(String link) {
@@ -77,7 +77,7 @@ public class SurveyPopup extends AbstractSonarLintPopup {
     if (link.equals(preference)) {
       return;
     }
-    
+
     var popup = new SurveyPopup(link);
     popup.setFadingEnabled(false);
     popup.setDelayClose(0L);

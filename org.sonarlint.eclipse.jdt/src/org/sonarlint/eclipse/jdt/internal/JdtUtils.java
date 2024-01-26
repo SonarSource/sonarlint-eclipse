@@ -98,7 +98,7 @@ public class JdtUtils {
 
     context.setAnalysisProperty("sonar.java.source", javaSource);
     context.setAnalysisProperty("sonar.java.target", javaTarget);
-    
+
     var javaPreview = Optional.ofNullable(javaProject.getOption(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, true)).orElse(JavaCore.DISABLED);
     context.setAnalysisProperty("sonar.java.enablePreview", javaPreview.equalsIgnoreCase(JavaCore.ENABLED) ? "true" : "false");
 
@@ -203,10 +203,7 @@ public class JdtUtils {
 
   private static void processSourceEntry(IClasspathEntry entry, JavaProjectConfiguration context, boolean topProject, boolean testEntry, boolean isWithoutTestCode)
     throws JavaModelException {
-    if (isSourceExcluded(entry)) {
-      return;
-    }
-    if (isTest(entry) && isWithoutTestCode) {
+    if (isSourceExcluded(entry) || (isTest(entry) && isWithoutTestCode)) {
       return;
     }
     if (entry.getOutputLocation() != null) {
@@ -217,10 +214,7 @@ public class JdtUtils {
   private static void processLibraryEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject, boolean testEntry,
     boolean isWithoutTestCode)
     throws JavaModelException {
-    if (isTest(entry) && isWithoutTestCode) {
-      return;
-    }
-    if (!topProject && !entry.isExported()) {
+    if ((isTest(entry) && isWithoutTestCode) || (!topProject && !entry.isExported())) {
       return;
     }
     final var libPath = resolveLibrary(javaProject, entry);
@@ -264,7 +258,7 @@ public class JdtUtils {
           + javaProject.getPath() + "' from workspace member: " + member);
         return null;
       }
-      
+
       libPath = location.toOSString();
     } else {
       libPath = entry.getPath().makeAbsolute().toOSString();

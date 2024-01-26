@@ -55,7 +55,7 @@ import static org.mockito.Mockito.when;
 
 public class JdtUtilsTest extends SonarTestCase {
 
-  private JdtUtils jdtUtils = new JdtUtils();
+  private final JdtUtils jdtUtils = new JdtUtils();
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
@@ -84,7 +84,7 @@ public class JdtUtilsTest extends SonarTestCase {
     verify(context).setAnalysisProperty("sonar.java.source", "1.6");
     verify(context).setAnalysisProperty("sonar.java.target", "1.6");
   }
-  
+
   /* SLE-614: Check the new Sonar property: default value (either null or disabled( */
   @Test
   public void test_sonarJavaPreview_default() throws JavaModelException {
@@ -96,23 +96,23 @@ public class JdtUtilsTest extends SonarTestCase {
     sourceFolder.mkdir();
     var outputFolder = new File(projectRoot, "bin");
     outputFolder.mkdirs();
-    
+
     var project = mock(IJavaProject.class);
     var context = mock(IPreAnalysisContext.class);
-    
+
     when(project.getPath()).thenReturn(new Path(projectRoot.getAbsolutePath()));
-    
+
     var classpath = new IClasspathEntry[] {
       createCPE(IClasspathEntry.CPE_SOURCE, sourceFolder, outputFolder)
     };
     when(project.getResolvedClasspath(true)).thenReturn(classpath);
     when(project.getOutputLocation()).thenReturn(new Path(outputFolder.getAbsolutePath()));
-    
+
     jdtUtils.configureJavaProject(project, context);
-    
+
     verify(context).setAnalysisProperty("sonar.java.enablePreview", "false");
   }
-  
+
   /* SLE-614: Check the new Sonar property: simulate enabled by the user */
   @Test
   public void test_sonarJavaPreview_changed() throws JavaModelException {
@@ -124,21 +124,21 @@ public class JdtUtilsTest extends SonarTestCase {
     sourceFolder.mkdir();
     var outputFolder = new File(projectRoot, "bin");
     outputFolder.mkdirs();
-    
+
     var project = mock(IJavaProject.class);
     var context = mock(IPreAnalysisContext.class);
-    
+
     when(project.getOption(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, true)).thenReturn(JavaCore.ENABLED);
     when(project.getPath()).thenReturn(new Path(projectRoot.getAbsolutePath()));
-    
+
     var classpath = new IClasspathEntry[] {
       createCPE(IClasspathEntry.CPE_SOURCE, sourceFolder, outputFolder)
     };
     when(project.getResolvedClasspath(true)).thenReturn(classpath);
     when(project.getOutputLocation()).thenReturn(new Path(outputFolder.getAbsolutePath()));
-    
+
     jdtUtils.configureJavaProject(project, context);
-    
+
     verify(context).setAnalysisProperty("sonar.java.enablePreview", "true");
   }
 

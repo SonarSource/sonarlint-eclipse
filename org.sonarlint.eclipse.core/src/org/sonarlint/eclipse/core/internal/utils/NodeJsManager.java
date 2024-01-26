@@ -28,7 +28,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.NodeJsHelper;
 import org.sonarsource.sonarlint.core.commons.Version;
@@ -60,7 +59,7 @@ public class NodeJsManager {
       // Node.js path is passed at engine startup, so we have to restart them all to ensure the new value is taken
       // into account for the next analysis.
       SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().stop();
-      SonarLintCorePlugin.getConnectionManager().getConnections().forEach(f -> ((ConnectionFacade) f).stop());
+      SonarLintCorePlugin.getConnectionManager().getConnections().forEach(f -> f.stop());
       AnalysisRequirementNotifications.resetCachedMessages();
     }
   }

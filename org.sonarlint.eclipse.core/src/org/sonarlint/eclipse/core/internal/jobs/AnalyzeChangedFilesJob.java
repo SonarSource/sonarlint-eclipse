@@ -81,11 +81,11 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
         var filesToAnalyze = entry.getValue().stream()
           .map(f -> new FileWithDocument(f, null))
           .collect(Collectors.toList());
-        
+
         // If the project is bound, we don't have to check for unsupported languages.
         var req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.MANUAL_CHANGESET, false,
           !SonarLintUtils.isBoundToConnection(project));
-        
+
         var job = AbstractAnalyzeProjectJob.create(req);
         var subMonitor = analysisMonitor.newChild(1);
         job.run(subMonitor);
@@ -94,7 +94,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
 
     } catch (Exception e) {
       SonarLintLogger.get().error(UNABLE_TO_ANALYZE_CHANGED_FILES, e);
-      return new Status(Status.ERROR, SonarLintCorePlugin.PLUGIN_ID, UNABLE_TO_ANALYZE_CHANGED_FILES, e);
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, UNABLE_TO_ANALYZE_CHANGED_FILES, e);
     }
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
   }
