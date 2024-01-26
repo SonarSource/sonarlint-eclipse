@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.ui.internal.binding;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.RemoteSonarProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 

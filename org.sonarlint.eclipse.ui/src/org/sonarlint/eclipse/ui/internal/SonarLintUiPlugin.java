@@ -61,7 +61,6 @@ import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
 import org.sonarlint.eclipse.ui.internal.job.PeriodicStoragesSynchronizerJob;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
-import org.sonarlint.eclipse.ui.internal.popup.SurveyPopup;
 import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
