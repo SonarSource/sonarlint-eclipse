@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -38,4 +39,8 @@ public class ProjectsProviderUtils {
       .collect(Collectors.toSet());
   }
 
+  public static Set<String> allConfigurationScopeIds() {
+    return allProjects().stream().map(prj -> prj.getName())
+    .collect(Collectors.toSet());
+  }
 }
