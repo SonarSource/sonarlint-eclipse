@@ -40,12 +40,12 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
-import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessClient;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -67,10 +67,10 @@ import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.BindingSuggestionDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.usertoken.RevokeTokenParams;
 import org.sonarsource.sonarlint.core.clientapi.client.OpenUrlInBrowserParams;
 import org.sonarsource.sonarlint.core.clientapi.client.binding.AssistBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.client.binding.AssistBindingResponse;
+import org.sonarsource.sonarlint.core.clientapi.client.binding.NoBindingSuggestionFoundParams;
 import org.sonarsource.sonarlint.core.clientapi.client.binding.SuggestBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.client.connection.AssistCreatingConnectionParams;
 import org.sonarsource.sonarlint.core.clientapi.client.connection.AssistCreatingConnectionResponse;
@@ -180,16 +180,11 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
         job.schedule();
         job.join();
         if (job.getResult().isOK()) {
+          // Provide the backend with all projects currently opened
           SonarLintLogger.get().debug("Successfully created connection '" + job.getConnectionId() + "'");
-          return new AssistCreatingConnectionResponse(job.getConnectionId());
+          return new AssistCreatingConnectionResponse(job.getConnectionId(),
+            ProjectsProviderUtils.allConfigurationScopeIds());
         } else if (job.getResult().matches(IStatus.CANCEL)) {
-          if (job instanceof AssistCreatingAutomaticConnectionJob) {
-            SonarLintBackendService.get()
-              .getBackend()
-              .getUserTokenService()
-              .revokeToken(new RevokeTokenParams(baseUrl, params.getTokenName(), params.getTokenValue()));
-          }
-          
           SonarLintLogger.get().debug("Assist creating connection was cancelled.");
         }
         throw new IllegalStateException(job.getResult().getMessage(), job.getResult().getException());
@@ -199,6 +194,11 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
         throw new CancellationException("Interrupted!");
       }
     });
+  }
+  
+  @Override
+  public void noBindingSuggestionFound(NoBindingSuggestionFoundParams params) {
+    // TODO: Implement
   }
 
   @Override
