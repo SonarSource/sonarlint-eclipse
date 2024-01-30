@@ -61,6 +61,7 @@ import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueCont
 import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
+import org.sonarlint.eclipse.ui.internal.popup.NoBindingSuggestionFoundPopup;
 import org.sonarlint.eclipse.ui.internal.popup.SingleBindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.SoonUnsupportedPopup;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
@@ -198,7 +199,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
   
   @Override
   public void noBindingSuggestionFound(NoBindingSuggestionFoundParams params) {
-    // TODO: Implement
+    NoBindingSuggestionFoundPopup.displayPopupIfNotIgnored(params.getProjectKey());
   }
 
   @Override

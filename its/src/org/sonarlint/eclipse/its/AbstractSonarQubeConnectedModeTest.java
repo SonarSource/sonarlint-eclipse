@@ -33,6 +33,8 @@ import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.core.condition.WidgetIsFound;
 import org.eclipse.reddeer.core.matcher.WithTextMatcher;
+import org.eclipse.reddeer.eclipse.core.resources.Project;
+import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.swt.widgets.Label;
 import org.junit.Before;
@@ -153,6 +155,23 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     serverProjectSelectionPage.setProjectKey(projectKey);
     projectBindingWizard.finish();
 
+    var bindingsView = new BindingsView();
+    bindingsView.open();
+    bindingsView.updateAllProjectBindings();
+    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
+  }
+  
+  protected static void bindProjectFromContextMenu(Project project, String projectKey) {
+    new ContextMenu(project.getTreeItem()).getItem("SonarLint", "Bind to SonarQube or SonarCloud...").select();
+    
+    var projectBindingWizard = new ProjectBindingWizard();
+    projectBindingWizard.next();
+    
+    var serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
+    serverProjectSelectionPage.waitForProjectsToBeFetched();
+    serverProjectSelectionPage.setProjectKey(projectKey);
+    projectBindingWizard.finish();
+    
     var bindingsView = new BindingsView();
     bindingsView.open();
     bindingsView.updateAllProjectBindings();
