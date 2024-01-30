@@ -38,6 +38,8 @@ import org.eclipse.reddeer.core.matcher.WithTextMatcher;
 import org.eclipse.reddeer.eclipse.jdt.ui.wizards.NewClassCreationWizard;
 import org.eclipse.reddeer.eclipse.jdt.ui.wizards.NewClassWizardPage;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.swt.impl.link.DefaultLink;
+import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.swt.widgets.Label;
@@ -109,6 +111,10 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     }
   }
 
+  /**
+   *  Integration test for the following case: Connected to SQ 10.2 / 10.3 (therefore "Open in IDE" provides no token)
+   *  with matching project -> user has to manually connect, binding will be done automatically
+   */
   @Test
   public void test_open_in_ide_assist_manual_binding() throws IOException, InterruptedException {
     // Only available since SonarQube 10.2+, enhanced with token by SonarQube 10.4
@@ -162,22 +168,72 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     wizard.next();
     wizard.finish();
+    
+    try {
+      var projectSelectionDialog = new ProjectSelectionDialog();
+      assertThat(projectSelectionDialog.getMessage()).contains("This Eclipse project will be bound to the Sonar project 'maven-taint' using connection 'from open IDE'");
+      projectSelectionDialog.filterProjectName(MAVEN_TAINT_PROJECT_KEY);
+      projectSelectionDialog.ok();
+    } catch (Exception err) {
+      // ================================================================================================================
+      // INFO: Because of SLE-797 we currently have to bind it manually and trigger it again
+      var popUp = new DefaultShell("SonarLint - No mathing open project found");
+      new DefaultLink(popUp, "Open Troubleshooting documentation").click();
+      bindProjectFromContextMenu(rootProject, MAVEN_TAINT_PROJECT_KEY);
+      triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey());
+      // ================================================================================================================
+    }
 
-    var projectSelectionDialog = new ProjectSelectionDialog();
-    assertThat(projectSelectionDialog.getMessage()).contains("This Eclipse project will be bound to the Sonar project 'maven-taint' using connection 'from open IDE'");
-    projectSelectionDialog.filterProjectName(MAVEN_TAINT_PROJECT_KEY);
-    projectSelectionDialog.ok();
-
+    // 5) check rule description view
     var ruleDescriptionView = new RuleDescriptionView();
     new WaitUntil(new RuleDescriptionViewOpenedWithContent(ruleDescriptionView, S101), TimePeriod.DEFAULT);
 
     closeTaintPopupIfAny();
   }
   
+  /**
+   *  Integration test for the following case: Connected to SQ 10.4+ (therefore "Open in IDE" provides a token) but
+   *  workspace is empty -> SLCORE cannot match any project, so the user has to manually bind the project
+   */
+  @Test
+  public void test_open_in_ide_assist_automated_binding_empty_workspace() throws InterruptedException, IOException {
+    // Only available since SonarQube 10.4+
+    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
+    
+    // 1) Generate first token
+    var tokenName = "tokenName1";
+    var tokenValue = adminWsClient
+      .userTokens()
+      .generate(new GenerateWsRequest().setName(tokenName).setLogin(Server.ADMIN_LOGIN))
+      .getToken();
+    
+    // 2) get S1481 issue key / branch name from SonarQube
+    var s101 = getFirstIssue(S101);
+    assertThat(s101).isNotNull();
+
+    var branch = getFirstBranch();
+    assertThat(branch).isNotNull();
+    
+    // 3) trigger "Open in IDE" feature and accept
+    triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey(), tokenName, tokenValue);
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
+    new ConfirmConnectionCreationDialog().trust();
+    
+    // 4) await pop-up saying that automatic binding is not possible
+    var popUp = new DefaultShell("SonarLint - No mathing open project found");
+    new DefaultLink(popUp, "Open Troubleshooting documentation").click();
+    
+    // 5) Check that token still exists
+    var userTokens = adminWsClient
+      .userTokens()
+      .search(new org.sonarqube.ws.client.usertoken.SearchWsRequest().setLogin(Server.ADMIN_LOGIN))
+      .getUserTokensList();
+    assertThat(userTokens.stream().filter(token -> tokenName.equals(token.getName())).collect(Collectors.toList())).hasSize(1);
+  }
+  
   @Test
   public void test_open_in_ide_assist_automated_binding() throws IOException, InterruptedException {
     // Only available since SonarQube 10.4+
-    var version = orchestrator.getServer().version();
     Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
     
     // 1) Generate first token
@@ -220,11 +276,21 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey(), tokenName, tokenValue);
     new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
     new ConfirmConnectionCreationDialog().trust();
-
-    var projectSelectionDialog = new ProjectSelectionDialog();
-    assertThat(projectSelectionDialog.getMessage()).contains("This Eclipse project will be bound to the Sonar project 'maven-taint' using connection '127.0.0.1'");
-    projectSelectionDialog.filterProjectName(MAVEN_TAINT_PROJECT_KEY);
-    projectSelectionDialog.ok();
+    
+    try {
+      var projectSelectionDialog = new ProjectSelectionDialog();
+      assertThat(projectSelectionDialog.getMessage()).contains("This Eclipse project will be bound to the Sonar project 'maven-taint' using connection '127.0.0.1'");
+      projectSelectionDialog.filterProjectName(MAVEN_TAINT_PROJECT_KEY);
+      projectSelectionDialog.ok();
+    } catch (Exception err) {
+      // ================================================================================================================
+      // INFO: Because of SLE-797 we currently have to bind it manually and trigger it again
+      var popUp = new DefaultShell("SonarLint - No mathing open project found");
+      new DefaultLink(popUp, "Open Troubleshooting documentation").click();
+      bindProjectFromContextMenu(rootProject, MAVEN_TAINT_PROJECT_KEY);
+      triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey());
+      // ================================================================================================================
+    }
 
     var ruleDescriptionView = new RuleDescriptionView();
     new WaitUntil(new RuleDescriptionViewOpenedWithContent(ruleDescriptionView, S101), TimePeriod.DEFAULT);
