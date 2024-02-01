@@ -160,7 +160,7 @@ public class RuleDetailsPanel extends Composite {
 
       var link = new Link(ruleParamsPanel, SWT.NONE);
       link.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
-      link.setText("Parameter values can be set in <a>Rules Configuration</a>. In connected mode, server-side configuration overrides local settings.");
+      link.setText("Parameter values can be set in <a>Rules Configuration</a>. In Connected Mode, server-side configuration overrides local settings.");
       link.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DIALOG_FONT));
       link.addSelectionListener(new SelectionAdapter() {
 

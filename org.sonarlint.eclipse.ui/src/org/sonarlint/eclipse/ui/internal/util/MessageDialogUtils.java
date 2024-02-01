@@ -71,11 +71,12 @@ public class MessageDialogUtils {
 
     // The result corresponds to the index in the array; totally confusing as the pre-selected button (in our case
     // "Learn more") is always the rightmost one.
+    // INFO: When just closing the dialog, result will be greater than the array size, funny :D
     if (result == 0) {
       BrowserUtils.openExternalBrowserWithTelemetry(LinkTelemetry.CONNECTED_MODE_DOCS, shell.getDisplay());
     } else if (result == 1) {
       BrowserUtils.openExternalBrowserWithTelemetry(LinkTelemetry.SONARCLOUD_SIGNUP_PAGE, shell.getDisplay());
-    } else {
+    } else if (result == 2) {
       SonarLintGlobalConfiguration.setIgnoreEnhancedFeatureNotifications();
     }
   }
