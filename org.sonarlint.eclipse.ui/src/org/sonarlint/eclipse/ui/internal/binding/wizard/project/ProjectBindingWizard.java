@@ -61,8 +61,8 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   private static final String STORE_LAST_SELECTED_CONNECTION_ID = "ProjectBindingWizard.last_selected_server";
 
   private final ProjectBindingModel model;
-  private final ConnectionSelectionWizardPage serverSelectionWizardPage;
-  private final RemoteProjectSelectionWizardPage remoteProjectSelectionWizardPage;
+  private final ConnectionSelectionWizardPage connectionSelectionWizardPage;
+  private final SonarProjectSelectionWizardPage sonarProjectSelectionWizardPage;
   private final ProjectsSelectionWizardPage projectsSelectionWizardPage;
 
   private ProjectBindingWizard(String title, ProjectBindingModel model) {
@@ -73,17 +73,17 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
     setHelpAvailable(false);
     projectsSelectionWizardPage = new ProjectsSelectionWizardPage(model);
     setDialogSettings(SonarLintUiPlugin.getDefault().getDialogSettings());
-    serverSelectionWizardPage = new ConnectionSelectionWizardPage(model);
-    remoteProjectSelectionWizardPage = new RemoteProjectSelectionWizardPage(model);
+    connectionSelectionWizardPage = new ConnectionSelectionWizardPage(model);
+    sonarProjectSelectionWizardPage = new SonarProjectSelectionWizardPage(model);
   }
 
-  private ProjectBindingWizard(Collection<ISonarLintProject> selectedProjects, @Nullable ConnectionFacade selectedServer) {
+  private ProjectBindingWizard(Collection<ISonarLintProject> selectedProjects, @Nullable ConnectionFacade connection) {
     this("Bind to a SonarQube or SonarCloud project", new ProjectBindingModel());
     this.model.setProjects(selectedProjects.stream()
       .sorted(comparing(ISonarLintProject::getName))
       .collect(toCollection(ArrayList::new)));
-    if (selectedServer != null) {
-      this.model.setConnection(selectedServer);
+    if (connection != null) {
+      this.model.setConnection(connection);
       this.model.setSkipServer(true);
     } else if (SonarLintCorePlugin.getConnectionManager().getConnections().size() == 1) {
       // Only one server configured, pre-select it
@@ -108,8 +108,8 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
     }
   }
 
-  public static WizardDialog createDialogSkipServerSelection(Shell activeShell, Collection<ISonarLintProject> selectedProjects, ConnectionFacade selectedServer) {
-    return new SonarLintWizardDialog(activeShell, new ProjectBindingWizard(selectedProjects, selectedServer));
+  public static WizardDialog createDialogSkipConnectionSelection(Shell activeShell, Collection<ISonarLintProject> selectedProjects, ConnectionFacade connection) {
+    return new SonarLintWizardDialog(activeShell, new ProjectBindingWizard(selectedProjects, connection));
   }
 
   public static WizardDialog createDialog(Shell activeShell, Collection<ISonarLintProject> selectedProjects) {
@@ -130,26 +130,26 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
       return projectsSelectionWizardPage;
     }
     if (!model.isSkipServerSelection()) {
-      return serverSelectionWizardPage;
+      return connectionSelectionWizardPage;
     }
-    return remoteProjectSelectionWizardPage;
+    return sonarProjectSelectionWizardPage;
   }
 
   @Override
   public void addPages() {
     addPage(projectsSelectionWizardPage);
-    addPage(serverSelectionWizardPage);
-    addPage(remoteProjectSelectionWizardPage);
+    addPage(connectionSelectionWizardPage);
+    addPage(sonarProjectSelectionWizardPage);
   }
 
   @Nullable
   @Override
   public IWizardPage getNextPage(IWizardPage page) {
     if (page == projectsSelectionWizardPage) {
-      return model.isSkipServerSelection() ? remoteProjectSelectionWizardPage : serverSelectionWizardPage;
+      return model.isSkipServerSelection() ? sonarProjectSelectionWizardPage : connectionSelectionWizardPage;
     }
-    if (page == serverSelectionWizardPage) {
-      return remoteProjectSelectionWizardPage;
+    if (page == connectionSelectionWizardPage) {
+      return sonarProjectSelectionWizardPage;
     }
     return null;
   }
@@ -159,7 +159,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   public IWizardPage getPreviousPage(IWizardPage page) {
     // This method is only used for the first page of a wizard,
     // because every following page remember the previous one on its own
-    if (page == serverSelectionWizardPage) {
+    if (page == connectionSelectionWizardPage) {
       return projectsSelectionWizardPage;
     }
     return null;
@@ -168,7 +168,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   @Override
   public boolean canFinish() {
     var currentPage = getContainer().getCurrentPage();
-    return currentPage == remoteProjectSelectionWizardPage && super.canFinish();
+    return currentPage == sonarProjectSelectionWizardPage && super.canFinish();
   }
 
   @Override
@@ -186,9 +186,9 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
 
   @Override
   public void pageChanged(PageChangedEvent event) {
-    if (event.getSelectedPage() == remoteProjectSelectionWizardPage) {
+    if (event.getSelectedPage() == sonarProjectSelectionWizardPage) {
       Display.getDefault().asyncExec(() -> {
-        var success = tryLoadProjectList(remoteProjectSelectionWizardPage);
+        var success = tryLoadProjectList(sonarProjectSelectionWizardPage);
         if (success && isEmpty(model.getRemoteProjectKey())) {
           tryAutoBind();
         }

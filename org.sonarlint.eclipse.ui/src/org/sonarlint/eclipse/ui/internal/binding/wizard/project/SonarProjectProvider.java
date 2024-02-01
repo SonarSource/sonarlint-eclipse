@@ -29,12 +29,12 @@ import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
 import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
 
-public class RemoteProjectProvider implements IContentProposalProvider {
+public class SonarProjectProvider implements IContentProposalProvider {
 
   private final ProjectBindingModel model;
   private final WizardPage parentPage;
 
-  public RemoteProjectProvider(ProjectBindingModel model, WizardPage parentPage) {
+  public SonarProjectProvider(ProjectBindingModel model, WizardPage parentPage) {
     this.model = model;
     this.parentPage = parentPage;
   }

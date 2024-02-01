@@ -274,11 +274,11 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     if (!skipBindingWizard) {
       if (selectedProjects != null && !selectedProjects.isEmpty()) {
         ProjectBindingWizard
-          .createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, resultServer)
+          .createDialogSkipConnectionSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, resultServer)
           .open();
       } else if (boundProjects.isEmpty()) {
         ProjectBindingWizard
-          .createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), resultServer)
+          .createDialogSkipConnectionSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), resultServer)
           .open();
       }
     }

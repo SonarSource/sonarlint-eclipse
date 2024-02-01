@@ -36,11 +36,11 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.MandatoryStri
 import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
 import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 
-public class RemoteProjectSelectionWizardPage extends AbstractProjectBindingWizardPage {
+public class SonarProjectSelectionWizardPage extends AbstractProjectBindingWizardPage {
 
   private Binding projectTextBinding;
 
-  public RemoteProjectSelectionWizardPage(ProjectBindingModel model) {
+  public SonarProjectSelectionWizardPage(ProjectBindingModel model) {
     super("remote_project_page", "Choose the SonarQube/SonarCloud project", model, 1);
   }
 
@@ -66,7 +66,7 @@ public class RemoteProjectSelectionWizardPage extends AbstractProjectBindingWiza
     var contentProposalAdapter = new ContentAssistCommandAdapter(
       projectKeyText,
       new TextContentAdapter(),
-      new RemoteProjectProvider(model, this),
+      new SonarProjectProvider(model, this),
       ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
       null,
       true);

@@ -68,15 +68,11 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
   @Override
   public void removeListener(ILabelProviderListener listener) {
-    if (fListeners == null) {
-      return;
-    }
-
     fListeners.remove(listener);
   }
 
   public void fireChange(Collection<ISonarLintProject> elements) {
-    if (fListeners != null && !fListeners.isEmpty()) {
+    if (!fListeners.isEmpty()) {
       var event = new LabelProviderChangedEvent(this, elements.stream().map(ISonarLintProject::getObjectToNotify).toArray());
       var listeners = fListeners.getListeners();
       for (Object listener : listeners) {
