@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.resources;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -38,6 +39,22 @@ public class ProjectsProviderUtils {
       .map(ISonarLintProjectsProvider::get)
       .flatMap(Collection::stream)
       .collect(Collectors.toSet());
+  }
+
+  /**
+   *  Useful when we want SonarLint to behave differently when
+   *  - no project bound (ret = 0)
+   *  - all projects bound (ret = 1)
+   *  - at least one project bound (0 < ret < 1)
+   */
+  public static float boundToAllProjectsRatio() {
+    var allProjects = allProjects();
+    var numberOfAllProjects = allProjects.size();
+    var boundProjects = allProjects.stream()
+      .filter(prj -> SonarLintCorePlugin.getServersManager().resolveBinding(prj).isPresent())
+      .collect(Collectors.toSet());
+    var numberOfBoundProjects = boundProjects.size();
+    return numberOfAllProjects == 0 ? 0 : (numberOfBoundProjects / numberOfAllProjects);
   }
 
   public static Set<String> allConfigurationScopeIds() {
