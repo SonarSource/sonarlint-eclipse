@@ -26,9 +26,9 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 
 public class AssistCreatingAutomaticConnectionJob extends AbstractAssistCreatingConnectionJob {
   private final String tokenValue;
-  
+
   public AssistCreatingAutomaticConnectionJob(String serverUrl, String tokenValue) {
-    super("Assist automatic creation of connected mode", serverUrl, true);
+    super("Assist automatic creation of Connected Mode", serverUrl, true);
     this.tokenValue = tokenValue;
   }
 

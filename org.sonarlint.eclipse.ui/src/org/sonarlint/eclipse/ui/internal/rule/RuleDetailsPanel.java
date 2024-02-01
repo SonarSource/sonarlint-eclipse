@@ -99,7 +99,7 @@ public class RuleDetailsPanel extends Composite {
     final var width = scrollComposite.getClientArea().width;
     scrollComposite.setMinSize(scrolledContent.computeSize(width, SWT.DEFAULT));
   }
-  
+
   public void updateRule(AbstractRuleDto ruleInformation, Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
     try {
       ruleNameLabel.setText(ruleInformation.getName());
@@ -108,7 +108,7 @@ public class RuleDetailsPanel extends Composite {
       updateHeader(ruleInformation);
 
       updateHtmlDescription(description, ruleInformation.getLanguage().getLanguageKey());
-      
+
       if (ruleInformation instanceof EffectiveRuleDetailsDto) {
         updateParameters((EffectiveRuleDetailsDto) ruleInformation);
       }
@@ -119,7 +119,7 @@ public class RuleDetailsPanel extends Composite {
       // There might be a race condition between the background job running late and the view already being closed
     }
   }
-  
+
   private void updateHtmlDescription(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description, String languageKey) {
     if (ruleDescriptionPanel != null && !ruleDescriptionPanel.isDisposed()) {
       ruleDescriptionPanel.dispose();
@@ -128,22 +128,22 @@ public class RuleDetailsPanel extends Composite {
     ruleDescriptionPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     ruleDescriptionPanel.updateRule(description);
   }
-  
+
   private void updateHeader(AbstractRuleDto ruleInformation) {
     if (ruleHeaderPanel != null && !ruleHeaderPanel.isDisposed()) {
       ruleHeaderPanel.dispose();
     }
-    
+
     var attributeOptional = ruleInformation.getCleanCodeAttribute();
     var impacts = ruleInformation.getDefaultImpacts();
-    
+
     if (attributeOptional.isPresent() && !impacts.isEmpty()) {
       ruleHeaderPanel = new RuleHeaderPanel(scrolledContent);
     } else {
       ruleHeaderPanel = new LegacyRuleHeaderPanel(scrolledContent);
     }
     ruleHeaderPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-    
+
     ruleHeaderPanel.updateRule(ruleInformation);
   }
 
@@ -160,7 +160,7 @@ public class RuleDetailsPanel extends Composite {
 
       var link = new Link(ruleParamsPanel, SWT.NONE);
       link.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
-      link.setText("Parameter values can be set in <a>Rules Configuration</a>. In connected mode, server-side configuration overrides local settings.");
+      link.setText("Parameter values can be set in <a>Rules Configuration</a>. In Connected Mode, server-side configuration overrides local settings.");
       link.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DIALOG_FONT));
       link.addSelectionListener(new SelectionAdapter() {
 
@@ -199,7 +199,7 @@ public class RuleDetailsPanel extends Composite {
   public void clearRule() {
     ruleNameLabel.setText("No rules selected");
     ruleNameLabel.requestLayout();
-    
+
     if (ruleHeaderPanel != null && !ruleDescriptionPanel.isDisposed()) {
       ruleHeaderPanel.dispose();
     }

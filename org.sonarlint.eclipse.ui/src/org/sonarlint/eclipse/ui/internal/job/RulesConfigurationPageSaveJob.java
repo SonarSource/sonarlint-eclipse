@@ -40,7 +40,7 @@ public class RulesConfigurationPageSaveJob extends Job {
     if (boundToAllProjectsRatio == 1f) {
       // all projects are bound, inform the user about local changes don't apply
       MessageDialogUtils.connectedModeOnlyInformation("Changing rule configuration has no effect",
-        "As all the projects found in the workspace are already in connected mode, rule changes done locally "
+        "As all the projects found in the workspace are already in Connected Mode, rule changes done locally "
           + "will have no impact on the analysis and its results. This has to be done on SonarQube / SonarCloud.",
         LinkTelemetry.RULES_SELECTION_DOCS);
     } else if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
