@@ -46,7 +46,8 @@ public class RulesConfigurationPageSaveJob extends Job {
     } else if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
       MessageDialogUtils.enhancedWithConnectedModeInformation("Are you working in a team?",
         "When using Connected Mode you can benefit from having the rule configuration centralized. It is "
-          + "synchronized to all developers in your team, no manual configuration has to be done locally.");
+          + "synchronized to all project contributers using SonarLint, no manual configuration has to be done "
+          + "locally.");
     }
 
     return Status.OK_STATUS;
