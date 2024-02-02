@@ -61,36 +61,36 @@ public class SonarProjectProvider implements IContentProposalProvider {
 
   public static class ProjectContentProposal implements IContentProposal {
 
-    private final ServerProject remoteProject;
+    private final ServerProject sonarProject;
 
-    public ProjectContentProposal(ServerProject remoteProject) {
-      this.remoteProject = remoteProject;
+    public ProjectContentProposal(ServerProject sonarProject) {
+      this.sonarProject = sonarProject;
     }
 
     @Override
     public String getContent() {
-      return remoteProject.getKey();
+      return sonarProject.getKey();
     }
 
     @Override
     public int getCursorPosition() {
-      return remoteProject.getKey().length();
+      return sonarProject.getKey().length();
     }
 
     @Override
     public String getLabel() {
-      return remoteProject.getName();
+      return sonarProject.getName();
     }
 
     public ServerProject getRemoteProject() {
-      return remoteProject;
+      return sonarProject;
     }
 
     @Override
     public String getDescription() {
       return new StringBuilder()
-        .append("Name: ").append(remoteProject.getName()).append("\n")
-        .append("Key: ").append(remoteProject.getKey()).append("\n")
+        .append("Name: ").append(sonarProject.getName()).append("\n")
+        .append("Key: ").append(sonarProject.getKey()).append("\n")
         .toString();
     }
 

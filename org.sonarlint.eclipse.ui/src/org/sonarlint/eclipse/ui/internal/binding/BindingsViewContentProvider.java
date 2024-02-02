@@ -22,7 +22,7 @@ package org.sonarlint.eclipse.ui.internal.binding;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.RemoteSonarProject;
+import org.sonarlint.eclipse.core.internal.engine.connected.SonarProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class BindingsViewContentProvider extends BaseContentProvider implements ITreeContentProvider {
@@ -36,10 +36,10 @@ public class BindingsViewContentProvider extends BaseContentProvider implements 
   public Object[] getChildren(Object element) {
     if (element instanceof ConnectionFacade) {
       var connection = (ConnectionFacade) element;
-      return connection.getBoundRemoteProjects().toArray();
+      return connection.getBoundSonarProjects().toArray();
     }
-    if (element instanceof RemoteSonarProject) {
-      var project = (RemoteSonarProject) element;
+    if (element instanceof SonarProject) {
+      var project = (SonarProject) element;
       return ((ConnectionFacade) getParent(element)).getBoundProjects(project.getProjectKey()).toArray();
     }
     return new Object[0];
@@ -50,11 +50,11 @@ public class BindingsViewContentProvider extends BaseContentProvider implements 
     if (element instanceof ISonarLintProject) {
       return SonarLintCorePlugin.getConnectionManager()
         .resolveBinding((ISonarLintProject) element)
-        .flatMap(b -> b.getEngineFacade().getCachedRemoteProject(b.getProjectBinding().projectKey()))
+        .flatMap(b -> b.getEngineFacade().getCachedSonarProject(b.getProjectBinding().projectKey()))
         .orElse(null);
     }
-    if (element instanceof RemoteSonarProject) {
-      return SonarLintCorePlugin.getConnectionManager().findById(((RemoteSonarProject) element).getConnectionId()).orElse(null);
+    if (element instanceof SonarProject) {
+      return SonarLintCorePlugin.getConnectionManager().findById(((SonarProject) element).getConnectionId()).orElse(null);
     }
     return null;
   }
@@ -64,8 +64,8 @@ public class BindingsViewContentProvider extends BaseContentProvider implements 
     if (element instanceof ConnectionFacade) {
       return !((ConnectionFacade) element).getBoundProjects().isEmpty();
     }
-    if (element instanceof RemoteSonarProject) {
-      var project = (RemoteSonarProject) element;
+    if (element instanceof SonarProject) {
+      var project = (SonarProject) element;
       return !((ConnectionFacade) getParent(element)).getBoundProjects(project.getProjectKey()).isEmpty();
     }
     return false;

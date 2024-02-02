@@ -103,8 +103,8 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
       .map(EclipseProjectBinding::projectKey)
       .collect(Collectors.toSet());
     if (projectKeys.size() == 1) {
-      // If all projects are bound to the same remote project, then use it as default
-      model.setRemoteProjectKey(projectKeys.iterator().next());
+      // If all projects are bound to the same Sonar project, then use it as default
+      model.setSonarProjectKey(projectKeys.iterator().next());
     }
   }
 
@@ -179,7 +179,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
     } else {
       var connectionId = connection.getId();
       getDialogSettings().put(STORE_LAST_SELECTED_CONNECTION_ID, connectionId);
-      ProjectBindingProcess.scheduleProjectBinding(connectionId, model.getEclipseProjects(), model.getRemoteProjectKey());
+      ProjectBindingProcess.scheduleProjectBinding(connectionId, model.getEclipseProjects(), model.getSonarProjectKey());
       return true;
     }
   }
@@ -189,7 +189,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
     if (event.getSelectedPage() == sonarProjectSelectionWizardPage) {
       Display.getDefault().asyncExec(() -> {
         var success = tryLoadProjectList(sonarProjectSelectionWizardPage);
-        if (success && isEmpty(model.getRemoteProjectKey())) {
+        if (success && isEmpty(model.getSonarProjectKey())) {
           tryAutoBind();
         }
       });
@@ -220,7 +220,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
       }
     }
     if (bestCandidate != null) {
-      model.setRemoteProjectKey(bestCandidate.getKey());
+      model.setSonarProjectKey(bestCandidate.getKey());
     }
 
   }

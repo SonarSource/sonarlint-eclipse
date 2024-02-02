@@ -81,7 +81,7 @@
                   name="org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade">
             </objectClass>
             <objectClass
-                  name="org.sonarlint.eclipse.core.internal.engine.connected.RemoteSonarProject">
+                  name="org.sonarlint.eclipse.core.internal.engine.connected.SonarProject">
             </objectClass>
             <objectClass
                   name="org.sonarlint.eclipse.core.resource.ISonarLintProject">

@@ -21,13 +21,13 @@ package org.sonarlint.eclipse.core.internal.engine.connected;
 
 import java.util.Objects;
 
-public class RemoteSonarProject {
+public class SonarProject {
 
   private final String connectionId;
   private final String name;
   private final String projectKey;
 
-  public RemoteSonarProject(String connectionId, String projectKey, String name) {
+  public SonarProject(String connectionId, String projectKey, String name) {
     this.connectionId = connectionId;
     this.projectKey = projectKey;
     this.name = name;
@@ -58,7 +58,7 @@ public class RemoteSonarProject {
     if ((obj == null) || (getClass() != obj.getClass())) {
       return false;
     }
-    var other = (RemoteSonarProject) obj;
+    var other = (SonarProject) obj;
     return Objects.equals(projectKey, other.projectKey) && Objects.equals(connectionId, other.connectionId) && Objects.equals(name, other.name);
   }
 

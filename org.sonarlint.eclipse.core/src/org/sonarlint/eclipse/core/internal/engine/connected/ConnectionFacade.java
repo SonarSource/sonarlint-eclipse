@@ -255,7 +255,7 @@ public class ConnectionFacade {
       }).collect(toList());
   }
 
-  public List<RemoteSonarProject> getBoundRemoteProjects() {
+  public List<SonarProject> getBoundSonarProjects() {
     return ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
       .map(SonarLintCorePlugin::loadConfig)
@@ -266,11 +266,11 @@ public class ConnectionFacade {
       .distinct()
       .sorted()
       .map(projectKey -> {
-        var remoteProject = getCachedRemoteProject(projectKey);
-        if (remoteProject.isPresent()) {
-          return new RemoteSonarProject(id, remoteProject.get().getKey(), remoteProject.get().getName());
+        var sonarProject = getCachedSonarProject(projectKey);
+        if (sonarProject.isPresent()) {
+          return new SonarProject(id, sonarProject.get().getKey(), sonarProject.get().getName());
         } else {
-          return new RemoteSonarProject(id, projectKey, "<unknown>");
+          return new SonarProject(id, projectKey, "<unknown>");
         }
       })
       .collect(toList());
@@ -321,7 +321,7 @@ public class ConnectionFacade {
     return index;
   }
 
-  public Optional<ServerProject> getCachedRemoteProject(String projectKey) {
+  public Optional<ServerProject> getCachedSonarProject(String projectKey) {
     return Optional.ofNullable(allProjectsByKey.get(projectKey));
   }
 
