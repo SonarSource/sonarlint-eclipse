@@ -31,12 +31,12 @@ import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
 public class ProjectBindingModel extends ModelObject {
 
   public static final String PROPERTY_CONNECTION = "connection";
-  public static final String PROPERTY_REMOTE_PROJECT_KEY = "remoteProjectKey";
+  public static final String PROPERTY_SONAR_PROJECT_KEY = "sonarProjectKey";
   public static final String PROPERTY_PROJECTS = "eclipseProjects";
 
   private List<ISonarLintProject> eclipseProjects;
   private ConnectionFacade connection;
-  private String remoteProjectKey;
+  private String sonarProjectKey;
   private boolean skipServerSelection;
   private TextSearchIndex<ServerProject> projectIndex;
 
@@ -55,14 +55,14 @@ public class ProjectBindingModel extends ModelObject {
     firePropertyChange(PROPERTY_CONNECTION, old, this.connection);
   }
 
-  public String getRemoteProjectKey() {
-    return remoteProjectKey;
+  public String getSonarProjectKey() {
+    return sonarProjectKey;
   }
 
-  public void setRemoteProjectKey(String remoteProjectKey) {
-    var old = this.remoteProjectKey;
-    this.remoteProjectKey = remoteProjectKey;
-    firePropertyChange(PROPERTY_REMOTE_PROJECT_KEY, old, this.remoteProjectKey);
+  public void setSonarProjectKey(String sonarProjectKey) {
+    var old = this.sonarProjectKey;
+    this.sonarProjectKey = sonarProjectKey;
+    firePropertyChange(PROPERTY_SONAR_PROJECT_KEY, old, this.sonarProjectKey);
   }
 
   public List<ISonarLintProject> getEclipseProjects() {

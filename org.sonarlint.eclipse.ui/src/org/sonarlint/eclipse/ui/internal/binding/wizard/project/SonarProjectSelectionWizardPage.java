@@ -41,7 +41,7 @@ public class SonarProjectSelectionWizardPage extends AbstractProjectBindingWizar
   private Binding projectTextBinding;
 
   public SonarProjectSelectionWizardPage(ProjectBindingModel model) {
-    super("remote_project_page", "Choose the SonarQube/SonarCloud project", model, 1);
+    super("sonar_project_page", "Choose the SonarQube/SonarCloud project", model, 1);
   }
 
   @Override
@@ -55,7 +55,7 @@ public class SonarProjectSelectionWizardPage extends AbstractProjectBindingWizar
     var dataBindingContext = new DataBindingContext();
     projectTextBinding = dataBindingContext.bindValue(
       WidgetPropertiesCompat.text(SWT.Modify).observe(projectKeyText),
-      BeanPropertiesCompat.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_REMOTE_PROJECT_KEY)
+      BeanPropertiesCompat.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_SONAR_PROJECT_KEY)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(new MandatoryStringValidator("You must select a project key")),
       null);

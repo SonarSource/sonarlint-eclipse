@@ -25,7 +25,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE.SharedImages;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.RemoteSonarProject;
+import org.sonarlint.eclipse.core.internal.engine.connected.SonarProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -39,8 +39,8 @@ public class BindingsViewLabelProvider extends BaseCellLabelProvider {
       var connection = (ConnectionFacade) element;
       return StringUtils.defaultString(connection.getId());
     }
-    if (element instanceof RemoteSonarProject) {
-      return ((RemoteSonarProject) element).getName();
+    if (element instanceof SonarProject) {
+      return ((SonarProject) element).getName();
     }
     if (element instanceof ISonarLintProject) {
       return ((ISonarLintProject) element).getName();
@@ -61,7 +61,7 @@ public class BindingsViewLabelProvider extends BaseCellLabelProvider {
         return SonarLintImages.SONARQUBE_SERVER_ICON_IMG;
       }
     }
-    if (element instanceof RemoteSonarProject) {
+    if (element instanceof SonarProject) {
       return SonarLintImages.SONARQUBE_PROJECT_ICON_IMG;
     }
     if (element instanceof ISonarLintProject) {
