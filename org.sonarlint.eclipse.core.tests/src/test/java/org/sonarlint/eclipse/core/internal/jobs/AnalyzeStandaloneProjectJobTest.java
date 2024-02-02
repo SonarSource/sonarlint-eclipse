@@ -33,9 +33,11 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -100,7 +102,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
   @Test
   public void analyzeWithRuleParameters() throws Exception {
     // Don't run this test on macOS devices as Node.js might not be found!
-    ignoreMacOS();
+    Assume.assumeFalse(Platform.getOS().equals("macosx"));
 
     var file = (IFile) project.findMember("src/main/sample.js");
     var slProject = new DefaultSonarLintProjectAdapter(project);
