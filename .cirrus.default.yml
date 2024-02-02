@@ -52,7 +52,7 @@ eks_builder_container: &BUILDER_CONTAINER_DEFINITION
     CIRRUS_AWS_ACCOUNT: ${CIRRUS_AWS_ACCOUNT}
   builder_role: cirrus-builder
   builder_image: docker-builder-v*
-  builder_instance_type: t3.small
+  builder_instance_type: m6a.large
   builder_subnet_id: ${CIRRUS_AWS_SUBNET}
 
 maven_cache: &SETUP_MAVEN_CACHE
@@ -77,6 +77,7 @@ build_task:
     <<: *BUILDER_CONTAINER_DEFINITION
     cpu: 4
     memory: 2G
+    type: c6a.large
   env:
     ARTIFACTORY_DEPLOY_REPO: sonarsource-public-qa
     ARTIFACTORY_DEPLOY_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer
@@ -110,6 +111,7 @@ validate_task:
     <<: *BUILDER_CONTAINER_DEFINITION
     cpu: 4
     memory: 4G
+    type: c6a.large
   env:
     DEPLOY_PULL_REQUEST: false
     DISPLAY: :10
@@ -141,6 +143,7 @@ qa_task:
     <<: *BUILDER_CONTAINER_DEFINITION
     cpu: 4
     memory: 12G
+    type: c6a.large
   env:
     ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
     GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
@@ -211,6 +214,7 @@ sonarqube_task:
     <<: *BUILDER_CONTAINER_DEFINITION
     cpu: 4
     memory: 4G
+    type: c6a.large
   env:
     DEPLOY_PULL_REQUEST: false
     DISPLAY: :10
@@ -244,6 +248,7 @@ mend_scan_task:
     <<: *BUILDER_CONTAINER_DEFINITION
     cpu: 4
     memory: 8G
+    type: c6a.large
   env:
     WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
   <<: *SETUP_MAVEN_CACHE
@@ -268,6 +273,7 @@ promote_task:
     <<: *CONTAINER_DEFINITION
     cpu: 2
     memory: 1G
+    type: c6a.large
   env:
     ARTIFACTORY_PROMOTE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     GITHUB_TOKEN: VAULT[development/github/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promotion token]
