@@ -51,7 +51,7 @@ public class ProjectsProviderUtils {
     var allProjects = allProjects();
     var numberOfAllProjects = allProjects.size();
     var boundProjects = allProjects.stream()
-      .filter(prj -> SonarLintCorePlugin.getServersManager().resolveBinding(prj).isPresent())
+      .filter(prj -> SonarLintCorePlugin.getConnectionManager().resolveBinding(prj).isPresent())
       .collect(Collectors.toSet());
     var numberOfBoundProjects = boundProjects.size();
     return numberOfAllProjects == 0 ? 0 : (numberOfBoundProjects / numberOfAllProjects);
@@ -59,6 +59,6 @@ public class ProjectsProviderUtils {
 
   public static Set<String> allConfigurationScopeIds() {
     return allProjects().stream().map(ConfigScopeSynchronizer::getConfigScopeId)
-    .collect(Collectors.toSet());
+      .collect(Collectors.toSet());
   }
 }
