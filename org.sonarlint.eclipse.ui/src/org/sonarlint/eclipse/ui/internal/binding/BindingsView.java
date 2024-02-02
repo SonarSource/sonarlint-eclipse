@@ -54,7 +54,7 @@ import org.eclipse.ui.part.PageBook;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacadeListener;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectionStateListener;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectionManagerListener;
 import org.sonarlint.eclipse.core.internal.telemetry.LinkTelemetry;
 import org.sonarlint.eclipse.ui.internal.Messages;
@@ -76,7 +76,7 @@ public class BindingsView extends CommonNavigator {
   private PageBook book;
 
   private IConnectionManagerListener connectionResourceListener;
-  private IConnectedEngineFacadeListener connectionListener;
+  private IConnectionStateListener connectionListener;
   private IResourceChangeListener projectListener;
 
   public BindingsView() {
