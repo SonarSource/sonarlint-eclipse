@@ -28,6 +28,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -122,8 +123,8 @@ public class SonarLintBackendService {
             StoragePathManager.getDefaultWorkDir(),
             Set.copyOf(embeddedPluginPaths),
             embeddedPlugins,
-            SonarLintUtils.getEnabledLanguages(),
-            SonarLintUtils.getEnabledLanguages(),
+            SonarLintUtils.getStandaloneEnabledLanguages().stream().map(l -> Language.valueOf(l.name())).collect(Collectors.toSet()),
+            SonarLintUtils.getConnectedEnabledLanguages().stream().map(l -> Language.valueOf(l.name())).collect(Collectors.toSet()),
             sqConnections,
             scConnections,
             null,

@@ -19,20 +19,33 @@
  */
 package org.sonarlint.eclipse.core.analysis;
 
-import org.eclipse.jdt.annotation.Nullable;
-import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-
 /**
- * Most analyzers are relying on file extensions to detect languages. In some situations it
- * may be useful to force language.
- * @since 3.0
+ * List of languages supported in SonarLint Eclipse
+ * @since 9.4
  */
-public interface IFileLanguageProvider {
+public enum SonarLintLanguage {
 
-  /**
-   * @return the language of the file, or null to keep default behavior
-   */
-  @Nullable
-  SonarLintLanguage language(ISonarLintFile file);
+  ABAP,
+  APEX,
+  C,
+  CPP,
+  CSS,
+  COBOL,
+  HTML,
+  JAVA,
+  JS,
+  JSP,
+  KOTLIN,
+  PHP,
+  PLI,
+  PLSQL,
+  PYTHON,
+  RPG,
+  RUBY,
+  SCALA,
+  SECRETS,
+  TSQL,
+  TS,
+  XML;
 
 }
