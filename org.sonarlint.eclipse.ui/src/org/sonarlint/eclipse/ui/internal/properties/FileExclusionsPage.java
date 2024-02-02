@@ -101,7 +101,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
       if (bindingOpt.isEmpty()) {
         createLinkToGlobal(parent, pageComponent);
       } else {
-        createLinkToDocumentation(pageComponent, bindingOpt.get().getEngineFacade().isSonarCloud());
+        createLinkToDocumentation(pageComponent, bindingOpt.get().getConnectionFacade().isSonarCloud());
       }
     }
 

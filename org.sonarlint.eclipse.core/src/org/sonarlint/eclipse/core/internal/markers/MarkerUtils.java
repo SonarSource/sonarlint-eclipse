@@ -185,7 +185,7 @@ public final class MarkerUtils {
     if (bindingOptional.isEmpty() || markerServerKey == null) {
       return FindingMatchingStatus.NOT_MATCHED;
     }
-    if (bindingOptional.get().getEngineFacade().isSonarCloud()) {
+    if (bindingOptional.get().getConnectionFacade().isSonarCloud()) {
       return FindingMatchingStatus.MATCHED_WITH_SC;
     }
     return FindingMatchingStatus.MATCHED_WITH_SQ;

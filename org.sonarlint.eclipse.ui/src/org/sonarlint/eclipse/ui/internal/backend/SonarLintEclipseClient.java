@@ -330,7 +330,7 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
         if (!openedFiles.isEmpty() && openedFiles.containsKey(project)) {
           var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(project);
           if (bindingOpt.isPresent()) {
-            var connection = bindingOpt.get().getEngineFacade();
+            var connection = bindingOpt.get().getConnectionFacade();
 
             // present taint vulnerabilities without re-fetching them from the server
             var files = openedFiles.get(project).stream()

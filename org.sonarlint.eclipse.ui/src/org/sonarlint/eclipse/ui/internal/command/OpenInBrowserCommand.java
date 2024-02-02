@@ -43,7 +43,7 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
     var selection = (IStructuredSelection) window.getSelectionService().getSelection();
     var binding = getBinding(getSelectedMarker(selection));
     if (binding.isPresent()) {
-      element.setIcon(binding.get().getEngineFacade().isSonarCloud() ? SonarLintImages.SONARCLOUD_16 : SonarLintImages.SONARQUBE_16);
+      element.setIcon(binding.get().getConnectionFacade().isSonarCloud() ? SonarLintImages.SONARCLOUD_16 : SonarLintImages.SONARQUBE_16);
     }
   }
 
@@ -57,7 +57,7 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
       }
       SonarLintCorePlugin.getTelemetry().taintVulnerabilitiesInvestigatedRemotely();
       var issueKey = (String) selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR);
-      var serverIssueLink = buildLink(binding.get().getEngineFacade().getHost(), binding.get().getProjectBinding().projectKey(), issueKey);
+      var serverIssueLink = buildLink(binding.get().getConnectionFacade().getHost(), binding.get().getProjectBinding().projectKey(), issueKey);
       BrowserUtils.openExternalBrowser(serverIssueLink, window.getShell().getDisplay());
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to open issue in browser", e);

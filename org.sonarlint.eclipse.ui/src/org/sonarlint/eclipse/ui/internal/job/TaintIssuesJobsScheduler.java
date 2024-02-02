@@ -39,7 +39,7 @@ public class TaintIssuesJobsScheduler {
     openedFiles.keySet().forEach(project -> {
       var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(project);
       if (bindingOpt.isPresent()) {
-        var facade = bindingOpt.get().getEngineFacade();
+        var facade = bindingOpt.get().getConnectionFacade();
         var files = openedFiles.get(project).stream()
           .map(file -> file.getFile())
           .collect(Collectors.toList());

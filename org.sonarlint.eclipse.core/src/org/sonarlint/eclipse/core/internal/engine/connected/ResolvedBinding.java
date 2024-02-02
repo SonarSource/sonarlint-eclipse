@@ -23,19 +23,19 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 
 public class ResolvedBinding {
   private final EclipseProjectBinding projectBinding;
-  private final ConnectionFacade engineFacade;
+  private final ConnectionFacade connectionFacade;
 
   public ResolvedBinding(EclipseProjectBinding projectBinding, ConnectionFacade engineFacade) {
     this.projectBinding = projectBinding;
-    this.engineFacade = engineFacade;
+    this.connectionFacade = engineFacade;
   }
 
   public EclipseProjectBinding getProjectBinding() {
     return projectBinding;
   }
 
-  public ConnectionFacade getEngineFacade() {
-    return engineFacade;
+  public ConnectionFacade getConnectionFacade() {
+    return connectionFacade;
   }
 
 }

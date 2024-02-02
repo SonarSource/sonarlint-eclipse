@@ -76,7 +76,7 @@ public class VcsService {
 
     ProjectBranches serverBranches;
     try {
-      serverBranches = bindingOpt.get().getEngineFacade().getServerBranches(bindingOpt.get().getProjectBinding().projectKey());
+      serverBranches = bindingOpt.get().getConnectionFacade().getServerBranches(bindingOpt.get().getProjectBinding().projectKey());
     } catch (StorageException e) {
       LOG.debug("No branches available in the storage", e);
       return null;

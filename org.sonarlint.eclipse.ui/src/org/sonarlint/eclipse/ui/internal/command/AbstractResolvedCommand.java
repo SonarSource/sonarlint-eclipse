@@ -82,7 +82,7 @@ public abstract class AbstractResolvedCommand extends AbstractIssueCommand imple
     if (marker != null) {
       var binding = getBinding(marker);
       if (binding.isPresent()) {
-        element.setIcon(binding.get().getEngineFacade().isSonarCloud()
+        element.setIcon(binding.get().getConnectionFacade().isSonarCloud()
           ? SonarLintImages.SONARCLOUD_16
             : SonarLintImages.SONARQUBE_16);
       }
