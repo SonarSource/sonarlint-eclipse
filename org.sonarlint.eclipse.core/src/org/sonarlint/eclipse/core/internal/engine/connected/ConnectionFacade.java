@@ -80,7 +80,7 @@ public class ConnectionFacade {
   private boolean hasAuth;
   @Nullable
   private ConnectedSonarLintEngine wrappedEngine;
-  private final List<IConnectedEngineFacadeListener> facadeListeners = new ArrayList<>();
+  private final List<IConnectionStateListener> facadeListeners = new ArrayList<>();
   private boolean notificationsDisabled;
   // Cache the project list to avoid dead lock
   private final Map<String, ServerProject> allProjectsByKey = new ConcurrentHashMap<>();
@@ -329,11 +329,11 @@ public class ConnectionFacade {
     return withEngine(engine -> engine.getExcludedFiles(binding, files, ISonarLintFile::getProjectRelativePath, testFilePredicate)).orElse(emptyList());
   }
 
-  public void addConnectedEngineListener(IConnectedEngineFacadeListener listener) {
+  public void addConnectedEngineListener(IConnectionStateListener listener) {
     facadeListeners.add(listener);
   }
 
-  public void removeConnectedEngineListener(IConnectedEngineFacadeListener listener) {
+  public void removeConnectedEngineListener(IConnectionStateListener listener) {
     facadeListeners.remove(listener);
   }
 
