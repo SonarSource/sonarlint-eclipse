@@ -20,18 +20,20 @@
 package org.sonarlint.eclipse.core.internal.engine;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
+import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.plugin.commons.SkipReason;
 
 import static java.util.stream.Collectors.toList;
-import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.getEnabledLanguages;
 import static org.sonarsource.sonarlint.core.commons.Language.getLanguagesByPluginKey;
 
 public class SkippedPluginsNotifier {
@@ -48,10 +50,16 @@ public class SkippedPluginsNotifier {
       // Language enabling is not under user control, so no need to signal it
       .filter(p -> !(p.skipReason().get() instanceof SkipReason.LanguagesNotEnabled))
       .collect(toList());
+    var enabledLanguages = EnumSet.noneOf(SonarLintLanguage.class);
+    enabledLanguages.addAll(SonarLintUtils.getStandaloneEnabledLanguages());
+    if (connectionId != null) {
+      enabledLanguages.addAll(SonarLintUtils.getConnectedEnabledLanguages());
+    }
+
     if (!skippedPlugins.isEmpty()) {
       var skippedLanguages = skippedPlugins.stream()
         .flatMap(p -> getLanguagesByPluginKey(p.key()).stream())
-        .filter(l -> getEnabledLanguages().contains(l))
+        .filter(l -> enabledLanguages.contains(SonarLintUtils.convert(l)))
         .collect(toList());
       var longMessage = buildLongMessage(connectionId, skippedPlugins, skippedLanguages);
       String notificationTitle;

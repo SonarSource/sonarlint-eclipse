@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
@@ -41,12 +42,12 @@ public class SonarLintUtils {
    *
    *  Currently the only sub-plugins bringing their own languages are JDT (Java/JSP) and CDT (C/C++).
    */
-  public static final Set<Language> STANDALONE_MODE_LANGUAGES = EnumSet.of(Language.PYTHON, Language.JS, Language.TS,
-    Language.HTML, Language.CSS, Language.PHP, Language.XML, Language.SECRETS);
-  public static final Set<Language> STANDALONE_MODE_LANGUAGES_JDT = EnumSet.of(Language.JAVA, Language.JSP);
-  public static final Set<Language> CONNECTED_MODE_LANGUAGES = EnumSet.of(Language.ABAP, Language.APEX, Language.COBOL,
-    Language.KOTLIN, Language.PLI, Language.PLSQL, Language.RPG, Language.RUBY, Language.SCALA, Language.TSQL);
-  public static final Set<Language> CONNECTED_MODE_LANGUAGES_CDT = EnumSet.of(Language.C, Language.CPP);
+  private static final Set<SonarLintLanguage> DEFAULT_LANGUAGES = EnumSet.of(SonarLintLanguage.PYTHON, SonarLintLanguage.JS, SonarLintLanguage.TS,
+    SonarLintLanguage.HTML, SonarLintLanguage.CSS, SonarLintLanguage.PHP, SonarLintLanguage.XML, SonarLintLanguage.SECRETS);
+  private static final Set<SonarLintLanguage> OPTIONAL_LANGUAGES = EnumSet.of(SonarLintLanguage.JAVA, SonarLintLanguage.JSP);
+  private static final Set<SonarLintLanguage> DEFAULT_CONNECTED_LANGUAGES = EnumSet.of(SonarLintLanguage.ABAP, SonarLintLanguage.APEX, SonarLintLanguage.COBOL,
+    SonarLintLanguage.KOTLIN, SonarLintLanguage.PLI, SonarLintLanguage.PLSQL, SonarLintLanguage.RPG, SonarLintLanguage.RUBY, SonarLintLanguage.SCALA, SonarLintLanguage.TSQL);
+  private static final Set<SonarLintLanguage> OPTIONAL_CONNECTED_LANGUAGES = EnumSet.of(SonarLintLanguage.C, SonarLintLanguage.CPP);
 
   private SonarLintUtils() {
     // utility class, forbidden constructor
@@ -73,16 +74,38 @@ public class SonarLintUtils {
     return SonarLintCorePlugin.getInstance().getBundle().getVersion().toString();
   }
 
-  public static Set<Language> getEnabledLanguages() {
-    var enabledLanguages = EnumSet.noneOf(Language.class);
-    enabledLanguages.addAll(STANDALONE_MODE_LANGUAGES);
-    enabledLanguages.addAll(CONNECTED_MODE_LANGUAGES);
+  public static Set<SonarLintLanguage> getStandaloneEnabledLanguages() {
+    var enabledLanguages = EnumSet.noneOf(SonarLintLanguage.class);
+    enabledLanguages.addAll(DEFAULT_LANGUAGES);
 
     var configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
     for (var configurator : configurators) {
-      enabledLanguages.addAll(configurator.whitelistedLanguages());
+      var enableLanguages = configurator.enableLanguages();
+      enableLanguages.stream().filter(OPTIONAL_LANGUAGES::contains).forEach(enabledLanguages::add);
     }
     return enabledLanguages;
+  }
+
+  public static Set<SonarLintLanguage> getConnectedEnabledLanguages() {
+    var enabledLanguages = EnumSet.noneOf(SonarLintLanguage.class);
+    enabledLanguages.addAll(DEFAULT_CONNECTED_LANGUAGES);
+
+    var configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
+    for (var configurator : configurators) {
+      var enableLanguages = configurator.enableLanguages();
+      enableLanguages.stream().filter(OPTIONAL_CONNECTED_LANGUAGES::contains).forEach(enabledLanguages::add);
+    }
+    return enabledLanguages;
+  }
+
+  @Nullable
+  public static SonarLintLanguage convert(Language engineLanguage) {
+    try {
+      return SonarLintLanguage.valueOf(engineLanguage.name());
+    } catch (IllegalArgumentException e) {
+      // The language doesn't exist in SLE
+      return null;
+    }
   }
 
   public static int getPlatformPid() {

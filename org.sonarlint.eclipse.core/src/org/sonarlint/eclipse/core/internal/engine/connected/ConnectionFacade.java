@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.engine.connected;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import java.util.stream.Stream;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.backend.PluginPathHelper;
@@ -95,12 +97,15 @@ public class ConnectionFacade {
       SonarLintLogger.get().info("Starting SonarLint engine for connection '" + id + "'...");
       var nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
       var builder = isSonarCloud() ? ConnectedGlobalConfiguration.sonarCloudBuilder() : ConnectedGlobalConfiguration.sonarQubeBuilder();
+      var enabledLanguages = EnumSet.noneOf(SonarLintLanguage.class);
+      enabledLanguages.addAll(SonarLintUtils.getStandaloneEnabledLanguages());
+      enabledLanguages.addAll(SonarLintUtils.getConnectedEnabledLanguages());
       builder
         .setConnectionId(getId())
         .setWorkDir(StoragePathManager.getConnectionSpecificWorkDir(getId()))
         .setStorageRoot(StoragePathManager.getStorageDir())
         .setLogOutput(new SonarLintAnalyzerLogOutput())
-        .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
+        .addEnabledLanguages(enabledLanguages.stream().map(l -> Language.valueOf(l.name())).toArray(Language[]::new))
         .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
         .setClientPid(SonarLintUtils.getPlatformPid());
 

@@ -39,6 +39,7 @@ import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
+import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.internal.jobs.DefaultPreAnalysisContext;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -121,7 +122,7 @@ public class CdtUtils {
   }
 
   @Nullable
-  private String getFileLanguage(IProject project, IFile file) {
+  private SonarLintLanguage getFileLanguage(IProject project, IFile file) {
     var location = file.getLocation();
     if (location == null) {
       return null;
@@ -135,10 +136,10 @@ public class CdtUtils {
     switch (contentType.getId()) {
       case CCorePlugin.CONTENT_TYPE_CHEADER:
       case CCorePlugin.CONTENT_TYPE_CSOURCE:
-        return "c";
+        return SonarLintLanguage.C;
       case CCorePlugin.CONTENT_TYPE_CXXHEADER:
       case CCorePlugin.CONTENT_TYPE_CXXSOURCE:
-        return "cpp";
+        return SonarLintLanguage.CPP;
       default:
         return null;
     }
@@ -152,7 +153,7 @@ public class CdtUtils {
   }
 
   @Nullable
-  public String language(IFile iFile) {
+  public SonarLintLanguage language(IFile iFile) {
     return getFileLanguage(iFile.getProject(), iFile);
   }
 

@@ -20,11 +20,13 @@
 package org.sonarlint.eclipse.core.internal.engine;
 
 import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.function.Function;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.backend.PluginPathHelper;
@@ -48,11 +50,13 @@ public class StandaloneEngineFacade {
     if (wrappedEngine == null) {
       SonarLintLogger.get().info("Starting standalone SonarLint engine " + SonarLintUtils.getPluginVersion() + "...");
       var nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
+      var enabledLanguages = EnumSet.noneOf(SonarLintLanguage.class);
+      enabledLanguages.addAll(SonarLintUtils.getStandaloneEnabledLanguages());
       var globalConfig = StandaloneGlobalConfiguration.builder()
         .addPlugins(PluginPathHelper.getEmbeddedPluginPaths().stream().toArray(Path[]::new))
         .setWorkDir(StoragePathManager.getDefaultWorkDir())
         .setLogOutput(new SonarLintAnalyzerLogOutput())
-        .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
+        .addEnabledLanguages(enabledLanguages.stream().map(l -> Language.valueOf(l.name())).toArray(Language[]::new))
         .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
         .setClientPid(SonarLintUtils.getPlatformPid()).build();
       try {

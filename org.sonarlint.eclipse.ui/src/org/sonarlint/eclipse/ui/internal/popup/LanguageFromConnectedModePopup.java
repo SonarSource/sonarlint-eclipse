@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -41,9 +42,9 @@ import org.sonarsource.sonarlint.core.commons.Language;
  */
 public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
   private final List<ISonarLintProject> projects;
-  private final List<Language> languages;
+  private final List<SonarLintLanguage> languages;
 
-  public LanguageFromConnectedModePopup(List<ISonarLintProject> projects, List<Language> languages) {
+  public LanguageFromConnectedModePopup(List<ISonarLintProject> projects, List<SonarLintLanguage> languages) {
     this.projects = projects;
     this.languages = languages;
   }
@@ -51,13 +52,17 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
   @Override
   protected String getMessage() {
     if (languages.size() == 1) {
-      return "You tried to analyze a " + languages.get(0).getLabel()
+      return "You tried to analyze a " + getLabel(languages.get(0))
         + " file. This language analysis is only available in Connected Mode.";
     }
 
-    var languagesList = String.join(" / ", languages.stream().map(l -> l.getLabel()).collect(Collectors.toList()));
+    var languagesList = String.join(" / ", languages.stream().map(LanguageFromConnectedModePopup::getLabel).collect(Collectors.toList()));
     return "You tried to analyze " + languagesList
       + " files. These language analyses are only available in Connected Mode.";
+  }
+
+  private static String getLabel(SonarLintLanguage language) {
+    return Language.valueOf(language.name()).getLabel();
   }
 
   @Override
@@ -93,9 +98,9 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
   }
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
-  public static void displayPopupIfNotIgnored(List<ISonarLintProject> projects, List<Language> languages) {
+  public static void displayPopupIfNotIgnored(List<ISonarLintProject> projects, List<SonarLintLanguage> languages) {
     if (languages.isEmpty() || PopupUtils.popupCurrentlyDisplayed(LanguageFromConnectedModePopup.class)
-      || SonarLintGlobalConfiguration.ignoreMissingFeatureNotifications() ) {
+      || SonarLintGlobalConfiguration.ignoreMissingFeatureNotifications()) {
       return;
     }
 

@@ -48,6 +48,7 @@ import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IPostAnalysisContext;
+import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -82,7 +83,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   private final boolean shouldClearReport;
   private final boolean checkUnsupportedLanguages;
   private final Collection<FileWithDocument> files;
-  private final EnumSet<Language> unavailableLanguagesReference = EnumSet.noneOf(Language.class);
+  private final EnumSet<SonarLintLanguage> unavailableLanguagesReference = EnumSet.noneOf(SonarLintLanguage.class);
 
   protected AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
@@ -167,7 +168,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
 
       SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners(new AnalysisEvent() {
         @Override
-        public Set<Language> getUnavailableLanguages() {
+        public Set<SonarLintLanguage> getUnavailableLanguages() {
           return unavailableLanguagesReference;
         }
 
@@ -226,11 +227,11 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
         // to handle it accordingly in the UI (e.g. display notification to the user).
         var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(getProject());
         if (bindingOpt.isEmpty()) {
-          var languages = result.languagePerFile().values().stream().collect(Collectors.toCollection(HashSet::new));
-          var languagesConnectedMode = EnumSet.noneOf(Language.class);
-          languagesConnectedMode.addAll(SonarLintUtils.CONNECTED_MODE_LANGUAGES);
-          languagesConnectedMode.addAll(SonarLintUtils.CONNECTED_MODE_LANGUAGES_CDT);
-          languages.retainAll(languagesConnectedMode);
+          var languages = result.languagePerFile().values().stream()
+            .map(SonarLintUtils::convert)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toCollection(HashSet::new));
+          languages.retainAll(SonarLintUtils.getConnectedEnabledLanguages());
           unavailableLanguagesReference.addAll(languages);
         }
       }
@@ -264,7 +265,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
 
   @Nullable
   private static Language tryDetectLanguage(ISonarLintFile file) {
-    String language = null;
+    SonarLintLanguage language = null;
     for (var languageProvider : SonarLintExtensionTracker.getInstance().getLanguageProviders()) {
       var detectedLanguage = languageProvider.language(file);
       if (detectedLanguage != null) {
@@ -275,7 +276,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
         }
       }
     }
-    return language != null ? Language.forKey(language).orElse(null) : null;
+    return language != null ? Language.valueOf(language.name()) : null;
   }
 
   private static Collection<ProjectConfigurator> configureDeprecated(final ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze,

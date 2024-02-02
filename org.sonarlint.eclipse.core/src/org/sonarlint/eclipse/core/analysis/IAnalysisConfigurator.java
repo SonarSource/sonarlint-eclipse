@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.commons.Language;
 
 /**
  * Implemented by components that configure the analysis on certain environments.
@@ -51,26 +50,13 @@ public interface IAnalysisConfigurator {
   }
 
   /**
-   * By default SonarLint Eclipse will exclude some analyzers that are not working out of the box without some requirements.
-   * If this IAnalysisConfigurator is fulfilling some requirements, then you can whitelist the associated plugin.
-   * @return List of plugin keys that should be whitelisted (e.g. java, cpp, cobol, ...)
-   * @since 4.2
-   * @deprecated starting with 5.0, IAnalysisConfigurator should provide explicitly enabled languages instead
-   * @see #whitelistedLanguages()
+   * By default SonarLint Eclipse will disable some languages that are not working out of the box without some requirements.
+   * If this IAnalysisConfigurator is fulfilling some requirements, then you can enable the associated language.
+   * @return List of languages that should be enabled (e.g. {@link SonarLintLanguage#JAVA}, {@link SonarLintLanguage#CPP}, {@link SonarLintLanguage#COBOL}, ...)
+   * @see SonarLintLanguage
+   * @since 9.4
    */
-  @Deprecated
-  default Set<String> whitelistedPlugins() {
-    return Collections.emptySet();
-  }
-
-  /**
-   * By default SonarLint Eclipse will exclude some analyzers that are not working out of the box without some requirements.
-   * If this IAnalysisConfigurator is fulfilling some requirements, then you can whitelist the associated language.
-   * @return List of languages that should be whitelisted (e.g. {@link Language#JAVA}, {@link Language#CPP}, {@link Language#COBOL}, ...)
-   * @see Language
-   * @since 5.0
-   */
-  default Set<Language> whitelistedLanguages() {
+  default Set<SonarLintLanguage> enableLanguages() {
     return Collections.emptySet();
   }
 }
