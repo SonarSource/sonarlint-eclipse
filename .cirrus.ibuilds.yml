@@ -20,6 +20,12 @@ eks_container: &CONTAINER_DEFINITION
   region: eu-central-1
   cluster_name: ${CIRRUS_CLUSTER_NAME}
   namespace: default
+  nodeSelectorTerms:
+      - matchExpressions:
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values:
+            - m6a.large
 
 eks_builder_container: &BUILDER_CONTAINER_DEFINITION
   <<: *CONTAINER_DEFINITION
