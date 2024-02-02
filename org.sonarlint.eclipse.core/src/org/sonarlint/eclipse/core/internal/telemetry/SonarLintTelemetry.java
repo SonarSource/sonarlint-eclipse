@@ -296,7 +296,7 @@ public class SonarLintTelemetry {
       .filter(p -> p.isOpen() && SonarLintCorePlugin.loadConfig(p).isBound())
       .map(SonarLintCorePlugin.getConnectionManager()::resolveBinding)
       .flatMap(Optional::stream)
-      .map(ResolvedBinding::getEngineFacade)
+      .map(ResolvedBinding::getConnectionFacade)
       .anyMatch(ConnectionFacade::isSonarCloud);
   }
 

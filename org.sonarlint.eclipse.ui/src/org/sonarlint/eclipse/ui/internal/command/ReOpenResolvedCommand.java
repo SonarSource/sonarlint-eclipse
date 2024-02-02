@@ -79,7 +79,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
 
   private void afterCheckSuccessful(ISonarLintProject project, ISonarLintFile file, Boolean isTaintVulnerability,
     ReopenIssueResponse result, ResolvedBinding resolvedBinding) {
-    var isSonarCloud = resolvedBinding.getEngineFacade().isSonarCloud();
+    var isSonarCloud = resolvedBinding.getConnectionFacade().isSonarCloud();
 
     if (!result.isIssueReopened()) {
       currentWindow.getShell().getDisplay()
@@ -90,7 +90,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
     }
 
     currentWindow.getShell().getDisplay().asyncExec(() -> {
-      var job = new ReOpenResolvedJob(project, resolvedBinding.getEngineFacade(), file,
+      var job = new ReOpenResolvedJob(project, resolvedBinding.getConnectionFacade(), file,
         isTaintVulnerability);
       job.schedule();
     });

@@ -50,7 +50,7 @@ public class BindingsViewContentProvider extends BaseContentProvider implements 
     if (element instanceof ISonarLintProject) {
       return SonarLintCorePlugin.getConnectionManager()
         .resolveBinding((ISonarLintProject) element)
-        .flatMap(b -> b.getEngineFacade().getCachedSonarProject(b.getProjectBinding().projectKey()))
+        .flatMap(b -> b.getConnectionFacade().getCachedSonarProject(b.getProjectBinding().projectKey()))
         .orElse(null);
     }
     if (element instanceof SonarProject) {

@@ -183,7 +183,7 @@ public class OpenIssueInEclipseJob extends Job {
     if (markerOpt.isEmpty()) {
       if (!recreatedMarkersAlready) {
         // Sync Taint Vulnerabilities and re-run this job
-        var job = new TaintIssuesUpdateAfterSyncJob(binding.getEngineFacade(), project,
+        var job = new TaintIssuesUpdateAfterSyncJob(binding.getConnectionFacade(), project,
           List.of(file));
         addJobChangeListener(job);
         job.schedule();

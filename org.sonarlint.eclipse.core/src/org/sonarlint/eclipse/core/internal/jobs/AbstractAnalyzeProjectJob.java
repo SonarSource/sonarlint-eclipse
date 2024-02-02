@@ -96,7 +96,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   public static AbstractSonarProjectJob create(AnalyzeProjectRequest request) {
     return SonarLintCorePlugin.getConnectionManager()
       .resolveBinding(request.getProject())
-      .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request, b.getProjectBinding(), b.getEngineFacade()))
+      .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request, b.getProjectBinding(), b.getConnectionFacade()))
       .orElseGet(() -> new AnalyzeStandaloneProjectJob(request));
   }
 

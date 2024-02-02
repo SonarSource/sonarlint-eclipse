@@ -90,8 +90,8 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
 
   private void afterCheckSuccessful(IMarker marker, ISonarLintProject project, ISonarLintFile file, String issueKey,
     Boolean isTaintVulnerability, CheckStatusChangePermittedResponse result, ResolvedBinding resolvedBinding) {
-    var hostURL = resolvedBinding.getEngineFacade().getHost();
-    var isSonarCloud = resolvedBinding.getEngineFacade().isSonarCloud();
+    var hostURL = resolvedBinding.getConnectionFacade().getHost();
+    var isSonarCloud = resolvedBinding.getConnectionFacade().isSonarCloud();
 
     if (!result.isPermitted()) {
       currentWindow.getShell().getDisplay()
@@ -107,7 +107,7 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
         var newStatus = dialog.getFinalTransition();
         var comment = dialog.getFinalComment();
 
-        var job = new MarkAsResolvedJob(project, resolvedBinding.getEngineFacade(), file,
+        var job = new MarkAsResolvedJob(project, resolvedBinding.getConnectionFacade(), file,
           issueKey, newStatus, StringUtils.trimToNull(comment), isTaintVulnerability);
         job.schedule();
       }

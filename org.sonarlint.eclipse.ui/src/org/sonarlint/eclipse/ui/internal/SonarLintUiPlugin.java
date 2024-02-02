@@ -280,7 +280,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         var aProject = entry.getKey();
         var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(aProject);
         if (bindingOpt.isPresent()) {
-          new TaintIssuesUpdateOnFileOpenedJob(bindingOpt.get().getEngineFacade(),
+          new TaintIssuesUpdateOnFileOpenedJob(bindingOpt.get().getConnectionFacade(),
             aProject, entry.getValue().stream().map(f -> f.getFile()).collect(Collectors.toList()), bindingOpt.get().getProjectBinding()).schedule();
         }
       }

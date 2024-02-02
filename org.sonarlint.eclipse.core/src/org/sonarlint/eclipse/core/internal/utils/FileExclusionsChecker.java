@@ -72,7 +72,7 @@ public class FileExclusionsChecker {
       .ifPresent(binding -> {
         var testFileClassifier = TestFileClassifier.get();
         try {
-          var excludedByServerSideExclusions = binding.getEngineFacade().getServerFileExclusions(binding.getProjectBinding(), notExcluded,
+          var excludedByServerSideExclusions = binding.getConnectionFacade().getServerFileExclusions(binding.getProjectBinding(), notExcluded,
             testFileClassifier::isTest);
           notExcluded.removeAll(excludedByServerSideExclusions);
           excludedByServerSideExclusions.forEach(file -> {
