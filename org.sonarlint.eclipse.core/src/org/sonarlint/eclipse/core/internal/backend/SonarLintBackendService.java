@@ -134,7 +134,7 @@ public class SonarLintBackendService {
           throw new IllegalStateException("Unable to initialize the SonarLint Backend", e);
         }
         connectionSynchronizer = new ConnectionSynchronizer(backend);
-        SonarLintCorePlugin.getConnectionManager().addServerLifecycleListener(connectionSynchronizer);
+        SonarLintCorePlugin.getConnectionManager().addConnectionManagerListener(connectionSynchronizer);
 
         configScopeSynchronizer = new ConfigScopeSynchronizer(backend);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(configScopeSynchronizer);
@@ -207,7 +207,7 @@ public class SonarLintBackendService {
       configScopeSynchronizer = null;
     }
     if (connectionSynchronizer != null) {
-      SonarLintCorePlugin.getConnectionManager().removeServerLifecycleListener(connectionSynchronizer);
+      SonarLintCorePlugin.getConnectionManager().removeConnectionManagerListener(connectionSynchronizer);
       connectionSynchronizer = null;
     }
     var backendLocalCopy = backend;

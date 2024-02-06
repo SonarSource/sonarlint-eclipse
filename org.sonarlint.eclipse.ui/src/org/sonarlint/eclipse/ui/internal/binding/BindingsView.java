@@ -258,7 +258,7 @@ public class BindingsView extends CommonNavigator {
         facade.removeConnectedEngineListener(connectionListener);
       }
     };
-    SonarLintCorePlugin.getConnectionManager().addServerLifecycleListener(connectionResourceListener);
+    SonarLintCorePlugin.getConnectionManager().addConnectionManagerListener(connectionResourceListener);
 
     connectionListener = facade -> {
       refreshConnectionState();
@@ -329,7 +329,7 @@ public class BindingsView extends CommonNavigator {
 
   @Override
   public void dispose() {
-    SonarLintCorePlugin.getConnectionManager().removeServerLifecycleListener(connectionResourceListener);
+    SonarLintCorePlugin.getConnectionManager().removeConnectionManagerListener(connectionResourceListener);
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(projectListener);
     super.dispose();
   }

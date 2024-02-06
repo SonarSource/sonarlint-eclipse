@@ -254,7 +254,7 @@ public class ConnectedEngineFacadeManagerTest {
   }
 
   private void addListener(List<ConnectionFacade> removed, List<ConnectionFacade> changed, List<ConnectionFacade> added) {
-    manager.addServerLifecycleListener(new IConnectionManagerListener() {
+    manager.addConnectionManagerListener(new IConnectionManagerListener() {
 
       @Override
       public void connectionRemoved(ConnectionFacade facade) {

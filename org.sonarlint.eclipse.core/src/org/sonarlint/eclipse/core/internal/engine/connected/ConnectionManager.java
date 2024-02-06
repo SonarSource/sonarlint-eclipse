@@ -179,13 +179,13 @@ public class ConnectionManager {
     facadesByConnectionId.values().forEach(c -> c.stop());
   }
 
-  public void addServerLifecycleListener(IConnectionManagerListener listener) {
+  public void addConnectionManagerListener(IConnectionManagerListener listener) {
     synchronized (connectionsListeners) {
       connectionsListeners.add(listener);
     }
   }
 
-  public void removeServerLifecycleListener(IConnectionManagerListener listener) {
+  public void removeConnectionManagerListener(IConnectionManagerListener listener) {
     synchronized (connectionsListeners) {
       connectionsListeners.remove(listener);
     }
