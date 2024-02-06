@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.resources;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -40,8 +41,40 @@ public class ProjectsProviderUtils {
       .collect(Collectors.toSet());
   }
 
+  public enum WorkspaceProjectsBindingRatio {
+    NONE_BOUND,
+    SOME_BOUND,
+    ALL_BOUND
+  }
+
+  /**
+   *  Useful when we want SonarLint to behave differently when
+   *  - no project bound (ret = 0)
+   *  - at least one project bound (0 < ret < 1)
+   *  - all projects bound (ret = 1)
+   */
+  public static WorkspaceProjectsBindingRatio boundToAllProjectsRatio() {
+    var allProjects = allProjects();
+    var numberOfAllProjects = allProjects.size();
+    if (numberOfAllProjects == 0) {
+      return WorkspaceProjectsBindingRatio.NONE_BOUND;
+    }
+
+    var boundProjects = allProjects.stream()
+      .filter(prj -> SonarLintCorePlugin.getConnectionManager().resolveBinding(prj).isPresent())
+      .collect(Collectors.toSet());
+    var ratio = boundProjects.size() / numberOfAllProjects;
+    if (ratio == 0f) {
+      return WorkspaceProjectsBindingRatio.NONE_BOUND;
+    }
+
+    return ratio == 1f
+      ? WorkspaceProjectsBindingRatio.ALL_BOUND
+      : WorkspaceProjectsBindingRatio.SOME_BOUND;
+  }
+
   public static Set<String> allConfigurationScopeIds() {
     return allProjects().stream().map(ConfigScopeSynchronizer::getConfigScopeId)
-    .collect(Collectors.toSet());
+      .collect(Collectors.toSet());
   }
 }

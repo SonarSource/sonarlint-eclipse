@@ -113,7 +113,7 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
     showViewSubMenu.add(new ShowViewAction("On-The-Fly", OnTheFlyIssuesView.ID, SonarLintImages.VIEW_ON_THE_FLY, "Display issues found by the on-the-fly analysis"));
     showViewSubMenu.add(new ShowViewAction("Report", SonarLintReportView.ID, SonarLintImages.VIEW_REPORT, "Display issues found by manually triggered analyses"));
     showViewSubMenu.add(new ShowViewAction("Rule Description", RuleDescriptionWebView.ID, SonarLintImages.VIEW_RULE, "Display rule description for the selected issue"));
-    showViewSubMenu.add(new ShowViewAction("Bindings", BindingsView.ID, SonarLintImages.VIEW_BINDINGS, "Allow to configure connections and bindings for SonarLint connected mode"));
+    showViewSubMenu.add(new ShowViewAction("Bindings", BindingsView.ID, SonarLintImages.VIEW_BINDINGS, "Allow to configure connections and bindings for SonarLint Connected Mode"));
     showViewSubMenu.add(new ShowViewAction("Security Hotspots", HotspotsView.ID, SonarLintImages.VIEW_HOTSPOTS, "Show security hotspots opened from SonarQube"));
     showViewSubMenu.add(new ShowViewAction("Issue locations", IssueLocationsView.ID, SonarLintImages.VIEW_LOCATIONS, "Show secondary locations or flows for the selected issue"));
     showViewSubMenu.add(new ShowViewAction("Taint Vulnerabilities", TaintVulnerabilitiesView.ID, SonarLintImages.VIEW_VULNERABILITIES,

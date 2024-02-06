@@ -40,8 +40,8 @@ import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
+import org.sonarlint.eclipse.ui.internal.job.RulesConfigurationPageSaveJob;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
-import org.sonarlint.eclipse.ui.internal.util.MessageDialogUtils;
 import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
 
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
@@ -57,7 +57,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
 
   @Override
   public void init(IWorkbench workbench) {
-    setDescription("Configure rules used for SonarLint analysis for projects not in connected mode.");
+    setDescription("Configure rules used for SonarLint analysis for projects not in Connected Mode.");
   }
 
   @Override
@@ -71,8 +71,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     label.setText("When a project is connected to <a>SonarQube/SonarCloud</a>, "
       + "configuration from the server applies.");
     label.addListener(SWT.Selection,
-      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_LINK, e.display)
-    );
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_LINK, e.display));
 
     initialRuleConfigs = SonarLintGlobalConfiguration.readRulesConfig();
     rulesConfigurationPart = new RulesConfigurationPart(() -> loadRuleDetails(), initialRuleConfigs);
@@ -98,12 +97,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     if (!newRuleConfigs.equals(initialRuleConfigs)) {
       initialRuleConfigs = newRuleConfigs;
       AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
-
-      if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
-        MessageDialogUtils.enhancedWithConnectedModeInformation("Are you working in a team?",
-          "When using Connected Mode you can benefit from having the rule configuration synchronized to all "
-          + "developers in your team instead of everyone having to configure it locally!");
-      }
+      new RulesConfigurationPageSaveJob().schedule();
     }
     return true;
   }

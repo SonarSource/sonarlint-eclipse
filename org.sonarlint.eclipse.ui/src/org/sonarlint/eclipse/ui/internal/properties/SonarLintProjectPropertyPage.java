@@ -138,7 +138,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
         .setText("Bound to the project '" + projectBinding.get().projectKey() + "' on connection '" + serverName(projectBinding.get().connectionId()) + "'");
       bindLink.setText("<a>Update project binding</a>");
     } else {
-      boundDetails.setText("Using SonarLint in connected mode with SonarQube/SonarCloud will offer you a lot of benefits. <a>Learn more</a>");
+      boundDetails.setText("Using SonarLint in Connected Mode with SonarQube/SonarCloud will offer you a lot of benefits. <a>Learn more</a>");
       bindLink.setText("<a>Bind this Eclipse project to SonarQube/SonarCloud...</a>");
     }
     if (projectBinding.isPresent() && SonarLintCorePlugin.getConnectionManager().resolveBinding(getProject()).isEmpty()) {

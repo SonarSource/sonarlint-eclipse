@@ -27,7 +27,7 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 
 public class AssistCreatingManualConnectionJob extends AbstractAssistCreatingConnectionJob {
   public AssistCreatingManualConnectionJob(String serverUrl) {
-    super("Assist manual creation of connected mode", serverUrl, false);
+    super("Assist manual creation of Connected Mode", serverUrl, false);
   }
 
   @Override

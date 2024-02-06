@@ -34,6 +34,7 @@ public class SonarLintDocumentation {
   public static final String MARK_ISSUES_LINK = BASE_DOCS_URL + "/using-sonarlint/fixing-issues/#marking-issues";
   public static final String FILE_EXCLUSIONS = BASE_DOCS_URL + "/using-sonarlint/file-exclusions/";
   public static final String RULES = BASE_DOCS_URL + "/using-sonarlint/rules/";
+  public static final String RULES_SELECTION = RULES + "#rule-selection";
   public static final String TROUBLESHOOTING_LINK = BASE_DOCS_URL + "/troubleshooting/";
 
   private static final String BASE_MARKETING_URL = "https://www.sonarsource.com";
