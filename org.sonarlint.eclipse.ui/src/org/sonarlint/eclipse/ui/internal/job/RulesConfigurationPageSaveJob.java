@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils.WorkspaceProjectsBindingRatio;
 import org.sonarlint.eclipse.core.internal.telemetry.LinkTelemetry;
 import org.sonarlint.eclipse.ui.internal.util.MessageDialogUtils;
 
@@ -37,7 +38,7 @@ public class RulesConfigurationPageSaveJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     var boundToAllProjectsRatio = ProjectsProviderUtils.boundToAllProjectsRatio();
-    if (boundToAllProjectsRatio == 1f) {
+    if (boundToAllProjectsRatio == WorkspaceProjectsBindingRatio.ALL_BOUND) {
       // all projects are bound, inform the user about local changes don't apply
       MessageDialogUtils.connectedModeOnlyInformation("Changing rule configuration has no effect",
         "As all the projects found in the workspace are already in Connected Mode, rule changes done locally "
