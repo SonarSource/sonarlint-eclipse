@@ -49,6 +49,8 @@ public class SkippedPluginsNotifier {
       .filter(p -> !(p.skipReason().get() instanceof SkipReason.UnsatisfiedRuntimeRequirement))
       // Language enabling is not under user control, so no need to signal it
       .filter(p -> !(p.skipReason().get() instanceof SkipReason.LanguagesNotEnabled))
+      // when a feature like DBD is disabled, the related plugins are skipped, but this is expected
+      .filter(p -> !(p.skipReason().get() instanceof SkipReason.UnsupportedPlugin))
       .collect(toList());
     var enabledLanguages = EnumSet.noneOf(SonarLintLanguage.class);
     enabledLanguages.addAll(SonarLintUtils.getStandaloneEnabledLanguages());
