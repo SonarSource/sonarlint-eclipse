@@ -40,6 +40,7 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -185,8 +186,12 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
 
   @Override
   public void didChangeNodeJs(Path nodeJsPath, String version) {
-    // TODO Restart all engines
-
+    // Node.js path is passed at engine startup, so we have to restart them all to ensure the new value is taken
+    // into account for the next analysis.
+    SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().stop();
+    SonarLintCorePlugin.getConnectionManager().getConnections().forEach(f -> f.stop());
+    AnalysisRequirementNotifications.resetCachedMessages();
+    // FIXME Maybe reschedule an analysis of all open files?
   }
 
 }
