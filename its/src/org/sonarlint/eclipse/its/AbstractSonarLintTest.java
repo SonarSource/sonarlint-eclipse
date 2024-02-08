@@ -33,7 +33,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
@@ -99,7 +98,8 @@ public abstract class AbstractSonarLintTest {
   protected static final String ON_THE_FLY_ANNOTATION_TYPE = "org.sonarlint.eclipse.onTheFlyIssueAnnotationType";
 
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
-  private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
+  private static final IEclipsePreferences ROOT_CORE = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
+  private static final IEclipsePreferences ROOT_UI = InstanceScope.INSTANCE.getNode(UI_PLUGIN_ID);
 
   @ClassRule
   public static final TemporaryFolder tempFolder = new TemporaryFolder();
@@ -155,7 +155,7 @@ public abstract class AbstractSonarLintTest {
 
     setNewCodePreference(IssuePeriod.ALL_TIME);
 
-    ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SECRETS_EVER_DETECTED);
+    ROOT_UI.remove(PREF_SECRETS_EVER_DETECTED);
   }
 
   protected static void setNewCodePreference(IssuePeriod period) {
@@ -210,7 +210,7 @@ public abstract class AbstractSonarLintTest {
     // Integration tests should not open the external browser
     System.setProperty("sonarlint.internal.externalBrowser.disabled", "true");
 
-    ROOT.node("servers").removeNode();
+    ROOT_CORE.node("servers").removeNode();
     ROOT_SECURE.node("servers").removeNode();
 
     if (sonarlintItJobListener == null) {
