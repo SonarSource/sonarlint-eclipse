@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.backend;
 
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -337,6 +339,11 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
       default:
         SonarLintLogger.get().info(params.getMessage());
     }
+  }
+
+  @Override
+  public void didChangeNodeJs(@Nullable Path nodeJsPath, @Nullable String version) {
+    CachedNodeJsPath.get().didChangeNodeJs(nodeJsPath, version);
   }
 
 }

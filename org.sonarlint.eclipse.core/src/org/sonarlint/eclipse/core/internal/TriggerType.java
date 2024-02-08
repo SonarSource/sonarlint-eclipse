@@ -27,6 +27,7 @@ public enum TriggerType {
   EDITOR_CHANGE("Editor change", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
   BINDING_CHANGE("Binding change", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
   STANDALONE_CONFIG_CHANGE("Standalone config change", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
+  NODEJS_CONFIG_CHANGE("Node.js config change", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
   QUICK_FIX("Quick fix", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
   AFTER_RESOLVE("After resolve", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
   SERVER_EVENT("Server Event", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC);
