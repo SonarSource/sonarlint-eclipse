@@ -195,7 +195,7 @@ public class SonarLintBackendService {
 
       private void fixExecutablePermissions(String dir, String file) throws IOException {
         var sloopShellScriptUrls = SonarLintCorePlugin.getInstance().getBundle().findEntries(dir, file, false);
-        if (sloopShellScriptUrls.hasMoreElements()) {
+        if (sloopShellScriptUrls != null && sloopShellScriptUrls.hasMoreElements()) {
           var jreBin = FileLocator.toFileURL(sloopShellScriptUrls.nextElement());
           var jreBinPath = new File(jreBin.getFile()).toPath();
           var existingPerm = Files.getPosixFilePermissions(jreBinPath);
