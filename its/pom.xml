@@ -116,6 +116,8 @@
           </includes>
         </configuration>
       </plugin>
+      
+      <!-- The environments must be in sync with Sloop embedded CLI distributions (see parent pom) -->
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>target-platform-configuration</artifactId>
@@ -128,6 +130,16 @@
               <os>win32</os>
               <ws>win32</ws>
               <arch>x86_64</arch>
+            </environment>
+            <environment>
+              <os>win32</os>
+              <ws>win32</ws>
+              <arch>aarch64</arch>
+            </environment>
+            <environment>
+              <os>linux</os>
+              <ws>gtk</ws>
+              <arch>aarch64</arch>
             </environment>
             <environment>
               <os>linux</os>
@@ -147,6 +159,7 @@
           </environments>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-surefire-plugin</artifactId>
