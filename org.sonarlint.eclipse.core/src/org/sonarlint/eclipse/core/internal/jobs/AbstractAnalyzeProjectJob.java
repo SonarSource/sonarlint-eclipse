@@ -34,6 +34,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -53,6 +54,7 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
@@ -79,6 +81,12 @@ import org.sonarsource.sonarlint.core.rpc.protocol.common.TextRangeDto;
 import static java.text.MessageFormat.format;
 
 public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob {
+  // Because we have to await Sloop to get ready, the analysis might not be ready in the meantime
+  // -> The analysis jobs run in a different process we have to make it thread safe!
+  private static ConcurrentHashMap<String, Boolean> analysisReadyByConfigurationScopeId = new ConcurrentHashMap<>();
+
+  @Nullable
+  private final ISonarLintProject project;
   private final List<SonarLintProperty> extraProps;
   private final TriggerType triggerType;
   private final boolean shouldClearReport;
@@ -88,6 +96,7 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
 
   protected AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
+    this.project = request.getProject();
     this.extraProps = SonarLintGlobalConfiguration.getExtraPropertiesForLocalAnalysis(request.getProject());
     this.files = request.getFiles();
     this.triggerType = request.getTriggerType();
@@ -102,6 +111,11 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
       .orElseGet(() -> new AnalyzeStandaloneProjectJob(request));
   }
 
+  public static void changeAnalysisReadiness(Set<String> configurationScopeIds, boolean readiness) {
+    analysisReadyByConfigurationScopeId.putAll(
+      configurationScopeIds.stream().collect(Collectors.toMap(k -> k, v -> readiness)));
+  }
+
   private static String jobTitle(AnalyzeProjectRequest request) {
     if (request.getFiles().size() == 1) {
       return "SonarLint processing file " + request.getFiles().iterator().next().getFile().getName();
@@ -114,9 +128,17 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
     if (monitor.isCanceled()) {
       return Status.CANCEL_STATUS;
     }
-    var startTime = System.currentTimeMillis();
+
     SonarLintLogger.get().debug("Trigger: " + triggerType.name());
 
+    // Handle Sloop not ready for an analysis
+    if (!checkIfReady()) {
+      SonarLintLogger.get().debug("Analysis cancelled due to the engines not yet being ready");
+      return Status.CANCEL_STATUS;
+    }
+    SonarLintLogger.get().debug("Analysis started with the engines being ready");
+
+    var startTime = System.currentTimeMillis();
     Path analysisWorkDir = null;
     try {
       var excludedFiles = new ArrayList<ISonarLintFile>();
@@ -192,6 +214,33 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
     }
 
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+  }
+
+  /**
+   *  When we actually analyze a project we want to check if it is ready to be analyzed. When we check no project we
+   *  want to get all the projects involved and check if they're ready.
+   *  -> When there are many projects in the workspace we only have to await the ones involved!
+   */
+  private boolean checkIfReady() {
+    // For a single project it is more efficient to test for the project instead for every file. Even if there is just
+    // one file, we don't have to invoke the costly stream methods.
+    if (project != null) {
+      return analysisReadyByConfigurationScopeId
+        .getOrDefault(ConfigScopeSynchronizer.getConfigScopeId(project), false);
+    }
+
+    var configurationScopeIds = files.stream()
+      .map(file -> file.getFile().getProject())
+      .map(project -> ConfigScopeSynchronizer.getConfigScopeId(project))
+      .collect(Collectors.toSet());
+
+    for (var configurationScopeId : configurationScopeIds) {
+      if (analysisReadyByConfigurationScopeId.getOrDefault(configurationScopeId, false)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private static boolean isScmIgnored(ISonarLintFile file) {

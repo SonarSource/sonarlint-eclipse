@@ -20,7 +20,7 @@
 package org.sonarlint.eclipse.core.internal;
 
 public enum TriggerType {
-  STARTUP("Startup", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
+  ANALYSIS_READY("Analysis Ready", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
   EDITOR_OPEN("Editor open", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
   MANUAL("Manual trigger", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.SYNC),
   MANUAL_CHANGESET("Manual trigger changeset", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.SYNC),

@@ -41,6 +41,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessRpcClient;
+import org.sonarlint.eclipse.core.internal.jobs.AbstractAnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesMarkerUpdateJob;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -346,4 +347,23 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
     CachedNodeJsPath.get().didChangeNodeJs(nodeJsPath, version);
   }
 
+  @Override
+  public void didChangeAnalysisReadiness(Set<String> configurationScopeIds, boolean areReadyForAnalysis) {
+    var projects = configurationScopeIds.stream()
+      .map(this::tryResolveProject)
+      .filter(Optional::isPresent)
+      .map(Optional::get)
+      .collect(Collectors.toList());
+
+    // In order for use to simplify listening to changes in ITs we log the information per configuration scope id!
+    for (var project : projects) {
+      SonarLintLogger.get().debug("Project at '" + project.getName()
+        + "' changed ready status for analysis to: " + areReadyForAnalysis);
+    }
+
+    AbstractAnalyzeProjectJob.changeAnalysisReadiness(configurationScopeIds, areReadyForAnalysis);
+    if (areReadyForAnalysis) {
+      AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(projects, TriggerType.ANALYSIS_READY, false);
+    }
+  }
 }
