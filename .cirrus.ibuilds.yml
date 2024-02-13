@@ -47,8 +47,9 @@ qa_ibuilds_task:
   skip_notifications: true
   eks_container:
     <<: *BUILDER_CONTAINER_DEFINITION
-    cpu: 4
+    cpu: 6
     memory: 12G
+    type: m6a.large
   env:
     ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
     GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
