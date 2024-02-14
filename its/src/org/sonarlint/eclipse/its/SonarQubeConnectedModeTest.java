@@ -219,11 +219,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
   @Test
   public void shouldFindSecretsInConnectedMode() {
-    // INFO: Currently disabled on 10.4 DEV as the sonar-text / sonar-text-enterprise artifacts supporting SonarLint
-    //       are not yet on master! After this was done, the test can be enabled again on this axis!
-    //       -> blocked by SONAR-21522
-    Assume.assumeTrue(!orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
-    
     adminWsClient.projects()
       .create(CreateRequest.builder()
         .setName(SECRET_JAVA_PROJECT_NAME)

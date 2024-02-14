@@ -97,7 +97,12 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     if (!newRuleConfigs.equals(initialRuleConfigs)) {
       initialRuleConfigs = newRuleConfigs;
       AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
-      new RulesConfigurationPageSaveJob().schedule();
+
+      // INFO: This is used in integration tests as Reddeer cannot handle pop-ups displayed directly after the "Apply",
+      // "Cancel", "Apply and Close" and "Restore Defaults" buttons are pressed on configuration pages, it assumes the
+      // focus will be always on the main window afterwards! See: https://github.com/eclipse/reddeer/issues/2227
+      var delay = System.getProperty("sonarlint.internal.rulesConfigurationPageSaveJobDelay", "0");
+      new RulesConfigurationPageSaveJob().schedule(Long.parseLong(delay));
     }
     return true;
   }

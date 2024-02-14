@@ -40,7 +40,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
-import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessClient;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
@@ -69,7 +68,6 @@ import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.BindingSuggestionDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.usertoken.RevokeTokenParams;
 import org.sonarsource.sonarlint.core.clientapi.client.OpenUrlInBrowserParams;
 import org.sonarsource.sonarlint.core.clientapi.client.binding.AssistBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.client.binding.AssistBindingResponse;
@@ -188,12 +186,6 @@ public class SonarLintEclipseClient extends SonarLintEclipseHeadlessClient {
           return new AssistCreatingConnectionResponse(job.getConnectionId(),
             ProjectsProviderUtils.allConfigurationScopeIds());
         } else if (job.getResult().matches(IStatus.CANCEL)) {
-          if (job instanceof AssistCreatingAutomaticConnectionJob) {
-            SonarLintBackendService.get()
-              .getBackend()
-              .getUserTokenService()
-              .revokeToken(new RevokeTokenParams(baseUrl, params.getTokenName(), params.getTokenValue()));
-          }
           SonarLintLogger.get().debug("Assist creating connection was cancelled.");
         }
         throw new IllegalStateException(job.getResult().getMessage(), job.getResult().getException());
