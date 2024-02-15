@@ -19,10 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
-import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -45,23 +43,17 @@ import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
-import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateOnFileOpenedJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.backend.SonarLintEclipseClient;
-import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
+import org.sonarlint.eclipse.ui.internal.backend.SonarLintEclipseRpcClient;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
-import org.sonarlint.eclipse.ui.internal.job.PeriodicStoragesSynchronizerJob;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
-import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
 
@@ -150,10 +142,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     notifListener = new PopupNotification();
     SonarLintNotifications.get().addNotificationListener(notifListener);
 
-    SonarLintBackendService.get().init(new SonarLintEclipseClient());
-
-    // Schedule auto-sync
-    new PeriodicStoragesSynchronizerJob().schedule(Duration.ofSeconds(1).toMillis());
+    SonarLintBackendService.get().init(new SonarLintEclipseRpcClient());
 
     addPostBuildListener();
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_VCS_CACHE_CLEANER);
@@ -244,7 +233,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
   }
 
-  private class StartupJob extends Job {
+  /** We don't run an analysis of all opened files anymore as the backend needs to get ready first */
+  private static class StartupJob extends Job {
 
     StartupJob() {
       super("SonarLint UI startup");
@@ -253,10 +243,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     @Override
     public IStatus run(IProgressMonitor monitor) {
       SonarLintLogger.get().info("Starting SonarLint for Eclipse " + SonarLintUtils.getPluginVersion());
-
-      AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
-
-      scheduleReloadOfTaintVulnerabilities();
 
       if (PlatformUI.isWorkbenchRunning()) {
         // Handle future opened/closed windows
@@ -271,19 +257,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       //Display.getDefault().syncExec(() -> SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed(""));
 
       return Status.OK_STATUS;
-    }
-
-    private void scheduleReloadOfTaintVulnerabilities() {
-      var filesByProject = PlatformUtils.collectOpenedFiles((ISonarLintProject) null, f -> true);
-
-      for (var entry : filesByProject.entrySet()) {
-        var aProject = entry.getKey();
-        var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(aProject);
-        if (bindingOpt.isPresent()) {
-          new TaintIssuesUpdateOnFileOpenedJob(bindingOpt.get().getConnectionFacade(),
-            aProject, entry.getValue().stream().map(f -> f.getFile()).collect(Collectors.toList()), bindingOpt.get().getProjectBinding()).schedule();
-        }
-      }
     }
 
   }

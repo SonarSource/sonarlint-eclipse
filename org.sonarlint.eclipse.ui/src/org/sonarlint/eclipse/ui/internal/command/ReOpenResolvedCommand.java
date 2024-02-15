@@ -33,7 +33,7 @@ import org.sonarlint.eclipse.core.internal.jobs.ReOpenResolvedJob;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.clientapi.backend.issue.ReopenIssueResponse;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.ReopenIssueResponse;
 
 /**
  *  Command invoked on issues already resolved (either as anticipated issue or issue already known to the server).
@@ -44,8 +44,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
   }
 
   @Override
-  protected void execute(IMarker marker, ISonarLintFile file, ISonarLintProject project, String issueKey,
-    boolean isTaint) {
+  protected void execute(IMarker marker, ISonarLintFile file, ISonarLintProject project, String issueKey, boolean isTaint) {
     var checkJob = new Job("Check user permissions for setting the issue resolution") {
       private ReopenIssueResponse result;
       private ResolvedBinding resolvedBinding;
@@ -81,7 +80,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
     ReopenIssueResponse result, ResolvedBinding resolvedBinding) {
     var isSonarCloud = resolvedBinding.getConnectionFacade().isSonarCloud();
 
-    if (!result.isIssueReopened()) {
+    if (!result.isSuccess()) {
       currentWindow.getShell().getDisplay()
         .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(),
           TITLE + " on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
@@ -90,8 +89,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
     }
 
     currentWindow.getShell().getDisplay().asyncExec(() -> {
-      var job = new ReOpenResolvedJob(project, resolvedBinding.getConnectionFacade(), file,
-        isTaintVulnerability);
+      var job = new ReOpenResolvedJob(project, file, isTaintVulnerability);
       job.schedule();
     });
   }

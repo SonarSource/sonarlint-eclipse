@@ -20,66 +20,35 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.commons.RuleKey;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.AnalysisConfiguration;
 
-import static java.util.stream.Collectors.toList;
-
-public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob<StandaloneAnalysisConfiguration> {
+public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob {
 
   public AnalyzeStandaloneProjectJob(AnalyzeProjectRequest request) {
     super(request);
   }
 
   @Override
-  protected StandaloneAnalysisConfiguration prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps) {
+  protected AnalysisConfiguration prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps) {
     SonarLintLogger.get().debug("Standalone mode (project not bound)");
-    var rulesConfig = SonarLintGlobalConfiguration.readRulesConfig();
-    return StandaloneAnalysisConfiguration.builder()
+    return AnalysisConfiguration.builder()
       .setBaseDir(projectBaseDir)
-      .addInputFiles(inputFiles)
+      .addInputFiles(inputFiles.toArray(new ClientInputFile[0]))
       .putAllExtraProperties(mergedExtraProps)
-      .addExcludedRules(getExcludedRules(rulesConfig))
-      .addIncludedRules(getIncludedRules(rulesConfig))
-      .addRuleParameters(getRuleParameters(rulesConfig))
       .build();
   }
 
   @Override
-  protected AnalysisResults runAnalysis(StandaloneAnalysisConfiguration analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor) {
+  protected AnalysisResults runAnalysis(AnalysisConfiguration analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor) {
     var standaloneEngine = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade();
-    return standaloneEngine.runAnalysis(analysisConfig, issueListener, monitor);
+    return standaloneEngine.runAnalysis(getProject(), analysisConfig, issueListener, monitor);
   }
 
-  private static Collection<RuleKey> getExcludedRules(Collection<RuleConfig> rulesConfig) {
-    return rulesConfig.stream()
-      .filter(r -> !r.isActive())
-      .map(r -> RuleKey.parse(r.getKey()))
-      .collect(toList());
-  }
-
-  private static Collection<RuleKey> getIncludedRules(Collection<RuleConfig> rulesConfig) {
-    return rulesConfig.stream()
-      .filter(RuleConfig::isActive)
-      .map(r -> RuleKey.parse(r.getKey()))
-      .collect(toList());
-  }
-
-  private static Map<RuleKey, Map<String, String>> getRuleParameters(Collection<RuleConfig> rulesConfig) {
-    return rulesConfig.stream()
-      .filter(RuleConfig::isActive)
-      .filter(r -> !r.getParams().isEmpty())
-      .collect(Collectors.toMap(r -> RuleKey.parse(r.getKey()), RuleConfig::getParams));
-  }
 }

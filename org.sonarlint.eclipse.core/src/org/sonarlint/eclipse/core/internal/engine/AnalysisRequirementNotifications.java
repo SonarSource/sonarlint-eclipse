@@ -26,8 +26,9 @@ import java.util.Set;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
-import org.sonarsource.sonarlint.core.plugin.commons.SkipReason;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.PluginDetails;
+import org.sonarsource.sonarlint.core.client.utils.Language;
+import org.sonarsource.sonarlint.core.plugin.commons.api.SkipReason;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -49,21 +50,22 @@ public class AnalysisRequirementNotifications {
       .filter(Objects::nonNull)
       .collect(toSet());
     attemptedLanguages.forEach(l -> {
+      var languageWithLabel = Language.valueOf(l.name());
       final var correspondingPlugin = allPlugins.stream().filter(p -> p.key().equals(l.getPluginKey())).findFirst();
       correspondingPlugin.flatMap(PluginDetails::skipReason).ifPresent(skipReason -> {
         if (skipReason instanceof SkipReason.UnsatisfiedRuntimeRequirement) {
           final var runtimeRequirement = (SkipReason.UnsatisfiedRuntimeRequirement) skipReason;
-          final var shortMsg = "SonarLint failed to analyze " + l.getLabel() + " code";
+          final var shortMsg = "SonarLint failed to analyze " + languageWithLabel.getLabel() + " code";
           if (runtimeRequirement.getRuntime() == SkipReason.UnsatisfiedRuntimeRequirement.RuntimeRequirement.JRE) {
             var content = String.format(
               "SonarLint requires Java runtime version %s or later to analyze %s code. "
                 + "Current version is %s.\n"
                 + "See <a href=\"https://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM\">the Eclipse Wiki</a> to configure your IDE to run with a more recent JRE.",
-              runtimeRequirement.getMinVersion(), l.getLabel(), runtimeRequirement.getCurrentVersion());
+              runtimeRequirement.getMinVersion(), languageWithLabel.getLabel(), runtimeRequirement.getCurrentVersion());
             createNotificationOnce(shortMsg, content);
           } else if (runtimeRequirement.getRuntime() == SkipReason.UnsatisfiedRuntimeRequirement.RuntimeRequirement.NODEJS) {
             var content = new StringBuilder(
-              String.format("SonarLint requires Node.js runtime version %s or later to analyze %s code.", runtimeRequirement.getMinVersion(), l.getLabel()));
+              String.format("SonarLint requires Node.js runtime version %s or later to analyze %s code.", runtimeRequirement.getMinVersion(), languageWithLabel.getLabel()));
             if (runtimeRequirement.getCurrentVersion() != null) {
               content.append(String.format(" Current version is %s.", runtimeRequirement.getCurrentVersion()));
             }

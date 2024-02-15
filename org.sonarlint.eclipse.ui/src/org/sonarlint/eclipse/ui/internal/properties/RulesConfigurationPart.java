@@ -66,8 +66,8 @@ import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.job.DisplayGlobalConfigurationRuleDescriptionJob;
 import org.sonarlint.eclipse.ui.internal.rule.RuleDetailsPanel;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
-import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.client.utils.Language;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleDefinitionDto;
 
 // Inspired by: http://www.vogella.com/tutorials/EclipseJFaceTree/article.html
 public class RulesConfigurationPart {
@@ -125,7 +125,7 @@ public class RulesConfigurationPart {
     ruleDetailsWrappersByLanguage = allRuleDefinitionSupplier.get().stream()
       .sorted(Comparator.comparing(RuleDefinitionDto::getKey))
       .map(rd -> new RuleDetailsWrapper(rd, initialRuleConfigs.getOrDefault(rd.getKey(), new RuleConfig(rd.getKey(), rd.isActiveByDefault()))))
-      .collect(Collectors.groupingBy(w -> w.ruleDetails.getLanguage(), Collectors.toList()));
+      .collect(Collectors.groupingBy(w -> Language.valueOf(w.ruleDetails.getLanguage().name()), Collectors.toList()));
   }
 
   private void createFilterPart(Composite parent) {
@@ -397,9 +397,9 @@ public class RulesConfigurationPart {
     private final RuleDefinitionDto ruleDetails;
     private RuleConfig ruleConfig;
 
-    RuleDetailsWrapper(RuleDefinitionDto ruleDetails, RuleConfig ruleConfig) {
+    RuleDetailsWrapper(RuleDefinitionDto ruleDetails, RuleConfig initialRuleConfig) {
       this.ruleDetails = ruleDetails;
-      this.ruleConfig = ruleConfig;
+      this.ruleConfig = initialRuleConfig.createMutableCopy();
     }
 
     String getName() {

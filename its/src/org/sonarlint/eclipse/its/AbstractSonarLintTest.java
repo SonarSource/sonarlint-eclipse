@@ -69,6 +69,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
 import org.osgi.service.prefs.BackingStoreException;
+import org.sonarlint.eclipse.its.reddeer.conditions.AnalysisReady;
 import org.sonarlint.eclipse.its.reddeer.preferences.FileAssociationsPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.RuleConfigurationPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences;
@@ -305,6 +306,7 @@ public abstract class AbstractSonarLintTest {
     importExistingProjectIntoWorkspace(relativePathFromProjectsFolder);
     var projectExplorer = new ProjectExplorer();
     new WaitUntil(new ProjectExists(projectName, projectExplorer));
+    new WaitUntil(new AnalysisReady(projectName), TimePeriod.getCustom(30));
     return projectExplorer.getProject(projectName);
   }
 

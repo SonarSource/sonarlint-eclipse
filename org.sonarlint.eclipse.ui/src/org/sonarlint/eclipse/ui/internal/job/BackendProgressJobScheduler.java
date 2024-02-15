@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.job;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,8 +29,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarsource.sonarlint.core.clientapi.client.progress.ProgressUpdateNotification;
-import org.sonarsource.sonarlint.core.clientapi.client.progress.StartProgressParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.progress.ProgressUpdateNotification;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.progress.StartProgressParams;
 
 /**
  *  As the backend is now in charge of synchronization we want the user to see the progress even though it was not
@@ -49,22 +49,19 @@ public class BackendProgressJobScheduler {
   }
 
   /** Start a new progress bar by using an IDE job */
-  public CompletableFuture<Void> startProgress(StartProgressParams params) {
+  public void startProgress(StartProgressParams params) throws UnsupportedOperationException {
     var taskId = params.getTaskId();
     if (jobPool.containsKey(taskId)) {
       var errorMessage = "Job with ID " + taskId + " is already active, skip reporting it";
       SonarLintLogger.get().debug(errorMessage);
-      return CompletableFuture.failedFuture(new IllegalArgumentException(errorMessage));
+      throw new CancellationException(errorMessage);
     }
 
-    var jobAdded = jobPool.computeIfAbsent(taskId, k -> {
-      var jobStartFuture = new CompletableFuture<Void>();
-      var job = new BackendProgressJob(params, jobStartFuture);
+    jobPool.computeIfAbsent(taskId, k -> {
+      var job = new BackendProgressJob(params);
       job.schedule();
       return job;
     });
-
-    return jobAdded.getJobStartFuture();
   }
 
   /** Update the progress bar IDE job */
@@ -90,28 +87,21 @@ public class BackendProgressJobScheduler {
   /** This job is only an IDE frontend for a job running in the SonarLintBackend */
   private static class BackendProgressJob extends Job {
     private final Object waitMonitor = new Object();
-    private final CompletableFuture<Void> jobStartFuture;
     private final AtomicReference<String> message;
     private final AtomicInteger percentage = new AtomicInteger(0);
     private final AtomicBoolean complete = new AtomicBoolean(false);
 
-    public BackendProgressJob(StartProgressParams params, CompletableFuture<Void> jobStartFuture) {
+    public BackendProgressJob(StartProgressParams params) {
       super(params.getTitle());
       setPriority(DECORATE);
 
-      this.jobStartFuture = jobStartFuture;
       this.message = new AtomicReference<>(params.getMessage());
-    }
-
-    public CompletableFuture<Void> getJobStartFuture() {
-      return this.jobStartFuture;
     }
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
       monitor.setTaskName(message.get());
       monitor.worked(percentage.get());
-      jobStartFuture.complete(null);
 
       while (!complete.get()) {
         synchronized (waitMonitor) {

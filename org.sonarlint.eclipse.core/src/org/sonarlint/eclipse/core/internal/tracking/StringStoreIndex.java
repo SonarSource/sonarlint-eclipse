@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint;
-import org.sonarsource.sonarlint.core.serverconnection.FileUtils;
+import org.sonarlint.eclipse.core.internal.utils.FileUtils;
 
 class StringStoreIndex implements StoreIndex<String> {
   public static final String INDEX_FILENAME = "index.pb";

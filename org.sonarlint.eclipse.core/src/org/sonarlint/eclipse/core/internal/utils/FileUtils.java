@@ -17,27 +17,38 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.rule;
+package org.sonarlint.eclipse.core.internal.utils;
 
-import java.util.Locale;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.AbstractRuleDto;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 
-public abstract class AbstractRuleHeaderPanel extends Composite {
-  protected AbstractRuleHeaderPanel(Composite parent, int numColumns) {
-    super(parent, SWT.NONE);
-    setLayout(new GridLayout(numColumns, false));
+public class FileUtils {
+
+  private FileUtils() {
+    // Utility class
   }
 
-  public abstract void updateRule(AbstractRuleDto ruleInformation);
-
-  protected static String clean(@Nullable String txt) {
-    return txt == null
-      ? ""
-      : StringUtils.capitalize(txt.toLowerCase(Locale.ENGLISH).replace("_", " "));
+  public static void deleteRecursively(Path dir) {
+    try (var filesStream = Files.walk(dir)) {
+      filesStream
+        .sorted(Comparator.reverseOrder())
+        .map(Path::toFile)
+        .forEach(File::delete);
+    } catch (Exception e) {
+      SonarLintLogger.get().error("Unable to delete directory: " + dir, e);
+    }
   }
+
+  public static void mkdirs(Path path) {
+    try {
+      Files.createDirectories(path);
+    } catch (IOException e) {
+      throw new IllegalStateException("Unable to create directory: " + path, e);
+    }
+  }
+
 }

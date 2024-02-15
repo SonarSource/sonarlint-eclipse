@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.telemetry;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 
 public enum LinkTelemetry {
@@ -31,18 +33,22 @@ public enum LinkTelemetry {
   SONARCLOUD_SIGNUP_PAGE("sonarCloudSignUpPage", SonarLintDocumentation.SONARCLOUD_SIGNUP_LINK);
 
   private final String linkId;
-  private final String url;
+  private final URL url;
 
   LinkTelemetry(String linkId, String url) {
     this.linkId = linkId;
-    this.url = url;
+    try {
+      this.url = new URL(url);
+    } catch (MalformedURLException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   public String getLinkId() {
     return this.linkId;
   }
 
-  public String getUrl() {
+  public URL getUrl() {
     return this.url;
   }
 

@@ -68,15 +68,17 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
       @Override
       public void info(String msg, boolean fromAnalyzer) {
+        System.out.println("INFO " + msg);
       }
 
       @Override
       public void error(String msg, boolean fromAnalyzer) {
-        System.err.println(msg);
+        System.err.println("ERROR " + msg);
       }
 
       @Override
       public void debug(String msg, boolean fromAnalyzer) {
+        System.out.println("DEBUG " + msg);
       }
     };
     SonarLintLogger.get().addLogListener(listener);
@@ -91,7 +93,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   @Before
   public void clean() throws BackingStoreException {
-    ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).removeNode();
+    ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).clear();
   }
 
   @After

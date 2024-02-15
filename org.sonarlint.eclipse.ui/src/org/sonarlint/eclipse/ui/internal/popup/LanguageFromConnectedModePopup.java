@@ -34,7 +34,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.PopupUtils;
-import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.client.utils.Language;
 
 /**
  *  Pop-up shown to users analyzing (multiple) files in standalone mode while one (or more) are of languages that are

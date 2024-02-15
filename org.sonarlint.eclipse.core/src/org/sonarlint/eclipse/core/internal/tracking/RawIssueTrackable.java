@@ -21,13 +21,13 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.tracking.matching.MatchableIssue;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
 
 import static org.sonarlint.eclipse.core.internal.tracking.DigestUtils.digest;
 
 public class RawIssueTrackable implements MatchableIssue {
 
-  private final Issue issue;
+  private final RawIssue issue;
   @Nullable
   private final String textRangeHash;
   @Nullable
@@ -38,14 +38,14 @@ public class RawIssueTrackable implements MatchableIssue {
   /**
    * File-level or project-level issues (no ranges)
    */
-  public RawIssueTrackable(Issue issue) {
+  public RawIssueTrackable(RawIssue issue) {
     this(issue, null, null);
   }
 
   /**
    * Issue with a range location
    */
-  public RawIssueTrackable(Issue issue, @Nullable String textRangeContent, @Nullable String lineContent) {
+  public RawIssueTrackable(RawIssue issue, @Nullable String textRangeContent, @Nullable String lineContent) {
     this.issue = issue;
     this.textRangeHash = textRangeContent != null ? checksum(textRangeContent) : null;
     this.lineHash = lineContent != null ? checksum(lineContent) : null;
@@ -58,7 +58,8 @@ public class RawIssueTrackable implements MatchableIssue {
   @Nullable
   @Override
   public Integer getLine() {
-    return issue.getStartLine();
+    var textRange = issue.getTextRange();
+    return textRange != null ? textRange.getStartLine() : null;
   }
 
   @Nullable
@@ -77,7 +78,7 @@ public class RawIssueTrackable implements MatchableIssue {
     return issue.getRuleKey();
   }
 
-  public Issue getIssueFromAnalysis() {
+  public RawIssue getIssueFromAnalysis() {
     return issue;
   }
 

@@ -41,11 +41,10 @@ import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.AnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
 
-public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<ConnectedAnalysisConfiguration> {
+public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob {
 
   private final EclipseProjectBinding binding;
   private final ConnectionFacade engineFacade;
@@ -57,27 +56,26 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
   }
 
   @Override
-  protected ConnectedAnalysisConfiguration prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps) {
-    SonarLintLogger.get().debug("Connected Mode (using configuration of '" + binding.projectKey() + "' in connection '" + binding.connectionId() + "')");
-    return ConnectedAnalysisConfiguration.builder()
-      .setProjectKey(binding.projectKey())
+  protected AnalysisConfiguration prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps) {
+    SonarLintLogger.get().debug("Connected mode (using configuration of '" + binding.getProjectKey() + "' in connection '" + binding.getConnectionId() + "')");
+    return AnalysisConfiguration.builder()
       .setBaseDir(projectBaseDir)
-      .addInputFiles(inputFiles)
+      .addInputFiles(inputFiles.toArray(new ClientInputFile[0]))
       .putAllExtraProperties(mergedExtraProps)
       .build();
   }
 
   @Override
-  protected AnalysisResults runAnalysis(ConnectedAnalysisConfiguration analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor) {
-    return engineFacade.runAnalysis(analysisConfig, issueListener, monitor);
+  protected AnalysisResults runAnalysis(AnalysisConfiguration analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor) {
+    return engineFacade.runAnalysis(getProject(), analysisConfig, issueListener, monitor);
   }
 
   @Override
-  protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
+  protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<RawIssue>> rawIssuesPerResource, TriggerType triggerType,
     IProgressMonitor monitor) {
     super.trackIssues(docPerFile, rawIssuesPerResource, triggerType, monitor);
     if (triggerType.shouldMatchAsync()) {
-      new ServerIssueTrackingAndMarkerUpdateJob(getProject(), binding, rawIssuesPerResource.keySet(), docPerFile, triggerType).schedule();
+      new ServerIssueTrackingAndMarkerUpdateJob(getProject(), rawIssuesPerResource.keySet(), docPerFile, triggerType).schedule();
     }
   }
 
@@ -87,33 +85,30 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
     IProgressMonitor monitor) {
     super.trackFileIssues(file, trackables, issueTracker, triggerType, totalTrackedFiles, monitor);
     if (!triggerType.shouldMatchAsync()) {
-      issueTracker.trackWithServerIssues(binding, List.of(file), triggerType.shouldUpdate(), monitor);
+      issueTracker.trackWithServerIssues(List.of(file), triggerType.shouldUpdate(), monitor);
     }
   }
 
   private class ServerIssueTrackingAndMarkerUpdateJob extends Job {
-    private final ProjectBinding projectBinding;
     private final Collection<ISonarLintIssuable> issuables;
     private final ISonarLintProject project;
     private final Map<ISonarLintFile, IDocument> docPerFile;
     private final TriggerType triggerType;
 
-    private ServerIssueTrackingAndMarkerUpdateJob(ISonarLintProject project,
-      ProjectBinding projectBinding, Collection<ISonarLintIssuable> issuables, Map<ISonarLintFile, IDocument> docPerFile,
+    private ServerIssueTrackingAndMarkerUpdateJob(ISonarLintProject project, Collection<ISonarLintIssuable> issuables, Map<ISonarLintFile, IDocument> docPerFile,
       TriggerType triggerType) {
       super("Fetch server issues for " + project.getName());
       this.docPerFile = docPerFile;
       this.triggerType = triggerType;
       setPriority(DECORATE);
       this.project = project;
-      this.projectBinding = projectBinding;
       this.issuables = issuables;
     }
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
       var issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(project);
-      issueTracker.trackWithServerIssues(projectBinding, issuables, triggerType.shouldUpdate(), monitor);
+      issueTracker.trackWithServerIssues(issuables, triggerType.shouldUpdate(), monitor);
       if (monitor.isCanceled()) {
         return Status.CANCEL_STATUS;
       }

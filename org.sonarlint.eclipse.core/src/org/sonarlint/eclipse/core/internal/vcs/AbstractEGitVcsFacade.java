@@ -32,9 +32,10 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.jobs.SonarLintUtilsLogOutput;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.branch.GitUtils;
+import org.sonarsource.sonarlint.core.client.utils.GitUtils;
 
 abstract class AbstractEGitVcsFacade implements VcsFacade {
   private ListenerHandle listenerHandle;
@@ -43,7 +44,8 @@ abstract class AbstractEGitVcsFacade implements VcsFacade {
 
   @Override
   public String electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, String serverMainBranch) {
-    return getRepo(project.getResource()).map(repo -> GitUtils.electBestMatchingServerBranchForCurrentHead(repo, serverCandidateNames, serverMainBranch)).orElse(serverMainBranch);
+    return getRepo(project.getResource())
+      .map(repo -> GitUtils.electBestMatchingServerBranchForCurrentHead(repo, serverCandidateNames, serverMainBranch, new SonarLintUtilsLogOutput())).orElse(serverMainBranch);
   }
 
   abstract Optional<Repository> getRepo(IResource resource);

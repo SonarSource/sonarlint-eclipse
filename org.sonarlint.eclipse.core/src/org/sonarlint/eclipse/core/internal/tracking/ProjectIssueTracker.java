@@ -20,6 +20,8 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,11 +40,9 @@ import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.clientapi.backend.tracking.ClientTrackedFindingDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.tracking.LineWithHashDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.tracking.TextRangeWithHashDto;
-import org.sonarsource.sonarlint.core.serverconnection.IssueStorePaths;
-import org.sonarsource.sonarlint.core.serverconnection.ProjectBinding;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.ClientTrackedFindingDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.LineWithHashDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TextRangeWithHashDto;
 
 /**
  * Keep track of all issues for a given (Eclipse) project
@@ -121,34 +121,22 @@ public class ProjectIssueTracker {
     trackedIssuesPerRelativePath.put(file.getProjectRelativePath(), trackedIssues);
   }
 
-  public synchronized void trackWithServerIssues(ProjectBinding projectBinding, Collection<ISonarLintIssuable> issuables, boolean shouldUpdateServerIssues,
+  public synchronized void trackWithServerIssues(Collection<ISonarLintIssuable> issuables, boolean shouldUpdateServerIssues,
     IProgressMonitor monitor) {
-    var issuesDtos = new HashMap<String, List<ClientTrackedFindingDto>>();
+    var issuesDtos = new HashMap<Path, List<ClientTrackedFindingDto>>();
 
     for (var issuable : issuables) {
       if (issuable instanceof ISonarLintFile) {
         var relativePath = ((ISonarLintFile) issuable).getProjectRelativePath();
-
-        var serverRelativePath = IssueStorePaths.idePathToServerPath(projectBinding, relativePath);
-        if (serverRelativePath != null) {
-          var localIssuesTracked = trackedIssuesPerRelativePath.get(relativePath);
-          issuesDtos.put(serverRelativePath,
-            localIssuesTracked.stream().map(ProjectIssueTracker::convertFromTrackable).collect(Collectors.toList()));
-        } else {
-          SonarLintLogger.get().debug("'" + relativePath
-            + "' cannot be converted from IDE to server path for project binding: '"
-            + projectBinding.projectKey() + "' / '"
-            + projectBinding.idePathPrefix() + "' / '"
-            + projectBinding.serverPathPrefix() + "'");
-        }
+        var localIssuesTracked = trackedIssuesPerRelativePath.get(relativePath);
+        issuesDtos.put(Paths.get(relativePath), localIssuesTracked.stream().map(ProjectIssueTracker::convertFromTrackable).collect(Collectors.toList()));
       }
     }
 
     try {
       var response = JobUtils.waitForFuture(monitor, SonarLintBackendService.get().trackWithServerIssues(project, issuesDtos, shouldUpdateServerIssues));
-      response.getIssuesByServerRelativePath()
-        .forEach((serverPath, serverTrackedIssues) -> projectBinding.serverPathToIdePath(serverPath)
-          .flatMap(project::find)
+      response.getIssuesByIdeRelativePath()
+        .forEach((idePath, serverTrackedIssues) -> project.find(idePath.toString())
           .ifPresent(slFile -> {
             // trackWithServerIssues is guaranteeing that the two collections have the same size and same order
             var localIssuesTracked = trackedIssuesPerRelativePath.get(slFile.getProjectRelativePath());

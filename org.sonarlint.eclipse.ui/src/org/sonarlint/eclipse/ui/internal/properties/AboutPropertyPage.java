@@ -34,8 +34,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
@@ -128,7 +128,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
 
     enabledBtn = new Button(composite, SWT.CHECK);
     enabledBtn.setText("Share anonymous SonarLint statistics");
-    enabledBtn.setSelection(SonarLintCorePlugin.getTelemetry().enabled());
+    enabledBtn.setSelection(SonarLintTelemetry.isEnabled());
     var layoutData = new GridData();
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
@@ -156,7 +156,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
 
   @Override
   public boolean performOk() {
-    SonarLintCorePlugin.getTelemetry().optOut(!enabledBtn.getSelection());
+    SonarLintTelemetry.optOut(!enabledBtn.getSelection());
     return true;
   }
 

@@ -37,7 +37,6 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.TestFileClassifier;
@@ -129,7 +128,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     protected void doFillIntoGrid(Composite parent, int numColumns) {
       super.doFillIntoGrid(parent, numColumns);
       getTextControl().setToolTipText(NODE_JS_TOOLTIP);
-      final var detectedNodeJsPath = SonarLintCorePlugin.getNodeJsManager().getNodeJsPath();
+      final var detectedNodeJsPath = SonarLintBackendService.get().getBackend().getAnalysisService().getGlobalStandaloneConfiguration().join().getNodeJsPath();
       getTextControl().setMessage(detectedNodeJsPath != null ? detectedNodeJsPath.toString() : "Node.js not found");
     }
 
@@ -174,7 +173,6 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     var previousIssueFilter = SonarLintGlobalConfiguration.getIssueFilter();
     var previousIssuePeriod = SonarLintGlobalConfiguration.getIssuePeriod();
     var previousTestFileGlobPatterns = SonarLintGlobalConfiguration.getTestFileGlobPatterns();
-    var previousNodeJsPath = SonarLintGlobalConfiguration.getNodejsPath();
     var result = super.performOk();
     var anyPreferenceChanged = false;
 
@@ -184,15 +182,8 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
       TaintIssuesJobsScheduler.scheduleUpdateAfterPreferenceChange();
       anyPreferenceChanged = true;
     }
-    if (issuePeriodChanged) {
-      SonarLintBackendService.get().notifyTelemetryAfterNewCodePreferenceChanged();
-    }
     if (!previousTestFileGlobPatterns.equals(SonarLintGlobalConfiguration.getTestFileGlobPatterns())) {
       TestFileClassifier.get().reload();
-      anyPreferenceChanged = true;
-    }
-    if (!previousNodeJsPath.equals(SonarLintGlobalConfiguration.getNodejsPath())) {
-      SonarLintCorePlugin.getNodeJsManager().reload();
       anyPreferenceChanged = true;
     }
     if (anyPreferenceChanged) {

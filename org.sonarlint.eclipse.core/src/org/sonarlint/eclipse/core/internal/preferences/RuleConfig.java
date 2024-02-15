@@ -75,4 +75,10 @@ public class RuleConfig {
     return isActive == other.isActive && Objects.equals(key, other.key) && Objects.equals(params, other.params);
   }
 
+  public RuleConfig createMutableCopy() {
+    var copy = new RuleConfig(key, isActive);
+    copy.params = new HashMap<>(params);
+    return copy;
+  }
+
 }

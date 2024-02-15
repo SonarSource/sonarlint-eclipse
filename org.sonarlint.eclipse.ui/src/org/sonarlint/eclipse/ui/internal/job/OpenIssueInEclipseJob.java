@@ -38,7 +38,7 @@ import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectsJob;
-import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesUpdateAfterSyncJob;
+import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesMarkerUpdateJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerMatcher;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -51,7 +51,7 @@ import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
 import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
 import org.sonarlint.eclipse.ui.internal.views.issues.TaintVulnerabilitiesView;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
-import org.sonarsource.sonarlint.core.clientapi.client.issue.ShowIssueParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.IssueDetailsDto;
 
 /**
  *  "Open in IDE": After covering most of cases where we cannot match the issue locally, this tries to match with the
@@ -62,7 +62,7 @@ public class OpenIssueInEclipseJob extends Job {
   private ISonarLintFile file;
 
   private final String name;
-  private final ShowIssueParams params;
+  private final IssueDetailsDto issueDetails;
   private final ISonarLintProject project;
   private final ResolvedBinding binding;
   private final boolean recreatedMarkersAlready;
@@ -72,7 +72,7 @@ public class OpenIssueInEclipseJob extends Job {
     super(context.getName());
 
     this.name = context.getName();
-    this.params = context.getParams();
+    this.issueDetails = context.getIssueDetails();
     this.project = context.getProject();
     this.binding = context.getBinding();
     this.recreatedMarkersAlready = context.getRecreatedMarkersAlready();
@@ -97,7 +97,7 @@ public class OpenIssueInEclipseJob extends Job {
 
     try {
       // 2) Handle normal issues / Taint Vulnerabilities differently
-      return params.isTaint() ? handleTaintIssue() : handleNormalIssue();
+      return issueDetails.isTaint() ? handleTaintIssue() : handleNormalIssue();
     } catch (CoreException e) {
       var message = "An error occured while trying to match the issue locally.";
 
@@ -110,16 +110,8 @@ public class OpenIssueInEclipseJob extends Job {
 
   /** File check: We try to convert the server path to IDE path in order to find the correct file */
   private Optional<ISonarLintFile> tryGetLocalFile() {
-    // Check if the server file path can be matched to a local file path
-    var filePathOpt = binding.getProjectBinding().serverPathToIdePath(params.getServerRelativeFilePath());
-    if (filePathOpt.isEmpty()) {
-      MessageDialogUtils.openInIdeError("The file containing the issue cannot be located in the project '"
-        + project.getName() + "'. Maybe it was already changed locally!");
-      return Optional.empty();
-    }
-
     // Check if file exists in project based on the server to IDE path matching
-    var fileOpt = project.find(filePathOpt.get());
+    var fileOpt = project.find(issueDetails.getIdeFilePath().toString());
     if (fileOpt.isEmpty()) {
       MessageDialogUtils.openInIdeError("The file containing the issue cannot be found in the project '"
         + project.getName() + "'. Maybe it was already changed locally!");
@@ -131,9 +123,8 @@ public class OpenIssueInEclipseJob extends Job {
 
   /** Branch check: Local and remote information should match (if no local branch found, at least try your best) */
   private boolean tryMatchBranches() {
-    var branch = params.getBranch();
-
-    var localBranch = VcsService.getServerBranch(project);
+    var branch = issueDetails.getBranch();
+    var localBranch = VcsService.getCachedSonarProjectBranch(project);
     if (localBranch.isEmpty()) {
       // This error message may be misleading to COBOL / ABAP developers but that is okay for now :>
       MessageDialogUtils.openInIdeInformation("The local branch of the project '" + project.getName()
@@ -152,10 +143,10 @@ public class OpenIssueInEclipseJob extends Job {
   /** Handle normal issues: They can be present as On-the-fly / Report markers */
   private IStatus handleNormalIssue() throws CoreException {
     // Check with possible On-The-Fly markers of that file
-    var markerOpt = MarkerMatcher.tryMatchIssueWithOnTheFlyMarker(params, file);
+    var markerOpt = MarkerMatcher.tryMatchIssueWithOnTheFlyMarker(issueDetails, file);
     if (markerOpt.isEmpty()) {
       // Check with possible Report markers of that file
-      markerOpt = MarkerMatcher.tryMatchIssueWithReportMarker(params, file);
+      markerOpt = MarkerMatcher.tryMatchIssueWithReportMarker(issueDetails, file);
       if (markerOpt.isEmpty()) {
         if (!recreatedMarkersAlready) {
           // Run analysis on the specific file and re-run this job
@@ -179,12 +170,11 @@ public class OpenIssueInEclipseJob extends Job {
 
   /** Handle Taint Vulnerabilities: They can only be present as Taint markers */
   private IStatus handleTaintIssue() throws CoreException {
-    var markerOpt = MarkerMatcher.tryMatchIssueWithTaintMarker(params, file);
+    var markerOpt = MarkerMatcher.tryMatchIssueWithTaintMarker(issueDetails, file);
     if (markerOpt.isEmpty()) {
       if (!recreatedMarkersAlready) {
         // Sync Taint Vulnerabilities and re-run this job
-        var job = new TaintIssuesUpdateAfterSyncJob(binding.getConnectionFacade(), project,
-          List.of(file));
+        var job = new TaintIssuesMarkerUpdateJob(binding.getConnectionFacade(), project, List.of(file));
         addJobChangeListener(job);
         job.schedule();
 
@@ -207,7 +197,7 @@ public class OpenIssueInEclipseJob extends Job {
       @Override
       public void done(IJobChangeEvent event) {
         if (Status.OK_STATUS == event.getResult()) {
-          new OpenIssueInEclipseJob(new OpenIssueContext(name, params, project, binding, file, true))
+          new OpenIssueInEclipseJob(new OpenIssueContext(name, issueDetails, project, binding, file, true))
             .schedule();
         } else {
           MessageDialogUtils.openInIdeError("Fetching the issue to be displayed failed because the dependent "
@@ -234,7 +224,7 @@ public class OpenIssueInEclipseJob extends Job {
         var preferences = PlatformUtils.showPreferenceDialog(SonarLintPreferencePage.ID);
         var page = (SonarLintPreferencePage) preferences.getSelectedPage();
         page.setOpenIssueInEclipseJobParams(
-          new OpenIssueContext(name, params, project, binding, file, true, true));
+          new OpenIssueContext(name, issueDetails, project, binding, file, true, true));
         preferences.open();
       });
 
@@ -249,14 +239,14 @@ public class OpenIssueInEclipseJob extends Job {
 
       try {
         // Open either Taint Vulnerabilities or On The Fly view
-        if (params.isTaint()) {
+        if (issueDetails.isTaint()) {
           PlatformUtils.showView(TaintVulnerabilitiesView.ID).setFocus();
         } else {
           PlatformUtils.showView(OnTheFlyIssuesView.ID).setFocus();
         }
 
         // Show Issue Locations view only when there are some flows
-        if (!params.getFlows().isEmpty()) {
+        if (!issueDetails.getFlows().isEmpty()) {
           var issueLocationsView = (IssueLocationsView) PlatformUtils.showView(IssueLocationsView.ID);
           issueLocationsView.markerSelected(Optional.of(marker));
           issueLocationsView.setFocus();
@@ -277,26 +267,26 @@ public class OpenIssueInEclipseJob extends Job {
     private ISonarLintFile file;
 
     private final String name;
-    private final ShowIssueParams params;
+    private final IssueDetailsDto issueDetails;
     private final ISonarLintProject project;
     private final ResolvedBinding binding;
     private final boolean recreatedMarkersAlready;
     private final boolean askedForPreferenceChangeAlready;
 
-    public OpenIssueContext(String name, ShowIssueParams params, ISonarLintProject project,
+    public OpenIssueContext(String name, IssueDetailsDto params, ISonarLintProject project,
       ResolvedBinding binding) {
       this.name = name;
-      this.params = params;
+      this.issueDetails = params;
       this.project = project;
       this.binding = binding;
       this.recreatedMarkersAlready = false;
       this.askedForPreferenceChangeAlready = false;
     }
 
-    public OpenIssueContext(String name, ShowIssueParams params, ISonarLintProject project,
+    public OpenIssueContext(String name, IssueDetailsDto params, ISonarLintProject project,
       ResolvedBinding binding, ISonarLintFile file, boolean recreatedMarkersAlready) {
       this.name = name;
-      this.params = params;
+      this.issueDetails = params;
       this.project = project;
       this.binding = binding;
       this.file = file;
@@ -304,11 +294,11 @@ public class OpenIssueInEclipseJob extends Job {
       this.askedForPreferenceChangeAlready = false;
     }
 
-    public OpenIssueContext(String name, ShowIssueParams params, ISonarLintProject project,
+    public OpenIssueContext(String name, IssueDetailsDto params, ISonarLintProject project,
       ResolvedBinding binding, ISonarLintFile file, boolean recreatedMarkersAlready,
       boolean askedForPreferenceChangeAlready) {
       this.name = name;
-      this.params = params;
+      this.issueDetails = params;
       this.project = project;
       this.binding = binding;
       this.file = file;
@@ -325,8 +315,8 @@ public class OpenIssueInEclipseJob extends Job {
       return name;
     }
 
-    public ShowIssueParams getParams() {
-      return params;
+    public IssueDetailsDto getIssueDetails() {
+      return issueDetails;
     }
 
     public ISonarLintProject getProject() {

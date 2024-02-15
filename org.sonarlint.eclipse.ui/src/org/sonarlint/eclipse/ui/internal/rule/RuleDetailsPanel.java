@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal.rule;
 
+import java.util.Collection;
+import java.util.Locale;
 import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.FontDescriptor;
@@ -39,10 +41,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.AbstractRuleDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.EffectiveRuleDetailsDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleSplitDescriptionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.AbstractRuleDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.EffectiveRuleDetailsDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.EffectiveRuleParamDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleMonolithicDescriptionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleSplitDescriptionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 
 /** Panel containing the rule title, details and description */
 public class RuleDetailsPanel extends Composite {
@@ -107,10 +111,10 @@ public class RuleDetailsPanel extends Composite {
 
       updateHeader(ruleInformation);
 
-      updateHtmlDescription(description, ruleInformation.getLanguage().getLanguageKey());
+      updateHtmlDescription(description, ruleInformation.getLanguage());
 
       if (ruleInformation instanceof EffectiveRuleDetailsDto) {
-        updateParameters((EffectiveRuleDetailsDto) ruleInformation);
+        updateParameters(((EffectiveRuleDetailsDto) ruleInformation).getParams());
       }
 
       requestLayout();
@@ -120,11 +124,11 @@ public class RuleDetailsPanel extends Composite {
     }
   }
 
-  private void updateHtmlDescription(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description, String languageKey) {
+  private void updateHtmlDescription(Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description, Language language) {
     if (ruleDescriptionPanel != null && !ruleDescriptionPanel.isDisposed()) {
       ruleDescriptionPanel.dispose();
     }
-    ruleDescriptionPanel = new RuleDescriptionPanel(scrolledContent, languageKey, useEditorFontSize);
+    ruleDescriptionPanel = new RuleDescriptionPanel(scrolledContent, language.name().toLowerCase(Locale.ENGLISH), useEditorFontSize);
     ruleDescriptionPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     ruleDescriptionPanel.updateRule(description);
   }
@@ -137,7 +141,7 @@ public class RuleDetailsPanel extends Composite {
     var attributeOptional = ruleInformation.getCleanCodeAttribute();
     var impacts = ruleInformation.getDefaultImpacts();
 
-    if (attributeOptional.isPresent() && !impacts.isEmpty()) {
+    if (attributeOptional != null && !impacts.isEmpty()) {
       ruleHeaderPanel = new RuleHeaderPanel(scrolledContent);
     } else {
       ruleHeaderPanel = new LegacyRuleHeaderPanel(scrolledContent);
@@ -147,11 +151,11 @@ public class RuleDetailsPanel extends Composite {
     ruleHeaderPanel.updateRule(ruleInformation);
   }
 
-  private void updateParameters(EffectiveRuleDetailsDto details) {
+  private void updateParameters(Collection<EffectiveRuleParamDto> params) {
     if (ruleParamsPanel != null && !ruleParamsPanel.isDisposed()) {
       ruleParamsPanel.dispose();
     }
-    if (!details.getParams().isEmpty()) {
+    if (!params.isEmpty()) {
       ruleParamsPanel = new Group(scrolledContent, SWT.NONE);
       ruleParamsPanel.setText("Parameters");
       ruleParamsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
@@ -160,7 +164,7 @@ public class RuleDetailsPanel extends Composite {
 
       var link = new Link(ruleParamsPanel, SWT.NONE);
       link.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
-      link.setText("Parameter values can be set in <a>Rules Configuration</a>. In Connected Mode, server-side configuration overrides local settings.");
+      link.setText("Parameter values can be set in <a>Rules Configuration</a>. In connected mode, server-side configuration overrides local settings.");
       link.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DIALOG_FONT));
       link.addSelectionListener(new SelectionAdapter() {
 
@@ -172,7 +176,7 @@ public class RuleDetailsPanel extends Composite {
         }
       });
 
-      for (var param : details.getParams()) {
+      for (var param : params) {
         var paramDefaultValue = param.getDefaultValue();
         var defaultValue = paramDefaultValue != null ? paramDefaultValue : "(none)";
         var currentValue = param.getValue();

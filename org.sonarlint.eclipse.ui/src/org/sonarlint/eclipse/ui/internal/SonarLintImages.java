@@ -27,9 +27,9 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.FindingMatchingStatus;
-import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
-import org.sonarsource.sonarlint.core.commons.IssueSeverity;
-import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.ImpactSeverity;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.IssueSeverity;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.RuleType;
 
 public final class SonarLintImages {
   public static final ImageDescriptor IMG_WIZBAN_NEW_CONNECTION = createImageDescriptor("new_server_wiz.png"); //$NON-NLS-1$

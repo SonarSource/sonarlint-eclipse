@@ -40,13 +40,14 @@ import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.rule.ISyntaxHighlightingProvider;
-import org.sonarsource.sonarlint.core.commons.Language;
 
 /**
  * Responsible for checking at runtime if CDT plugin is installed.
  */
 public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFileLanguageProvider, ISyntaxHighlightingProvider {
 
+  private static final String CPP_LANGUAGE_KEY = "cpp";
+  private static final String C_LANGUAGE_KEY = "c";
   @Nullable
   private final CdtUtils cdtUtils;
 
@@ -102,7 +103,7 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
 
   @Override
   public Optional<SourceViewerConfiguration> sourceViewerConfiguration(String ruleLanguage) {
-    if (isCdtPresent() && (ruleLanguage.equals(Language.C.getLanguageKey()) || ruleLanguage.equals(Language.CPP.getLanguageKey()))) {
+    if (isCdtPresent() && (ruleLanguage.equals(C_LANGUAGE_KEY) || ruleLanguage.equals(CPP_LANGUAGE_KEY))) {
       return Optional.of(CdtUiUtils.sourceViewerConfiguration());
     }
     return Optional.empty();
@@ -110,7 +111,7 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
 
   @Override
   public Optional<IDocumentPartitioner> documentPartitioner(String ruleLanguage) {
-    if (isCdtPresent() && (ruleLanguage.equals(Language.C.getLanguageKey()) || ruleLanguage.equals(Language.CPP.getLanguageKey()))) {
+    if (isCdtPresent() && (ruleLanguage.equals(C_LANGUAGE_KEY) || ruleLanguage.equals(CPP_LANGUAGE_KEY))) {
       return Optional.of(CdtUiUtils.documentPartitioner());
     }
     return Optional.empty();

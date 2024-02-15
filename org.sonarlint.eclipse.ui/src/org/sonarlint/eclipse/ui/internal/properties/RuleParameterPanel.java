@@ -35,8 +35,8 @@ import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleParamDefinitionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleDefinitionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleParamDefinitionDto;
 
 public class RuleParameterPanel extends Composite {
   private final Link defaultLink;

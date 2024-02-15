@@ -1,6 +1,6 @@
 /*
- * SonarLint for Eclipse
- * Copyright (C) 2015-2024 SonarSource SA
+ * SonarLint for Eclipse ITs
+ * Copyright (C) 2009-2024 SonarSource SA
  * sonarlint@sonarsource.com
  *
  * This program is free software; you can redistribute it and/or
@@ -17,30 +17,24 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.popup;
+package org.sonarlint.eclipse.its.reddeer.conditions;
 
-import org.eclipse.swt.graphics.Image;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-
-public class MessagePopup extends AbstractSonarLintPopup {
-  private final String message;
-
-  public MessagePopup(String message) {
-    this.message = message;
+/** Await analysis to be ready when the project was unready before */
+public class AnalysisReadyAfterUnready extends AbstractReadyCondition {
+  public AnalysisReadyAfterUnready(String projectName) {
+    super(projectName);
   }
 
   @Override
-  protected String getMessage() {
-    return message;
-  }
+  public boolean test() {
+    var consoleText = consoleView.getConsoleText();
 
-  @Override
-  protected String getPopupShellTitle() {
-    return "SonarLint";
-  }
+    var indexFalse = consoleText.lastIndexOf(falsePattern);
+    if (indexFalse == -1) {
+      return false;
+    }
 
-  @Override
-  protected Image getPopupShellImage(int maximumHeight) {
-    return SonarLintImages.BALLOON_IMG;
+    var indexTrue = consoleText.lastIndexOf(truePattern);
+    return indexTrue > indexFalse;
   }
 }

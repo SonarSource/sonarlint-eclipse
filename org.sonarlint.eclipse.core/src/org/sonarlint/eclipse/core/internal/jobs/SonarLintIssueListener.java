@@ -25,21 +25,21 @@ import java.util.Map;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssueListener;
 
-public class SonarLintIssueListener implements IssueListener {
-  private final Map<ISonarLintIssuable, List<Issue>> issuesPerResource;
+public class SonarLintIssueListener implements RawIssueListener {
+  private final Map<ISonarLintIssuable, List<RawIssue>> issuesPerResource;
   private final ISonarLintProject project;
   private long issueCount = 0;
 
-  public SonarLintIssueListener(ISonarLintProject project, Map<ISonarLintIssuable, List<Issue>> issuesPerResource) {
+  public SonarLintIssueListener(ISonarLintProject project, Map<ISonarLintIssuable, List<RawIssue>> issuesPerResource) {
     this.issuesPerResource = issuesPerResource;
     this.project = project;
   }
 
   @Override
-  public void handle(Issue issue) {
+  public void handle(RawIssue issue) {
     issueCount++;
     ISonarLintIssuable r;
     var inputFile = issue.getInputFile();

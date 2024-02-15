@@ -26,8 +26,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
@@ -55,9 +55,9 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
         SonarLintLogger.get().info("Unable to open issue in browser: project is not bound");
         return;
       }
-      SonarLintCorePlugin.getTelemetry().taintVulnerabilitiesInvestigatedRemotely();
+      SonarLintTelemetry.taintVulnerabilitiesInvestigatedRemotely();
       var issueKey = (String) selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR);
-      var serverIssueLink = buildLink(binding.get().getConnectionFacade().getHost(), binding.get().getProjectBinding().projectKey(), issueKey);
+      var serverIssueLink = buildLink(binding.get().getConnectionFacade().getHost(), binding.get().getProjectBinding().getProjectKey(), issueKey);
       BrowserUtils.openExternalBrowser(serverIssueLink, window.getShell().getDisplay());
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to open issue in browser", e);

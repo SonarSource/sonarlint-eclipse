@@ -19,30 +19,23 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding.wizard.project;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.jobs.ProjectStorageUpdateJob;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 
 public class ProjectBindingProcess {
 
-  public static Job scheduleProjectBinding(String connectionId, List<ISonarLintProject> projects, String projectKey) {
-    var job = new ProjectStorageUpdateJob(connectionId, projectKey);
-    var projectToSubscribeToNotifications = new ArrayList<ISonarLintProject>();
+  public static void bindProjects(String connectionId, List<ISonarLintProject> projects, String projectKey) {
     projects.forEach(p -> {
       var changed = false;
       var projectConfig = SonarLintCorePlugin.loadConfig(p);
-      var oldConnectionId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
-      var oldProjectKey = projectConfig.getProjectBinding().map(EclipseProjectBinding::projectKey).orElse(null);
-      if (!Objects.equals(connectionId, oldConnectionId) || !Objects.equals(projectKey, oldProjectKey)) {
-        // We can ignore path prefixes for now, they will be update by the ProjectStorageUpdateJob
-        projectConfig.setProjectBinding(new EclipseProjectBinding(connectionId, projectKey, "", ""));
+      var oldBinding = projectConfig.getProjectBinding();
+      var newBinding = new EclipseProjectBinding(connectionId, projectKey);
+      if (oldBinding.isEmpty() || !Objects.equals(oldBinding.get(), newBinding)) {
+        projectConfig.setProjectBinding(newBinding);
         changed = true;
       }
       if (changed) {
@@ -50,14 +43,9 @@ public class ProjectBindingProcess {
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
         SonarLintCorePlugin.clearIssueTracker(p);
-        AnalysisJobsScheduler.notifyServerViewAfterBindingChange(p, oldConnectionId);
-        projectToSubscribeToNotifications.add(p);
+        AnalysisJobsScheduler.notifyBindingViewAfterBindingChange(p, oldBinding.map(EclipseProjectBinding::getConnectionId).orElse(null));
       }
     });
-
-    AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(job, projects, TriggerType.BINDING_CHANGE, false);
-    job.schedule();
-    return job;
   }
 
   private ProjectBindingProcess() {

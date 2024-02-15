@@ -20,13 +20,14 @@
 package org.sonarlint.eclipse.core.internal;
 
 public enum TriggerType {
-  STARTUP("Startup", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
+  ANALYSIS_READY("Analysis Ready", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
   EDITOR_OPEN("Editor open", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
   MANUAL("Manual trigger", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.SYNC),
   MANUAL_CHANGESET("Manual trigger changeset", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.SYNC),
   EDITOR_CHANGE("Editor change", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
   BINDING_CHANGE("Binding change", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
   STANDALONE_CONFIG_CHANGE("Standalone config change", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
+  NODEJS_CONFIG_CHANGE("Node.js config change", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
   QUICK_FIX("Quick fix", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
   AFTER_RESOLVE("After resolve", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
   SERVER_EVENT("Server Event", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC);

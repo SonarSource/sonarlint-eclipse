@@ -54,8 +54,8 @@ import org.eclipse.ui.part.PageBook;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectionStateListener;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectionManagerListener;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectionStateListener;
 import org.sonarlint.eclipse.core.internal.telemetry.LinkTelemetry;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -244,7 +244,7 @@ public class BindingsView extends CommonNavigator {
       @Override
       public void connectionAdded(ConnectionFacade facade) {
         addConnection(facade);
-        facade.addConnectedEngineListener(connectionListener);
+        facade.addConnectionListener(connectionListener);
       }
 
       @Override
@@ -255,10 +255,10 @@ public class BindingsView extends CommonNavigator {
       @Override
       public void connectionRemoved(ConnectionFacade facade) {
         removeConnection(facade);
-        facade.removeConnectedEngineListener(connectionListener);
+        facade.removeConnectionListener(connectionListener);
       }
     };
-    SonarLintCorePlugin.getConnectionManager().addServerLifecycleListener(connectionResourceListener);
+    SonarLintCorePlugin.getConnectionManager().addConnectionManagerListener(connectionResourceListener);
 
     connectionListener = facade -> {
       refreshConnectionState();
@@ -267,11 +267,13 @@ public class BindingsView extends CommonNavigator {
 
     // add listeners to connections
     for (var connection : SonarLintCorePlugin.getConnectionManager().getConnections()) {
-      connection.addConnectedEngineListener(connectionListener);
+      connection.addConnectionListener(connectionListener);
     }
+
     // add listener for when project is opened / closed / deleted
     projectListener = event -> {
       var shouldRefresh = new AtomicBoolean(false);
+
       if (event.getType() == IResourceChangeEvent.PRE_CLOSE
         || event.getType() == IResourceChangeEvent.PRE_DELETE) {
         shouldRefresh.set(true);
@@ -329,7 +331,7 @@ public class BindingsView extends CommonNavigator {
 
   @Override
   public void dispose() {
-    SonarLintCorePlugin.getConnectionManager().removeServerLifecycleListener(connectionResourceListener);
+    SonarLintCorePlugin.getConnectionManager().removeConnectionManagerListener(connectionResourceListener);
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(projectListener);
     super.dispose();
   }

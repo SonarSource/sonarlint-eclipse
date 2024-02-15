@@ -36,7 +36,7 @@ import static java.util.stream.Collectors.toList;
 
 public class ProjectToBindSelectionDialog extends ElementListSelectionDialog {
 
-  public ProjectToBindSelectionDialog(Shell parent, String message, List<ISonarLintProject> projects) {
+  private ProjectToBindSelectionDialog(Shell parent, String message, List<ISonarLintProject> projects) {
     super(parent, new SonarLintProjectLabelProvider());
     setElements(projects.toArray());
     setTitle("SonarLint - Project Selection");

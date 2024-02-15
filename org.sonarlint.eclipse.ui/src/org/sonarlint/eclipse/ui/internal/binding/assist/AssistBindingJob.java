@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.progress.UIJob;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.ProjectToBindSelectionDialog;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
@@ -59,14 +58,7 @@ public class AssistBindingJob extends UIJob {
     if (pickedProject == null) {
       throw new CancellationException();
     }
-    var bindingJob = ProjectBindingProcess.scheduleProjectBinding(connectionId, List.of(pickedProject), projectKey);
-    try {
-      bindingJob.join();
-    } catch (InterruptedException e) {
-      SonarLintLogger.get().error("Cannot bind project", e);
-      Thread.currentThread().interrupt();
-      throw new CancellationException("Interrupted!");
-    }
+    ProjectBindingProcess.bindProjects(connectionId, List.of(pickedProject), projectKey);
     return pickedProject;
   }
 
