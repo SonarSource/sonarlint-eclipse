@@ -51,10 +51,10 @@ public class UnbindProjectsCommand extends AbstractHandler {
           for (var p : selectedProjects) {
             var projectConfig = SonarLintCorePlugin.loadConfig(p);
             projectConfig.getProjectBinding().ifPresent(b -> {
-              var oldServerId = b.connectionId();
+              var oldServerId = b.getConnectionId();
               ConnectionFacade.unbind(p);
               AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
-              AnalysisJobsScheduler.notifyServerViewAfterBindingChange(p, oldServerId);
+              AnalysisJobsScheduler.notifyBindingViewAfterBindingChange(p, oldServerId);
             });
             monitor.worked(1);
           }

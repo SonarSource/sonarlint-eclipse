@@ -37,13 +37,13 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
@@ -78,7 +78,7 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
       var openEditor = openEditor(file, marker);
       if (fix.isValid()) {
         var document = applyIn(openEditor, fix);
-        SonarLintCorePlugin.getTelemetry().addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker).toString());
+        SonarLintTelemetry.addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker));
         scheduleAnalysis(new FileWithDocument(file, document));
       } else {
         SonarLintLogger.get().debug("Quick fix is not valid anymore");

@@ -43,27 +43,24 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
-import org.sonarlint.eclipse.core.internal.jobs.ConnectionStorageUpdateJob;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.binding.BindingsView;
-import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.check.CheckSmartNotificationsSupportedParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.common.TransientSonarCloudConnectionDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.common.TransientSonarQubeConnectionDto;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.org.ListUserOrganizationsParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.validate.ValidateConnectionParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.validate.ValidateConnectionResponse;
-import org.sonarsource.sonarlint.core.clientapi.common.TokenDto;
-import org.sonarsource.sonarlint.core.clientapi.common.UsernamePasswordDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.check.CheckSmartNotificationsSupportedParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarCloudConnectionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarQubeConnectionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.org.ListUserOrganizationsParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.validate.ValidateConnectionParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.validate.ValidateConnectionResponse;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.TokenDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.UsernamePasswordDto;
 
 public class ServerConnectionWizard extends Wizard implements INewWizard, IPageChangingListener {
 
@@ -242,7 +239,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
         finalizeConnectionCreation();
       }
 
-      updateConnectionStorage();
+      transitionToBindingWizard();
       return true;
     } catch (Exception e) {
       var currentPage = (DialogPage) getContainer().getCurrentPage();
@@ -264,12 +261,8 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     }
   }
 
-  private void updateConnectionStorage() {
-    var job = new ConnectionStorageUpdateJob(resultServer);
-
+  private void transitionToBindingWizard() {
     var boundProjects = resultServer.getBoundProjects();
-    JobUtils.scheduleAfterSuccess(job, () -> AnalysisJobsScheduler.scheduleAnalysisOfOpenFilesInBoundProjects(resultServer, TriggerType.BINDING_CHANGE));
-    job.schedule();
     var selectedProjects = model.getSelectedProjects();
     if (!skipBindingWizard) {
       if (selectedProjects != null && !selectedProjects.isEmpty()) {
@@ -314,7 +307,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       event.doit = tryLoadOrganizations(currentPage);
       return;
     }
-    if (advance && currentPage == orgPage && model.hasOrganizations() && !testConnection(model.getOrganization())) {
+    if (advance && currentPage == orgPage && !testConnection(model.getOrganization())) {
       event.doit = false;
     }
   }
@@ -359,7 +352,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
           try {
             var future = SonarLintBackendService.get().getBackend().getConnectionService().listUserOrganizations(new ListUserOrganizationsParams(modelToCredentialDto()));
             var response = JobUtils.waitForFutureInIRunnableWithProgress(monitor, future);
-            model.setUserOrgs(response.getUserOrganizations());
+            model.suggestOrganization(response.getUserOrganizations());
           } finally {
             monitor.done();
           }
@@ -368,10 +361,8 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     } catch (InvocationTargetException e) {
       SonarLintLogger.get().debug("Unable to download organizations", e.getCause());
       currentPage.setMessage(e.getCause().getMessage(), IMessageProvider.ERROR);
-      model.setUserOrgs(null);
       return false;
     } catch (InterruptedException e) {
-      model.setUserOrgs(null);
       return false;
     }
     return true;

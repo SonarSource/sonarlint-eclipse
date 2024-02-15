@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarsource.sonarlint.core.client.api.util.DateUtils;
+import org.sonarsource.sonarlint.core.client.utils.DateUtils;
 
 public class CreationDateField extends MarkerField {
 

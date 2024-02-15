@@ -82,10 +82,10 @@ public class UnbindProjectDialog extends MessageDialog {
           }
           var binding = SonarLintCorePlugin.loadConfig(project).getProjectBinding();
           binding.ifPresent(b -> {
-            var oldConnectionId = b.connectionId();
+            var oldConnectionId = b.getConnectionId();
             ConnectionFacade.unbind(project);
             AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
-            AnalysisJobsScheduler.notifyServerViewAfterBindingChange(project, oldConnectionId);
+            AnalysisJobsScheduler.notifyBindingViewAfterBindingChange(project, oldConnectionId);
           });
         }
       } catch (Exception e) {

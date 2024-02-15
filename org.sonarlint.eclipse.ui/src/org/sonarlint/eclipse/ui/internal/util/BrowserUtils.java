@@ -28,8 +28,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.telemetry.LinkTelemetry;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.HelpAndFeedbackClickedParams;
 
 public final class BrowserUtils {
   private BrowserUtils() {
@@ -37,13 +38,21 @@ public final class BrowserUtils {
   }
 
   public static void openExternalBrowser(String url, Display display) {
+    try {
+      openExternalBrowser(new URL(url), display);
+    } catch (MalformedURLException e) {
+      throw new IllegalArgumentException(url + " is not a valid URL");
+    }
+  }
+
+  public static void openExternalBrowser(URL url, Display display) {
     // For unit tests we want to disable the actual browser opening
     var externalBrowserDisabled = System.getProperty("sonarlint.internal.externalBrowser.disabled");
     if (externalBrowserDisabled == null) {
       display.asyncExec(() -> {
         try {
-          PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(url));
-        } catch (PartInitException | MalformedURLException e) {
+          PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);
+        } catch (PartInitException e) {
           SonarLintLogger.get().error("Unable to open external browser", e);
         }
       });
@@ -55,7 +64,7 @@ public final class BrowserUtils {
    * "connected mode setup UI helps users discover the value of Sonar solution and connected mode"
    */
   public static void openExternalBrowserWithTelemetry(LinkTelemetry link, Display display) {
-    SonarLintCorePlugin.getTelemetry().helpAndFeedbackLinkClicked(link.getLinkId());
+    SonarLintBackendService.get().getBackend().getTelemetryService().helpAndFeedbackLinkClicked(new HelpAndFeedbackClickedParams(link.getLinkId()));
     openExternalBrowser(link.getUrl(), display);
   }
 
@@ -76,7 +85,11 @@ public final class BrowserUtils {
 
         event.doit = false;
 
-        openExternalBrowser(loc, browser.getDisplay());
+        try {
+          openExternalBrowser(new URL(loc), browser.getDisplay());
+        } catch (MalformedURLException e) {
+          throw new IllegalArgumentException(e);
+        }
       }
     });
   }

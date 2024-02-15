@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -108,6 +109,17 @@ public final class PlatformUtils {
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
+  }
+
+  public static IDocument getDocumentFromEditorOrFile(ISonarLintFile file) {
+    IDocument doc;
+    var editorPart = findEditor(file);
+    if (editorPart instanceof ITextEditor) {
+      doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
+    } else {
+      doc = file.getDocument();
+    }
+    return doc;
   }
 
   @Nullable

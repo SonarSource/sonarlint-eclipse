@@ -42,8 +42,8 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.wizard.BeanPropertiesCompat;
 import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.auth.HelpGenerateUserTokenParams;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.auth.HelpGenerateUserTokenResponse;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.auth.HelpGenerateUserTokenParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.auth.HelpGenerateUserTokenResponse;
 
 public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 

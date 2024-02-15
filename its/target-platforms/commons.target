@@ -2,14 +2,30 @@
 <?pde version="3.8"?>
 <target name="sonarlint-its-commons" sequenceNumber="3">
 	<locations>
-		<location includeDependencyDepth="none"
-			includeDependencyScopes="compile" includeSource="true"
-			missingManifest="error" type="Maven">
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
 			<dependencies>
+				<dependency>
+					<groupId>com.eclipsesource.minimal-json</groupId>
+					<artifactId>minimal-json</artifactId>
+					<version>0.9.5</version>
+					<type>jar</type>
+				</dependency>
 				<dependency>
 					<groupId>com.google.code.gson</groupId>
 					<artifactId>gson</artifactId>
 					<version>2.10.1</version>
+					<type>jar</type>
+				</dependency>
+				<dependency>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+					<version>18.0</version>
+					<type>jar</type>
+				</dependency>
+				<dependency>
+					<groupId>com.h2database</groupId>
+					<artifactId>h2</artifactId>
+					<version>2.1.210</version>
 					<type>jar</type>
 				</dependency>
 				<dependency>
@@ -19,44 +35,32 @@
 					<type>jar</type>
 				</dependency>
 				<dependency>
-					<groupId>org.awaitility</groupId>
-					<artifactId>awaitility</artifactId>
-					<version>4.2.0</version>
-				</dependency>
-				<dependency>
-					<groupId>org.hamcrest</groupId>
-					<artifactId>hamcrest</artifactId>
-					<version>2.1</version>
-				</dependency>
-				<dependency>
-					<groupId>com.h2database</groupId>
-					<artifactId>h2</artifactId>
-					<version>2.1.210</version>
-					<type>jar</type>
-				</dependency>
-				<dependency>
-					<groupId>com.eclipsesource.minimal-json</groupId>
-					<artifactId>minimal-json</artifactId>
-					<version>0.9.5</version>
-					<type>jar</type>
-				</dependency>
-				<dependency>
 					<groupId>org.apache.commons</groupId>
 					<artifactId>commons-exec</artifactId>
 					<version>1.3</version>
 					<type>jar</type>
 				</dependency>
 				<dependency>
-					<groupId>com.google.guava</groupId>
-					<artifactId>guava</artifactId>
-					<version>18.0</version>
+					<groupId>org.awaitility</groupId>
+					<artifactId>awaitility</artifactId>
+					<version>4.2.0</version>
 					<type>jar</type>
 				</dependency>
+				<dependency>
+					<groupId>org.hamcrest</groupId>
+					<artifactId>hamcrest</artifactId>
+					<version>2.1</version>
+					<type>jar</type>
+				</dependency>
+				<dependency>
+				  <groupId>org.jetbrains.kotlin</groupId>
+				  <artifactId>kotlin-osgi-bundle</artifactId>
+				  <version>1.6.21</version>
+				  <type>jar</type>
+			  </dependency>
 			</dependencies>
 		</location>
-		<location includeDependencyDepth="infinite"
-			includeDependencyScopes="compile,runtime" includeSource="true"
-			missingManifest="error" type="Maven">
+		<location includeDependencyDepth="infinite" includeDependencyScopes="compile,runtime" includeSource="true" missingManifest="error" type="Maven">
 			<dependencies>
 				<dependency>
 					<groupId>org.assertj</groupId>
@@ -66,9 +70,7 @@
 				</dependency>
 			</dependencies>
 		</location>
-		<location includeDependencyDepth="none"
-			includeDependencyScopes="compile" includeSource="true"
-			missingManifest="generate" type="Maven">
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
 			<dependencies>
 				<dependency>
 					<groupId>org.sonarsource.orchestrator</groupId>
@@ -88,9 +90,7 @@ Export-Package:        *;version="${version}";-noimport:=true
 DynamicImport-Package: *
 ]]></instructions>
 		</location>
-		<location includeDependencyDepth="none"
-			includeDependencyScopes="compile" includeSource="true"
-			missingManifest="generate" type="Maven">
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
 			<dependencies>
 				<dependency>
 					<groupId>org.sonarsource.orchestrator</groupId>
@@ -109,9 +109,7 @@ Export-Package:        *;version="${version}";-noimport:=true
 DynamicImport-Package: *
 ]]></instructions>
 		</location>
-		<location includeDependencyDepth="none"
-			includeDependencyScopes="compile" includeSource="true"
-			missingManifest="generate" type="Maven">
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
 			<dependencies>
 				<dependency>
 					<groupId>org.sonarsource.sonarqube</groupId>
@@ -131,15 +129,15 @@ DynamicImport-Package: *
 ]]></instructions>
 		</location>
 		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-		  <dependencies>
-			  <dependency>
-				  <groupId>com.squareup.okhttp3</groupId>
-				  <artifactId>okhttp</artifactId>
-				  <version>4.10.0</version>
-				  <type>jar</type>
-			  </dependency>
-		  </dependencies>
-		  <instructions><![CDATA[
+			<dependencies>
+				<dependency>
+					<groupId>com.squareup.okhttp3</groupId>
+					<artifactId>okhttp</artifactId>
+					<version>4.10.0</version>
+					<type>jar</type>
+				</dependency>
+			</dependencies>
+			<instructions><![CDATA[
 Bundle-Name:           OkHttp
 version:               ${version_cleanup;${mvnVersion}}
 Bundle-SymbolicName:   com.squareup.okhttp3
@@ -147,16 +145,16 @@ Bundle-Version:        ${version}
 Export-Package:        okhttp3;version="${version}";-noimport:=true
 Import-Package:        okio;version="3.0.0",kotlin.*;version="1.6.20"
 ]]></instructions>
-	  </location>
-	  <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
-		  <dependencies>
-			  <dependency>
-				  <groupId>com.squareup.okio</groupId>
-				  <artifactId>okio-jvm</artifactId>
-				  <version>3.0.0</version>
-				  <type>jar</type>
-			  </dependency>
-		  </dependencies>
-	  </location>
+		</location>
+		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
+			<dependencies>
+				<dependency>
+					<groupId>com.squareup.okio</groupId>
+					<artifactId>okio-jvm</artifactId>
+					<version>3.0.0</version>
+					<type>jar</type>
+				</dependency>
+			</dependencies>
+		</location>
 	</locations>
 </target>

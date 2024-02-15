@@ -28,7 +28,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -36,24 +35,23 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
  *  Job to update taint issues after synchronization without re-fetching them from the server in contrast to
  *  {@link TaintIssuesUpdateOnFileOpenedJob}, because the information was just fetched!
  */
-public class TaintIssuesUpdateAfterSyncJob extends Job {
+public class TaintIssuesMarkerUpdateJob extends Job {
   private final Collection<ISonarLintFile> issuables;
-  private final ISonarLintProject project;
   private final ConnectionFacade engineFacade;
 
-  public TaintIssuesUpdateAfterSyncJob(ConnectionFacade engineFacade,
+  public TaintIssuesMarkerUpdateJob(ConnectionFacade engineFacade,
     ISonarLintProject project,
     Collection<ISonarLintFile> issuables) {
     super("Refresh synced taint issues for " + project.getName());
     this.engineFacade = engineFacade;
     setPriority(DECORATE);
-    this.project = project;
     this.issuables = issuables;
   }
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
+
       // To access the preference service only once and not per issue
       var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
 
@@ -64,9 +62,7 @@ public class TaintIssuesUpdateAfterSyncJob extends Job {
         if (monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
         }
-        VcsService.getServerBranch(project)
-          .ifPresent(b -> SonarLintMarkerUpdater.refreshMarkersForTaint(issuable, b, engineFacade,
-            issuePeriodPreference, issueFilterPreference));
+        SonarLintMarkerUpdater.refreshMarkersForTaint(issuable, engineFacade, issuePeriodPreference, issueFilterPreference, monitor);
       }
       return Status.OK_STATUS;
     } catch (Throwable t) {

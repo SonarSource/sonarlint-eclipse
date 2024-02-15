@@ -35,7 +35,7 @@ public class TaintMarkersPartListener implements IPartListener2 {
       var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(f.getProject());
       if (bindingOpt.isPresent()) {
         new TaintIssuesUpdateOnFileOpenedJob(bindingOpt.get().getConnectionFacade(),
-          f.getProject(), List.of(f), bindingOpt.get().getProjectBinding()).schedule();
+          f.getProject(), List.of(f)).schedule();
       }
     });
   }

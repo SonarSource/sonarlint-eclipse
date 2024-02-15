@@ -47,16 +47,10 @@ public class BindingsViewDecorator extends LabelProvider implements ILightweight
       var projectConfig = SonarLintCorePlugin.loadConfig(project);
       projectConfig.getProjectBinding().ifPresent(eclipseProjectBinding -> {
         List<String> infos = new ArrayList<>();
-        VcsService.getServerBranch(project).ifPresent(b -> infos.add("Branch: '" + b + "'"));
+        VcsService.getCachedSonarProjectBranch(project).ifPresent(b -> infos.add("Branch: '" + b + "'"));
 
         appendNewCodePeriod(project, infos);
 
-        if (StringUtils.isNotBlank(eclipseProjectBinding.idePathPrefix())) {
-          infos.add("IDE directory: '/" + eclipseProjectBinding.idePathPrefix() + "'");
-        }
-        if (StringUtils.isNotBlank(eclipseProjectBinding.serverPathPrefix())) {
-          infos.add("Sonar directory: '/" + eclipseProjectBinding.serverPathPrefix() + "'");
-        }
         addSuffix(decoration, infos.stream().collect(Collectors.joining(", ")));
       });
     }

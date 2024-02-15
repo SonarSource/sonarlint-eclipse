@@ -22,9 +22,8 @@ package org.sonarlint.eclipse.ui.internal.properties;
 import java.util.List;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
-import org.sonarsource.sonarlint.core.commons.Language;
-import org.sonarsource.sonarlint.core.commons.RuleKey;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleDefinitionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -32,10 +31,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class RulesConfigurationPartTest {
-  private static final RuleKey ACTIVE = mockRuleKey("ACTIVE");
-  private static final RuleKey ACTIVE_EXCLUDED = mockRuleKey("ACTIVE_EXCLUDED");
-  private static final RuleKey INACTIVE = mockRuleKey("INACTIVE");
-  private static final RuleKey INACTIVE_INCLUDED = mockRuleKey("INACTIVE_INCLUDED");
+  private static final String ACTIVE = mockRuleKey("ACTIVE");
+  private static final String ACTIVE_EXCLUDED = mockRuleKey("ACTIVE_EXCLUDED");
+  private static final String INACTIVE = mockRuleKey("INACTIVE");
+  private static final String INACTIVE_INCLUDED = mockRuleKey("INACTIVE_INCLUDED");
 
   private RulesConfigurationPart newSampleConfigurationPart() {
     var allRuleDetails = List.of(
@@ -48,13 +47,13 @@ public class RulesConfigurationPartTest {
     return new RulesConfigurationPart(() -> allRuleDetails, ruleConfig);
   }
 
-  private static RuleKey mockRuleKey(String key) {
-    return new RuleKey("squid", key);
+  private static String mockRuleKey(String key) {
+    return "java:" + key;
   }
 
-  private RuleDefinitionDto mockRuleDetails(RuleKey ruleKey, boolean activeByDefault) {
+  private RuleDefinitionDto mockRuleDetails(String ruleKey, boolean activeByDefault) {
     var ruleDetails = mock(RuleDefinitionDto.class);
-    when(ruleDetails.getKey()).thenReturn(ruleKey.toString());
+    when(ruleDetails.getKey()).thenReturn(ruleKey);
     when(ruleDetails.isActiveByDefault()).thenReturn(activeByDefault);
     when(ruleDetails.getLanguage()).thenReturn(Language.JAVA);
     return ruleDetails;

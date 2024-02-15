@@ -21,12 +21,12 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.EditNotificationsWizard;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
-import org.sonarsource.sonarlint.core.clientapi.client.smartnotification.ShowSmartNotificationParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.smartnotification.ShowSmartNotificationParams;
 
 public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
 
@@ -52,8 +52,7 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
     super.createContentArea(composite);
 
     addLink("Open in " + sqOrSc, e -> {
-      var telemetry = SonarLintCorePlugin.getTelemetry();
-      telemetry.devNotificationsClicked(notification.getCategory());
+      SonarLintTelemetry.devNotificationsClicked(notification.getCategory());
       BrowserUtils.openExternalBrowser(notification.getLink(), e.display);
       close();
     });

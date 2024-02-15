@@ -87,14 +87,17 @@ public class AnalysisJobsScheduler {
     scheduleAnalysisOfOpenFiles(connection.getBoundProjects(), triggerType, false);
   }
 
-  public static void scheduleAnalysisOfOpenFilesInBoundProjects(Job job, ConnectionFacade connection,
-    TriggerType triggerType) {
-    scheduleAnalysisOfOpenFiles(job, connection.getBoundProjects(), triggerType, false);
+  public static void scheduleAnalysisOfOpenFiles(Job job, List<ISonarLintProject> projects, TriggerType triggerType) {
+    JobUtils.scheduleAfterSuccess(job, () -> scheduleAnalysisOfOpenFiles(projects, triggerType, false));
   }
 
-  public static void notifyServerViewAfterBindingChange(ISonarLintProject project, @Nullable String oldConnectionId) {
+  public static void scheduleAnalysisOfOpenFilesInBoundProjects(Job job, ConnectionFacade server, TriggerType triggerType) {
+    scheduleAnalysisOfOpenFiles(job, server.getBoundProjects(), triggerType);
+  }
+
+  public static void notifyBindingViewAfterBindingChange(ISonarLintProject project, @Nullable String oldConnectionId) {
     var projectConfig = SonarLintCorePlugin.loadConfig(project);
-    var connectionId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
+    var connectionId = projectConfig.getProjectBinding().map(EclipseProjectBinding::getConnectionId).orElse(null);
     if (oldConnectionId != null && !Objects.equals(connectionId, oldConnectionId)) {
       var oldServer = SonarLintCorePlugin.getConnectionManager().findById(oldConnectionId);
       oldServer.ifPresent(ConnectionFacade::notifyAllListenersStateChanged);

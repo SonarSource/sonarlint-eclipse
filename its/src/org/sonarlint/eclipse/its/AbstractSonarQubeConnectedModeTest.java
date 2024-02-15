@@ -39,6 +39,7 @@ import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.swt.widgets.Label;
 import org.junit.Before;
 import org.osgi.framework.FrameworkUtil;
+import org.sonarlint.eclipse.its.reddeer.conditions.AnalysisReadyAfterUnready;
 import org.sonarlint.eclipse.its.reddeer.dialogs.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
@@ -94,7 +95,7 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
       .setProperty("sonar.password", Server.ADMIN_PASSWORD)
       .setProperty("sonar.projectKey", projectKey);
 
-    for (var pair: analysisProperties.entrySet()) {
+    for (var pair : analysisProperties.entrySet()) {
       build = build.setProperty(pair.getKey(), pair.getValue());
     }
 
@@ -154,27 +155,22 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     serverProjectSelectionPage.waitForProjectsToBeFetched();
     serverProjectSelectionPage.setProjectKey(projectKey);
     projectBindingWizard.finish();
-
-    var bindingsView = new BindingsView();
-    bindingsView.open();
-    bindingsView.updateAllProjectBindings();
-    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
-  
+
   protected static void bindProjectFromContextMenu(Project project, String projectKey) {
     new ContextMenu(project.getTreeItem()).getItem("SonarLint", "Bind to SonarQube or SonarCloud...").select();
-    
+
     var projectBindingWizard = new ProjectBindingWizard();
     projectBindingWizard.next();
-    
+
     var serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
     serverProjectSelectionPage.waitForProjectsToBeFetched();
     serverProjectSelectionPage.setProjectKey(projectKey);
     projectBindingWizard.finish();
-    
-    var bindingsView = new BindingsView();
-    bindingsView.open();
-    bindingsView.updateAllProjectBindings();
-    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
+  }
+
+  /** When binding project it will move to unready state before going to ready state again */
+  protected static void waitForAnalysisReady(String projectName) {
+    new WaitUntil(new AnalysisReadyAfterUnready(projectName), TimePeriod.getCustom(60));
   }
 }

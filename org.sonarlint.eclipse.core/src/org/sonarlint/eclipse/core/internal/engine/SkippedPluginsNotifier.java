@@ -29,12 +29,12 @@ import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
-import org.sonarsource.sonarlint.core.commons.Language;
-import org.sonarsource.sonarlint.core.plugin.commons.SkipReason;
+import org.sonarsource.sonarlint.core.client.legacy.analysis.PluginDetails;
+import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
+import org.sonarsource.sonarlint.core.plugin.commons.api.SkipReason;
 
 import static java.util.stream.Collectors.toList;
-import static org.sonarsource.sonarlint.core.commons.Language.getLanguagesByPluginKey;
+import static org.sonarsource.sonarlint.core.commons.api.SonarLanguage.getLanguagesByPluginKey;
 
 public class SkippedPluginsNotifier {
 
@@ -49,6 +49,8 @@ public class SkippedPluginsNotifier {
       .filter(p -> !(p.skipReason().get() instanceof SkipReason.UnsatisfiedRuntimeRequirement))
       // Language enabling is not under user control, so no need to signal it
       .filter(p -> !(p.skipReason().get() instanceof SkipReason.LanguagesNotEnabled))
+      // when a feature like DBD is disabled, the related plugins are skipped, but this is expected
+      .filter(p -> !(p.skipReason().get() instanceof SkipReason.UnsupportedFeature))
       .collect(toList());
     var enabledLanguages = EnumSet.noneOf(SonarLintLanguage.class);
     enabledLanguages.addAll(SonarLintUtils.getStandaloneEnabledLanguages());
@@ -71,7 +73,7 @@ public class SkippedPluginsNotifier {
         notificationTitle = "Language analysis not available";
         notificationMsg = String.format("%s analysis will not be available until some requirements are satisfied",
           skippedLanguages.stream()
-            .map(Language::getLanguageKey)
+            .map(SonarLanguage::getSonarLanguageKey)
             .map(StringUtils::capitalize)
             .collect(Collectors.joining(", ")));
       }
@@ -79,7 +81,7 @@ public class SkippedPluginsNotifier {
     }
   }
 
-  private static String buildLongMessage(@Nullable String connectionId, List<PluginDetails> skippedPlugins, List<Language> skippedLanguages) {
+  private static String buildLongMessage(@Nullable String connectionId, List<PluginDetails> skippedPlugins, List<SonarLanguage> skippedLanguages) {
     var longMessage = new StringBuilder();
     longMessage.append("Some analyzers");
     if (connectionId != null) {
@@ -89,7 +91,7 @@ public class SkippedPluginsNotifier {
     if (!skippedLanguages.isEmpty()) {
       longMessage.append(String.format("%s analysis will not be available until following requirements are satisfied:%n",
         skippedLanguages.stream()
-          .map(Language::getLanguageKey)
+          .map(SonarLanguage::getSonarLanguageKey)
           .map(StringUtils::capitalize)
           .collect(Collectors.joining(", "))));
     }

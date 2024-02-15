@@ -42,7 +42,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.job.RulesConfigurationPageSaveJob;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleDefinitionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleDefinitionDto;
 
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
 

@@ -20,15 +20,15 @@
 package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
-import org.sonarsource.sonarlint.core.clientapi.backend.connection.org.OrganizationDto;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.org.FuzzySearchUserOrganizationsParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.org.ListUserOrganizationsParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.org.OrganizationDto;
 
 public class OrganizationProvider implements IContentProposalProvider {
 
@@ -44,23 +44,21 @@ public class OrganizationProvider implements IContentProposalProvider {
   public IContentProposal[] getProposals(String contents, int position) {
     var list = new ArrayList<IContentProposal>();
     if (contents.isEmpty()) {
-      var allUserOrgs = model.getUserOrgs();
-      if (allUserOrgs != null) {
-        allUserOrgs.stream().limit(10).forEach(o -> list.add(new ContentProposal(o.getKey(), o.getName(), toDescription(o))));
-      }
+      var allUserOrgs = SonarLintBackendService.get().getBackend().getConnectionService()
+        .listUserOrganizations(new ListUserOrganizationsParams(model.getTransientRpcCrendentials()))
+        .join();
+      allUserOrgs.getUserOrganizations().stream().limit(10).forEach(o -> list.add(new ContentProposal(o.getKey(), o.getName(), toDescription(o))));
     } else {
-      var organizationsIndex = model.getUserOrgsIndex();
-      var filtered = organizationsIndex != null ? organizationsIndex.search(contents) : Collections.<OrganizationDto, Double>emptyMap();
-      if (filtered.isEmpty()) {
+      var filtered = SonarLintBackendService.get().getBackend().getConnectionService()
+        .fuzzySearchUserOrganizations(new FuzzySearchUserOrganizationsParams(model.getTransientRpcCrendentials(), contents))
+        .join();
+      if (filtered.getTopResults().isEmpty()) {
         parentPage.setMessage("No results", IMessageProvider.INFORMATION);
       } else {
         parentPage.setMessage("", IMessageProvider.NONE);
       }
-      filtered.entrySet()
+      filtered.getTopResults()
         .stream()
-        .sorted(Comparator.comparing(Map.Entry<OrganizationDto, Double>::getValue).reversed()
-          .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)))
-        .map(Map.Entry::getKey)
         .forEach(o -> list.add(new ContentProposal(o.getKey(), o.getName(), toDescription(o))));
     }
     return list.toArray(new IContentProposal[list.size()]);

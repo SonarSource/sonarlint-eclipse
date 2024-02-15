@@ -233,6 +233,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     var bindingSuggestionNotificationShell = new DefaultShell("SonarLint Binding Suggestion");
     new DefaultLink(bindingSuggestionNotificationShell, "Don't ask again").click();
 
+    waitForAnalysisReady(SECRET_JAVA_PROJECT_NAME);
+
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
 
     var defaultEditor = new DefaultEditor();
@@ -257,6 +259,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     // Remove binding suggestion notification
     var bindingSuggestionNotificationShell = new DefaultShell("SonarLint Binding Suggestion");
     new DefaultLink(bindingSuggestionNotificationShell, "Don't ask again").click();
+
+    waitForAnalysisReady(JAVA_SIMPLE_PROJECT_KEY);
 
     var file = rootProject.getResource("src", "hello", "Hello.java");
     openFileAndWaitForAnalysisCompletion(file);
@@ -302,6 +306,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     // Remove binding suggestion notification
     var bindingSuggestionNotificationShell = new DefaultShell("SonarLint Binding Suggestion");
     new DefaultLink(bindingSuggestionNotificationShell, "Don't ask again").click();
+
+    waitForAnalysisReady(JAVA_SIMPLE_PROJECT_KEY);
 
     var file = rootProject.getResource("src", "hello", "Hello.java");
     openFileAndWaitForAnalysisCompletion(file);
@@ -374,6 +380,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     // 7) Remove binding suggestion notification
     var notificationShell = new DefaultShell("SonarLint Binding Suggestion");
     new DefaultLink(notificationShell, "Don't ask again").click();
+
+    waitForAnalysisReady(MAVEN2_PROJECT_KEY);
 
     // 8) Open first file and try to open the "Mark issue as ..." dialog
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src/main/java", "hello", "Hello.java"));
@@ -464,6 +472,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     var notificationShell = new DefaultShell("SonarLint Binding Suggestion");
     new DefaultLink(notificationShell, "Don't ask again").click();
 
+    waitForAnalysisReady(MAVEN_TAINT_PROJECT_KEY);
+
     await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(2));
     await().untilAsserted(() -> assertThat(taintVulnerabilitiesView.getItems()).hasSize(1));
 
@@ -487,6 +497,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     // 5) bind to project on SonarQube / check that new code period preference is working
     createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
+
+    waitForAnalysisReady(MAVEN_TAINT_PROJECT_KEY);
 
     await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(2));
     await().untilAsserted(() -> assertThat(taintVulnerabilitiesView.getItems()).hasSize(1));

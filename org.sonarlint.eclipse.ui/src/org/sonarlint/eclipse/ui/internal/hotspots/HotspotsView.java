@@ -59,8 +59,8 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.rule.RuleDescriptionPanel;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.RuleMonolithicDescriptionDto;
-import org.sonarsource.sonarlint.core.clientapi.client.hotspot.HotspotDetailsDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleMonolithicDescriptionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.hotspot.HotspotDetailsDto;
 
 public class HotspotsView extends ViewPart {
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.HotspotsView";

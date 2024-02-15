@@ -20,14 +20,13 @@
 package org.sonarlint.eclipse.ui.internal.binding.wizard.project;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
-import org.sonarsource.sonarlint.core.serverapi.component.ServerProject;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.FuzzySearchProjectsParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.SonarProjectDto;
 
 public class SonarProjectProvider implements IContentProposalProvider {
 
@@ -42,28 +41,24 @@ public class SonarProjectProvider implements IContentProposalProvider {
   @Override
   public IContentProposal[] getProposals(String contents, int position) {
     var list = new ArrayList<IContentProposal>();
-    var projectIndex = model.getProjectIndex();
-    var filtered = projectIndex != null ? projectIndex.search(contents) : Collections.<ServerProject, Double>emptyMap();
-    if (filtered.isEmpty()) {
+    var response = SonarLintBackendService.get().getBackend().getConnectionService().fuzzySearchProjects(new FuzzySearchProjectsParams(model.getConnection().getId(), contents))
+      .join();
+    if (response.getTopResults().isEmpty()) {
       parentPage.setMessage("No results", IMessageProvider.INFORMATION);
     } else {
       parentPage.setMessage("", IMessageProvider.NONE);
     }
-    var entries = new ArrayList<>(filtered.entrySet());
-    entries.sort(
-      Comparator.comparing(Map.Entry<ServerProject, Double>::getValue).reversed()
-        .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)));
-    for (var entry : entries) {
-      list.add(new ProjectContentProposal(entry.getKey()));
+    for (var entry : response.getTopResults()) {
+      list.add(new ProjectContentProposal(entry));
     }
     return list.toArray(new IContentProposal[list.size()]);
   }
 
   public static class ProjectContentProposal implements IContentProposal {
 
-    private final ServerProject sonarProject;
+    private final SonarProjectDto sonarProject;
 
-    public ProjectContentProposal(ServerProject sonarProject) {
+    public ProjectContentProposal(SonarProjectDto sonarProject) {
       this.sonarProject = sonarProject;
     }
 
@@ -82,7 +77,7 @@ public class SonarProjectProvider implements IContentProposalProvider {
       return sonarProject.getName();
     }
 
-    public ServerProject getRemoteProject() {
+    public SonarProjectDto getSonarProject() {
       return sonarProject;
     }
 

@@ -25,9 +25,9 @@ public class ResolvedBinding {
   private final EclipseProjectBinding projectBinding;
   private final ConnectionFacade connectionFacade;
 
-  public ResolvedBinding(EclipseProjectBinding projectBinding, ConnectionFacade engineFacade) {
+  public ResolvedBinding(EclipseProjectBinding projectBinding, ConnectionFacade connectionFacade) {
     this.projectBinding = projectBinding;
-    this.connectionFacade = engineFacade;
+    this.connectionFacade = connectionFacade;
   }
 
   public EclipseProjectBinding getProjectBinding() {

@@ -23,7 +23,7 @@ import java.util.Objects;
 
 public class SonarProject {
 
-  private final String connectionId;
+  private String connectionId;
   private final String name;
   private final String projectKey;
 
@@ -35,6 +35,10 @@ public class SonarProject {
 
   public String getConnectionId() {
     return connectionId;
+  }
+
+  public void setUrl(String url) {
+    this.connectionId = url;
   }
 
   public String getProjectKey() {

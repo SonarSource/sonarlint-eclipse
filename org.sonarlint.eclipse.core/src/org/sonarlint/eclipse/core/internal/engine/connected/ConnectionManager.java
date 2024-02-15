@@ -48,7 +48,6 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
 
 public class ConnectionManager {
   // Changing the preference node name would be a breaking change, so we keep the old name "servers" for now
@@ -179,13 +178,13 @@ public class ConnectionManager {
     facadesByConnectionId.values().forEach(c -> c.stop());
   }
 
-  public void addServerLifecycleListener(IConnectionManagerListener listener) {
+  public void addConnectionManagerListener(IConnectionManagerListener listener) {
     synchronized (connectionsListeners) {
       connectionsListeners.add(listener);
     }
   }
 
-  public void removeServerLifecycleListener(IConnectionManagerListener listener) {
+  public void removeConnectionManagerListener(IConnectionManagerListener listener) {
     synchronized (connectionsListeners) {
       connectionsListeners.remove(listener);
     }
@@ -201,9 +200,9 @@ public class ConnectionManager {
     }
   }
 
-  private void fireConnectionAddedEvent(ConnectionFacade connectionFacade) {
+  private void fireConnectionAddedEvent(ConnectionFacade connection) {
     for (IConnectionManagerListener srl : getListeners()) {
-      srl.connectionAdded(connectionFacade);
+      srl.connectionAdded(connection);
     }
   }
 
@@ -217,14 +216,14 @@ public class ConnectionManager {
     return InstanceScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID);
   }
 
-  private static Map<String, ConnectionFacade> loadServersList(Preferences connectionsNode) {
+  private static Map<String, ConnectionFacade> loadServersList(Preferences serversNode) {
     Map<String, ConnectionFacade> result = new LinkedHashMap<>();
     try {
-      for (var connectionNodeName : connectionsNode.childrenNames()) {
-        var connectionNode = connectionsNode.node(connectionNodeName);
-        var connectionId = getConnectionIdFromNodeName(connectionNodeName);
-        var facade = new ConnectionFacade(connectionId);
-        loadConnection(connectionNode, facade);
+      for (var serverNodeName : serversNode.childrenNames()) {
+        var serverNode = serversNode.node(serverNodeName);
+        var serverId = getConnectionIdFromNodeName(serverNodeName);
+        var facade = new ConnectionFacade(serverId);
+        loadConnection(serverNode, facade);
         result.put(facade.getId(), facade);
       }
     } catch (BackingStoreException e) {
@@ -358,9 +357,9 @@ public class ConnectionManager {
     return config
       .getProjectBinding()
       .flatMap(b -> {
-        var connection = findById(b.connectionId());
+        var connection = findById(b.getConnectionId());
         if (connection.isEmpty()) {
-          SonarLintLogger.get().error("Project '" + project.getName() + "' binding refers to an unknown connection: '" + b.connectionId()
+          SonarLintLogger.get().error("Project '" + project.getName() + "' binding refers to an unknown connection: '" + b.getConnectionId()
             + "'. Please fix project binding or unbind project.");
           return Optional.empty();
         }
@@ -468,14 +467,6 @@ public class ConnectionManager {
     }
     if (!editExisting && facadesByConnectionId.containsKey(connectionId)) {
       return "Connection name already exists";
-    }
-
-    try {
-      // Validate connection ID format
-      ConnectedGlobalConfiguration.sonarQubeBuilder()
-        .setConnectionId(connectionId);
-    } catch (Exception e) {
-      return e.getMessage();
     }
     return null;
   }

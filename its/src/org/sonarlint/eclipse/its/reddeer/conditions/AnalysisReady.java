@@ -1,6 +1,6 @@
 /*
- * SonarLint for Eclipse
- * Copyright (C) 2015-2024 SonarSource SA
+ * SonarLint for Eclipse ITs
+ * Copyright (C) 2009-2024 SonarSource SA
  * sonarlint@sonarsource.com
  *
  * This program is free software; you can redistribute it and/or
@@ -17,30 +17,23 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.its.reddeer.conditions;
 
-import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarsource.sonarlint.core.commons.log.ClientLogOutput;
-
-public final class SonarLintAnalyzerLogOutput implements ClientLogOutput {
+/** Await analysis to be ready without the project ever getting unready */
+public class AnalysisReady extends AbstractReadyCondition {
+  public AnalysisReady(String projectName) {
+    super(projectName);
+  }
 
   @Override
-  public void log(String msg, Level level) {
-    switch (level) {
-      case TRACE:
-      case DEBUG:
-        SonarLintLogger.get().analyzerDebug(msg);
-        break;
-      case INFO:
-      case WARN:
-        SonarLintLogger.get().analyzerInfo(msg);
-        break;
-      case ERROR:
-        SonarLintLogger.get().analyzerError(msg);
-        break;
-      default:
-        SonarLintLogger.get().analyzerInfo(msg);
+  public boolean test() {
+    var consoleText = consoleView.getConsoleText();
+
+    var indexFalse = consoleText.lastIndexOf(falsePattern);
+    if (indexFalse != -1) {
+      return false;
     }
 
+    return consoleText.lastIndexOf(truePattern) > -1;
   }
 }

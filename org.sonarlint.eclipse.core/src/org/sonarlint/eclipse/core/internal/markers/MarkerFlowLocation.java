@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
+import java.nio.file.Path;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -31,7 +32,7 @@ public class MarkerFlowLocation {
   private IMarker marker;
   private boolean deleted;
   @Nullable
-  private String filePath;
+  private Path filePath;
 
   public MarkerFlowLocation(MarkerFlow parent, @Nullable String message) {
     this.parent = parent;
@@ -40,9 +41,9 @@ public class MarkerFlowLocation {
     this.message = message;
   }
 
-  public MarkerFlowLocation(MarkerFlow parent, @Nullable String message, @Nullable String filePath) {
+  public MarkerFlowLocation(MarkerFlow parent, @Nullable String message, @Nullable Path path) {
     this(parent, message);
-    this.filePath = filePath;
+    this.filePath = path;
   }
 
   public MarkerFlow getParent() {
@@ -76,7 +77,7 @@ public class MarkerFlowLocation {
   }
 
   @Nullable
-  public String getFilePath() {
+  public Path getFilePath() {
     return filePath;
   }
 }

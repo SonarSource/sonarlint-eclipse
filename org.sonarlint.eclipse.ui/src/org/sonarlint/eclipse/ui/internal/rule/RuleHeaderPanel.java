@@ -19,16 +19,17 @@
  */
 package org.sonarlint.eclipse.ui.internal.rule;
 
-import java.util.ArrayList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarsource.sonarlint.core.clientapi.backend.rules.AbstractRuleDto;
-import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
-import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
+import org.sonarsource.sonarlint.core.client.utils.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.client.utils.ImpactSeverity;
+import org.sonarsource.sonarlint.core.client.utils.SoftwareQuality;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.AbstractRuleDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.ImpactDto;
 
 /** Rule header for the new CCT */
 public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
@@ -42,7 +43,7 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
     super(parent, 5);
 
     ruleCleanCodeAttributeLabel = new Label(this, SWT.NONE);
-    firstSoftwareQualityImpact= new SoftwareQualityImpactPanel(this, SWT.NONE);
+    firstSoftwareQualityImpact = new SoftwareQualityImpactPanel(this, SWT.NONE);
     secondSoftwareQualityImpact = new SoftwareQualityImpactPanel(this, SWT.NONE);
     thirdSoftwareQualityImpact = new SoftwareQualityImpactPanel(this, SWT.LEFT);
     ruleKeyLabel = new Label(this, SWT.LEFT);
@@ -52,20 +53,20 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
   @Override
   public void updateRule(AbstractRuleDto ruleInformation) {
     /** INFO: We assume that the Optional#isPresent() check was already done */
-    var attribute = ruleInformation.getCleanCodeAttribute().get();
+    var cca = ruleInformation.getCleanCodeAttribute();
+    var ccaWithLabel = CleanCodeAttribute.fromDto(cca);
     ruleCleanCodeAttributeLabel.setText(
-      clean(attribute.getAttributeCategory().getIssueLabel()) + " | " + clean(attribute.getIssueLabel()));
+      clean(ccaWithLabel.getCategory().getLabel()) + " | " + clean(ccaWithLabel.getLabel()));
     ruleCleanCodeAttributeLabel.setToolTipText(
       "Clean Code attributes are characteristics code needs to have to be considered clean.");
 
     var impacts = ruleInformation.getDefaultImpacts();
-    var keys = new ArrayList<>(impacts.keySet());
 
-    firstSoftwareQualityImpact.updateRule(keys.get(0), impacts.get(keys.get(0)));
-    if (keys.size() > 1) {
-      secondSoftwareQualityImpact.updateRule(keys.get(1), impacts.get(keys.get(1)));
-      if (keys.size() > 2) {
-        thirdSoftwareQualityImpact.updateRule(keys.get(2), impacts.get(keys.get(2)));
+    firstSoftwareQualityImpact.updateImpact(impacts.get(0));
+    if (impacts.size() > 1) {
+      secondSoftwareQualityImpact.updateImpact(impacts.get(1));
+      if (impacts.size() > 2) {
+        thirdSoftwareQualityImpact.updateImpact(impacts.get(2));
       }
     }
 
@@ -85,18 +86,16 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
       impactSeverityIcon = new Label(this, SWT.LEFT);
     }
 
-    public void updateRule(SoftwareQuality quality, ImpactSeverity impact) {
-      var tooltip = createImpactToolTip(quality, impact);
+    public void updateImpact(ImpactDto impact) {
+      var impactSeverityWithLabel = ImpactSeverity.fromDto(impact.getImpactSeverity());
+      var sqWithLabel = SoftwareQuality.fromDto(impact.getSoftwareQuality());
+      var tooltip = "Issues found for this rule will have a " + impactSeverityWithLabel.getLabel() +
+        " impact on the " + sqWithLabel.getLabel() + " of your software.";
 
-      softwareQualityLabel.setText(quality.getDisplayLabel());
+      softwareQualityLabel.setText(sqWithLabel.getLabel());
       softwareQualityLabel.setToolTipText(tooltip);
-      impactSeverityIcon.setImage(SonarLintImages.getImpactImage(impact));
+      impactSeverityIcon.setImage(SonarLintImages.getImpactImage(impact.getImpactSeverity()));
       impactSeverityIcon.setToolTipText(tooltip);
-    }
-
-    private static String createImpactToolTip(SoftwareQuality quality, ImpactSeverity impact) {
-      return "Issues found for this rule will have a " + impact.getDisplayLabel() +
-        " impact on the " + quality.getDisplayLabel() + " of your software.";
     }
   }
 }

@@ -39,7 +39,6 @@
       <import plugin="org.eclipse.ui.navigator"/>
       <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.ui.forms"/>
-      <import plugin="org.sonarsource.sonarlint.core.sonarlint-core-osgi" version="9.6.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
@@ -48,10 +47,6 @@
 
    <plugin
          id="org.sonarlint.eclipse.ui"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.sonarsource.sonarlint.core.sonarlint-core-osgi"
          version="0.0.0"/>
 
    <plugin
@@ -68,14 +63,6 @@
    
    <plugin
          id="org.sonarlint.eclipse.pydev"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.jetbrains.kotlin.osgi-bundle"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.slf4j.api"
          version="0.0.0"/>
 
    <plugin
@@ -112,6 +99,34 @@
          id="org.sonarlint.eclipse.sloop.no-arch"
          os="win32"
          arch="aarch64"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.sonarsource.sonarlint.core.sonarlint-rpc-protocol"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.sonarsource.sonarlint.core.sonarlint-rpc-java-client"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.sonarsource.sonarlint.core.sonarlint-java-client-utils"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.sonarsource.sonarlint.core.sonarlint-java-client-legacy"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.lsp4j.jsonrpc"
+         version="0.0.0"/>
+
+   <plugin
+         id="com.google.gson"
+         version="0.0.0"/>
+
+   <plugin
+         id="com.google.protobuf"
          version="0.0.0"/>
 
 </feature>
