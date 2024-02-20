@@ -30,6 +30,7 @@
       <feature id="org.eclipse.wst.jsdt.feature"/>
       <feature id="org.eclipse.rse"/>
       <feature id="org.eclipse.php"/>
+      <feature id="org.python.pydev.feature"/>
       <feature id="org.eclipse.mylyn.commons"/>
       <feature id="org.sonarlint.eclipse.feature"/>
    </features>
