@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -17,21 +18,22 @@
   <name>SonarLint for Eclipse Integration Tests</name>
 
   <properties>
-    <tycho.version>4.0.5</tycho.version>
+    <tycho.version>4.0.6</tycho.version>
     <license.title>SonarLint for Eclipse ITs</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <target.platform>latest</target.platform>
     <tycho.localArtifacts>ignore</tycho.localArtifacts>
-    <!-- http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime -->
+    <!--
+    http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime -->
     <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext -Dsonarlint.telemetry.disabled=true</tycho.testArgLine>
     <sonar.runtimeVersion>LATEST_RELEASE</sonar.runtimeVersion>
     <jdk.min.version>11</jdk.min.version>
     <version.jacoco.plugin>0.8.8</version.jacoco.plugin>
   </properties>
-  
+
   <dependencies>
-   <dependency>
+    <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
       <version>3.25.1</version>
@@ -116,7 +118,7 @@
           </includes>
         </configuration>
       </plugin>
-      
+
       <!-- The environments must be in sync with Sloop embedded CLI distributions (see parent pom) -->
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
@@ -174,12 +176,13 @@
           <trimStackTrace>false</trimStackTrace>
           <useUIHarness>true</useUIHarness>
           <useUIThread>false</useUIThread>
-          <appArgLine>-eclipse.keyring target/keyring -eclipse.password secure-storage-password.txt -pluginCustomization
+          <appArgLine>-eclipse.keyring target/keyring -eclipse.password secure-storage-password.txt
+            -pluginCustomization
             ${project.basedir}/plugin_customization.ini</appArgLine>
-          
+
           <!-- Kill test JVM if tests take more than 60 minutes (3600 seconds) to finish -->
           <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
-          
+
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemProperties>
             <target.platform>${target.platform}</target.platform>
@@ -188,7 +191,22 @@
             <org.eclipse.swt.browser.DefaultType>webkit</org.eclipse.swt.browser.DefaultType>
           </systemProperties>
           <useJDK>BREE</useJDK>
+          <testRuntime>p2Installed</testRuntime>
+          <profileName>SDKProfile</profileName>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-p2-publisher-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>publish-products-for-tests</id>
+            <goals>
+              <goal>publish-products</goal>
+            </goals>
+            <phase>pre-integration-test</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -218,38 +236,25 @@
             <artifactId>tycho-surefire-plugin</artifactId>
             <configuration>
               <excludedGroups>org.sonarlint.eclipse.its.RequiresExtraDependency</excludedGroups>
-              <dependencies>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.platform.ide</artifactId>
-                </dependency>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.jdt.feature.group</artifactId>
-                </dependency>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.sonarlint.eclipse.feature.feature.group</artifactId>
-                </dependency>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.egit.feature.group</artifactId>
-                </dependency>
-              </dependencies>
+              <install>
+                <iu>
+                  <id>org.sonarlint.eclipse.its.ibuilds.product</id>
+                </iu>
+              </install>
             </configuration>
           </plugin>
         </plugins>
       </build>
     </profile>
-    
+
     <!--
-    	Due to the earliest version of Eclipse for macOS on ARM64 (aarch64) being 4.22 our tests on
-    	the oldest supported version cannot be run in this environment! Therefore this profile
-    	ensures the tests will only run the oldest version with every environment but the macOS on
-    	ARM64 one.
-    	This profile can be removed in the future, when the oldest supported Eclipse version is
-    	either 4.22 or higher!
-   	-->
+      Due to the earliest version of Eclipse for macOS on ARM64 (aarch64) being 4.22 our tests on
+      the oldest supported version cannot be run in this environment! Therefore this profile
+      ensures the tests will only run the oldest version with every environment but the macOS on
+      ARM64 one.
+      This profile can be removed in the future, when the oldest supported Eclipse version is
+      either 4.22 or higher!
+     -->
     <profile>
       <id>macOS-arm64-fix-oldest</id>
       <activation>
@@ -259,37 +264,37 @@
         </property>
       </activation>
       <build>
-		<plugins>
-		  <plugin>
-	        <groupId>org.eclipse.tycho</groupId>
-	        <artifactId>target-platform-configuration</artifactId>
-	        <configuration>
-	          <target>
-	            <file>target-platforms/${target.platform}.target</file>
-	          </target>
-	          <environments>
-	            <environment>
-	              <os>win32</os>
-	              <ws>win32</ws>
-	              <arch>x86_64</arch>
-	            </environment>
-	            <environment>
-	              <os>linux</os>
-	              <ws>gtk</ws>
-	              <arch>x86_64</arch>
-	            </environment>
-	            <environment>
-	              <os>macosx</os>
-	              <ws>cocoa</ws>
-	              <arch>x86_64</arch>
-	            </environment>
-	          </environments>
-	        </configuration>
-	      </plugin>
-		</plugins>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>target-platform-configuration</artifactId>
+            <configuration>
+              <target>
+                <file>target-platforms/${target.platform}.target</file>
+              </target>
+              <environments>
+                <environment>
+                  <os>win32</os>
+                  <ws>win32</ws>
+                  <arch>x86_64</arch>
+                </environment>
+                <environment>
+                  <os>linux</os>
+                  <ws>gtk</ws>
+                  <arch>x86_64</arch>
+                </environment>
+                <environment>
+                  <os>macosx</os>
+                  <ws>cocoa</ws>
+                  <arch>x86_64</arch>
+                </environment>
+              </environments>
+            </configuration>
+          </plugin>
+        </plugins>
       </build>
     </profile>
-    
+
     <profile>
       <id>full</id>
       <activation>
@@ -306,52 +311,11 @@
             <configuration>
               <!-- Don't run SonarCloud ITs on all axis, just one (ibuilds) is enough -->
               <excludedGroups>org.sonarlint.eclipse.its.SonarCloud</excludedGroups>
-              <dependencies>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.platform.ide</artifactId>
-                </dependency>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.jdt.feature.group</artifactId>
-                </dependency>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.sonarlint.eclipse.feature.feature.group</artifactId>
-                </dependency>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.m2e.feature.feature.group</artifactId>
-                </dependency>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.cdt.feature.group</artifactId>
-                </dependency>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.wst.jsdt.feature.feature.group</artifactId>
-                </dependency>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.rse.feature.group</artifactId>
-                </dependency>
-                <!--dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.python.pydev.feature.feature.group</artifactId>
-                </dependency-->
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.php.feature.group</artifactId>
-                </dependency>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.mylyn.commons.feature.group</artifactId>
-                </dependency>
-                <dependency>
-                  <type>p2-installable-unit</type>
-                  <artifactId>org.eclipse.egit.feature.group</artifactId>
-                </dependency>
-              </dependencies>
+              <install>
+                <iu>
+                  <id>org.sonarlint.eclipse.its.product</id>
+                </iu>
+              </install>
             </configuration>
           </plugin>
         </plugins>
