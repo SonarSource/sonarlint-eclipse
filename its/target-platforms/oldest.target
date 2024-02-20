@@ -13,6 +13,8 @@
       <unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0" />
       <unit id="org.eclipse.php.feature.group" version="0.0.0" />
       <unit id="org.eclipse.egit.feature.group" version="0.0.0" />
+      <!-- Needed to build the test environment -->
+      <unit id="org.eclipse.equinox.executable.feature.group" version="0.0.0"/>
       <repository location="https://download.eclipse.org/releases/photon/" />
     </location>
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">

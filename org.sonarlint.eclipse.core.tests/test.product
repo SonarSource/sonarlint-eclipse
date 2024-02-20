@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="A product to define the runtime of the tests" uid="org.sonarlint.eclipse.tests.product" id="org.eclipse.sdk.ide" application="org.eclipse.ui.ide.workbench" version="1" type="features" includeLaunchers="true" autoIncludeRequirements="true">
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>--launcher.defaultAction openFile --launcher.appendVmargs
+      </programArgs>
+      <vmArgs>-Dosgi.requiredJavaVersion=17 -Dosgi.dataAreaRequiresExplicitInit=true -Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true --add-modules=ALL-SYSTEM -Dorg.slf4j.simpleLogger.defaultLogLevel=off -Djava.security.manager=allow
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
+   </launcherArgs>
+
+   <launcher name="eclipse">
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+   
+   <features>
+      <feature id="org.eclipse.platform"/>
+      <feature id="org.eclipse.jdt"/>
+   </features>
+
+   <configurations>
+      <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="2" />
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="4" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+      <plugin id="slf4j.simple" autoStart="true" startLevel="2" />
+      <property name="osgi.bundles.defaultStartLevel" value="4" />
+      <property name="eclipse.buildId" value="${unqualifiedVersion}.${buildQualifier}" />
+      <property name="org.eclipse.update.reconcile" value="false" />
+      <property name="osgi.instance.area.default" value="@user.home/workspace" />
+      <property name="osgi.instance.area.default" value="@user.home/Documents/workspace" os="macosx" />
+   </configurations>
+
+</product>
