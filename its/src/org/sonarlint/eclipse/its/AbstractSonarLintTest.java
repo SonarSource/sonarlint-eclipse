@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.its;
 import com.sonar.orchestrator.container.Server;
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +41,7 @@ import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.core.lookup.ShellLookup;
 import org.eclipse.reddeer.eclipse.condition.ConsoleHasText;
 import org.eclipse.reddeer.eclipse.condition.ProjectExists;
 import org.eclipse.reddeer.eclipse.core.resources.Project;
@@ -120,13 +122,11 @@ public abstract class AbstractSonarLintTest {
 
     // remove warning about soon unsupported version (there can be multiple)
     if ("oldest".equals(System.getProperty("target.platform"))) {
-      while (true) {
-        try {
-          new DefaultShell("SonarQube - Soon unsupported version").close();
-        } catch (Exception ignored) {
-          break;
-        }
-      }
+      Optional<DefaultShell> dialog;
+      do {
+        dialog = shellByName("SonarLint - New Eclipse user survey");
+        dialog.ifPresent(DefaultShell::close);
+      } while (dialog.isPresent());
     }
 
     // File associations must be set explicitly on macOS!
@@ -140,10 +140,7 @@ public abstract class AbstractSonarLintTest {
     waitSonarLintAnalysisJobs();
 
     // remove PyDev default preferences window if shown
-    try {
-      new DefaultShell("Default Eclipse preferences for PyDev").close();
-    } catch (Exception ignored) {
-    }
+    shellByName("Default Eclipse preferences for PyDev").ifPresent(DefaultShell::close);
 
     var consoleView = new SonarLintConsole();
     System.out.println(consoleView.getConsoleView().getConsoleText());
@@ -261,11 +258,7 @@ public abstract class AbstractSonarLintTest {
     }
 
     // If we have any SonarLint for Eclipse user survey, just click it away as we don't test the behavior!
-    try {
-      new DefaultShell("SonarLint - New Eclipse user survey").close();
-    } catch (Exception ignored) {
-      System.out.println("SonarLint for Eclipse user survey found, ignoring it!");
-    }
+    shellByName("SonarLint - New Eclipse user survey").ifPresent(DefaultShell::close);
   }
 
   protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
@@ -291,15 +284,25 @@ public abstract class AbstractSonarLintTest {
     Button button = new FinishButton(dialog);
     button.click();
 
-    try {
-      var pythonNotConfiguredDialog = new DefaultShell("Python not configured");
+    shellByName("Python not configured").ifPresent(pythonNotConfiguredDialog -> {
       new PushButton(pythonNotConfiguredDialog, "Don't ask again").click();
-    } catch (Exception e) {
-      // Do nothing
-    }
+    });
 
     new WaitWhile(new WindowIsAvailable(dialog), TimePeriod.LONG);
     new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
+  }
+
+  /**
+   * Find a shell that can be missing
+   * @param title
+   * @return
+   */
+  private static Optional<DefaultShell> shellByName(String title) {
+    try {
+      return Optional.of(new DefaultShell(ShellLookup.getInstance().getShell(title, TimePeriod.SHORT)));
+    } catch (Exception e) {
+      return Optional.empty();
+    }
   }
 
   protected static final Project importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder, String projectName) {
