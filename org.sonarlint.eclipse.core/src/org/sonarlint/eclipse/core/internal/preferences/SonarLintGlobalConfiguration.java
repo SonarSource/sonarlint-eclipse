@@ -107,17 +107,6 @@ public class SonarLintGlobalConfiguration {
     if (PREF_ISSUE_PERIOD.equals(event.getKey())) {
       SonarLintBackendService.get().getBackend().getNewCodeService().didToggleFocus();
     } else if (PREF_NODEJS_PATH.equals(event.getKey())) {
-      /**
-       *  Due to SLOCRE not calling
-       *
-       *  > org.sonarsource.sonarlint.core.rpc.client.SonarLintRpcClientDelegate#didChangeNodeJs(...)
-       *
-       *  after this information is provided via RPC, we currently have to restart all facades manually. In the future
-       *  it is planned for this to be handled either as expected or via SLCORE at all once the analysis moved out of
-       *  process completely.
-       */
-      SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().stop();
-      SonarLintCorePlugin.getConnectionManager().getConnections().forEach(f -> f.stop());
       AnalysisRequirementNotifications.resetCachedMessages();
 
       // Call Sloop via RPC

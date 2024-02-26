@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.preference.ComboFieldEditor;
@@ -174,6 +175,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     var previousIssueFilter = SonarLintGlobalConfiguration.getIssueFilter();
     var previousIssuePeriod = SonarLintGlobalConfiguration.getIssuePeriod();
     var previousTestFileGlobPatterns = SonarLintGlobalConfiguration.getTestFileGlobPatterns();
+    var previousNodeJsPath = SonarLintGlobalConfiguration.getNodejsPath();
     var result = super.performOk();
     var anyPreferenceChanged = false;
 
@@ -185,6 +187,9 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     }
     if (!previousTestFileGlobPatterns.equals(SonarLintGlobalConfiguration.getTestFileGlobPatterns())) {
       TestFileClassifier.get().reload();
+      anyPreferenceChanged = true;
+    }
+    if (!Objects.equals(previousNodeJsPath, SonarLintGlobalConfiguration.getNodejsPath())) {
       anyPreferenceChanged = true;
     }
     if (anyPreferenceChanged) {
