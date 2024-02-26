@@ -142,19 +142,6 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
   }
 
   @Override
-  public void didUpdatePlugins(String connectionId) {
-    var connectionOpt = SonarLintCorePlugin.getConnectionManager().findById(connectionId);
-    if (connectionOpt.isEmpty()) {
-      SonarLintLogger.get().debug("Attempted to update plugins for connection '" + connectionId
-        + "', but no such connection available in the connection manager!");
-      return;
-    }
-
-    var connection = connectionOpt.get();
-    connection.stop();
-  }
-
-  @Override
   public void didSynchronizeConfigurationScopes(Set<String> configurationScopeIds) {
     // After a sync happened on backend side, we can refresh the project list
     var allAffectedConnections = configurationScopeIds.stream()

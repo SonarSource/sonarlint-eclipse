@@ -128,7 +128,8 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     protected void doFillIntoGrid(Composite parent, int numColumns) {
       super.doFillIntoGrid(parent, numColumns);
       getTextControl().setToolTipText(NODE_JS_TOOLTIP);
-      final var detectedNodeJsPath = SonarLintBackendService.get().getBackend().getAnalysisService().getGlobalStandaloneConfiguration().join().getNodeJsPath();
+      final var detectedNodeJs = SonarLintBackendService.get().getBackend().getAnalysisService().getAutoDetectedNodeJs().join().getDetails();
+      var detectedNodeJsPath = detectedNodeJs == null ? null : detectedNodeJs.getPath();
       getTextControl().setMessage(detectedNodeJsPath != null ? detectedNodeJsPath.toString() : "Node.js not found");
     }
 

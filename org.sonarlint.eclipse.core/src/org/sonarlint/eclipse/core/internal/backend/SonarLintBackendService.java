@@ -134,8 +134,9 @@ public class SonarLintBackendService {
 
           fixExecutablePermissions();
 
-          sloopLauncher.start(sloopBasedir);
-          backend = sloopLauncher.getServerProxy();
+          var sloop = sloopLauncher.start(sloopBasedir);
+          sloop.onExit().thenAccept(SonarLintBackendService.this::onSloopExit);
+          backend = sloop.getRpcServer();
 
           var embeddedPluginPaths = PluginPathHelper.getEmbeddedPluginPaths();
           embeddedPluginPaths.stream().forEach(p -> SonarLintLogger.get().debug("  - " + p));
@@ -211,6 +212,12 @@ public class SonarLintBackendService {
 
   }
 
+  private void onSloopExit(int exitCode) {
+    if (exitCode != 0) {
+      // TODO SLE-812
+    }
+  }
+
   /**
    * Inform the backend that VCS changed in a way that may affect the matched SonarProject branch
    */
@@ -281,12 +288,6 @@ public class SonarLintBackendService {
     }
     if (backend != null) {
       backend.shutdown().join();
-      try {
-        sloopLauncher.waitFor();
-      } catch (InterruptedException e) {
-        Platform.getLog(SonarLintBackendService.class).error("Interrupted!", e);
-        Thread.currentThread().interrupt();
-      }
     }
     backend = null;
   }
