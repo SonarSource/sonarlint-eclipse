@@ -45,6 +45,9 @@ import static java.util.stream.Collectors.toList;
 
 public class FileSystemSynchronizer implements IResourceChangeListener {
 
+  private static final String SONAR_SCANNER_CONFIG_FILENAME = "sonar-project.properties";
+  private static final String AUTOSCAN_CONFIG_FILENAME = ".sonarcloud.properties";
+
   private final SonarLintRpcServer backend;
 
   FileSystemSynchronizer(SonarLintRpcServer backend) {
@@ -136,8 +139,12 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       SonarLintLogger.get().debug("Error while looking for file path for file " + slFile, e);
       fsPath = null;
     }
+    String fileContent = null;
+    if (slFile.getName().endsWith(SONAR_SCANNER_CONFIG_FILENAME) || slFile.getName().endsWith(AUTOSCAN_CONFIG_FILENAME)) {
+      fileContent = slFile.getDocument().get();
+    }
     return new ClientFileDto(slFile.uri(), Paths.get(slFile.getProjectRelativePath()), configScopeId, TestFileClassifier.get().isTest(slFile),
-      slFile.getCharset().name(), fsPath, fsPath != null ? null : slFile.getDocument().get());
+      slFile.getCharset().name(), fsPath, fileContent);
   }
 
 }
