@@ -197,10 +197,10 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     }
     if (openIssueContext != null) {
       // INFO: We cannot schedule it immediately as the OpenIssueInEclipseJob might be faster than the preferences
-      //       dialog closing. It will focus the MessageDialog when the issue cannot be found but in order to access it
-      //       we have to close the preferences dialog which cannot be focused.
-      //       -> This is a corner case but just in case (e.g. ITs crashing on our side because they're too fast).
-      new OpenIssueInEclipseJob(openIssueContext).schedule(250);
+      // dialog closing. It will focus the MessageDialog when the issue cannot be found but in order to access it
+      // we have to close the preferences dialog which cannot be focused.
+      // -> This is a corner case but just in case (e.g. ITs crashing on our side because they're too fast).
+      new OpenIssueInEclipseJob(openIssueContext).schedule(1000);
     }
 
     return result;
