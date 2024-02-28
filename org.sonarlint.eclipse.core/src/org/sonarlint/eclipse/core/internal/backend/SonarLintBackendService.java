@@ -182,6 +182,8 @@ public class SonarLintBackendService {
 
         VcsService.installBranchChangeListener();
 
+        SonarLintRpcClientSupportSynchronizer.setSloopAvailability(true);
+
         return Status.OK_STATUS;
       }
 
@@ -214,7 +216,10 @@ public class SonarLintBackendService {
 
   private void onSloopExit(int exitCode) {
     if (exitCode != 0) {
-      // TODO SLE-812
+      // When the exit code is 0 we accept it as a normal shutdown of the RPC server.
+      SonarLintRpcClientSupportSynchronizer.setSloopAvailability(false);
+
+      // INFO: With SLE-812 improve this to restart the backend / offer users the possibility to to so!
     }
   }
 
