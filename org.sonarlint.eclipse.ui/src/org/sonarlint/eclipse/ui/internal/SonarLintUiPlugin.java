@@ -44,6 +44,7 @@ import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintRpcClientSupportSynchronizer;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -76,6 +77,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private static final SonarLintFlowLocationsService SONARLINT_FLOW_LOCATION_SERVICE = new SonarLintFlowLocationsService();
   private static final SonarLintLanguageFromConnectedModeService SONARLINT_LANUGAGE_CONNECTED_MODE_SERVICE = new SonarLintLanguageFromConnectedModeService();
   private static final SonarLintNoAutomaticBuildWarningService SONARLINT_AUTOMATIC_BUILD_SERVICE = new SonarLintNoAutomaticBuildWarningService();
+  private static final SonarLintRpcClientSupportService SONARLINT_RPC_CLIENT_SUPPORT_SERVICE = new SonarLintRpcClientSupportService();
 
   public SonarLintUiPlugin() {
     plugin = this;
@@ -149,6 +151,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_FLOW_LOCATION_SERVICE);
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_LANUGAGE_CONNECTED_MODE_SERVICE);
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_AUTOMATIC_BUILD_SERVICE);
+    SonarLintRpcClientSupportSynchronizer.addListener(SONARLINT_RPC_CLIENT_SUPPORT_SERVICE);
 
     prefListener = event -> {
       if (event.getProperty().equals(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY)) {
@@ -185,6 +188,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_FLOW_LOCATION_SERVICE);
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_LANUGAGE_CONNECTED_MODE_SERVICE);
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_AUTOMATIC_BUILD_SERVICE);
+    SonarLintRpcClientSupportSynchronizer.removeListener(SONARLINT_RPC_CLIENT_SUPPORT_SERVICE);
     SonarLintLogger.get().removeLogListener(logListener);
     logListener.shutdown();
     SonarLintNotifications.get().removeNotificationListener(notifListener);

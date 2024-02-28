@@ -43,6 +43,8 @@ public class SonarLintDocumentation {
   public static final String SONARCLOUD_PRODUCT_LINK = BASE_MARKETING_URL + "/products/sonarcloud";
   public static final String SONARCLOUD_SIGNUP_LINK = SONARCLOUD_PRODUCT_LINK + "/signup";
 
+  public static final String COMMUNITY_FORUM = "https://community.sonarsource.com";
+
   private SonarLintDocumentation() {
     // utility class
   }

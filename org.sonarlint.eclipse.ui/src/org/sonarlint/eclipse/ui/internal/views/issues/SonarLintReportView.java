@@ -35,19 +35,11 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.issues.ChangeSetIssuesView";
   private static LocalDateTime reportDate;
   private static String reportTitle;
-  private static SonarLintReportView instance;
-  private Link label;
   private Composite bottom;
 
   public SonarLintReportView() {
     super(SonarLintUiPlugin.PLUGIN_ID + ".views.issues.reportIssueMarkerGenerator");
     instance = this;
-  }
-
-  @Override
-  public void dispose() {
-    super.dispose();
-    instance = null;
   }
 
   @Override
@@ -59,26 +51,28 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
     var bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     bottom.setLayoutData(bottomLayoutData);
 
-    label = new Link(bottom, SWT.NONE);
-    label.addListener(SWT.Selection,
+    bottomLabel = new Link(bottom, SWT.NONE);
+    bottomLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.REPORT_VIEW_LINK, e.display));
-    refreshText();
   }
 
-  private void refreshText() {
+  @Override
+  public void resetDefaultText() {
     if (reportTitle != null) {
-      label.setText(reportTitle + " (at " + DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(reportDate) + "). <a>Learn more</a>");
+      bottomLabel.setText(reportTitle + " (at " + DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(reportDate) + "). <a>Learn more</a>");
     } else {
-      label.setText("Run the analysis from the SonarLint context menu to find issues in the SCM change set or in all your project files. <a>Learn more</a>");
+      bottomLabel.setText("Run the analysis from the SonarLint context menu to find issues in the SCM change set or in all your project files. <a>Learn more</a>");
     }
+    bottomLabel.getParent().layout();
   }
 
   public static void setReportTitle(@Nullable String title) {
     SonarLintReportView.reportDate = title != null ? LocalDateTime.now() : null;
     SonarLintReportView.reportTitle = title;
-    if (SonarLintReportView.instance != null) {
-      instance.refreshText();
-      instance.bottom.requestLayout();
+    if (instance != null) {
+      var localInstance = (SonarLintReportView) instance;
+      localInstance.resetDefaultText();
+      localInstance.bottom.requestLayout();
     }
   }
 }

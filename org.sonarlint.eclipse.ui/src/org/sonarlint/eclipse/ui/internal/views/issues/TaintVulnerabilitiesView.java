@@ -44,11 +44,15 @@ public class TaintVulnerabilitiesView extends MarkerViewWithBottomPanel {
     var bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     bottom.setLayoutData(bottomLayoutData);
 
-    var label = new Link(bottom, SWT.NONE);
-    label.setText("This view displays taint vulnerabilities detected by SonarQube or SonarCloud. SonarLint does not detect those issues locally. <a>Learn more</a>");
-    label.addListener(SWT.Selection,
-      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.TAINT_VULNERABILITIES_LINK, e.display)
-    );
+    bottomLabel = new Link(bottom, SWT.NONE);
+    bottomLabel.addListener(SWT.Selection,
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.TAINT_VULNERABILITIES_LINK, e.display));
   }
 
+  @Override
+  public void resetDefaultText() {
+    bottomLabel.setText(
+      "This view displays taint vulnerabilities detected by SonarQube or SonarCloud. SonarLint does not detect those issues locally. <a>Learn more</a>");
+    bottomLabel.getParent().layout();
+  }
 }

@@ -19,16 +19,33 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.views.markers.MarkerSupportView;
+import org.sonarlint.eclipse.ui.internal.SonarLintRpcClientSupportService;
 
 public abstract class MarkerViewWithBottomPanel extends MarkerSupportView {
+  protected static final String UNAVAILABLE_MESSAGE = "The analysis is not available as the SonarLint backend is not ready";
+
+  @Nullable
+  protected static MarkerViewWithBottomPanel instance;
+
+  @Nullable
+  protected Link bottomLabel;
 
   protected MarkerViewWithBottomPanel(String contentGeneratorId) {
     super(contentGeneratorId);
+    instance = this;
+  }
+
+  @Override
+  public void dispose() {
+    super.dispose();
+    instance = null;
   }
 
   @Override
@@ -45,8 +62,31 @@ public abstract class MarkerViewWithBottomPanel extends MarkerSupportView {
     super.createPartControl(issuesTable);
     var bottom = new Composite(parent, SWT.NONE);
     populateBottomPanel(bottom);
+    if (SonarLintRpcClientSupportService.getSloopAvailability()) {
+      resetDefaultText();
+    } else {
+      warnAboutSloopUnavailable();
+    }
   }
 
   protected abstract void populateBottomPanel(Composite bottom);
 
+  protected abstract void resetDefaultText();
+
+  protected void warnAboutSloopUnavailable() {
+    bottomLabel.setText(UNAVAILABLE_MESSAGE);
+    bottomLabel.getParent().layout();
+  }
+
+  public static void tryWarnAboutSloopUnavailable() {
+    if (MarkerViewWithBottomPanel.instance != null) {
+      MarkerViewWithBottomPanel.instance.warnAboutSloopUnavailable();
+    }
+  }
+
+  public static void tryResetDefaultText() {
+    if (MarkerViewWithBottomPanel.instance != null) {
+      MarkerViewWithBottomPanel.instance.resetDefaultText();
+    }
+  }
 }

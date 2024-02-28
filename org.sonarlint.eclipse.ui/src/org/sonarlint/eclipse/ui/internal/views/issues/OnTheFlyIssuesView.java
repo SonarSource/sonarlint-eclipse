@@ -43,11 +43,15 @@ public class OnTheFlyIssuesView extends MarkerViewWithBottomPanel {
     var bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     bottom.setLayoutData(bottomLayoutData);
 
-    var label = new Link(bottom, SWT.NONE);
-    label.setText(
+    bottomLabel = new Link(bottom, SWT.NONE);
+    bottomLabel.addListener(SWT.Selection,
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.ON_THE_FLY_VIEW_LINK, e.display));
+  }
+
+  @Override
+  public void resetDefaultText() {
+    bottomLabel.setText(
       "Issues reported \"on the fly\" by SonarLint on files you have recently opened/edited. <a>Learn more</a>");
-    label.addListener(SWT.Selection,
-      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.ON_THE_FLY_VIEW_LINK, e.display)
-    );
+    bottomLabel.getParent().layout();
   }
 }
