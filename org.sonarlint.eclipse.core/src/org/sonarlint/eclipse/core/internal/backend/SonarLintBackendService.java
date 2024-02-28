@@ -165,7 +165,7 @@ public class SonarLintBackendService {
             scConnections,
             null,
             SonarLintGlobalConfiguration.buildStandaloneRulesConfigDto(),
-            true,
+            SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE.equals(SonarLintGlobalConfiguration.getIssuePeriod()),
             SonarLintGlobalConfiguration.getNodejsPath())).join();
         } catch (IOException e) {
           throw new IllegalStateException("Unable to initialize the SonarLint Backend", e);
