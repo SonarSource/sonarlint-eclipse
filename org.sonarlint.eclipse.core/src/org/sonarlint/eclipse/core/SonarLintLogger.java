@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.LogListener;
 
 public class SonarLintLogger {
@@ -45,7 +46,7 @@ public class SonarLintLogger {
     logListeners.remove(listener);
   }
 
-  public void error(String msg) {
+  public void error(@Nullable String msg) {
     for (LogListener listener : logListeners) {
       listener.error(msg, false);
     }
@@ -66,7 +67,7 @@ public class SonarLintLogger {
     }
   }
 
-  public void info(String msg) {
+  public void info(@Nullable String msg) {
     for (LogListener listener : logListeners) {
       listener.info(msg, false);
     }
@@ -78,7 +79,7 @@ public class SonarLintLogger {
     }
   }
 
-  public void debug(String msg) {
+  public void debug(@Nullable String msg) {
     for (LogListener listener : logListeners) {
       listener.debug(msg, false);
     }

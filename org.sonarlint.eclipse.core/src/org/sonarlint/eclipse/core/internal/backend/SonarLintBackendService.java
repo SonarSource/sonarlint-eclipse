@@ -141,7 +141,7 @@ public class SonarLintBackendService {
           fixExecutablePermissions();
 
           var sloop = sloopLauncher.start(sloopBasedir);
-          sloop.onExit().thenAccept(SonarLintBackendService.this::onSloopExit);
+          sloop.onExit().thenAccept(SonarLintBackendService::onSloopExit);
           backend = sloop.getRpcServer();
 
           var embeddedPluginPaths = PluginPathHelper.getEmbeddedPluginPaths();
@@ -253,7 +253,7 @@ public class SonarLintBackendService {
     return property == null ? null : Duration.parse(property);
   }
 
-  private void onSloopExit(int exitCode) {
+  private static void onSloopExit(int exitCode) {
     if (exitCode != 0) {
       // When the exit code is 0 we accept it as a normal shutdown of the RPC server.
       SonarLintRpcClientSupportSynchronizer.setSloopAvailability(false);

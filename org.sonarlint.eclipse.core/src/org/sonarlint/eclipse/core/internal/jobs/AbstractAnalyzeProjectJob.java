@@ -235,7 +235,7 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
       .collect(Collectors.toSet());
 
     for (var configurationScopeId : configurationScopeIds) {
-      if (analysisReadyByConfigurationScopeId.getOrDefault(configurationScopeId, false)) {
+      if (Boolean.TRUE.equals(analysisReadyByConfigurationScopeId.get(configurationScopeId))) {
         return true;
       }
     }
