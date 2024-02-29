@@ -18,12 +18,13 @@ Require-Bundle: org.eclipse.core.resources,
  org.eclipse.jface.text,
  org.eclipse.core.filesystem,
  org.eclipse.equinox.security,
- org.sonarsource.sonarlint.core.sonarlint-rpc-java-client,
- org.sonarsource.sonarlint.core.sonarlint-rpc-protocol,
  org.eclipse.jdt.annotation;resolution:=optional,
  assertj-core,
  org.objenesis,
  net.bytebuddy.byte-buddy,
- org.sonarsource.sonarlint.core.sonarlint-java-client-legacy;bundle-version="10.0.0",
- com.google.protobuf;bundle-version="3.25.1"
+ com.google.protobuf;bundle-version="3.25.1",
+ org.sonarsource.sonarlint.core.sonarlint-rpc-protocol,
+ org.sonarsource.sonarlint.core.sonarlint-rpc-java-client,
+ org.sonarsource.sonarlint.core.sonarlint-java-client-utils,
+ org.sonarsource.sonarlint.core.sonarlint-java-client-legacy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
