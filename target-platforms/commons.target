@@ -15,25 +15,25 @@
 			  <dependency>
 				  <groupId>org.sonarsource.sonarlint.core</groupId>
                   <artifactId>sonarlint-rpc-protocol</artifactId>
-				  <version>10.0.0.77110</version>
+				  <version>10.0.0.77129</version>
 				  <type>jar</type>
 			  </dependency>
 			  <dependency>
 				  <groupId>org.sonarsource.sonarlint.core</groupId>
                   <artifactId>sonarlint-rpc-java-client</artifactId>
-				  <version>10.0.0.77110</version>
+				  <version>10.0.0.77129</version>
 				  <type>jar</type>
 			  </dependency>
 			  <dependency>
 				  <groupId>org.sonarsource.sonarlint.core</groupId>
                   <artifactId>sonarlint-java-client-utils</artifactId>
-				  <version>10.0.0.77110</version>
+				  <version>10.0.0.77129</version>
 				  <type>jar</type>
 			  </dependency>
 			  <dependency>
 				  <groupId>org.sonarsource.sonarlint.core</groupId>
                   <artifactId>sonarlint-java-client-legacy</artifactId>
-				  <version>10.0.0.77110</version>
+				  <version>10.0.0.77129</version>
                   <classifier>osgi</classifier>
 				  <type>jar</type>
 			  </dependency>
