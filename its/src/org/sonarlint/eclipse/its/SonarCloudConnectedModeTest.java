@@ -50,6 +50,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
 
   private static final String SONARCLOUD_STAGING_URL = "https://sc-staging.io";
+  private static final String SONARCLOUD_STAGING_WEBSOCKETS_URL = "wss://events-api.sc-staging.io/";
   private static final String SONARCLOUD_ORGANIZATION_KEY = "sonarlint-it";
   // private static final String SONARCLOUD_ORGANIZATION_NAME = "SonarLint IT Tests";
   private static final String SONARCLOUD_USER = "sonarlint-it";
@@ -66,6 +67,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   @BeforeClass
   public static void prepare() {
     System.setProperty("sonarlint.internal.sonarcloud.url", SONARCLOUD_STAGING_URL);
+    System.setProperty("sonarlint.internal.sonarcloud.websocket.url", SONARCLOUD_STAGING_WEBSOCKETS_URL);
     adminWsClient = WsClientFactories.getDefault().newClient(HttpConnector.newBuilder()
       .url(SONARCLOUD_STAGING_URL)
       .credentials(SONARCLOUD_USER, SONARCLOUD_PASSWORD)

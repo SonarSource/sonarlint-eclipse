@@ -21,9 +21,12 @@ package org.sonarlint.eclipse.core.internal.backend;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +65,10 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.file.GetFilesStatusPa
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.file.GetFilesStatusResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.ClientConstantInfoDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.FeatureFlagsDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.HttpConfigurationDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.InitializeParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.SonarCloudAlternativeEnvironmentDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.SslConfigurationDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.TelemetryClientConstantAttributesDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.AddIssueCommentParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.ChangeIssueStatusParams;
@@ -154,6 +160,8 @@ public class SonarLintBackendService {
             new ClientConstantInfoDto(getIdeName(), "SonarLint Eclipse " + SonarLintUtils.getPluginVersion()),
             new TelemetryClientConstantAttributesDto("eclipse", "SonarLint Eclipse", SonarLintUtils.getPluginVersion(), SonarLintTelemetry.ideVersionForTelemetry(),
               Map.of()),
+            getHttpConfiguration(),
+            getSonarCloudAlternativeEnvironment(),
             new FeatureFlagsDto(true, true, true, true, false, true, false, true),
             StoragePathManager.getStorageDir(),
             StoragePathManager.getDefaultWorkDir(),
@@ -212,6 +220,37 @@ public class SonarLintBackendService {
     };
     initJob.schedule();
 
+  }
+
+  private static HttpConfigurationDto getHttpConfiguration() {
+    return new HttpConfigurationDto(
+      new SslConfigurationDto(getPathProperty("sonarlint.ssl.trustStorePath"), System.getProperty("sonarlint.ssl.trustStorePassword"),
+        System.getProperty("sonarlint.ssl.trustStoreType"), getPathProperty("sonarlint.ssl.keyStorePath"), System.getProperty("sonarlint.ssl.keyStorePassword"),
+        System.getProperty("sonarlint.ssl.keyStoreType")),
+      getTimeoutProperty("sonarlint.http.connectTimeout"), getTimeoutProperty("sonarlint.http.socketTimeout"), getTimeoutProperty("sonarlint.http.connectionRequestTimeout"),
+      getTimeoutProperty("sonarlint.http.responseTimeout"));
+  }
+
+  @Nullable
+  private static SonarCloudAlternativeEnvironmentDto getSonarCloudAlternativeEnvironment() {
+    var sonarCloudUrl = System.getProperty("sonarlint.internal.sonarcloud.url");
+    var sonarCloudWebSocketUrl = System.getProperty("sonarlint.internal.sonarcloud.websocket.url");
+    if (sonarCloudUrl != null && sonarCloudWebSocketUrl != null) {
+      return new SonarCloudAlternativeEnvironmentDto(URI.create(sonarCloudUrl), URI.create(sonarCloudWebSocketUrl));
+    }
+    return null;
+  }
+
+  @Nullable
+  private static Path getPathProperty(String propertyName) {
+    var property = System.getProperty(propertyName);
+    return property == null ? null : Paths.get(property);
+  }
+
+  @Nullable
+  private static Duration getTimeoutProperty(String propertyName) {
+    var property = System.getProperty(propertyName);
+    return property == null ? null : Duration.parse(property);
   }
 
   private void onSloopExit(int exitCode) {
