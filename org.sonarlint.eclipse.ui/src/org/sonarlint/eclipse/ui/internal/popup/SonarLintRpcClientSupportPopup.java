@@ -34,9 +34,10 @@ import org.sonarlint.eclipse.ui.internal.util.PopupUtils;
 public class SonarLintRpcClientSupportPopup extends AbstractSonarLintPopup {
   @Override
   protected String getMessage() {
-    return "The RPC backend exited unexpectedly. As this should not happen, please take a look at the "
-      + "troubleshooting documentation and raise an issue on the SonarLint Community Forum. For now "
-      + "the only possibility to restart SonarLint is to restart the IDE :(";
+    return "As this should not happen, please provide us with a thread dump of the IDE process as well as a thread "
+      + "dump of the SonarLint process (can be identified by 'sloop') if available. To do that, please raise an issue "
+      + "on the Community Forum. \nWith that we can work on preventing such an issue in the future and make SonarLint "
+      + "more resiliant by recovering from this on its own! \nFor now the only possiblity is to restart the IDE :(";
   }
 
   @Override
@@ -53,7 +54,7 @@ public class SonarLintRpcClientSupportPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint - RPC backend server unavailable";
+    return "SonarLint - RPC backend server unavailable or killed";
   }
 
   @Override

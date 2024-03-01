@@ -21,13 +21,13 @@ package org.sonarlint.eclipse.ui.internal.command;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 /** When the user wants to know what the issue / rule icons mean (and why they differ between old / new CCT) */
 public class HelpOnIconsCommand extends AbstractIssueCommand {
   @Override
   protected void execute(IMarker selectedMarker, IWorkbenchWindow window) {
-    BrowserUtils.openExternalBrowser("https://docs.sonarsource.com/sonarlint/eclipse/concepts/clean-code/introduction",
-      window.getShell().getDisplay());
+    BrowserUtils.openExternalBrowser(SonarLintDocumentation.ISSUE_TYPES_LINK, window.getShell().getDisplay());
   }
 }
