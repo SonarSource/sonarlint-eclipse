@@ -124,8 +124,16 @@ public class SonarLintMarkerUpdater {
     for (var taintIssue : taintVulnerabilities) {
       if (!(shouldHideResolvedTaintMarker(taintIssue, issueFilterPreference)
         || shouldHidePreNewCodeTaintMarker(taintIssue, issuePeriodPreference))) {
-        findFileForLocationInBoundProjects(bindings, taintIssue.getIdeFilePath())
-          .ifPresent(primaryLocationFile -> createTaintMarker(primaryLocationFile.getDocument(), primaryLocationFile, taintIssue, bindings));
+        var optFileForTaint = findFileForLocationInBoundProjects(bindings, taintIssue.getIdeFilePath());
+        if (optFileForTaint.isEmpty()) {
+          continue;
+        }
+        var fileForTaint = optFileForTaint.get();
+        if (!fileForTaint.equals(currentFile)) {
+          continue;
+        }
+
+        createTaintMarker(fileForTaint.getDocument(), fileForTaint, taintIssue, bindings);
         actualTaintMarkersCreated = true;
       }
     }
