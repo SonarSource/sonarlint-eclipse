@@ -37,7 +37,7 @@ public abstract class AbstractBindingSuggestionPopup extends AbstractSonarLintPo
 
   protected void addLearnMoreLink() {
     addLink("Learn more", e -> {
-      BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_LINK, e.display);
+      BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_SETUP_LINK, e.display);
       close();
     });
   }
