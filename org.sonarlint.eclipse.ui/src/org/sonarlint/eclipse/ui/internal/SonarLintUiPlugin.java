@@ -93,21 +93,21 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     private final ExecutorService logConsumer = Executors.newSingleThreadExecutor(SonarLintUtils.threadFactory("sonarlint-log-consummer", true));
 
     @Override
-    public void info(String msg, boolean fromAnalyzer) {
+    public void info(@Nullable String msg, boolean fromAnalyzer) {
       if (PlatformUI.isWorkbenchRunning()) {
         doAsyncInUiThread(() -> getSonarConsole().info(msg, fromAnalyzer));
       }
     }
 
     @Override
-    public void error(String msg, boolean fromAnalyzer) {
+    public void error(@Nullable String msg, boolean fromAnalyzer) {
       if (PlatformUI.isWorkbenchRunning()) {
         doAsyncInUiThread(() -> getSonarConsole().error(msg, fromAnalyzer));
       }
     }
 
     @Override
-    public void debug(String msg, boolean fromAnalyzer) {
+    public void debug(@Nullable String msg, boolean fromAnalyzer) {
       if (PlatformUI.isWorkbenchRunning()) {
         doAsyncInUiThread(() -> getSonarConsole().debug(msg, fromAnalyzer));
       }
@@ -258,7 +258,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       }
 
       // Display user survey pop-up (comment out if not needed, comment in again if needed and replace link)
-      //Display.getDefault().syncExec(() -> SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed(""));
+      // Display.getDefault().syncExec(() -> SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed(""));
 
       return Status.OK_STATUS;
     }

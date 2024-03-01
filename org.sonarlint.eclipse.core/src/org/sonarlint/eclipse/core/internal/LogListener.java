@@ -19,12 +19,14 @@
  */
 package org.sonarlint.eclipse.core.internal;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 public interface LogListener {
 
-  void info(String msg, boolean fromAnalyzer);
+  void info(@Nullable String msg, boolean fromAnalyzer);
 
-  void error(String msg, boolean fromAnalyzer);
+  void error(@Nullable String msg, boolean fromAnalyzer);
 
-  void debug(String msg, boolean fromAnalyzer);
+  void debug(@Nullable String msg, boolean fromAnalyzer);
 
 }
