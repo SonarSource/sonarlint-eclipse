@@ -12,4 +12,4 @@ jobs:
     uses: SonarSource/gh-action_release/.github/workflows/main.yaml@v5
     with:
       publishToBinaries: true
-      slackChannel: squad-ide-eclipse-bots
+      slackChannel: squad-ide-eclipse
