@@ -98,8 +98,8 @@ build_task:
     .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true
   cleanup_before_cache_script: cleanup_maven_repository
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 validate_task:
   # name: "Run unit tests on Linux"
@@ -132,8 +132,8 @@ validate_task:
     junit_artifacts:
       path: '**/target/surefire-reports/TEST-*.xml'
       format: junit
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 qa_task:
   #  name: "Run ITs"
@@ -205,8 +205,8 @@ qa_task:
       - "**/test-results/**/*.xml"
       - "**/target/surefire-reports/TEST-*.xml"
       format: junit
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 sonarqube_task:
   # name: "Run SonarQube analysis"
@@ -241,8 +241,8 @@ sonarqube_task:
   on_failure:
     xvfb_log_artifacts:
       path: "${CIRRUS_WORKING_DIR}/Xvfb.out"
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 mend_scan_task:
   # Run Mend analysis
@@ -268,8 +268,8 @@ mend_scan_task:
     ws_artifacts:
       path: "whitesource/**/*"
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 promote_task:
   depends_on:
@@ -293,8 +293,8 @@ promote_task:
     .cirrus/cirrus_promote_maven
   cleanup_before_cache_script: cleanup_maven_repository
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
 
 dogfood_task:
   #  name: "Update internal dogfooding p2"
@@ -318,5 +318,5 @@ dogfood_task:
       sonarlint-eclipse-dogfood/org.sonarlint.eclipse.site-dogfood.zip \
       --flat --url "${ARTIFACTORY_URL}" --access-token "${ARTIFACTORY_API_KEY}" --build "${CIRRUS_REPO_NAME}/${BUILD_NUMBER}"
   on_failure:
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh

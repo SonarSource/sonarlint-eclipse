@@ -110,5 +110,5 @@ qa_ibuilds_task:
       - "**/test-results/**/*.xml"
       - "**/target/surefire-reports/TEST-*.xml"
       format: junit
-    slack_notification_script:
-      - ./.cirrus/slack-notification.sh
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
