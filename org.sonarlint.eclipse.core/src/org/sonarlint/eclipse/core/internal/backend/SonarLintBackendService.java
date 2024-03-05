@@ -331,7 +331,7 @@ public class SonarLintBackendService {
       connectionSynchronizer = null;
     }
     if (backend != null) {
-      backend.shutdown().join();
+      backend.shutdown();
     }
     backend = null;
   }
