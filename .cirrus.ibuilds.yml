@@ -9,6 +9,8 @@ env:
   BURGR_URL: VAULT[development/kv/data/burgr data.url]
   BURGR_USERNAME: VAULT[development/kv/data/burgr data.cirrus_username]
   BURGR_PASSWORD: VAULT[development/kv/data/burgr data.cirrus_password]
+  SLACK_TOKEN: VAULT[development/kv/data/slack data.token]
+  CIRRUS_PIPELINE_NAME: "SLE iBuilds"
 
 # We will only run this pipeline on dedicated branches
 only_dedicated_branches: &ONLY_IF
@@ -108,3 +110,5 @@ qa_ibuilds_task:
       - "**/test-results/**/*.xml"
       - "**/target/surefire-reports/TEST-*.xml"
       format: junit
+    slack_notification_script: |
+      .cirrus/slack-notification.sh
