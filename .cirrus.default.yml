@@ -260,7 +260,7 @@ mend_scan_task:
   whitesource_script:
     - source cirrus-env QA
     - source .cirrus/set_maven_build_version $BUILD_NUMBER
-    - mvn -B -e -V clean package install -DskipTests -Dcyclonedx.skip=false
+    - mvn -B -e -V clean install -DskipTests -Dcyclonedx.skip=false
     - source ws_scan.sh
   cleanup_before_cache_script: cleanup_maven_repository
   allow_failures: "true"
