@@ -82,7 +82,8 @@
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
     <artifactsToPublish>${project.groupId}:org.sonarlint.eclipse.site:zip,${project.groupId}:sonarlint-eclipse-parent:json:cyclonedx</artifactsToPublish>
-    <version.cyclonedx.plugin>2.7.5</version.cyclonedx.plugin>
+    
+    <cyclonedx.skip>true</cyclonedx.skip>
   </properties>
 
   <build>

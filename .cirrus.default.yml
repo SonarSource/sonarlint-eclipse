@@ -95,7 +95,7 @@ build_task:
   build_script: |
     base64 --decode "${SM_CLIENT_CERT_FILE}.b64" > "${SM_CLIENT_CERT_FILE}"
     source cirrus-env BUILD-PRIVATE
-    .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true
+    .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
   cleanup_before_cache_script: cleanup_maven_repository
   on_failure:
     slack_notification_script: |
@@ -234,7 +234,7 @@ sonarqube_task:
     unzip jacoco.zip -d ${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/
     source cirrus-env QA
     .cirrus/regular_mvn_build_deploy_analyze \
-      -P-deploy-sonarsource,-release,-sign -Dmaven.install.skip=true -Dmaven.deploy.skip=true -Dcyclonedx.skip=true \
+      -P-deploy-sonarsource,-release,-sign -Dmaven.install.skip=true -Dmaven.deploy.skip=true \
       -Pcoverage -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
     /etc/init.d/xvfb stop
   cleanup_before_cache_script: cleanup_maven_repository
@@ -260,7 +260,7 @@ mend_scan_task:
   whitesource_script:
     - source cirrus-env QA
     - source .cirrus/set_maven_build_version $BUILD_NUMBER
-    - mvn -B -e -V clean install -DskipTests
+    - mvn -B -e -V clean package install -DskipTests -Dcyclonedx.skip=false
     - source ws_scan.sh
   cleanup_before_cache_script: cleanup_maven_repository
   allow_failures: "true"
