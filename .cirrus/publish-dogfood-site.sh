@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-: "${CIRRUS_BUILD_ID?}" "${PROJECT_VERSION?}" "${ARTIFACTORY_API_KEY?}" "${ARTIFACTORY_URL?}"
+: "${CIRRUS_BUILD_ID?}" "${PROJECT_VERSION?}" "${ARTIFACTORY_ACCESS_TOKEN?}" "${ARTIFACTORY_URL?}"
 : "${S3_BUCKET:=downloads-cdn-eu-central-1-prod}"
 : "${BINARIES_URL:=https://binaries.sonarsource.com}"
 ROOT_BUCKET_KEY="SonarLint-for-Eclipse/dogfood"
@@ -20,7 +20,7 @@ curl --fail --silent --show-error --location \
     # local usage or any use case with no Cirrus artifact
     type jfrog 2>/dev/null || jfrog() { jf "$@"; }
     echo "Failed to download org.sonarlint.eclipse.site-$PROJECT_VERSION.zip from Cirrus CI build $CIRRUS_BUILD_ID; fallback on Artifactory"
-    jfrog config use repox 2>/dev/null || jfrog config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_API_KEY"
+    jfrog config use repox 2>/dev/null || jfrog config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_ACCESS_TOKEN"
     jfrog rt curl "sonarsource-public-builds/org/sonarsource/sonarlint/eclipse/org.sonarlint.eclipse.site/$PROJECT_VERSION/org.sonarlint.eclipse.site-$PROJECT_VERSION.zip" -o "$dogfood_site_dir".zip
   }
 mkdir -p "$dogfood_site_dir/$PROJECT_VERSION"
