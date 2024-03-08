@@ -6,8 +6,17 @@ FROM ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j${JDK_VERSIO
 
 USER root
 COPY --from=buildphase /opt/java/openjdk /opt/java/openjdk-11
+
+# AWS CLI
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install && \
+    rm awscliv2.zip
+
 ARG NODE_VERSION=18
-RUN apt-get update && apt-get install -y metacity xvfb ffmpeg nodejs=${NODE_VERSION}.*
+RUN apt-get update && apt-get install -y metacity xvfb ffmpeg nodejs=${NODE_VERSION}.* gettext-base \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 COPY --chmod=755 .cirrus/init.d/xvfb /etc/init.d/
 
 USER sonarsource

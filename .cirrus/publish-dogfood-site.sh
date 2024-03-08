@@ -14,7 +14,7 @@ dogfood_site_dir=$(mktemp -d -p "$PWD" -t tmp.XXXXXXXX)
 trap 'rm -rf "$dogfood_site_dir" "$dogfood_site_dir".zip' EXIT
 
 curl --fail --silent --show-error --location \
-  "https://api.cirrus-ci.com/v1/artifact/build/$CIRRUS_BUILD_ID/site/org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-$PROJECT_VERSION.zip" \
+  "https://api.cirrus-ci.com/v1/artifact/build/$CIRRUS_BUILD_ID/build/site/org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-$PROJECT_VERSION.zip" \
   -o "$dogfood_site_dir".zip ||
   {
     # local usage or any use case with no Cirrus artifact

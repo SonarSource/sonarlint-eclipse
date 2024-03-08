@@ -305,7 +305,7 @@ dogfood_task:
     - promote
   only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && $CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH
   eks_container:
-    <<: *CONTAINER_DEFINITION
+    <<: *BUILDER_CONTAINER_DEFINITION
     cpu: 2
     memory: 4G
     type: m6a.large
