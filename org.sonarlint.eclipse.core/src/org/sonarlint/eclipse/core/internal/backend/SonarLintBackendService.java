@@ -140,7 +140,8 @@ public class SonarLintBackendService {
 
           fixExecutablePermissions();
 
-          var sloop = sloopLauncher.start(sloopBasedir);
+          var java17Path = SonarLintGlobalConfiguration.getJava17Path();
+          var sloop = sloopLauncher.start(sloopBasedir, java17Path);
           sloop.onExit().thenAccept(SonarLintBackendService::onSloopExit);
           backend = sloop.getRpcServer();
 
