@@ -82,6 +82,7 @@ public class SonarLintGlobalConfiguration {
   public static final String PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT = ""; //$NON-NLS-1$
   public static final String PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES = "skipConfirmAnalyzeMultipleFiles"; //$NON-NLS-1$
   public static final String PREF_NODEJS_PATH = "nodeJsPath"; //$NON-NLS-1$
+  public static final String PREF_JAVA17_PATH = "java17Path"; //$NON-NLS-1$
   private static final String PREF_TAINT_VULNERABILITY_DISPLAYED = "taintVulnerabilityDisplayed";
   private static final String PREF_SECRETS_EVER_DETECTED = "secretsEverDetected";
   private static final String PREF_USER_SURVEY_LAST_LINK = "userSurveyLastLink"; //$NON-NLS-1$
@@ -335,11 +336,21 @@ public class SonarLintGlobalConfiguration {
 
   @Nullable
   public static Path getNodejsPath() {
-    var nodeJsPathSetting = StringUtils.trimToNull(getPreferenceString(PREF_NODEJS_PATH));
+    return getPathFromPreference(PREF_NODEJS_PATH, "Invalid Node.js path");
+  }
+
+  @Nullable
+  public static Path getJava17Path() {
+    return getPathFromPreference(PREF_JAVA17_PATH, "Invalid Java 17+ path");
+  }
+
+  @Nullable
+  private static Path getPathFromPreference(String preference, String errorMessage) {
+    var pathSetting = StringUtils.trimToNull(getPreferenceString(preference));
     try {
-      return nodeJsPathSetting != null ? Paths.get(nodeJsPathSetting) : null;
+      return pathSetting != null ? Paths.get(pathSetting) : null;
     } catch (InvalidPathException e) {
-      SonarLintLogger.get().error("Invalid nodejs path", e);
+      SonarLintLogger.get().error(errorMessage, e);
       return null;
     }
   }

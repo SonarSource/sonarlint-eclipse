@@ -38,6 +38,7 @@ public class SonarLintDocumentation {
   public static final String RULES = BASE_DOCS_URL + "/using-sonarlint/rules/";
   public static final String RULES_SELECTION = RULES + "#rule-selection";
   public static final String TROUBLESHOOTING_LINK = BASE_DOCS_URL + "/troubleshooting/";
+  public static final String ADVANCED_CONFIGURATION = BASE_DOCS_URL + "/team-features/advanced-configuration/";
 
   private static final String BASE_MARKETING_URL = "https://www.sonarsource.com";
   public static final String COMPARE_SERVER_PRODUCTS_LINK = BASE_MARKETING_URL + "/open-source-editions";
