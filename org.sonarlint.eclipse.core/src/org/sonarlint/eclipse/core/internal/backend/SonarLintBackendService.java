@@ -128,24 +128,22 @@ public class SonarLintBackendService {
       protected IStatus run(IProgressMonitor monitor) {
         SonarLintLogger.get().debug("Initializing SonarLint backend...");
         try {
-
-          var sloopShellScriptUrls = SonarLintCorePlugin.getInstance().getBundle().findEntries("/sloop/bin", "sonarlint-backend*", false);
-          if (!sloopShellScriptUrls.hasMoreElements()) {
+          var sloopJarUrls = SonarLintCorePlugin.getInstance().getBundle().findEntries("/sloop/lib", "sonarlint-core-*", false);
+          if (!sloopJarUrls.hasMoreElements()) {
             throw new IllegalStateException("Unable to locate the Sloop installation");
           }
-          var sloopShellScriptUrl = FileLocator.toFileURL(sloopShellScriptUrls.nextElement());
-          SonarLintLogger.get().debug("Sloop shell script located in " + sloopShellScriptUrl);
-          var sloopShellPath = new File(sloopShellScriptUrl.getFile()).toPath();
-          var sloopBasedir = sloopShellPath.getParent().getParent();
+          var sloopJarUrl = FileLocator.toFileURL(sloopJarUrls.nextElement());
+          var sloopJarPath = new File(sloopJarUrl.getFile()).toPath();
+          SonarLintLogger.get().debug("SonarLint Core Jar archive located at " + sloopJarPath);
+          var sloopBasedir = sloopJarPath.getParent().getParent();
           SonarLintLogger.get().debug("Sloop located in " + sloopBasedir);
-
-          fixExecutablePermissions();
 
           var java17Path = SonarLintGlobalConfiguration.getJava17Path();
           if (java17Path != null && !FileUtils.checkForJavaExecutable(java17Path)) {
             SonarLintLogger.get().info(
               "Falling back to bundled JRE, as the one provided could not be located in " + java17Path.toString());
             java17Path = null;
+            fixExecutablePermissions();
           }
           var sloop = sloopLauncher.start(sloopBasedir, java17Path);
           sloop.onExit().thenAccept(SonarLintBackendService::onSloopExit);

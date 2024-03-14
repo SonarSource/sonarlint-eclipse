@@ -116,7 +116,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     separator.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, Integer.MAX_VALUE, 1));
 
     var powerUserLabel = new Link(getFieldEditorParent(), SWT.NONE);
-    powerUserLabel.setText("This section targets power users who want to tweak SonarLint even more. Please refer to <a>the docs</a>.");
+    powerUserLabel.setText("This section targets power users who want to tweak SonarLint even more. Please refer to <a>the documentation</a>.");
     powerUserLabel.setLayoutData(labelLayoutData);
     powerUserLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.PROVIDE_JAVA_RUNTIME_LINK, e.display));
