@@ -50,6 +50,7 @@ import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
+import org.sonarlint.eclipse.core.internal.utils.FileUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -141,6 +142,11 @@ public class SonarLintBackendService {
           fixExecutablePermissions();
 
           var java17Path = SonarLintGlobalConfiguration.getJava17Path();
+          if (java17Path != null && !FileUtils.checkForJavaExecutable(java17Path)) {
+            SonarLintLogger.get().info(
+              "Falling back to bundled JRE, as the one provided could not be located in " + java17Path.toString());
+            java17Path = null;
+          }
           var sloop = sloopLauncher.start(sloopBasedir, java17Path);
           sloop.onExit().thenAccept(SonarLintBackendService::onSloopExit);
           backend = sloop.getRpcServer();
