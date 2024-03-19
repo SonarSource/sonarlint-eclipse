@@ -161,13 +161,16 @@ public class SonarLintBackendService {
           var sqConnections = ConnectionSynchronizer.buildSqConnectionDtos();
           var scConnections = ConnectionSynchronizer.buildScConnectionDtos();
 
+          // Check if telemetry was disabled via system properties (e.g. in unit / integration tests)
+          var telemetryEnabled = !Boolean.parseBoolean(System.getProperty("sonarlint.telemetry.disabled", "false"));
+
           backend.initialize(new InitializeParams(
             new ClientConstantInfoDto(getIdeName(), "SonarLint Eclipse " + SonarLintUtils.getPluginVersion()),
             new TelemetryClientConstantAttributesDto("eclipse", "SonarLint Eclipse", SonarLintUtils.getPluginVersion(), SonarLintTelemetry.ideVersionForTelemetry(),
               Map.of()),
             getHttpConfiguration(),
             getSonarCloudAlternativeEnvironment(),
-            new FeatureFlagsDto(true, true, true, true, false, true, false, true),
+            new FeatureFlagsDto(true, true, true, true, false, true, false, true, telemetryEnabled),
             StoragePathManager.getStorageDir(),
             StoragePathManager.getDefaultWorkDir(),
             Set.copyOf(embeddedPluginPaths),
