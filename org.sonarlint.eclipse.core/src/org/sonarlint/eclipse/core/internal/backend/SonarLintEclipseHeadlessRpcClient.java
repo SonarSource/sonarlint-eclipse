@@ -23,23 +23,23 @@ import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.eclipse.core.net.proxy.IProxyData;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
+import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.rpc.client.ConfigScopeNotFoundException;
@@ -62,25 +62,30 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
 
   @Override
   public List<ClientFileDto> listFiles(String configScopeId) throws ConfigScopeNotFoundException {
-    var project = resolveProject(configScopeId);
-    return project.files().stream().map(slFile -> FileSystemSynchronizer.toFileDto(slFile, new NullProgressMonitor())).collect(Collectors.toList());
-  }
+    var project = SonarLintUtils.resolveProject(configScopeId);
 
-  protected ISonarLintProject resolveProject(String configScopeId) throws ConfigScopeNotFoundException {
-    var projectOpt = tryResolveProject(configScopeId);
-    if (projectOpt.isEmpty()) {
-      SonarLintLogger.get().debug("Unable to resolve project: " + configScopeId);
-      throw new ConfigScopeNotFoundException();
+    var files = new ArrayList<>(project.files().stream()
+      .map(slFile -> FileSystemSynchronizer.toFileDto(slFile, new NullProgressMonitor())).collect(Collectors.toList()));
+
+    // If the project is in a hierarchy, also provide the ".sonarlint/*.json" files from the root project if possible.
+    // If there are different hierarchical systems in place (e.g. Maven / Gradle) we provide all of them!
+    var rootProjects = new HashSet<ISonarLintProject>();
+    for (var projectHistoryProvider : SonarLintExtensionTracker.getInstance().getProjectHierarchyProviders()) {
+      if (projectHistoryProvider.partOfHierarchy(project)) {
+        var rootProject = projectHistoryProvider.getRootProject(project);
+        if (rootProject != null && !project.equals(rootProject)) {
+          rootProjects.add(rootProject);
+        }
+      }
     }
-    return projectOpt.get();
-  }
 
-  protected Optional<ISonarLintProject> tryResolveProject(String configScopeId) {
-    var projectUri = URI.create(configScopeId);
-    return Stream.of(ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(projectUri))
-      .map(c -> Adapters.adapt(c, ISonarLintProject.class))
-      .filter(Objects::nonNull)
-      .findFirst();
+    // For root project in root projects add the files to "files"
+    for (var rootProject : rootProjects) {
+      FileSystemSynchronizer.getSonarLintJsonFiles(rootProject).stream()
+        .forEach(slFile -> files.add(FileSystemSynchronizer.toSubProjectFileDto(project, FileSystemSynchronizer.toFileDto(slFile, null))));
+    }
+
+    return files;
   }
 
   protected ConnectionFacade resolveConnection(String connectionId) throws ConnectionNotFoundException {
@@ -145,7 +150,7 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
   public void didSynchronizeConfigurationScopes(Set<String> configurationScopeIds) {
     // After a sync happened on backend side, we can refresh the project list
     var allAffectedConnections = configurationScopeIds.stream()
-      .map(this::tryResolveProject)
+      .map(SonarLintUtils::tryResolveProject)
       .filter(Optional::isPresent)
       .map(Optional::get)
       .distinct()
@@ -160,13 +165,13 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
   @Override
   public String matchSonarProjectBranch(String configurationScopeId, String mainBranchName, Set<String> allBranchesNames, CancelChecker cancelChecker)
     throws ConfigScopeNotFoundException {
-    var project = resolveProject(configurationScopeId);
+    var project = SonarLintUtils.resolveProject(configurationScopeId);
     return VcsService.matchSonarProjectBranch(project, mainBranchName, allBranchesNames);
   }
 
   @Override
   public void didChangeMatchedSonarProjectBranch(String configScopeId, String newMatchedBranchName) {
-    tryResolveProject(configScopeId)
+    SonarLintUtils.tryResolveProject(configScopeId)
       .ifPresent(project -> VcsService.updateCachedMatchedSonarProjectBranch(project, newMatchedBranchName));
   }
 
