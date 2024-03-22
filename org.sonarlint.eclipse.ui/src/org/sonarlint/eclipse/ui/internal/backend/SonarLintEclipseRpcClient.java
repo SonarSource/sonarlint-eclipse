@@ -65,6 +65,7 @@ import org.sonarsource.sonarlint.core.rpc.protocol.client.binding.AssistBindingP
 import org.sonarsource.sonarlint.core.rpc.protocol.client.binding.AssistBindingResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.connection.AssistCreatingConnectionParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.connection.AssistCreatingConnectionResponse;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.connection.ConnectionSuggestionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.hotspot.HotspotDetailsDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.IssueDetailsDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.log.LogParams;
@@ -347,6 +348,21 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
     AbstractAnalyzeProjectJob.changeAnalysisReadiness(configurationScopeIds, areReadyForAnalysis);
     if (areReadyForAnalysis) {
       AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(projects, TriggerType.ANALYSIS_READY, false);
+    }
+  }
+
+  /**
+   *  INFO: Handle that this can be triggered multiple times
+   *  configScopeId -> List<ConnectionSuggestion>
+   */
+  @Override
+  public void suggestConnection(Map<String, List<ConnectionSuggestionDto>> suggestionsByConfigScope) {
+    // TODO: If the connection provided as a ConnectionSuggestionDto is already provided but the project is not bound
+    // we can cancel here as there is already a "SonarLint Binding Suggestion" pop-up coming up.
+
+    // TODO: Implement
+    for (var key : suggestionsByConfigScope.keySet()) {
+      SonarLintLogger.get().error("suggestConnection: " + key + " -> " + suggestionsByConfigScope.get(key));
     }
   }
 }

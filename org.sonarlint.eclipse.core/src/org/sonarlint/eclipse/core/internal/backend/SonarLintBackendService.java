@@ -58,6 +58,8 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.rpc.client.SloopLauncher;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintRpcClientDelegate;
 import org.sonarsource.sonarlint.core.rpc.protocol.SonarLintRpcServer;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.binding.GetSharedConnectedModeConfigFileParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.binding.GetSharedConnectedModeConfigFileResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.branch.DidVcsRepositoryChangeParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.config.DidChangeCredentialsParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.GetAllProjectsParams;
@@ -402,4 +404,9 @@ public class SonarLintBackendService {
       new GetFilesStatusParams(Map.of(ConfigScopeSynchronizer.getConfigScopeId(project), notExcluded.stream().map(ISonarLintFile::uri).collect(Collectors.toList()))));
   }
 
+  public CompletableFuture<GetSharedConnectedModeConfigFileResponse> getSharedConnectedModeConfigFileContents(ISonarLintProject project) {
+    return getBackend()
+      .getBindingService()
+      .getSharedConnectedModeConfigFileContents(new GetSharedConnectedModeConfigFileParams(ConfigScopeSynchronizer.getConfigScopeId(project)));
+  }
 }

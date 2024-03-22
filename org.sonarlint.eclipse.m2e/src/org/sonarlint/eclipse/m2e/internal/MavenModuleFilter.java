@@ -63,6 +63,11 @@ public class MavenModuleFilter implements ISonarLintFileAdapterParticipant, ISon
   }
 
   @Override
+  public String getHierarchyProviderIdentifier() {
+    return "Maven (found by the SonarLint m2e adapter)";
+  }
+
+  @Override
   public boolean partOfHierarchy(ISonarLintProject project) {
     if (isM2ePresent && isMavenPresent) {
       return MavenUtils.isPartOfHierarchy(project);

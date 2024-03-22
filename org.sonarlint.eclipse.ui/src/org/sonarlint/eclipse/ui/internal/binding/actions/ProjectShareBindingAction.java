@@ -22,26 +22,27 @@ package org.sonarlint.eclipse.ui.internal.binding.actions;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.binding.UnbindProjectDialog;
+import org.sonarlint.eclipse.ui.internal.job.ShareProjectBindingJob;
 
-/** Action corresponding to the context menu option to unbind a project */
-public class ProjectUnbindAction extends AbstractBindingAction {
-  public ProjectUnbindAction(Shell shell, ISelectionProvider selectionProvider) {
-    super(shell, selectionProvider, Messages.actionUnbind, SonarLintImages.UNBIND);
-    setActionDefinitionId(IWorkbenchCommandConstants.EDIT_DELETE);
+/** Action corresponding to the context menu option to change a project binding */
+public class ProjectShareBindingAction extends AbstractBindingAction {
+  public ProjectShareBindingAction(Shell shell, ISelectionProvider selectionProvider) {
+    super(shell, selectionProvider, Messages.actionShareBinding, SonarLintImages.SHARE_IMG);
   }
 
   @Override
   protected boolean disable(IStructuredSelection sel) {
-    return sel.isEmpty();
+    // Currently only single selection is supported, if at some point it should be possible to share the configuration
+    // for multiple, non-related projects simultaneously, it also has to be changed for the ShareBindingCommand in the
+    // UI plugin.xml ('<count value="1" />' to '<count value="=" />')!
+    return sel.isEmpty() || sel.size() > 1;
   }
 
   @Override
   protected void doRun() {
-    var dialog = new UnbindProjectDialog(shell, selectedProjects);
-    dialog.open();
+    var job = new ShareProjectBindingJob(shell, selectedProjects.get(0));
+    job.schedule();
   }
 }

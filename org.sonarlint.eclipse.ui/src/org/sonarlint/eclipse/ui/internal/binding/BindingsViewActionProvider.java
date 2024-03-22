@@ -39,6 +39,7 @@ import org.sonarlint.eclipse.ui.internal.binding.actions.ConnectionDeleteAction;
 import org.sonarlint.eclipse.ui.internal.binding.actions.ConnectionEditAction;
 import org.sonarlint.eclipse.ui.internal.binding.actions.NewConnectionWizardAction;
 import org.sonarlint.eclipse.ui.internal.binding.actions.ProjectChangeBindingAction;
+import org.sonarlint.eclipse.ui.internal.binding.actions.ProjectShareBindingAction;
 import org.sonarlint.eclipse.ui.internal.binding.actions.ProjectUnbindAction;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 
@@ -48,6 +49,7 @@ public class BindingsViewActionProvider extends CommonActionProvider {
   private ICommonActionExtensionSite actionSite;
   protected Action deleteConnectionAction;
   protected Action editAction;
+  protected Action shareBindingAction;
   protected Action updateBindingAction;
   protected Action bindProjectsAction;
   protected Action unbindProjectsAction;
@@ -90,6 +92,7 @@ public class BindingsViewActionProvider extends CommonActionProvider {
     var shell = tableViewer.getTree().getShell();
     deleteConnectionAction = new ConnectionDeleteAction(shell, provider);
     editAction = new ConnectionEditAction(shell, provider);
+    shareBindingAction = new ProjectShareBindingAction(shell, provider);
     updateBindingAction = new ProjectChangeBindingAction(shell, provider);
     bindProjectsAction = new ConnectionBindProjectsAction(shell, provider);
     unbindProjectsAction = new ProjectUnbindAction(shell, provider);
@@ -134,6 +137,7 @@ public class BindingsViewActionProvider extends CommonActionProvider {
       var newServerAction = new NewConnectionWizardAction();
       menu.add(newServerAction);
     } else if (servers.isEmpty()) {
+      menu.add(shareBindingAction);
       menu.add(updateBindingAction);
       menu.add(unbindProjectsAction);
     }

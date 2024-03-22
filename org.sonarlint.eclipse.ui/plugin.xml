@@ -997,6 +997,24 @@
           </visibleWhen>
        </command>
       <command
+             commandId="org.sonarlint.eclipse.ui.internal.command.ShareBindingCommand"
+             style="push">
+          <visibleWhen>
+              <with variable="activeMenuSelection">
+                 <count value="1" />
+                 <iterate ifEmpty="false" operator="or">
+                   <or>
+                     <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+                       <test property="org.sonarlint.eclipse.core.open"/>
+                       <test property="org.sonarlint.eclipse.core.bound"/>
+                     </adapt>
+                     <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
+                   </or>
+                 </iterate>
+             </with>
+          </visibleWhen>
+       </command>
+       <command
              commandId="org.sonarlint.eclipse.ui.internal.command.ChangeProjectsBindingCommand"
              style="push">
           <visibleWhen>
@@ -1140,9 +1158,15 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
+          description="Share the binding information to SonarQube or SonarCloud"
+          id="org.sonarlint.eclipse.ui.internal.command.ShareBindingCommand"
+          name="Share Binding..."
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
+    <command
           description="Bind to a project analyzed on SonarQube or SonarCloud"
           id="org.sonarlint.eclipse.ui.internal.command.ChangeProjectsBindingCommand"
-          name="Change binding..."
+          name="Change Binding..."
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
@@ -1254,6 +1278,10 @@
           commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand">
     </handler>
     <handler
+          class="org.sonarlint.eclipse.ui.internal.command.ShareBindingCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.ShareBindingCommand">
+    </handler>
+    <handler
           class="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.ChangeProjectsBindingCommand">
     </handler>
@@ -1316,9 +1344,7 @@
                         property="org.sonarlint.eclipse.ui.canBeResolved">
                   </test>
                </iterate>
-               <count
-                     value="+">
-               </count>
+               <count value="1" />
             </and>
          </enabledWhen>
       </handler>
@@ -1335,9 +1361,7 @@
                         property="org.sonarlint.eclipse.ui.resolvedIssue">
                   </test>
                </iterate>
-               <count
-                     value="+">
-               </count>
+               <count value="1" />
             </and>
          </enabledWhen>
       </handler>
@@ -1354,6 +1378,9 @@
       commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
       icon="icons/synced.gif" />
     <image
+      commandId="org.sonarlint.eclipse.ui.internal.command.ShareBindingCommand"
+      icon="icons/share.png" />
+      <image
       commandId="org.sonarlint.eclipse.ui.internal.command.ChangeProjectsBindingCommand"
       icon="icons/synced.gif" />
     <image

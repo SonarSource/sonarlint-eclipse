@@ -17,28 +17,28 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.ui.internal.command;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.swt.widgets.Display;
+import org.sonarlint.eclipse.ui.internal.job.ShareProjectBindingJob;
+import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
-/** Base class for all SonarLint jobs, for level specific jobs see subclasses */
-public abstract class AbstractSonarJob extends Job {
-  protected AbstractSonarJob(String title) {
-    super(title);
-    setPriority(Job.DECORATE);
-  }
-
+public class ShareBindingCommand extends AbstractHandler {
+  @Nullable
   @Override
-  public final IStatus run(final IProgressMonitor monitor) {
-    try {
-      return doRun(monitor);
-    } catch (CoreException e) {
-      return e.getStatus();
-    }
-  }
+  public Object execute(ExecutionEvent event) throws ExecutionException {
+    var selectedProjects = SelectionUtils.allSelectedProjects(event, false);
 
-  protected abstract IStatus doRun(final IProgressMonitor monitor) throws CoreException;
+    if (selectedProjects.size() == 1) {
+      var job = new ShareProjectBindingJob(Display.getDefault().getActiveShell(),
+        selectedProjects.iterator().next());
+      job.schedule();
+    }
+
+    return null;
+  }
 }

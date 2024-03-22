@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.resource;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
@@ -30,6 +31,15 @@ import org.eclipse.jdt.annotation.Nullable;
  *  @since 10.1
  */
 public interface ISonarLintProjectHierarchyProvider {
+  /**
+   *  This is used to identify the specific provider in case multiple are available. This has to be implemented, even
+   *  though a conflict in identifiers of different implementations might be possible!
+   *
+   *  @return the "unique" identifier of the specific provider
+   */
+  @NonNull
+  String getHierarchyProviderIdentifier();
+
   /**
    *  This is used to check if a {@link ISonarLintProject} is part of a hierarchy. As an example, a Maven project with
    *  neither a parent project nor sub-modules is considered to be in a hierarchy.

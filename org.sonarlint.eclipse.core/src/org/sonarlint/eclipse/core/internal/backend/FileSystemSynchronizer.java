@@ -53,7 +53,9 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
 
   private static final String SONAR_SCANNER_CONFIG_FILENAME = "sonar-project.properties";
   private static final String AUTOSCAN_CONFIG_FILENAME = ".sonarcloud.properties";
-  public static final Pattern SONARLINT_JSON_REGEX = Pattern.compile("^\\.sonarlint/.*\\.json$", Pattern.CASE_INSENSITIVE);
+  public static final String SONARLINT_FOLDER = ".sonarlint";
+  public static final String SONARLINT_CONFIG_FILE = "connectedMode.json";
+  public static final Pattern SONARLINT_JSON_REGEX = Pattern.compile("^\\" + SONARLINT_FOLDER + "/.*\\.json$", Pattern.CASE_INSENSITIVE);
 
   private final SonarLintRpcServer backend;
 
@@ -79,7 +81,13 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
           .collect(toList());
         backend.getFileService().didUpdateFileSystem(new DidUpdateFileSystemParams(removedFiles, changedOrAddedDto));
 
-        // If the ".sonarlint/*.json" files were changed or added, we also have to inform all the sub-projects!
+        // Disclaimer on the actual "change listener" as this listener is only invoked on different occasions for the
+        // shared connected mode configuration:
+        // - project is imported, every file is considered as "changed" (including importing on workspace startup)
+        // - filter for ".*" resources is disabled and file changed inside Eclipse (no watchdog on external changes)
+        // - configuration is created via the context menu options inside Eclipse
+
+        // Inform all the sub-projects about the incoming changes from the shared Connected Mode configuration!
         var changedOrAddedSonarLintDto = changedOrAddedDto.stream()
           .filter(dto -> SONARLINT_JSON_REGEX.matcher(dto.getIdeRelativePath().toString()).find())
           .collect(toList());
