@@ -28,7 +28,7 @@ public abstract class AbstractSonarProjectJob extends AbstractSonarJob {
   private final ISonarLintProject project;
   private final SonarLintProjectConfiguration config;
 
-  public AbstractSonarProjectJob(String title, ISonarLintProject project) {
+  protected AbstractSonarProjectJob(String title, ISonarLintProject project) {
     super(title);
     this.project = project;
     this.config = SonarLintCorePlugin.loadConfig(project);

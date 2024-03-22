@@ -26,7 +26,7 @@ import org.eclipse.core.runtime.jobs.Job;
 
 /** Base class for all SonarLint jobs, for level specific jobs see subclasses */
 public abstract class AbstractSonarJob extends Job {
-  public AbstractSonarJob(String title) {
+  protected AbstractSonarJob(String title) {
     super(title);
     setPriority(Job.DECORATE);
   }
