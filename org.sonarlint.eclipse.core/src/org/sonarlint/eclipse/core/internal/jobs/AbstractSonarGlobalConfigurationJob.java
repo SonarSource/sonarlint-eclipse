@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 /** Base class for all jobs running at a Eclipse global configuration level */
 public abstract class AbstractSonarGlobalConfigurationJob extends AbstractSonarJob {
-  public AbstractSonarGlobalConfigurationJob(String title) {
+  protected AbstractSonarGlobalConfigurationJob(String title) {
     super(title);
   }
 

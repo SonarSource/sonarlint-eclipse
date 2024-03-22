@@ -25,6 +25,7 @@ import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
+import org.sonarlint.eclipse.core.resource.ISonarLintProjectHierarchyProvider;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
@@ -43,10 +44,12 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
   private final SonarLintEP<IFileLanguageProvider> languageEp = new SonarLintEP<>("org.sonarlint.eclipse.core.languageProvider"); //$NON-NLS-1$
   private final SonarLintEP<IFileTypeProvider> typeEp = new SonarLintEP<>("org.sonarlint.eclipse.core.typeProvider"); //$NON-NLS-1$
   private final SonarLintEP<ISyntaxHighlightingProvider> syntaxHighlightingProviderEP = new SonarLintEP<>(
-    "org.sonarlint.eclipse.core.syntaxHighlightingProvider");
+    "org.sonarlint.eclipse.core.syntaxHighlightingProvider"); //$NON-NLS-1$
+  private final SonarLintEP<ISonarLintProjectHierarchyProvider> projectHierarchyProviderEP = new SonarLintEP<>(
+    "org.sonarlint.eclipse.core.projectHierarchyProvider"); //$NON-NLS-1$
 
   private final Collection<SonarLintEP<?>> allEps = List.of(configuratorEp, analysisEp, projectsProviderEp, fileAdapterParticipantEp, projectAdapterParticipantEp,
-    languageEp, typeEp, syntaxHighlightingProviderEP);
+    languageEp, typeEp, syntaxHighlightingProviderEP, projectHierarchyProviderEP);
 
   private SonarLintExtensionTracker() {
     init(allEps);
@@ -95,5 +98,9 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
 
   public Collection<ISyntaxHighlightingProvider> getSyntaxHighlightingProvider() {
     return syntaxHighlightingProviderEP.getInstances();
+  }
+
+  public Collection<ISonarLintProjectHierarchyProvider> getProjectHierarchyProviders() {
+    return projectHierarchyProviderEP.getInstances();
   }
 }

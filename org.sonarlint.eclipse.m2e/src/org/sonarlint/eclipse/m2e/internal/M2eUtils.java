@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.m2e.internal;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.m2e.core.MavenPlugin;
@@ -31,23 +32,11 @@ public class M2eUtils {
   private M2eUtils() {
   }
 
-  /**
-   * m2e creates IProject for every module (flat layout). It means the same file can appear in several projects.
-   * When it is the case we want to keep the most specific one.
-   */
-  public static boolean isInNestedModule(IFile file) {
-    var project = file.getProject();
+  public static boolean checkIfMavenProject(IProject project) {
     try {
-      if (project.hasNature(IMavenConstants.NATURE_ID)) {
-        var projectManager = MavenPlugin.getMavenProjectRegistry();
-
-        var projectFacade = projectManager.create(project, null);
-        if (projectFacade != null && "pom".equals(projectFacade.getPackaging())) {
-          return !toSpecificFile(file).equals(file);
-        }
-      }
-    } catch (CoreException ex) {
-      SonarLintLogger.get().error(ex.getMessage(), ex);
+      return project.hasNature(IMavenConstants.NATURE_ID);
+    } catch (CoreException err) {
+      SonarLintLogger.get().error(err.getMessage(), err);
     }
     return false;
   }
@@ -64,4 +53,21 @@ public class M2eUtils {
     return finalFile;
   }
 
+  /**
+   *  m2e creates IProject for every module (flat layout). It means the same file can appear in several projects.
+   *  When it is the case we want to keep the most specific one.
+   */
+  public static boolean isInNestedModule(IFile file) {
+    var project = file.getProject();
+    if (!checkIfMavenProject(project)) {
+      return false;
+    }
+
+    var projectManager = MavenPlugin.getMavenProjectRegistry();
+    var projectFacade = projectManager.create(project, null);
+    if (projectFacade != null && "pom".equals(projectFacade.getPackaging())) {
+      return !toSpecificFile(file).equals(file);
+    }
+    return false;
+  }
 }

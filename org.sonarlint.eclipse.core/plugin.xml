@@ -11,6 +11,9 @@
    <extension-point id="syntaxHighlightingProvider"
    					name="SonarLint Syntax Highlighting Provider"
    					schema="schema/syntaxHighlightingProvider.exsd"/>
+   <extension-point id="projectHierarchyProvider"
+   					name="SonarLint Project Hierarchy Provider"
+   					schema="schema/projectHierarchyProvider.exsd" />
 
 
    <extension

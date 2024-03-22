@@ -8,6 +8,7 @@ Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.m2e.core;resolution:=optional,
+ org.eclipse.m2e.maven.runtime;resolution:=optional,
  org.sonarlint.eclipse.core,
  org.eclipse.jdt.annotation;resolution:=optional
 Bundle-RequiredExecutionEnvironment: JavaSE-11

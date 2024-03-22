@@ -85,7 +85,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
   public void suggestBinding(Map<String, List<BindingSuggestionDto>> suggestionsByConfigScope) {
     Map<ISonarLintProject, List<BindingSuggestionDto>> suggestionsByProject = new HashMap<>();
     suggestionsByConfigScope.forEach((configScopeId, suggestions) -> {
-      var projectOpt = tryResolveProject(configScopeId);
+      var projectOpt = SonarLintUtils.tryResolveProject(configScopeId);
       if (projectOpt.isPresent() && projectOpt.get().isOpen()) {
         suggestionsByProject.put(projectOpt.get(), suggestions);
       }
@@ -131,7 +131,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
 
   @Override
   public void showHotspot(String configurationScopeId, HotspotDetailsDto hotspotDetails) {
-    tryResolveProject(configurationScopeId)
+    SonarLintUtils.tryResolveProject(configurationScopeId)
       .ifPresent(project -> new ShowHotspotJob(project, hotspotDetails).schedule());
   }
 
@@ -227,7 +227,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
   public void didSynchronizeConfigurationScopes(Set<String> configurationScopeIds) {
     super.didSynchronizeConfigurationScopes(configurationScopeIds);
     configurationScopeIds.stream()
-      .map(id -> tryResolveProject(id))
+      .map(SonarLintUtils::tryResolveProject)
       .filter(Optional::isPresent)
       .map(Optional::get)
       .distinct()
@@ -276,7 +276,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
   @Override
   public void showIssue(String configScopeId, IssueDetailsDto issueDetails) {
     // We were just asked to find the correct project, this cannot happen -> Only log the information
-    var projectOpt = tryResolveProject(configScopeId);
+    var projectOpt = SonarLintUtils.tryResolveProject(configScopeId);
     if (projectOpt.isEmpty()) {
       SonarLintLogger.get().error("Open in IDE: The project '" + configScopeId + "' is not found in the workspace");
       return;
@@ -299,7 +299,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
   @Override
   public void didChangeTaintVulnerabilities(String configurationScopeId, Set<UUID> closedTaintVulnerabilityIds, List<TaintVulnerabilityDto> addedTaintVulnerabilities,
     List<TaintVulnerabilityDto> updatedTaintVulnerabilities) {
-    var projectOpt = tryResolveProject(configurationScopeId);
+    var projectOpt = SonarLintUtils.tryResolveProject(configurationScopeId);
     if (projectOpt.isEmpty()) {
       return;
     }
@@ -333,7 +333,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
   @Override
   public void didChangeAnalysisReadiness(Set<String> configurationScopeIds, boolean areReadyForAnalysis) {
     var projects = configurationScopeIds.stream()
-      .map(this::tryResolveProject)
+      .map(SonarLintUtils::tryResolveProject)
       .filter(Optional::isPresent)
       .map(Optional::get)
       .collect(Collectors.toList());
