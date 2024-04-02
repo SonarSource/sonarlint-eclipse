@@ -13,7 +13,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     ./aws/install && \
     rm awscliv2.zip
 
-ARG NODE_VERSION=18
+ARG NODE_VERSION=20
 RUN apt-get update && apt-get install -y metacity xvfb ffmpeg nodejs=${NODE_VERSION}.* gettext-base \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
