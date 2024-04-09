@@ -22,21 +22,23 @@ package org.sonarlint.eclipse.ui.internal.binding.assist;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.AbstractConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
-import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.SuggestConnectionWizard;
 
-public class AssistCreatingManualConnectionJob extends AbstractAssistCreatingConnectionJob {
-  // INFO: Just add another constructor for SonarCloud with `organization` instead of `serverUrl`
-  public AssistCreatingManualConnectionJob(String serverUrl) {
-    super("Assist manual creation of Connected Mode", serverUrl, null, null, false, false);
+public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnectionJob {
+  public AssistSuggestConnectionJob(String serverUrlOrOrganization, String projectKey, boolean isSonarCloud) {
+    super("Connected Mode suggestion for " + (isSonarCloud ? "SonarCloud" : "SonarCube"),
+      isSonarCloud ? null : serverUrlOrOrganization,
+      isSonarCloud ? serverUrlOrOrganization : null,
+      projectKey, false, true);
   }
 
   @Override
   @Nullable
   protected ConnectionFacade createConnection(ServerConnectionModel model) {
-    var wizard = new ServerConnectionWizard(model);
-    wizard.setSkipBindingWizard(true);
-    var dialog = ServerConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
+    var wizard = new SuggestConnectionWizard(model);
+    var dialog = AbstractConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
     dialog.setBlockOnOpen(true);
     dialog.open();
     return wizard.getResultServer();

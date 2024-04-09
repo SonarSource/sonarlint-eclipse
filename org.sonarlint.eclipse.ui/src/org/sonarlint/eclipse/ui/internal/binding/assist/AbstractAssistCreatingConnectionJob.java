@@ -30,31 +30,55 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 
 public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
+  @Nullable
   protected final String serverUrl;
   @Nullable
-  protected String connectionId;
+  protected final String organization;
+  @Nullable
+  protected final String projectKey;
   protected final boolean automaticSetUp;
+  protected final boolean fromConnectionSuggestion;
+  @Nullable
+  protected String connectionId;
 
-  protected AbstractAssistCreatingConnectionJob(String title, String serverUrl, boolean automaticSetUp) {
+  /** Assistance either to SonarQube / SonarCloud, can be coming from Connection Suggestion! */
+  protected AbstractAssistCreatingConnectionJob(String title, @Nullable String serverUrl,
+    @Nullable String organization, @Nullable String projectKey, boolean automaticSetup,
+    boolean fromConnectionSuggestion) {
     super(title);
     // We don't want to have this job visible to the user, as there should be a dialog anyway
     setSystem(true);
 
     this.serverUrl = serverUrl;
-    this.automaticSetUp = automaticSetUp;
+    this.organization = organization;
+    this.projectKey = projectKey;
+    this.automaticSetUp = automaticSetup;
+    this.fromConnectionSuggestion = fromConnectionSuggestion;
   }
 
   @Override
   public IStatus runInUIThread(IProgressMonitor monitor) {
     var shell = DisplayUtils.bringToFront();
-    var dialog = new ConfirmConnectionCreationDialog(shell, serverUrl, automaticSetUp);
-    if (dialog.open() != 0) {
-      return Status.CANCEL_STATUS;
+
+    // Currently we only ask the user if they trust a SonarQube server, SonarCloud we trust of course!
+    if (organization == null) {
+      var dialog = new ConfirmConnectionCreationDialog(shell, serverUrl, automaticSetUp);
+      if (dialog.open() != 0) {
+        return Status.CANCEL_STATUS;
+      }
     }
 
-    var model = new ServerConnectionModel();
-    model.setConnectionType(ConnectionType.ONPREMISE);
-    model.setServerUrl(serverUrl);
+    var model = new ServerConnectionModel(fromConnectionSuggestion, projectKey);
+    if (organization == null) {
+      model.setConnectionType(ConnectionType.ONPREMISE);
+      model.setServerUrl(serverUrl);
+    } else {
+      model.setOrganization(organization);
+    }
+
+    if (fromConnectionSuggestion) {
+      model.setNotificationsEnabled(true);
+    }
 
     var connection = createConnection(model);
     if (connection != null) {

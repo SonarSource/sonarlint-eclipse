@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.backend;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,9 @@ import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
 import org.sonarlint.eclipse.ui.internal.popup.NoBindingSuggestionFoundPopup;
 import org.sonarlint.eclipse.ui.internal.popup.SingleBindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.SoonUnsupportedPopup;
+import org.sonarlint.eclipse.ui.internal.popup.SuggestMultipleConnectionsPopup;
+import org.sonarlint.eclipse.ui.internal.popup.SuggestSonarCloudConnectionPopup;
+import org.sonarlint.eclipse.ui.internal.popup.SuggestSonarQubeConnectionPopup;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.binding.BindingSuggestionDto;
@@ -356,13 +360,68 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
    *  configScopeId -> List<ConnectionSuggestion>
    */
   @Override
-  public void suggestConnection(Map<String, List<ConnectionSuggestionDto>> suggestionsByConfigScope) {
-    // TODO: If the connection provided as a ConnectionSuggestionDto is already provided but the project is not bound
-    // we can cancel here as there is already a "SonarLint Binding Suggestion" pop-up coming up.
+  public void suggestConnection(Map<String, List<ConnectionSuggestionDto>> suggestionsByConfigScope, CancelChecker cancelChecker) {
+    // TODO: Find better names to describe this mess!
+    // TODO: Instead of connectionScopeId use ISonarLintProject (if found)!
+    var organizationBasedConnections = new HashMap<String, HashMap<String, List<String>>>();
+    var serverUrlBasedConnections = new HashMap<String, HashMap<String, List<String>>>();
+    var leftoverSuggestions = new HashMap<String, List<ConnectionSuggestionDto>>();
 
-    // TODO: Implement
-    for (var key : suggestionsByConfigScope.keySet()) {
-      SonarLintLogger.get().error("suggestConnection: " + key + " -> " + suggestionsByConfigScope.get(key));
+    for (var entry : suggestionsByConfigScope.entrySet()) {
+      var configScopeId = entry.getKey();
+      var suggestions = entry.getValue();
+      if (suggestions.size() > 1) {
+        leftoverSuggestions.put(configScopeId, suggestions);
+        continue;
+      }
+
+      var eitherSuggestion = suggestions.get(0).getConnectionSuggestion();
+      if (eitherSuggestion.isLeft()) {
+        var suggestion = eitherSuggestion.getLeft();
+        var serverUrl = suggestion.getServerUrl();
+        var projectKey = suggestion.getProjectKey();
+
+        serverUrlBasedConnections.putIfAbsent(serverUrl, new HashMap<>());
+
+        var projects = serverUrlBasedConnections.get(serverUrl);
+        projects.putIfAbsent(projectKey, new ArrayList<>());
+
+        var configScopeIds = projects.get(projectKey);
+        configScopeIds.add(configScopeId);
+      } else {
+        var suggestion = eitherSuggestion.getRight();
+        var organization = suggestion.getOrganization();
+        var projectKey = suggestion.getProjectKey();
+
+        organizationBasedConnections.putIfAbsent(organization, new HashMap<>());
+
+        var projects = organizationBasedConnections.get(organization);
+        projects.putIfAbsent(projectKey, new ArrayList<>());
+
+        var configScopeIds = projects.get(projectKey);
+        configScopeIds.add(configScopeId);
+      }
     }
+
+    Display.getDefault().asyncExec(() -> {
+      // for all SonarCloud organizations display one notification each (so only one connection creation will be done
+      // per organization)
+      for (var entry : organizationBasedConnections.entrySet()) {
+        var dialog = new SuggestSonarCloudConnectionPopup(entry.getKey(), entry.getValue());
+        dialog.open();
+      }
+
+      // for all SonarQube URLs display one notification each (so only one connection creation will be done per URL)
+      for (var entry : serverUrlBasedConnections.entrySet()) {
+        var dialog = new SuggestSonarQubeConnectionPopup(entry.getKey(), entry.getValue());
+        dialog.open();
+      }
+
+      // for all (complicated) leftover projects display a specific notification each
+      for (var entry : leftoverSuggestions.entrySet()) {
+        var dialog = new SuggestMultipleConnectionsPopup(entry.getKey(), entry.getValue());
+        dialog.open();
+      }
+    });
   }
 }

@@ -60,6 +60,9 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   private final boolean edit;
+  private final boolean fromConnectionSuggestion;
+  @Nullable
+  private final String projectKey;
   private ConnectionType connectionType = ConnectionType.SONARCLOUD;
   private AuthMethod authMethod = AuthMethod.TOKEN;
   private String connectionId;
@@ -72,12 +75,20 @@ public class ServerConnectionModel extends ModelObject {
 
   private List<ISonarLintProject> selectedProjects;
 
-  public ServerConnectionModel() {
+  public ServerConnectionModel(boolean fromConnectionSuggestion, String projectKey) {
     this.edit = false;
+    this.fromConnectionSuggestion = fromConnectionSuggestion;
+    this.projectKey = projectKey;
+  }
+
+  public ServerConnectionModel() {
+    this(false, null);
   }
 
   public ServerConnectionModel(ConnectionFacade connection) {
     this.edit = true;
+    this.fromConnectionSuggestion = false;
+    this.projectKey = null;
     this.connectionId = connection.getId();
     this.serverUrl = connection.getHost();
     this.connectionType = SonarLintUtils.getSonarCloudUrl().equals(serverUrl) ? ConnectionType.SONARCLOUD : ConnectionType.ONPREMISE;
@@ -97,6 +108,15 @@ public class ServerConnectionModel extends ModelObject {
 
   public boolean isEdit() {
     return edit;
+  }
+
+  public boolean isFromConnectionSuggestion() {
+    return fromConnectionSuggestion;
+  }
+
+  @Nullable
+  public String getProjectKey() {
+    return projectKey;
   }
 
   public ConnectionType getConnectionType() {

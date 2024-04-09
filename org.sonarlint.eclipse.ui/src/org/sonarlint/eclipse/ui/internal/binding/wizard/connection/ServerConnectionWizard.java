@@ -22,54 +22,34 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.INewWizard;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.Messages;
-import org.sonarlint.eclipse.ui.internal.binding.BindingsView;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.check.CheckSmartNotificationsSupportedParams;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarCloudConnectionDto;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarQubeConnectionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.org.ListUserOrganizationsParams;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.validate.ValidateConnectionParams;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.validate.ValidateConnectionResponse;
-import org.sonarsource.sonarlint.core.rpc.protocol.common.TokenDto;
-import org.sonarsource.sonarlint.core.rpc.protocol.common.UsernamePasswordDto;
 
-public class ServerConnectionWizard extends Wizard implements INewWizard, IPageChangingListener {
+public class ServerConnectionWizard extends AbstractConnectionWizard {
 
-  private final ServerConnectionModel model;
   private final ConnectionTypeWizardPage connectionTypeWizardPage;
   private final UrlWizardPage urlPage;
   private final AuthMethodWizardPage authMethodPage;
   private final UsernamePasswordWizardPage credentialsPage;
-  private final TokenWizardPage tokenPage;
   private final OrganizationWizardPage orgPage;
   private final ConnectionIdWizardPage connectionIdPage;
   private final NotificationsWizardPage notifPage;
@@ -78,20 +58,13 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   private boolean redirectedAfterNotificationCheck;
   private boolean skipBindingWizard;
 
-  private ConnectionFacade resultServer;
-
   private ServerConnectionWizard(String title, ServerConnectionModel model, ConnectionFacade editedServer) {
-    super();
-    this.model = model;
+    super(title, model);
     this.editedServer = editedServer;
-    setNeedsProgressMonitor(true);
-    setWindowTitle(title);
-    setHelpAvailable(false);
     connectionTypeWizardPage = new ConnectionTypeWizardPage(model);
     urlPage = new UrlWizardPage(model);
     authMethodPage = new AuthMethodWizardPage(model);
     credentialsPage = new UsernamePasswordWizardPage(model);
-    tokenPage = new TokenWizardPage(model);
     orgPage = new OrganizationWizardPage(model);
     connectionIdPage = new ConnectionIdWizardPage(model);
     notifPage = new NotificationsWizardPage(model);
@@ -133,156 +106,8 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     return new SonarLintWizardDialog(parent, new ServerConnectionWizard(connection));
   }
 
-  public static WizardDialog createDialog(Shell parent, ServerConnectionWizard wizard) {
-    return new SonarLintWizardDialog(parent, wizard);
-  }
-
   @Override
-  public void init(IWorkbench workbench, IStructuredSelection selection) {
-    // Nothing to do
-  }
-
-  public void setSkipBindingWizard(boolean skipBindingWizard) {
-    this.skipBindingWizard = skipBindingWizard;
-  }
-
-  @Override
-  public IWizardPage getStartingPage() {
-    if (!model.isEdit()) {
-      return connectionTypeWizardPage;
-    }
-    return firstPageAfterConnectionType();
-  }
-
-  @Override
-  public void addPages() {
-    if (!model.isEdit()) {
-      addPage(connectionTypeWizardPage);
-      addPage(connectionIdPage);
-    }
-    addPage(urlPage);
-    addPage(authMethodPage);
-    addPage(credentialsPage);
-    addPage(tokenPage);
-    addPage(orgPage);
-    addPage(notifPage);
-    addPage(confirmPage);
-  }
-
-  @Override
-  public IWizardPage getNextPage(IWizardPage page) {
-    if (page == connectionTypeWizardPage) {
-      return firstPageAfterConnectionType();
-    }
-    if (page == urlPage) {
-      return authMethodPage;
-    }
-    if (page == authMethodPage) {
-      return model.getAuthMethod() == AuthMethod.PASSWORD ? credentialsPage : tokenPage;
-    }
-    if (page == credentialsPage || page == tokenPage) {
-      if (model.getConnectionType() == ConnectionType.SONARCLOUD) {
-        return orgPage;
-      } else {
-        return afterOrgPage();
-      }
-    }
-    if (page == orgPage) {
-      return afterOrgPage();
-    }
-    if (page == connectionIdPage) {
-      return notifPageIfSupportedOrConfirm();
-    }
-    if (page == notifPage) {
-      return confirmPage;
-    }
-    return null;
-  }
-
-  private IWizardPage afterOrgPage() {
-    return model.isEdit() ? notifPageIfSupportedOrConfirm() : connectionIdPage;
-  }
-
-  private IWizardPage notifPageIfSupportedOrConfirm() {
-    return model.getNotificationsSupported() ? notifPage : confirmPage;
-  }
-
-  @Override
-  public IWizardPage getPreviousPage(IWizardPage page) {
-    // This method is only used for the first page of a wizard,
-    // because every following page remember the previous one on its own
-    return null;
-  }
-
-  private IWizardPage firstPageAfterConnectionType() {
-    // Skip URL and auth method page if SonarCloud
-    return model.getConnectionType() == ConnectionType.SONARCLOUD ? tokenPage : urlPage;
-  }
-
-  @Override
-  public boolean canFinish() {
-    var currentPage = getContainer().getCurrentPage();
-    return currentPage == confirmPage;
-  }
-
-  @Override
-  public boolean performFinish() {
-    try {
-      if (model.isEdit() && !testConnection(model.getOrganization())) {
-        return false;
-      }
-
-      if (model.isEdit()) {
-        editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsDisabled());
-        resultServer = editedServer;
-      } else {
-        finalizeConnectionCreation();
-      }
-
-      transitionToBindingWizard();
-      return true;
-    } catch (Exception e) {
-      var currentPage = (DialogPage) getContainer().getCurrentPage();
-      currentPage.setErrorMessage("Cannot create connection: " + e.getMessage());
-      SonarLintLogger.get().error("Error when finishing connection wizard", e);
-      return false;
-    }
-  }
-
-  private void finalizeConnectionCreation() {
-    resultServer = SonarLintCorePlugin.getConnectionManager().create(model.getConnectionId(), model.getServerUrl(), model.getOrganization(), model.getUsername(),
-      model.getPassword(),
-      model.getNotificationsDisabled());
-    SonarLintCorePlugin.getConnectionManager().addConnection(resultServer, model.getUsername(), model.getPassword());
-    try {
-      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BindingsView.ID);
-    } catch (PartInitException e) {
-      SonarLintLogger.get().error("Unable to open SonarLint bindings view", e);
-    }
-  }
-
-  private void transitionToBindingWizard() {
-    var boundProjects = resultServer.getBoundProjects();
-    var selectedProjects = model.getSelectedProjects();
-    if (!skipBindingWizard) {
-      if (selectedProjects != null && !selectedProjects.isEmpty()) {
-        ProjectBindingWizard
-          .createDialogSkipConnectionSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, resultServer)
-          .open();
-      } else if (boundProjects.isEmpty()) {
-        ProjectBindingWizard
-          .createDialogSkipConnectionSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), resultServer)
-          .open();
-      }
-    }
-  }
-
-  public ConnectionFacade getResultServer() {
-    return resultServer;
-  }
-
-  @Override
-  public void handlePageChanging(PageChangingEvent event) {
+  protected void actualHandlePageChanging(PageChangingEvent event) {
     var currentPage = (WizardPage) event.getCurrentPage();
     var advance = getNextPage(currentPage) == event.getTargetPage();
     if (advance && !redirectedAfterNotificationCheck && (currentPage == credentialsPage || currentPage == tokenPage)) {
@@ -309,6 +134,130 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     }
     if (advance && currentPage == orgPage && !testConnection(model.getOrganization())) {
       event.doit = false;
+    }
+  }
+
+  @Override
+  protected IWizardPage getActualStartingPage() {
+    if (model.isFromConnectionSuggestion()) {
+      return tokenPage;
+    } else if (!model.isEdit()) {
+      return connectionTypeWizardPage;
+    }
+    return firstPageAfterConnectionType();
+  }
+
+  @Override
+  protected void actualAddPages() {
+    if (!model.isEdit()) {
+      addPage(connectionTypeWizardPage);
+      addPage(connectionIdPage);
+    }
+    addPage(urlPage);
+    addPage(authMethodPage);
+    addPage(credentialsPage);
+    addPage(tokenPage);
+    addPage(orgPage);
+    addPage(notifPage);
+    addPage(confirmPage);
+  }
+
+  @Override
+  protected IWizardPage getActualNextPage(IWizardPage page) {
+    if (page == connectionTypeWizardPage) {
+      return firstPageAfterConnectionType();
+    }
+    if (page == urlPage) {
+      return authMethodPage;
+    }
+    if (page == authMethodPage) {
+      return model.getAuthMethod() == AuthMethod.PASSWORD ? credentialsPage : tokenPage;
+    }
+
+    // This comes from Connection suggestion, we don't need anything from here!
+    if (page == tokenPage && model.isFromConnectionSuggestion()) {
+      return null;
+    }
+
+    if (page == credentialsPage || page == tokenPage) {
+      if (model.getConnectionType() == ConnectionType.SONARCLOUD) {
+        return orgPage;
+      } else {
+        return afterOrgPage();
+      }
+    }
+    if (page == orgPage) {
+      return afterOrgPage();
+    }
+    if (page == connectionIdPage) {
+      return notifPageIfSupportedOrConfirm();
+    }
+    if (page == notifPage) {
+      return confirmPage;
+    }
+    return null;
+  }
+
+  @Override
+  protected boolean actualCanFinish() {
+    var currentPage = getContainer().getCurrentPage();
+    return currentPage == confirmPage;
+  }
+
+  @Override
+  protected boolean actualPerformFinish() {
+    try {
+      if (model.isEdit() && !testConnection(model.getOrganization())) {
+        return false;
+      }
+
+      if (model.isEdit()) {
+        editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsDisabled());
+        resultServer = editedServer;
+      } else {
+        finalizeConnectionCreation();
+      }
+
+      transitionToBindingWizard();
+      return true;
+    } catch (Exception e) {
+      var currentPage = (DialogPage) getContainer().getCurrentPage();
+      currentPage.setErrorMessage("Cannot create connection: " + e.getMessage());
+      SonarLintLogger.get().error("Error when finishing connection wizard", e);
+      return false;
+    }
+  }
+
+  public void setSkipBindingWizard(boolean skipBindingWizard) {
+    this.skipBindingWizard = skipBindingWizard;
+  }
+
+  private IWizardPage afterOrgPage() {
+    return model.isEdit() ? notifPageIfSupportedOrConfirm() : connectionIdPage;
+  }
+
+  private IWizardPage notifPageIfSupportedOrConfirm() {
+    return model.getNotificationsSupported() ? notifPage : confirmPage;
+  }
+
+  private IWizardPage firstPageAfterConnectionType() {
+    // Skip URL and auth method page if SonarCloud
+    return model.getConnectionType() == ConnectionType.SONARCLOUD ? tokenPage : urlPage;
+  }
+
+  private void transitionToBindingWizard() {
+    var boundProjects = resultServer.getBoundProjects();
+    var selectedProjects = model.getSelectedProjects();
+    if (!skipBindingWizard) {
+      if (selectedProjects != null && !selectedProjects.isEmpty()) {
+        ProjectBindingWizard
+          .createDialogSkipConnectionSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, resultServer)
+          .open();
+      } else if (boundProjects.isEmpty()) {
+        ProjectBindingWizard
+          .createDialogSkipConnectionSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), resultServer)
+          .open();
+      }
     }
   }
 
@@ -367,68 +316,4 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     }
     return true;
   }
-
-  private boolean testConnection(@Nullable String organization) {
-    var currentPage = getContainer().getCurrentPage();
-    var response = new AtomicReference<ValidateConnectionResponse>();
-    try {
-      getContainer().run(true, true, new IRunnableWithProgress() {
-
-        @Override
-        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-          monitor.beginTask(organization == null ? "Testing connection" : "Testing access to the organization", IProgressMonitor.UNKNOWN);
-          try {
-            var params = new ValidateConnectionParams(modelToTransientConnectionDto());
-            var future = SonarLintBackendService.get().getBackend().getConnectionService().validateConnection(params);
-            response.set(JobUtils.waitForFutureInIRunnableWithProgress(monitor, future));
-          } finally {
-            monitor.done();
-          }
-        }
-      });
-    } catch (InterruptedException canceled) {
-      ((WizardPage) currentPage).setMessage(null, IMessageProvider.NONE);
-      return false;
-    } catch (InvocationTargetException e) {
-      SonarLintLogger.get().error(message(e), e);
-      ((WizardPage) currentPage).setMessage(Messages.ServerLocationWizardPage_msg_error + " " + message(e), IMessageProvider.ERROR);
-      return false;
-    }
-
-    if (!response.get().isSuccess()) {
-      ((WizardPage) currentPage).setMessage(response.get().getMessage(), IMessageProvider.ERROR);
-      return false;
-    } else {
-      ((WizardPage) currentPage).setMessage("Successfully connected!", IMessageProvider.ERROR);
-      return true;
-    }
-  }
-
-  private Either<TransientSonarQubeConnectionDto, TransientSonarCloudConnectionDto> modelToTransientConnectionDto() {
-    var credentials = modelToCredentialDto();
-    if (model.getConnectionType() == ConnectionType.SONARCLOUD) {
-      return Either.forRight(new TransientSonarCloudConnectionDto(model.getOrganization(), credentials));
-    } else {
-      return Either.forLeft(new TransientSonarQubeConnectionDto(model.getServerUrl(), credentials));
-    }
-  }
-
-  private Either<TokenDto, UsernamePasswordDto> modelToCredentialDto() {
-    var credentials = model.getAuthMethod() == AuthMethod.TOKEN ? Either.<TokenDto, UsernamePasswordDto>forLeft(new TokenDto(model.getUsername()))
-      : Either.<TokenDto, UsernamePasswordDto>forRight(new UsernamePasswordDto(model.getUsername(), model.getPassword()));
-    return credentials;
-  }
-
-  private static String message(Exception e) {
-    var message = e.getMessage();
-    // Message is null for InvocationTargetException, look at the cause
-    if (message != null) {
-      return message;
-    }
-    if (e.getCause() != null && e.getCause().getMessage() != null) {
-      return e.getCause().getMessage();
-    }
-    return "";
-  }
-
 }
