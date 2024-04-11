@@ -76,47 +76,48 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     var job = new Job("SonarLint - Propagate FileSystem changes") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
+        // For added files this won't include SonarLint configuration files in order to not suggest connections twice
+        // after a project import (everything after an import is also considered "added"). In case of changes done (either
         var changedOrAddedDto = changedOrAddedFiles.stream()
           .map(f -> FileSystemSynchronizer.toFileDto(f, monitor))
           .collect(toList());
-        backend.getFileService().didUpdateFileSystem(new DidUpdateFileSystemParams(removedFiles, changedOrAddedDto));
 
-        // Disclaimer on the actual "change listener" as this listener is only invoked on different occasions for the
-        // shared connected mode configuration:
-        // - project is imported, every file is considered as "changed" (including importing on workspace startup)
-        // - filter for ".*" resources is disabled and file changed inside Eclipse (no watchdog on external changes)
-        // - configuration is created via the context menu options inside Eclipse
+        // In order to add additional "changes" for informing the sub-projects we have to make the list modifiable!
+        var allChangedOrAddedDtos = new ArrayList<>(changedOrAddedDto);
 
-        // Inform all the sub-projects about the incoming changes from the shared Connected Mode configuration!
-        var changedOrAddedSonarLintDto = changedOrAddedDto.stream()
+        var changedOrAddedSonarLintDto = allChangedOrAddedDtos.stream()
           .filter(dto -> SONARLINT_JSON_REGEX.matcher(dto.getIdeRelativePath().toString()).find())
           .collect(toList());
-        if (changedOrAddedSonarLintDto.isEmpty()) {
-          return Status.OK_STATUS;
-        }
 
-        // We only check for the first files' project as it is not possible (I assume, or very unlikely) that more
-        // than one SonarLint JSON file is changed / added per Eclipse IDE event!
-        var projectOpt = SonarLintUtils.tryResolveProject(changedOrAddedSonarLintDto.get(0).getConfigScopeId());
-        if (projectOpt.isEmpty()) {
-          return Status.OK_STATUS;
-        }
-        var project = projectOpt.get();
+        // Only if there were actual changes to SonarLint configuration files we want to do the hussle and check for
+        // sub-projects and inform them as well!
+        if (!changedOrAddedSonarLintDto.isEmpty()) {
 
-        var subProjects = new HashSet<ISonarLintProject>();
-        for (var projectHistoryProvider : SonarLintExtensionTracker.getInstance().getProjectHierarchyProviders()) {
-          if (projectHistoryProvider.partOfHierarchy(project)) {
-            subProjects.addAll(projectHistoryProvider.getSubProjects(project));
+          var projectOpt = SonarLintUtils.tryResolveProject(allChangedOrAddedDtos.get(0).getConfigScopeId());
+          if (projectOpt.isEmpty()) {
+            // If we cannot get the project anymore of the initial changes, then we don't have to send anything to
+            // SLCORE anymore as well, it would be either discarded on SLOCRE anyway or cause some exceptions that
+            // are silently discarded (maybe a log).
+            return Status.OK_STATUS;
+          }
+          var project = projectOpt.get();
+
+          var subProjects = new HashSet<ISonarLintProject>();
+          for (var projectHistoryProvider : SonarLintExtensionTracker.getInstance().getProjectHierarchyProviders()) {
+            if (projectHistoryProvider.partOfHierarchy(project)) {
+              subProjects.addAll(projectHistoryProvider.getSubProjects(project));
+            }
+          }
+
+          for (var subProject : subProjects) {
+            var changedOrAddedSubProjectDto = changedOrAddedSonarLintDto.stream()
+              .map(dto -> toSubProjectFileDto(subProject, dto))
+              .collect(toList());
+            allChangedOrAddedDtos.addAll(changedOrAddedSubProjectDto);
           }
         }
 
-        for (var subProject : subProjects) {
-          var changedOrAddedSubProjectDto = changedOrAddedSonarLintDto.stream()
-            .map(dto -> toSubProjectFileDto(subProject, dto))
-            .collect(toList());
-          backend.getFileService().didUpdateFileSystem(new DidUpdateFileSystemParams(List.of(), changedOrAddedSubProjectDto));
-        }
-
+        backend.getFileService().didUpdateFileSystem(new DidUpdateFileSystemParams(removedFiles, allChangedOrAddedDtos));
         return Status.OK_STATUS;
       }
     };
@@ -130,7 +131,11 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     switch (delta.getKind()) {
       case IResourceDelta.ADDED:
         var slFile = Adapters.adapt(res, ISonarLintFile.class);
-        if (slFile != null) {
+
+        // INFO: When importing projects all files are considered to be "added", so don't suggest connections twice by
+        // providing SLCORE with the "added" SonarLint configuration files besides the
+        // SonarLintEclipseRpcClient.listFiles(...)!
+        if (slFile != null && !matchesSonarLintConfigurationFiles(slFile)) {
           SonarLintLogger.get().debug("File added: " + slFile.getName());
           changedOrAddedFiles.add(slFile);
         }
@@ -188,8 +193,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     }
 
     String fileContent = null;
-    if (slFile.getName().endsWith(SONAR_SCANNER_CONFIG_FILENAME) || slFile.getName().endsWith(AUTOSCAN_CONFIG_FILENAME)
-      || matchesSonarLintJson(slFile)) {
+    if (matchesSonarLintConfigurationFiles(slFile)) {
       fileContent = slFile.getDocument().get();
     }
 
@@ -214,15 +218,17 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       dto.isTest(), dto.getCharset(), dto.getFsPath(), dto.getContent());
   }
 
-  /** This only gets the SonarLint JSON files for a specific project, instead of all of them! */
+  /** This only gets the SonarLint configuration files for a specific project, instead of all of them! */
   public static Collection<ISonarLintFile> getSonarLintJsonFiles(ISonarLintProject project) {
     return project.files().stream()
-      .filter(FileSystemSynchronizer::matchesSonarLintJson)
+      .filter(FileSystemSynchronizer::matchesSonarLintConfigurationFiles)
       .collect(toList());
   }
 
-  /** This checks if a given ISonarLintFile matches the SonarLint JSON Regex! */
-  private static boolean matchesSonarLintJson(ISonarLintFile file) {
-    return SONARLINT_JSON_REGEX.matcher(file.getProjectRelativePath()).find();
+  /** Check if  */
+  private static boolean matchesSonarLintConfigurationFiles(ISonarLintFile file) {
+    return file.getName().endsWith(SONAR_SCANNER_CONFIG_FILENAME)
+      || file.getName().endsWith(AUTOSCAN_CONFIG_FILENAME)
+      || SONARLINT_JSON_REGEX.matcher(file.getProjectRelativePath()).find();
   }
 }
