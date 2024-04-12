@@ -102,14 +102,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
           }
           var project = projectOpt.get();
 
-          var subProjects = new HashSet<ISonarLintProject>();
-          for (var projectHistoryProvider : SonarLintExtensionTracker.getInstance().getProjectHierarchyProviders()) {
-            if (projectHistoryProvider.partOfHierarchy(project)) {
-              subProjects.addAll(projectHistoryProvider.getSubProjects(project));
-            }
-          }
-
-          for (var subProject : subProjects) {
+          for (var subProject : getSubProjects(project)) {
             var changedOrAddedSubProjectDto = changedOrAddedSonarLintDto.stream()
               .map(dto -> toSubProjectFileDto(subProject, dto))
               .collect(toList());
@@ -225,10 +218,19 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       .collect(toList());
   }
 
-  /** Check if  */
   private static boolean matchesSonarLintConfigurationFiles(ISonarLintFile file) {
     return file.getName().endsWith(SONAR_SCANNER_CONFIG_FILENAME)
       || file.getName().endsWith(AUTOSCAN_CONFIG_FILENAME)
       || SONARLINT_JSON_REGEX.matcher(file.getProjectRelativePath()).find();
+  }
+
+  private static HashSet<ISonarLintProject> getSubProjects(ISonarLintProject project) {
+    var subProjects = new HashSet<ISonarLintProject>();
+    for (var projectHistoryProvider : SonarLintExtensionTracker.getInstance().getProjectHierarchyProviders()) {
+      if (projectHistoryProvider.partOfHierarchy(project)) {
+        subProjects.addAll(projectHistoryProvider.getSubProjects(project));
+      }
+    }
+    return subProjects;
   }
 }

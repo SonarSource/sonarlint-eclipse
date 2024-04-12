@@ -29,7 +29,7 @@ public class AssistCreatingAutomaticConnectionJob extends AbstractAssistCreating
 
   // INFO: Just add another constructor for SonarCloud with `organization` instead of `serverUrl`
   public AssistCreatingAutomaticConnectionJob(String serverUrl, String tokenValue) {
-    super("Assist automatic creation of Connected Mode", serverUrl, null, null, true, false);
+    super("Assist automatic creation of Connected Mode", serverUrl, null, true, false);
     this.tokenValue = tokenValue;
   }
 

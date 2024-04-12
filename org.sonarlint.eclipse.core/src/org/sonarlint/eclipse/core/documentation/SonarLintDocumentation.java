@@ -24,9 +24,8 @@ public class SonarLintDocumentation {
   private static final String BASE_DOCS_URL = "https://docs.sonarsource.com/sonarlint/eclipse";
   public static final String CONNECTED_MODE_LINK = BASE_DOCS_URL + "/team-features/connected-mode/";
   public static final String CONNECTED_MODE_BENEFITS = CONNECTED_MODE_LINK + "#benefits";
-  // TODO: Change with final documentation link
-  public static final String CONNECTED_MODE_SHARING = CONNECTED_MODE_LINK + "";
   public static final String CONNECTED_MODE_SETUP_LINK = BASE_DOCS_URL + "/team-features/connected-mode-setup/";
+  public static final String CONNECTED_MODE_SHARING = CONNECTED_MODE_SETUP_LINK + "#reuse-the-binding-configuration";
   public static final String VERSION_SUPPORT_POLICY = CONNECTED_MODE_SETUP_LINK + "#sonarlint-sonarqube-version-support-policy";
   public static final String BRANCH_AWARENESS = CONNECTED_MODE_LINK + "#branch-awareness";
   public static final String SECURITY_HOTSPOTS_LINK = BASE_DOCS_URL + "/using-sonarlint/security-hotspots/";

@@ -34,24 +34,22 @@ public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
   protected final String serverUrl;
   @Nullable
   protected final String organization;
-  @Nullable
-  protected final String projectKey;
   protected final boolean automaticSetUp;
   protected final boolean fromConnectionSuggestion;
   @Nullable
   protected String connectionId;
+  @Nullable
+  protected String username;
 
   /** Assistance either to SonarQube / SonarCloud, can be coming from Connection Suggestion! */
   protected AbstractAssistCreatingConnectionJob(String title, @Nullable String serverUrl,
-    @Nullable String organization, @Nullable String projectKey, boolean automaticSetup,
-    boolean fromConnectionSuggestion) {
+    @Nullable String organization, boolean automaticSetup, boolean fromConnectionSuggestion) {
     super(title);
     // We don't want to have this job visible to the user, as there should be a dialog anyway
     setSystem(true);
 
     this.serverUrl = serverUrl;
     this.organization = organization;
-    this.projectKey = projectKey;
     this.automaticSetUp = automaticSetup;
     this.fromConnectionSuggestion = fromConnectionSuggestion;
   }
@@ -68,7 +66,7 @@ public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
       }
     }
 
-    var model = new ServerConnectionModel(fromConnectionSuggestion, projectKey);
+    var model = new ServerConnectionModel(fromConnectionSuggestion);
     if (organization == null) {
       model.setConnectionType(ConnectionType.ONPREMISE);
       model.setServerUrl(serverUrl);
@@ -83,6 +81,7 @@ public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
     var connection = createConnection(model);
     if (connection != null) {
       this.connectionId = connection.getId();
+      this.username = model.getUsername();
       return Status.OK_STATUS;
     }
 

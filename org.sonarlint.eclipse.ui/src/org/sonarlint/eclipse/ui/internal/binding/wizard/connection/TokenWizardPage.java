@@ -66,10 +66,10 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
       var organization = model.getOrganization();
       if (organization == null) {
         connectionLabel.setText("The token is used for setting up the connection to the SonarQube server URL '"
-          + model.getServerUrl() + "' with the project key '" + model.getProjectKey() + "'.");
+          + model.getServerUrl() + "'.");
       } else {
         connectionLabel.setText("The token is used for setting up the connection with SonarCloud to the organization '"
-          + organization + "' with the project key '" + model.getProjectKey() + "'.");
+          + organization + "'.");
       }
 
       var gd = new GridData(GridData.FILL_HORIZONTAL);

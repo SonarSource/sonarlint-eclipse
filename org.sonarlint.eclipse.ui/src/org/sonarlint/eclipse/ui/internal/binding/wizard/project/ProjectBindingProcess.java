@@ -27,6 +27,10 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 
 public class ProjectBindingProcess {
+  public static boolean isProjectBound(ISonarLintProject project) {
+    var config = SonarLintCorePlugin.loadConfig(project);
+    return config.getProjectBinding().isPresent();
+  }
 
   public static void bindProjects(String connectionId, List<ISonarLintProject> projects, String projectKey) {
     projects.forEach(p -> {

@@ -28,7 +28,7 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 public class AssistCreatingManualConnectionJob extends AbstractAssistCreatingConnectionJob {
   // INFO: Just add another constructor for SonarCloud with `organization` instead of `serverUrl`
   public AssistCreatingManualConnectionJob(String serverUrl) {
-    super("Assist manual creation of Connected Mode", serverUrl, null, null, false, false);
+    super("Assist manual creation of Connected Mode", serverUrl, null, false, false);
   }
 
   @Override

@@ -178,7 +178,7 @@ public abstract class AbstractConnectionWizard extends Wizard implements INewWiz
       ((WizardPage) currentPage).setMessage(response.get().getMessage(), IMessageProvider.ERROR);
       return false;
     } else {
-      ((WizardPage) currentPage).setMessage("Successfully connected!", IMessageProvider.ERROR);
+      ((WizardPage) currentPage).setMessage("Successfully connected!", IMessageProvider.INFORMATION);
       return true;
     }
   }

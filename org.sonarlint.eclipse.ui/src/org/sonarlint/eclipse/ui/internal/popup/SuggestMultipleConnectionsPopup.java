@@ -19,31 +19,42 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
+import java.util.HashMap;
 import java.util.List;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.binding.assist.AssistSuggestConnectionJob;
+import org.sonarlint.eclipse.ui.internal.dialog.SuggestMultipleConnectionSelectionDialog;
+import org.sonarlint.eclipse.ui.internal.dialog.SuggestMultipleConnectionsDialog;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.connection.ConnectionSuggestionDto;
 
+/**
+ *  Notification pop-up that is shown for each Eclipse project where more than one connection suggestion was found. In
+ *  this case the user has to choose manually which one to use.
+ */
 public class SuggestMultipleConnectionsPopup extends AbstractSonarLintPopup {
-  protected final String configScopeId;
+  protected final ISonarLintProject project;
   protected final List<ConnectionSuggestionDto> suggestions;
 
-  public SuggestMultipleConnectionsPopup(String configScopeId, List<ConnectionSuggestionDto> suggestions) {
-    this.configScopeId = configScopeId;
+  public SuggestMultipleConnectionsPopup(ISonarLintProject project, List<ConnectionSuggestionDto> suggestions) {
+    this.project = project;
     this.suggestions = suggestions;
   }
 
   protected void addDontAskAgainLink() {
     addLink("Don't ask again", e -> {
+      SonarLintGlobalConfiguration.setNoConnectionSuggestions();
       close();
-      // TODO: Some global configuration based on configScopeId
     });
   }
 
   protected void addMoreInformationLink() {
     addLink("More information", e -> {
-      // TODO: Dialog should display all the different suggestions
+      var dialog = new SuggestMultipleConnectionsDialog(getParentShell(), project, suggestions);
+      dialog.open();
     });
   }
 
@@ -59,21 +70,42 @@ public class SuggestMultipleConnectionsPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getMessage() {
-    return "The local project '" + configScopeId + "' can be connected based on different suggestions. Click 'More "
-      + "Information' to see them all. Do you want to choose which suggestion to use and then connect and bind the "
-      + "project?";
+    return "The local project '" + project.getName() + "' can be connected based on different suggestions. Click "
+      + "'More Information' to see them all. Do you want to choose which suggestion to use and then connect and bind "
+      + "the project?";
   }
 
   @Override
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
 
-    addLinkWithTooltip("Connect", "Connect to organization", e -> {
+    addLinkWithTooltip("Choose suggestion", "Based on suggestion", e -> {
       close();
 
-      // user has to choose the suggestion first
+      // ask the user to select the suggestion they want to use
+      var dialog = new SuggestMultipleConnectionSelectionDialog(getParentShell(), project, suggestions);
+      dialog.open();
+      var selection = (String) dialog.getFirstResult();
+      if (selection == null) {
+        return;
+      }
 
-      // AssistSuggestConnectionJob and afterwards bind all projects
+      // from the dialog response we have to get back the actual connection suggestion
+      var suggestion = dialog.getSuggestionFromElement(selection);
+
+      var isSonarCloud = suggestion.getConnectionSuggestion().isRight();
+      var serverUrlOrOrganization = isSonarCloud
+        ? suggestion.getConnectionSuggestion().getRight().getOrganization()
+        : suggestion.getConnectionSuggestion().getLeft().getServerUrl();
+      var projectKey = isSonarCloud
+        ? suggestion.getConnectionSuggestion().getRight().getProjectKey()
+        : suggestion.getConnectionSuggestion().getLeft().getProjectKey();
+
+      var projectMapping = new HashMap<String, List<ISonarLintProject>>();
+      projectMapping.put(projectKey, List.of(project));
+
+      var job = new AssistSuggestConnectionJob(serverUrlOrOrganization, projectMapping, isSonarCloud);
+      job.schedule();
     });
 
     addMoreInformationLink();

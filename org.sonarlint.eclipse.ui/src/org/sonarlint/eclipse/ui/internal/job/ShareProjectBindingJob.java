@@ -79,7 +79,7 @@ public class ShareProjectBindingJob extends AbstractSonarJob {
             status.set(Status.CANCEL_STATUS);
             return;
           }
-          hierarchy = (String) chooseDialog.getResult()[0];
+          hierarchy = (String) chooseDialog.getFirstResult();
         }
 
         var temporaryRootProject = getRootProjectFromHierarchy(hierarchy, project);

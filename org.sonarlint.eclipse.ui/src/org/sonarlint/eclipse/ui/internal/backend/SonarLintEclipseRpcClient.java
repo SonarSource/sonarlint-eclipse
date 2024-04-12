@@ -49,6 +49,7 @@ import org.sonarlint.eclipse.ui.internal.binding.assist.AbstractAssistCreatingCo
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistBindingJob;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistCreatingAutomaticConnectionJob;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistCreatingManualConnectionJob;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
 import org.sonarlint.eclipse.ui.internal.job.BackendProgressJobScheduler;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueContext;
@@ -58,9 +59,8 @@ import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
 import org.sonarlint.eclipse.ui.internal.popup.NoBindingSuggestionFoundPopup;
 import org.sonarlint.eclipse.ui.internal.popup.SingleBindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.SoonUnsupportedPopup;
+import org.sonarlint.eclipse.ui.internal.popup.SuggestConnectionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.SuggestMultipleConnectionsPopup;
-import org.sonarlint.eclipse.ui.internal.popup.SuggestSonarCloudConnectionPopup;
-import org.sonarlint.eclipse.ui.internal.popup.SuggestSonarQubeConnectionPopup;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.binding.BindingSuggestionDto;
@@ -91,8 +91,14 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
     Map<ISonarLintProject, List<BindingSuggestionDto>> suggestionsByProject = new HashMap<>();
     suggestionsByConfigScope.forEach((configScopeId, suggestions) -> {
       var projectOpt = SonarLintUtils.tryResolveProject(configScopeId);
-      if (projectOpt.isPresent() && projectOpt.get().isOpen()) {
-        suggestionsByProject.put(projectOpt.get(), suggestions);
+      if (projectOpt.isPresent()) {
+        // Everything can happen asynchronously on Sloop, therefore there might be a late binding suggestion coming
+        // in for a project that is already bound and configured locally and is currently "updated" in Sloop in a
+        // different thread!
+        var project = projectOpt.get();
+        if (project.isOpen() && !ProjectBindingProcess.isProjectBound(project)) {
+          suggestionsByProject.put(projectOpt.get(), suggestions);
+        }
       }
     });
 
@@ -356,22 +362,32 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
   }
 
   /**
-   *  INFO: Handle that this can be triggered multiple times
-   *  configScopeId -> List<ConnectionSuggestion>
+   *  This handles the connection suggestions of the shared Connected Mode. As Eclipse can have all kinds of different
+   *  combinations we want to reduce the number of notifications to the user and therefore aggregate as much
+   *  information as possible.
    */
   @Override
   public void suggestConnection(Map<String, List<ConnectionSuggestionDto>> suggestionsByConfigScope, CancelChecker cancelChecker) {
-    // TODO: Find better names to describe this mess!
-    // TODO: Instead of connectionScopeId use ISonarLintProject (if found)!
-    var organizationBasedConnections = new HashMap<String, HashMap<String, List<String>>>();
-    var serverUrlBasedConnections = new HashMap<String, HashMap<String, List<String>>>();
-    var leftoverSuggestions = new HashMap<String, List<ConnectionSuggestionDto>>();
+    if (SonarLintGlobalConfiguration.noConnectionSuggestions()) {
+      return;
+    }
+
+    var organizationBasedConnections = new HashMap<String, HashMap<String, List<ISonarLintProject>>>();
+    var serverUrlBasedConnections = new HashMap<String, HashMap<String, List<ISonarLintProject>>>();
+    var multipleSuggestions = new HashMap<ISonarLintProject, List<ConnectionSuggestionDto>>();
 
     for (var entry : suggestionsByConfigScope.entrySet()) {
       var configScopeId = entry.getKey();
+      var projectOpt = SonarLintUtils.tryResolveProject(configScopeId);
+      if (projectOpt.isEmpty()) {
+        SonarLintLogger.get().debug("No project can be found for '" + configScopeId + "' for a Connection Suggestion!");
+        continue;
+      }
+      var project = projectOpt.get();
+
       var suggestions = entry.getValue();
       if (suggestions.size() > 1) {
-        leftoverSuggestions.put(configScopeId, suggestions);
+        multipleSuggestions.put(project, suggestions);
         continue;
       }
 
@@ -383,11 +399,11 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
 
         serverUrlBasedConnections.putIfAbsent(serverUrl, new HashMap<>());
 
-        var projects = serverUrlBasedConnections.get(serverUrl);
-        projects.putIfAbsent(projectKey, new ArrayList<>());
+        var sonarProjects = serverUrlBasedConnections.get(serverUrl);
+        sonarProjects.putIfAbsent(projectKey, new ArrayList<>());
 
-        var configScopeIds = projects.get(projectKey);
-        configScopeIds.add(configScopeId);
+        var projects = sonarProjects.get(projectKey);
+        projects.add(project);
       } else {
         var suggestion = eitherSuggestion.getRight();
         var organization = suggestion.getOrganization();
@@ -395,11 +411,11 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
 
         organizationBasedConnections.putIfAbsent(organization, new HashMap<>());
 
-        var projects = organizationBasedConnections.get(organization);
-        projects.putIfAbsent(projectKey, new ArrayList<>());
+        var sonarProjects = organizationBasedConnections.get(organization);
+        sonarProjects.putIfAbsent(projectKey, new ArrayList<>());
 
-        var configScopeIds = projects.get(projectKey);
-        configScopeIds.add(configScopeId);
+        var projects = sonarProjects.get(projectKey);
+        projects.add(project);
       }
     }
 
@@ -407,18 +423,18 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
       // for all SonarCloud organizations display one notification each (so only one connection creation will be done
       // per organization)
       for (var entry : organizationBasedConnections.entrySet()) {
-        var dialog = new SuggestSonarCloudConnectionPopup(entry.getKey(), entry.getValue());
+        var dialog = new SuggestConnectionPopup(entry.getKey(), entry.getValue(), true);
         dialog.open();
       }
 
       // for all SonarQube URLs display one notification each (so only one connection creation will be done per URL)
       for (var entry : serverUrlBasedConnections.entrySet()) {
-        var dialog = new SuggestSonarQubeConnectionPopup(entry.getKey(), entry.getValue());
+        var dialog = new SuggestConnectionPopup(entry.getKey(), entry.getValue(), false);
         dialog.open();
       }
 
       // for all (complicated) leftover projects display a specific notification each
-      for (var entry : leftoverSuggestions.entrySet()) {
+      for (var entry : multipleSuggestions.entrySet()) {
         var dialog = new SuggestMultipleConnectionsPopup(entry.getKey(), entry.getValue());
         dialog.open();
       }

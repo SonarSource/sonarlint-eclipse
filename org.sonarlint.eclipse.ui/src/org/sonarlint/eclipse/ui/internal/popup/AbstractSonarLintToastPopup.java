@@ -17,24 +17,20 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.dialog;
+package org.sonarlint.eclipse.ui.internal.popup;
 
-import java.util.List;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.dialogs.ElementListSelectionDialog;
+import org.eclipse.swt.widgets.Composite;
 
-/**
- *  When more than one project hierarchy is found and the user has to choose the one to use, this is displayed. As
- *  different providers might be named the same we will disable duplicates and also only offer the user to choose one
- *  provider at the time.
- */
-public class ProjectHierarchySelectionDialog extends ElementListSelectionDialog {
-  public ProjectHierarchySelectionDialog(Shell shell, List<String> hierarchies) {
-    super(shell, new LabelProvider());
-    setTitle("Choose hierarchical project provider to use:");
-    setAllowDuplicates(false);
-    setMultipleSelection(false);
-    setElements(hierarchies.toArray());
+/** Base class for all notifications that are fading away automatically */
+public abstract class AbstractSonarLintToastPopup extends AbstractSonarLintPopup {
+  protected AbstractSonarLintToastPopup(int delayClose) {
+    setFadingEnabled(true);
+    setDelayClose(delayClose);
+  }
+
+  /** Toast notifications shouldn't add anything to the pop-up beside the message */
+  @Override
+  protected final void createContentArea(Composite composite) {
+    super.createContentArea(composite);
   }
 }

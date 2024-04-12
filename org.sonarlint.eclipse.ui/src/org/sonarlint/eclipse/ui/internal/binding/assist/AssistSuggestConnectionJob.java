@@ -19,19 +19,72 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding.assist;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.ui.PlatformUI;
+import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
+import org.sonarlint.eclipse.core.internal.jobs.EnableBindingSuggestionsJob;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.AbstractConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.SuggestConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
+import org.sonarlint.eclipse.ui.internal.popup.ProjectBoundPopup;
+import org.sonarlint.eclipse.ui.internal.popup.ProjectKeyNotFoundPopup;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarCloudConnectionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarQubeConnectionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.GetAllProjectsParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.SonarProjectDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.TokenDto;
 
 public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnectionJob {
-  public AssistSuggestConnectionJob(String serverUrlOrOrganization, String projectKey, boolean isSonarCloud) {
+  private final boolean isSonarCloud;
+  private final Map<String, List<ISonarLintProject>> projectMapping;
+
+  public AssistSuggestConnectionJob(String serverUrlOrOrganization,
+    Map<String, List<ISonarLintProject>> projectMapping, boolean isSonarCloud) {
     super("Connected Mode suggestion for " + (isSonarCloud ? "SonarCloud" : "SonarCube"),
       isSonarCloud ? null : serverUrlOrOrganization,
       isSonarCloud ? serverUrlOrOrganization : null,
-      projectKey, false, true);
+      false, true);
+    this.isSonarCloud = isSonarCloud;
+    this.projectMapping = projectMapping;
+  }
+
+  @Override
+  public IStatus runInUIThread(IProgressMonitor monitor) {
+    // disable the binding suggestions of all projects involved
+    for (var entry : projectMapping.entrySet()) {
+      for (var project : entry.getValue()) {
+        ConfigScopeSynchronizer.disableAllBindingSuggestions(project);
+      }
+    }
+
+    var status = super.runInUIThread(monitor);
+    if (status.equals(Status.OK_STATUS)) {
+      tryProjectbinding();
+    }
+
+    // (possibly) enable the binding suggestions of all projects involved, but asynchronously
+    var projects = new ArrayList<ISonarLintProject>();
+    for (var entry : projectMapping.entrySet()) {
+      projects.addAll(entry.getValue());
+    }
+    var job = new EnableBindingSuggestionsJob(projects);
+    job.schedule(1000);
+
+    return status;
   }
 
   @Override
@@ -42,5 +95,50 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
     dialog.setBlockOnOpen(true);
     dialog.open();
     return wizard.getResultServer();
+  }
+
+  private void tryProjectbinding() {
+    GetAllProjectsParams params;
+
+    var token = new TokenDto(username);
+    if (isSonarCloud) {
+      params = new GetAllProjectsParams(new TransientSonarCloudConnectionDto(organization, Either.forLeft(token)));
+    } else {
+      params = new GetAllProjectsParams(new TransientSonarQubeConnectionDto(serverUrl, Either.forLeft(token)));
+    }
+
+    List<SonarProjectDto> sonarProjects;
+    try {
+      sonarProjects = SonarLintBackendService.get()
+        .getBackend()
+        .getConnectionService()
+        .getAllProjects(params).get().getSonarProjects();
+    } catch (ExecutionException | InterruptedException err) {
+      var message = "List of all remote projects on "
+        + (isSonarCloud ? ("SonarCloud organization '" + organization + "'") : ("SonarQube '" + serverUrl + "'"))
+        + " cannot be loaded";
+
+      SonarLintLogger.get().error(message, err);
+      return;
+    }
+
+    var projectKeysUnavailable = new ArrayList<String>();
+    for (var entry : projectMapping.entrySet()) {
+      var projectKey = entry.getKey();
+
+      var possibleMatches = sonarProjects.stream()
+        .filter(sonarProject -> sonarProject.getKey().equals(projectKey))
+        .collect(Collectors.toList());
+      if (possibleMatches.isEmpty()) {
+        projectKeysUnavailable.add(projectKey);
+        continue;
+      }
+
+      var projects = entry.getValue();
+      ProjectBindingProcess.bindProjects(connectionId, projects, projectKey);
+      new ProjectBoundPopup(projectKey, projects, isSonarCloud).open();
+    }
+
+    new ProjectKeyNotFoundPopup(projectKeysUnavailable, serverUrl, organization).open();
   }
 }
