@@ -34,7 +34,6 @@ public class MavenUtils {
   private MavenUtils() {
   }
 
-  @Nullable
   private static MavenProject getRootMavenProject(MavenProject project) {
     var currentProject = project;
     while (currentProject.getParentFile() != null) {

@@ -77,7 +77,8 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
         // For added files this won't include SonarLint configuration files in order to not suggest connections twice
-        // after a project import (everything after an import is also considered "added"). In case of changes done (either
+        // after a project import (everything after an import is also considered "added"). In case of changes done
+        // either inside or outside the IDE, the files will be included.
         var changedOrAddedDto = changedOrAddedFiles.stream()
           .map(f -> FileSystemSynchronizer.toFileDto(f, monitor))
           .collect(toList());
@@ -92,12 +93,11 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
         // Only if there were actual changes to SonarLint configuration files we want to do the hussle and check for
         // sub-projects and inform them as well!
         if (!changedOrAddedSonarLintDto.isEmpty()) {
-
           var projectOpt = SonarLintUtils.tryResolveProject(allChangedOrAddedDtos.get(0).getConfigScopeId());
           if (projectOpt.isEmpty()) {
-            // If we cannot get the project anymore of the initial changes, then we don't have to send anything to
-            // SLCORE anymore as well, it would be either discarded on SLOCRE anyway or cause some exceptions that
-            // are silently discarded (maybe a log).
+            // If we cannot get the project anymore of the initial changes (e.g. project deleted), then we don't have
+            // to send anything to SLCORE anymore as well, it would be either discarded on SLOCRE anyway or cause some
+            // exceptions that are silently discarded (maybe a log).
             return Status.OK_STATUS;
           }
           var project = projectOpt.get();

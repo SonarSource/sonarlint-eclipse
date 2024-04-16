@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -155,9 +156,9 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
 
       SonarLintLogger.get().debug("Assist creating a new connection...");
       if (params.getTokenName() != null && params.getTokenValue() != null) {
-        job = new AssistCreatingAutomaticConnectionJob(baseUrl, params.getTokenValue());
+        job = new AssistCreatingAutomaticConnectionJob(Either.forLeft(baseUrl), params.getTokenValue());
       } else {
-        job = new AssistCreatingManualConnectionJob(baseUrl);
+        job = new AssistCreatingManualConnectionJob(Either.forLeft(baseUrl));
       }
 
       job.schedule();
@@ -367,7 +368,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
    *  information as possible.
    */
   @Override
-  public void suggestConnection(Map<String, List<ConnectionSuggestionDto>> suggestionsByConfigScope, CancelChecker cancelChecker) {
+  public void suggestConnection(Map<String, List<ConnectionSuggestionDto>> suggestionsByConfigScope) {
     if (SonarLintGlobalConfiguration.noConnectionSuggestions()) {
       return;
     }
@@ -423,13 +424,13 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
       // for all SonarCloud organizations display one notification each (so only one connection creation will be done
       // per organization)
       for (var entry : organizationBasedConnections.entrySet()) {
-        var dialog = new SuggestConnectionPopup(entry.getKey(), entry.getValue(), true);
+        var dialog = new SuggestConnectionPopup(Either.forRight(entry.getKey()), entry.getValue());
         dialog.open();
       }
 
       // for all SonarQube URLs display one notification each (so only one connection creation will be done per URL)
       for (var entry : serverUrlBasedConnections.entrySet()) {
-        var dialog = new SuggestConnectionPopup(entry.getKey(), entry.getValue(), false);
+        var dialog = new SuggestConnectionPopup(Either.forLeft(entry.getKey()), entry.getValue());
         dialog.open();
       }
 

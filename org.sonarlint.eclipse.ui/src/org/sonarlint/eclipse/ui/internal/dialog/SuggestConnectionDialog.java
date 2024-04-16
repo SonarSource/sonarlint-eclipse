@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -40,15 +41,14 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
  *  it should be just informative!
  */
 public class SuggestConnectionDialog extends Dialog {
-  private final boolean isSonarCloud;
-  private final String serverUrlOrOrganization;
+  private final Either<String, String> serverUrlOrOrganization;
   private final Map<String, List<ISonarLintProject>> projectMapping;
 
-  public SuggestConnectionDialog(Shell parentShell, String serverUrlOrOrganization, Map<String, List<ISonarLintProject>> projectMapping, boolean isSonarCloud) {
+  public SuggestConnectionDialog(Shell parentShell, Either<String, String> serverUrlOrOrganization,
+    Map<String, List<ISonarLintProject>> projectMapping) {
     super(parentShell);
     this.serverUrlOrOrganization = serverUrlOrOrganization;
     this.projectMapping = projectMapping;
-    this.isSonarCloud = isSonarCloud;
   }
 
   @Override
@@ -80,10 +80,10 @@ public class SuggestConnectionDialog extends Dialog {
   protected void configureShell(Shell newShell) {
     super.configureShell(newShell);
 
-    if (isSonarCloud) {
-      newShell.setText("Connection suggestions for SonarCloud organization '" + serverUrlOrOrganization + "'");
+    if (serverUrlOrOrganization.isLeft()) {
+      newShell.setText("Connection suggestions for SonarQube at '" + serverUrlOrOrganization.getLeft() + "'");
     } else {
-      newShell.setText("Connection suggestions for SonarQube at '" + serverUrlOrOrganization + "'");
+      newShell.setText("Connection suggestions for SonarCloud organization '" + serverUrlOrOrganization.getRight() + "'");
     }
     newShell.setMinimumSize(600, 300);
   }

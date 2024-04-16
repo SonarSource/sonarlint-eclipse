@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.util.List;
 import java.util.Map;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -35,21 +36,23 @@ import org.sonarlint.eclipse.ui.internal.dialog.SuggestConnectionDialog;
  *  together and they don't have the option to select different ones.
  */
 public class SuggestConnectionPopup extends AbstractSonarLintPopup {
-  private final boolean isSonarCloud;
-  private final String serverUrlOrOrganization;
+  private final Either<String, String> serverUrlOrOrganization;
   private final Map<String, List<ISonarLintProject>> projectMapping;
 
-  public SuggestConnectionPopup(String serverUrlOrOrganization,
-    Map<String, List<ISonarLintProject>> projectMapping, boolean isSonarCloud) {
-    this.isSonarCloud = isSonarCloud;
+  public SuggestConnectionPopup(Either<String, String> serverUrlOrOrganization,
+    Map<String, List<ISonarLintProject>> projectMapping) {
     this.serverUrlOrOrganization = serverUrlOrOrganization;
     this.projectMapping = projectMapping;
   }
 
   @Override
   protected String getMessage() {
-    var prefix = (isSonarCloud ? "For the SonarCloud organization '" : "For the SonarQube server '")
-      + serverUrlOrOrganization;
+    String prefix;
+    if (serverUrlOrOrganization.isLeft()) {
+      prefix = "For the SonarQube server '" + serverUrlOrOrganization.getLeft();
+    } else {
+      prefix = "For the SonarCloud organization '" + serverUrlOrOrganization.getRight();
+    }
 
     if (projectMapping.keySet().size() > 1) {
       return prefix + "' there are multiple projects that can be connected to local projects. Click 'More "
@@ -77,34 +80,34 @@ public class SuggestConnectionPopup extends AbstractSonarLintPopup {
 
   protected void addMoreInformationLink() {
     addLink("More information", e -> {
-      var dialog = new SuggestConnectionDialog(getParentShell(), serverUrlOrOrganization, projectMapping,
-        isSonarCloud);
+      var dialog = new SuggestConnectionDialog(getParentShell(), serverUrlOrOrganization, projectMapping);
       dialog.open();
     });
   }
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint Connection Suggestion to " + (isSonarCloud ? "SonarCloud" : "SonarQube");
+    return "SonarLint Connection Suggestion to " + (serverUrlOrOrganization.isLeft() ? "SonarQube" : "SonarCloud");
   }
 
   @Override
   protected Image getPopupShellImage(int maximumHeight) {
-    return isSonarCloud
-      ? SonarLintImages.SONARCLOUD_SERVER_ICON_IMG
-      : SonarLintImages.SONARQUBE_SERVER_ICON_IMG;
+    return serverUrlOrOrganization.isLeft()
+      ? SonarLintImages.SONARQUBE_SERVER_ICON_IMG
+      : SonarLintImages.SONARCLOUD_SERVER_ICON_IMG;
   }
 
   @Override
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
 
-    addLinkWithTooltip("Connect", "Connect to " + (isSonarCloud ? "organization" : "server"), e -> {
-      var job = new AssistSuggestConnectionJob(serverUrlOrOrganization, projectMapping, isSonarCloud);
-      job.schedule();
+    addLinkWithTooltip("Connect", "Connect to " + (serverUrlOrOrganization.isLeft() ? "server" : "organization"),
+      e -> {
+        var job = new AssistSuggestConnectionJob(serverUrlOrOrganization, projectMapping);
+        job.schedule();
 
-      close();
-    });
+        close();
+      });
 
     var projectKeys = projectMapping.keySet().toArray();
     if (projectKeys.length > 1 || projectMapping.get(projectKeys[0]).size() > 1) {

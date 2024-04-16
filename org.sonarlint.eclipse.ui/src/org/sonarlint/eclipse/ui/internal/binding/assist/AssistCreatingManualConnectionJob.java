@@ -20,15 +20,16 @@
 package org.sonarlint.eclipse.ui.internal.binding.assist;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.AbstractConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 
 public class AssistCreatingManualConnectionJob extends AbstractAssistCreatingConnectionJob {
-  // INFO: Just add another constructor for SonarCloud with `organization` instead of `serverUrl`
-  public AssistCreatingManualConnectionJob(String serverUrl) {
-    super("Assist manual creation of Connected Mode", serverUrl, null, false, false);
+  public AssistCreatingManualConnectionJob(Either<String, String> serverUrlOrOrganization) {
+    super("Assist manual creation of Connected Mode", serverUrlOrOrganization, false, false);
   }
 
   @Override
@@ -36,7 +37,8 @@ public class AssistCreatingManualConnectionJob extends AbstractAssistCreatingCon
   protected ConnectionFacade createConnection(ServerConnectionModel model) {
     var wizard = new ServerConnectionWizard(model);
     wizard.setSkipBindingWizard(true);
-    var dialog = ServerConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
+    var dialog = AbstractConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+      wizard);
     dialog.setBlockOnOpen(true);
     dialog.open();
     return wizard.getResultServer();

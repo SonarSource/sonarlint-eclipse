@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.util.HashMap;
 import java.util.List;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -93,18 +94,22 @@ public class SuggestMultipleConnectionsPopup extends AbstractSonarLintPopup {
       // from the dialog response we have to get back the actual connection suggestion
       var suggestion = dialog.getSuggestionFromElement(selection);
 
-      var isSonarCloud = suggestion.getConnectionSuggestion().isRight();
-      var serverUrlOrOrganization = isSonarCloud
-        ? suggestion.getConnectionSuggestion().getRight().getOrganization()
-        : suggestion.getConnectionSuggestion().getLeft().getServerUrl();
-      var projectKey = isSonarCloud
-        ? suggestion.getConnectionSuggestion().getRight().getProjectKey()
-        : suggestion.getConnectionSuggestion().getLeft().getProjectKey();
+      var isSonarQube = suggestion.getConnectionSuggestion().isLeft();
+      var projectKey = isSonarQube
+        ? suggestion.getConnectionSuggestion().getLeft().getProjectKey()
+        : suggestion.getConnectionSuggestion().getRight().getProjectKey();
+
+      Either<String, String> serverUrlOrOrganization;
+      if (isSonarQube) {
+        serverUrlOrOrganization = Either.forLeft(suggestion.getConnectionSuggestion().getLeft().getServerUrl());
+      } else {
+        serverUrlOrOrganization = Either.forRight(suggestion.getConnectionSuggestion().getRight().getOrganization());
+      }
 
       var projectMapping = new HashMap<String, List<ISonarLintProject>>();
       projectMapping.put(projectKey, List.of(project));
 
-      var job = new AssistSuggestConnectionJob(serverUrlOrOrganization, projectMapping, isSonarCloud);
+      var job = new AssistSuggestConnectionJob(serverUrlOrOrganization, projectMapping);
       job.schedule();
     });
 

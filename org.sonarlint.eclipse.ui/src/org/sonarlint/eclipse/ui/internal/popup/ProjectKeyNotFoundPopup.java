@@ -21,39 +21,40 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.graphics.Image;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
 /** Notification pop-up displayed for project key(s) not found on SonarQube / SonarCloud */
 public class ProjectKeyNotFoundPopup extends AbstractSonarLintPopup {
   private final List<String> projectKeys;
-  @Nullable
-  private final String serverUrl;
-  @Nullable
-  private final String organization;
+  private final Either<String, String> serverUrlOrOrganization;
 
-  public ProjectKeyNotFoundPopup(List<String> projectKeys, @Nullable String serverUrl,
-    @Nullable String organization) {
+  public ProjectKeyNotFoundPopup(List<String> projectKeys, Either<String, String> serverUrlOrOrganization) {
     this.projectKeys = projectKeys.stream().map(projectKey -> "'" + projectKey + "'").collect(Collectors.toList());
-    this.serverUrl = serverUrl;
-    this.organization = organization;
+    this.serverUrlOrOrganization = serverUrlOrOrganization;
   }
 
   @Override
   protected String getMessage() {
-    var suffix = serverUrl != null
-      ? (" on server '" + serverUrl + "'.")
-      : (" in organization '" + organization + "'.");
+    String suffix;
+    if (serverUrlOrOrganization.isLeft()) {
+      suffix = " on server '" + serverUrlOrOrganization.getLeft() + "'.";
+    } else {
+      suffix = " in organization '" + serverUrlOrOrganization.getRight() + "'.";
+    }
+
     var message = projectKeys.size() == 1
       ? ("The project key '" + projectKeys.get(0) + "' was not found")
       : ("The project keys " + String.join(",", projectKeys) + " were not found");
+
     return message + suffix;
   }
 
   @Override
   protected String getPopupShellTitle() {
-    return "Project key(s) not found on " + (serverUrl != null ? "SonarQube" : "SonarCloud");
+    return "Project key(s) not found on "
+      + (serverUrlOrOrganization.isLeft() ? "SonarQube" : "SonarCloud");
   }
 
   @Override

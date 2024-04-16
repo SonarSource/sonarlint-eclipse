@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.ui.progress.UIJob;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
@@ -30,10 +31,7 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 
 public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
-  @Nullable
-  protected final String serverUrl;
-  @Nullable
-  protected final String organization;
+  protected final Either<String, String> serverUrlOrOrganization;
   protected final boolean automaticSetUp;
   protected final boolean fromConnectionSuggestion;
   @Nullable
@@ -42,14 +40,13 @@ public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
   protected String username;
 
   /** Assistance either to SonarQube / SonarCloud, can be coming from Connection Suggestion! */
-  protected AbstractAssistCreatingConnectionJob(String title, @Nullable String serverUrl,
-    @Nullable String organization, boolean automaticSetup, boolean fromConnectionSuggestion) {
+  protected AbstractAssistCreatingConnectionJob(String title, Either<String, String> serverUrlOrOrganization,
+    boolean automaticSetup, boolean fromConnectionSuggestion) {
     super(title);
     // We don't want to have this job visible to the user, as there should be a dialog anyway
     setSystem(true);
 
-    this.serverUrl = serverUrl;
-    this.organization = organization;
+    this.serverUrlOrOrganization = serverUrlOrOrganization;
     this.automaticSetUp = automaticSetup;
     this.fromConnectionSuggestion = fromConnectionSuggestion;
   }
@@ -59,19 +56,19 @@ public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
     var shell = DisplayUtils.bringToFront();
 
     // Currently we only ask the user if they trust a SonarQube server, SonarCloud we trust of course!
-    if (organization == null) {
-      var dialog = new ConfirmConnectionCreationDialog(shell, serverUrl, automaticSetUp);
+    if (serverUrlOrOrganization.isLeft()) {
+      var dialog = new ConfirmConnectionCreationDialog(shell, serverUrlOrOrganization.getLeft(), automaticSetUp);
       if (dialog.open() != 0) {
         return Status.CANCEL_STATUS;
       }
     }
 
     var model = new ServerConnectionModel(fromConnectionSuggestion);
-    if (organization == null) {
+    if (serverUrlOrOrganization.isLeft()) {
       model.setConnectionType(ConnectionType.ONPREMISE);
-      model.setServerUrl(serverUrl);
+      model.setServerUrl(serverUrlOrOrganization.getLeft());
     } else {
-      model.setOrganization(organization);
+      model.setOrganization(serverUrlOrOrganization.getRight());
     }
 
     if (fromConnectionSuggestion) {

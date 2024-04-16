@@ -30,11 +30,11 @@ public class ShareProjectBindingDialog extends MessageDialog {
   private static final String TITLE = "Share Connected Mode configuration?";
   private static final String MESSAGE_BASE = "A configuration file will be created in the project directory, making "
     + "it easier for other team members to configure the binding for the same project.";
-  private static final String MESSAGE_USE_ROOT_PROJECT = "\nWhen choosing to save on the root project level, this will "
+  private static final String MESSAGE_USE_ROOT_PROJECT = "\nWhen choosing to save on the Root Project level, this will "
     + "affect it and all its sub-projects.";
-  private static final String MESSAGE_USE_THIS_PROJECT_NOT_ROOT = "\nWhen choosing to save on this project level, this "
+  private static final String MESSAGE_USE_THIS_PROJECT_NOT_ROOT = "\nWhen choosing to save on this Project level, this "
     + "will only affect it, but no other projects.";
-  private static final String MESSAGE_USE_THIS_PROJECT_ROOT = "\nWhen choosing to save on this project level, this "
+  private static final String MESSAGE_USE_THIS_PROJECT_ROOT = "\nWhen choosing to save on this Project level, this "
     + "will affect it and all its sub-projects.";
 
   public ShareProjectBindingDialog(Shell parentShell, boolean isRootProject, boolean hasRootProject) {
@@ -53,7 +53,7 @@ public class ShareProjectBindingDialog extends MessageDialog {
 
   private static String[] getButtonLabels(boolean hasRootProject) {
     return hasRootProject
-      ? new String[] {"Save to root project", "Save to project", "Learn more"}
-      : new String[] {"Save to project", "Learn more"};
+      ? new String[] {"Save to Root Project", "Save to Project", "Learn more"}
+      : new String[] {"Save to Project", "Learn more"};
   }
 }

@@ -49,16 +49,12 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.S
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TokenDto;
 
 public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnectionJob {
-  private final boolean isSonarCloud;
   private final Map<String, List<ISonarLintProject>> projectMapping;
 
-  public AssistSuggestConnectionJob(String serverUrlOrOrganization,
-    Map<String, List<ISonarLintProject>> projectMapping, boolean isSonarCloud) {
-    super("Connected Mode suggestion for " + (isSonarCloud ? "SonarCloud" : "SonarCube"),
-      isSonarCloud ? null : serverUrlOrOrganization,
-      isSonarCloud ? serverUrlOrOrganization : null,
-      false, true);
-    this.isSonarCloud = isSonarCloud;
+  public AssistSuggestConnectionJob(Either<String, String> serverUrlOrOrganization,
+    Map<String, List<ISonarLintProject>> projectMapping) {
+    super("Connected Mode suggestion for " + (serverUrlOrOrganization.isLeft() ? "SonarQube" : "SonarCloud"),
+      serverUrlOrOrganization, false, true);
     this.projectMapping = projectMapping;
   }
 
@@ -91,7 +87,8 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
   @Nullable
   protected ConnectionFacade createConnection(ServerConnectionModel model) {
     var wizard = new SuggestConnectionWizard(model);
-    var dialog = AbstractConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
+    var dialog = AbstractConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+      wizard);
     dialog.setBlockOnOpen(true);
     dialog.open();
     return wizard.getResultServer();
@@ -101,10 +98,12 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
     GetAllProjectsParams params;
 
     var token = new TokenDto(username);
-    if (isSonarCloud) {
-      params = new GetAllProjectsParams(new TransientSonarCloudConnectionDto(organization, Either.forLeft(token)));
+    if (serverUrlOrOrganization.isLeft()) {
+      params = new GetAllProjectsParams(new TransientSonarQubeConnectionDto(serverUrlOrOrganization.getLeft(),
+        Either.forLeft(token)));
     } else {
-      params = new GetAllProjectsParams(new TransientSonarQubeConnectionDto(serverUrl, Either.forLeft(token)));
+      params = new GetAllProjectsParams(new TransientSonarCloudConnectionDto(serverUrlOrOrganization.getRight(),
+        Either.forLeft(token)));
     }
 
     List<SonarProjectDto> sonarProjects;
@@ -114,11 +113,14 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
         .getConnectionService()
         .getAllProjects(params).get().getSonarProjects();
     } catch (ExecutionException | InterruptedException err) {
-      var message = "List of all remote projects on "
-        + (isSonarCloud ? ("SonarCloud organization '" + organization + "'") : ("SonarQube '" + serverUrl + "'"))
-        + " cannot be loaded";
+      var message = "";
+      if (serverUrlOrOrganization.isLeft()) {
+        message += "SonarQube '" + serverUrlOrOrganization.getLeft() + "'";
+      } else {
+        message += "SonarCloud organization '" + serverUrlOrOrganization.getRight() + "'";
+      }
 
-      SonarLintLogger.get().error(message, err);
+      SonarLintLogger.get().error(message + " cannot be loaded", err);
       return;
     }
 
@@ -136,9 +138,11 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
 
       var projects = entry.getValue();
       ProjectBindingProcess.bindProjects(connectionId, projects, projectKey);
-      new ProjectBoundPopup(projectKey, projects, isSonarCloud).open();
+      new ProjectBoundPopup(projectKey, projects, serverUrlOrOrganization.isRight()).open();
     }
 
-    new ProjectKeyNotFoundPopup(projectKeysUnavailable, serverUrl, organization).open();
+    if (!projectKeysUnavailable.isEmpty()) {
+      new ProjectKeyNotFoundPopup(projectKeysUnavailable, serverUrlOrOrganization).open();
+    }
   }
 }
