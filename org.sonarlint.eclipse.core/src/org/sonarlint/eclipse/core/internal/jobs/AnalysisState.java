@@ -22,34 +22,38 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.sonarlint.eclipse.core.SonarLintNotifications;
+import java.util.UUID;
+import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssueListener;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
 
-public class SonarLintIssueListener implements RawIssueListener {
-  private final Map<ISonarLintIssuable, List<RawIssue>> issuesPerResource;
+public class AnalysisState {
+  private final UUID id;
   private final ISonarLintProject project;
+  private final Map<ISonarLintIssuable, List<RawIssueDto>> issuesPerResource;
   private long issueCount = 0;
 
-  public SonarLintIssueListener(ISonarLintProject project, Map<ISonarLintIssuable, List<RawIssue>> issuesPerResource) {
-    this.issuesPerResource = issuesPerResource;
+  public AnalysisState(UUID analysisId, ISonarLintProject project, Map<ISonarLintIssuable, List<RawIssueDto>> issuesPerResource) {
+    this.id = analysisId;
     this.project = project;
+    this.issuesPerResource = issuesPerResource;
   }
 
-  @Override
-  public void handle(RawIssue issue) {
+  public UUID getId() {
+    return id;
+  }
+
+  public void addRawIssue(RawIssueDto rawIssue) {
     issueCount++;
-    ISonarLintIssuable r;
-    var inputFile = issue.getInputFile();
-    if (inputFile == null) {
-      r = project;
-    } else {
-      r = inputFile.getClientObject();
+    var fileUri = rawIssue.getFileUri();
+    var issuable = fileUri == null ? project : SonarLintUtils.findFileFromUri(fileUri);
+    if (issuable == null) {
+      SonarLintLogger.get().error("Cannot retrieve the file on which an issue has been raised. File URI is " + fileUri);
+      return;
     }
-    issuesPerResource.computeIfAbsent(r, k -> new ArrayList<>()).add(issue);
-    SonarLintNotifications.get().showNotificationIfFirstSecretDetected(issue);
+    issuesPerResource.computeIfAbsent(issuable, k -> new ArrayList<>()).add(rawIssue);
   }
 
   public long getIssueCount() {

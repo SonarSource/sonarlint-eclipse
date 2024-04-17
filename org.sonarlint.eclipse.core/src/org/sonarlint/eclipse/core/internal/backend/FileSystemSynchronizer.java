@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.backend;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,7 +38,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.TestFileClassifier;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -46,6 +49,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.rpc.protocol.SonarLintRpcServer;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.file.DidUpdateFileSystemParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.ClientFileDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 
 import static java.util.stream.Collectors.toList;
 
@@ -171,9 +175,10 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
   static ClientFileDto toFileDto(ISonarLintFile slFile, IProgressMonitor monitor) {
     var configScopeId = ConfigScopeSynchronizer.getConfigScopeId(slFile.getProject());
     Path fsPath;
+    File localFile;
     try {
       var fileStore = EFS.getStore(slFile.getResource().getLocationURI());
-      var localFile = fileStore.toLocalFile(EFS.NONE, monitor);
+      localFile = fileStore.toLocalFile(EFS.NONE, monitor);
       if (localFile != null) {
         fsPath = localFile.toPath().toAbsolutePath();
       } else {
@@ -183,15 +188,16 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     } catch (Exception e) {
       SonarLintLogger.get().debug("Error while looking for file path for file " + slFile, e);
       fsPath = null;
+      localFile = null;
     }
 
     String fileContent = null;
-    if (matchesSonarLintConfigurationFiles(slFile)) {
+    if (matchesSonarLintConfigurationFiles(slFile) || localFile == null) {
       fileContent = slFile.getDocument().get();
     }
 
     return new ClientFileDto(slFile.uri(), Paths.get(slFile.getProjectRelativePath()), configScopeId, TestFileClassifier.get().isTest(slFile),
-      slFile.getCharset().name(), fsPath, fileContent);
+      slFile.getCharset().name(), fsPath, fileContent, tryDetectLanguage(slFile));
   }
 
   /**
@@ -208,7 +214,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     var relativePath = projectUri.relativize(currentDtoUri);
 
     return new ClientFileDto(dto.getUri(), relativePath, ConfigScopeSynchronizer.getConfigScopeId(project),
-      dto.isTest(), dto.getCharset(), dto.getFsPath(), dto.getContent());
+      dto.isTest(), dto.getCharset(), dto.getFsPath(), dto.getContent(), dto.getDetectedLanguage());
   }
 
   /** This only gets the SonarLint configuration files for a specific project, instead of all of them! */
@@ -232,5 +238,21 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       }
     }
     return subProjects;
+  }
+
+  @Nullable
+  private static Language tryDetectLanguage(ISonarLintFile file) {
+    SonarLintLanguage language = null;
+    for (var languageProvider : SonarLintExtensionTracker.getInstance().getLanguageProviders()) {
+      var detectedLanguage = languageProvider.language(file);
+      if (detectedLanguage != null) {
+        if (language == null) {
+          language = detectedLanguage;
+        } else if (!language.equals(detectedLanguage)) {
+          SonarLintLogger.get().error("Conflicting languages detected for file " + file.getName() + ". " + language + " and " + detectedLanguage);
+        }
+      }
+    }
+    return language != null ? Language.valueOf(language.name()) : null;
   }
 }

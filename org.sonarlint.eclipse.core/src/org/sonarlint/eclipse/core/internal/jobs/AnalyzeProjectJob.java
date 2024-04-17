@@ -24,9 +24,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +32,12 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -49,66 +52,61 @@ import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IPostAnalysisContext;
-import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
+import org.sonarlint.eclipse.core.internal.backend.RunningAnalysesTracker;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
 import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.internal.utils.FileUtils;
+import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.AnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
-import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
 import org.sonarsource.sonarlint.core.commons.api.progress.CanceledException;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.AnalyzeFilesResponse;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TextRangeDto;
 
 import static java.text.MessageFormat.format;
 
-public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob {
+public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   // Because we have to await Sloop to get ready, the analysis might not be ready in the meantime
   // -> The analysis jobs run in a different process we have to make it thread safe!
-  private static ConcurrentHashMap<String, Boolean> analysisReadyByConfigurationScopeId = new ConcurrentHashMap<>();
+  public static ConcurrentHashMap<String, Boolean> analysisReadyByConfigurationScopeId = new ConcurrentHashMap<>();
 
   @Nullable
   private final ISonarLintProject project;
   private final List<SonarLintProperty> extraProps;
   private final TriggerType triggerType;
   private final boolean shouldClearReport;
-  private final boolean checkUnsupportedLanguages;
   private final Collection<FileWithDocument> files;
-  private final EnumSet<SonarLintLanguage> unavailableLanguagesReference = EnumSet.noneOf(SonarLintLanguage.class);
 
-  protected AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
+  public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
     this.project = request.getProject();
     this.extraProps = SonarLintGlobalConfiguration.getExtraPropertiesForLocalAnalysis(request.getProject());
     this.files = request.getFiles();
     this.triggerType = request.getTriggerType();
     this.shouldClearReport = request.shouldClearReport();
-    this.checkUnsupportedLanguages = request.checkUnsupportedLanguages();
   }
 
   public static AbstractSonarProjectJob create(AnalyzeProjectRequest request) {
     return SonarLintCorePlugin.getConnectionManager()
       .resolveBinding(request.getProject())
-      .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request, b.getProjectBinding(), b.getConnectionFacade()))
-      .orElseGet(() -> new AnalyzeStandaloneProjectJob(request));
+      .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request))
+      .orElseGet(() -> new AnalyzeProjectJob(request));
   }
 
   public static void changeAnalysisReadiness(Set<String> configurationScopeIds, boolean readiness) {
@@ -184,17 +182,12 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
       extraProps.forEach(sonarProperty -> mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue()));
 
       if (!inputFiles.isEmpty()) {
-        runAnalysisAndUpdateMarkers(filesToAnalyzeMap, monitor, mergedExtraProps, inputFiles, analysisWorkDir);
+        runAnalysisAndUpdateMarkers(filesToAnalyzeMap, monitor, mergedExtraProps);
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
 
       SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners(new AnalysisEvent() {
-        @Override
-        public Set<SonarLintLanguage> getUnavailableLanguages() {
-          return unavailableLanguagesReference;
-        }
-
         @Override
         public Set<ISonarLintProject> getProjects() {
           return Set.of(getProject());
@@ -251,71 +244,26 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
     return ignored;
   }
 
-  private void runAnalysisAndUpdateMarkers(Map<ISonarLintFile, IDocument> docPerFiles, final IProgressMonitor monitor,
-    Map<String, String> mergedExtraProps, List<ClientInputFile> inputFiles, Path analysisWorkDir) throws CoreException {
-    var projectLocation = getProject().getResource().getLocation();
-    // In some unfrequent cases the project may be virtual and don't have physical location
-    // so fallback to use analysis work dir
-    var projectBaseDir = projectLocation != null ? projectLocation.toFile().toPath() : analysisWorkDir;
-    var config = prepareAnalysisConfig(projectBaseDir, inputFiles, mergedExtraProps);
-
-    var issuesPerResource = new LinkedHashMap<ISonarLintIssuable, List<RawIssue>>();
+  private void runAnalysisAndUpdateMarkers(Map<ISonarLintFile, IDocument> docPerFiles, final IProgressMonitor monitor, Map<String, String> mergedExtraProps) throws CoreException {
+    var issuesPerResource = new LinkedHashMap<ISonarLintIssuable, List<RawIssueDto>>();
     docPerFiles.keySet().forEach(slFile -> issuesPerResource.put(slFile, new ArrayList<>()));
 
     var start = System.currentTimeMillis();
-    var result = run(config, issuesPerResource, monitor);
+    var result = run(docPerFiles, mergedExtraProps, issuesPerResource, start, monitor);
     if (!monitor.isCanceled()) {
       updateMarkers(docPerFiles, issuesPerResource, result, triggerType, monitor);
-      SonarLintTelemetry.updateTelemetryAfterAnalysis(result, start, issuesPerResource);
-
-      if (checkUnsupportedLanguages) {
-        // Collect all the languages we just analyzed and that are unavailable in standalone mode. This will be re-used
-        // to handle it accordingly in the UI (e.g. display notification to the user).
-        var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(getProject());
-        if (bindingOpt.isEmpty()) {
-          var languages = result.languagePerFile().values().stream()
-            // Language can be null for files we are not able to guess language
-            .filter(Objects::nonNull)
-            .map(SonarLintUtils::convert)
-            // Language can be null for files with a language not supported (yet) by SLE
-            .filter(Objects::nonNull)
-            .collect(Collectors.toCollection(HashSet::new));
-          languages.retainAll(SonarLintUtils.getConnectedEnabledLanguages());
-          unavailableLanguagesReference.addAll(languages);
-        }
-      }
     }
   }
 
-  protected abstract AnalysisConfiguration prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps);
-
-  private static List<ClientInputFile> buildInputFiles(Path tempDirectory, final Map<ISonarLintFile, IDocument> filesToAnalyze) {
-    var inputFiles = new ArrayList<ClientInputFile>(filesToAnalyze.size());
+  private static List<EclipseInputFile> buildInputFiles(Path tempDirectory, final Map<ISonarLintFile, IDocument> filesToAnalyze) {
+    var inputFiles = new ArrayList<EclipseInputFile>(filesToAnalyze.size());
 
     for (final var fileWithDoc : filesToAnalyze.entrySet()) {
       var file = fileWithDoc.getKey();
-      var language = tryDetectLanguage(file);
-      var isTest = TestFileClassifier.get().isTest(file);
-      var inputFile = new EclipseInputFile(isTest, file, tempDirectory, fileWithDoc.getValue(), language);
+      var inputFile = new EclipseInputFile(file, tempDirectory, fileWithDoc.getValue());
       inputFiles.add(inputFile);
     }
     return inputFiles;
-  }
-
-  @Nullable
-  private static SonarLanguage tryDetectLanguage(ISonarLintFile file) {
-    SonarLintLanguage language = null;
-    for (var languageProvider : SonarLintExtensionTracker.getInstance().getLanguageProviders()) {
-      var detectedLanguage = languageProvider.language(file);
-      if (detectedLanguage != null) {
-        if (language == null) {
-          language = detectedLanguage;
-        } else if (!language.equals(detectedLanguage)) {
-          SonarLintLogger.get().error("Conflicting languages detected for file " + file.getName() + ". " + language + " and " + detectedLanguage);
-        }
-      }
-    }
-    return language != null ? SonarLanguage.valueOf(language.name()) : null;
   }
 
   private static Collection<ProjectConfigurator> configureDeprecated(final ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze,
@@ -341,7 +289,7 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
     return usedConfigurators;
   }
 
-  private static Collection<IAnalysisConfigurator> configure(final ISonarLintProject project, List<ClientInputFile> filesToAnalyze,
+  private static Collection<IAnalysisConfigurator> configure(final ISonarLintProject project, List<EclipseInputFile> filesToAnalyze,
     final Map<String, String> extraProperties, Path tempDir, final IProgressMonitor monitor) {
     var usedConfigurators = new ArrayList<IAnalysisConfigurator>();
     var configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
@@ -356,11 +304,11 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
     return usedConfigurators;
   }
 
-  private void updateMarkers(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<RawIssue>> issuesPerResource, AnalysisResults result,
+  private void updateMarkers(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<RawIssueDto>> issuesPerResource, AnalyzeFilesResponse result,
     TriggerType triggerType, final IProgressMonitor monitor) throws CoreException {
-    var failedFiles = result.failedAnalysisFiles().stream().map(ClientInputFile::<ISonarLintFile>getClientObject).collect(Collectors.toSet());
+    var failedFileUris = result.getFailedAnalysisFiles();
     var successfulFiles = issuesPerResource.entrySet().stream()
-      .filter(e -> !failedFiles.contains(e.getKey()))
+      .filter(e -> !failedFileUris.contains(e.getKey().getResource().getLocationURI()))
       // TODO handle non-file-level issues
       .filter(e -> e.getKey() instanceof ISonarLintFile)
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
@@ -369,7 +317,7 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
   }
 
   protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile,
-    Map<ISonarLintIssuable, List<RawIssue>> rawIssuesPerResource, TriggerType triggerType,
+    Map<ISonarLintIssuable, List<RawIssueDto>> rawIssuesPerResource, TriggerType triggerType,
     final IProgressMonitor monitor) {
     if (rawIssuesPerResource.entrySet().isEmpty()) {
       return;
@@ -414,7 +362,7 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
     issueTracker.processRawIssues(file, trackables);
   }
 
-  private static RawIssueTrackable transform(RawIssue issue, ISonarLintFile resource, IDocument document) {
+  private static RawIssueTrackable transform(RawIssueDto issue, ISonarLintFile resource, IDocument document) {
     var textRange = issue.getTextRange();
     if (textRange == null) {
       return new RawIssueTrackable(issue);
@@ -474,13 +422,23 @@ public abstract class AbstractAnalyzeProjectJob extends AbstractSonarProjectJob 
 
   }
 
-  public AnalysisResults run(final AnalysisConfiguration analysisConfig, final Map<ISonarLintIssuable, List<RawIssue>> issuesPerResource, IProgressMonitor monitor) {
-    SonarLintLogger.get().debug("Starting analysis with configuration:\n" + analysisConfig.toString());
-    var issueListener = new SonarLintIssueListener(getProject(), issuesPerResource);
-    var result = runAnalysis(analysisConfig, issueListener, monitor);
-    SonarLintLogger.get().info("Found " + issueListener.getIssueCount() + " issue(s)");
-    return result;
+  private AnalyzeFilesResponse run(final Map<ISonarLintFile, IDocument> docPerFiles, final Map<String, String> extraProps,
+    final Map<ISonarLintIssuable, List<RawIssueDto>> issuesPerResource, long startTime, IProgressMonitor monitor) {
+    var analysisId = UUID.randomUUID();
+    var analysisState = new AnalysisState(analysisId, getProject(), issuesPerResource);
+    try {
+      RunningAnalysesTracker.get().track(analysisState);
+      var future = SonarLintBackendService.get().analyzeFiles(getProject(), analysisId, docPerFiles, extraProps, startTime);
+      AnalyzeFilesResponse response = JobUtils.waitForFutureInJob(monitor, future);
+      SonarLintLogger.get().info("Found " + analysisState.getIssueCount() + " issue(s)");
+      return response;
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new CanceledException();
+    } catch (ExecutionException e) {
+      throw new IllegalStateException(e);
+    } finally {
+      RunningAnalysesTracker.get().finish(analysisState);
+    }
   }
-
-  protected abstract AnalysisResults runAnalysis(AnalysisConfiguration analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor);
 }

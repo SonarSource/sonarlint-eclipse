@@ -33,7 +33,6 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -82,11 +81,9 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
           .map(f -> new FileWithDocument(f, null))
           .collect(Collectors.toList());
 
-        // If the project is bound, we don't have to check for unsupported languages.
-        var req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.MANUAL_CHANGESET, false,
-          !SonarLintUtils.isBoundToConnection(project));
+        var req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.MANUAL_CHANGESET, false);
 
-        var job = AbstractAnalyzeProjectJob.create(req);
+        var job = AnalyzeProjectJob.create(req);
         var subMonitor = analysisMonitor.newChild(1);
         job.run(subMonitor);
         subMonitor.done();

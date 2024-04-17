@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,49 +28,23 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.AnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
 
-public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob {
+public class AnalyzeConnectedProjectJob extends AnalyzeProjectJob {
 
-  private final EclipseProjectBinding binding;
-  private final ConnectionFacade engineFacade;
-
-  public AnalyzeConnectedProjectJob(AnalyzeProjectRequest request, EclipseProjectBinding binding, ConnectionFacade engineFacade) {
+  public AnalyzeConnectedProjectJob(AnalyzeProjectRequest request) {
     super(request);
-    this.binding = binding;
-    this.engineFacade = engineFacade;
   }
 
   @Override
-  protected AnalysisConfiguration prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps) {
-    SonarLintLogger.get().debug("Connected mode (using configuration of '" + binding.getProjectKey() + "' in connection '" + binding.getConnectionId() + "')");
-    return AnalysisConfiguration.builder()
-      .setBaseDir(projectBaseDir)
-      .addInputFiles(inputFiles.toArray(new ClientInputFile[0]))
-      .putAllExtraProperties(mergedExtraProps)
-      .build();
-  }
-
-  @Override
-  protected AnalysisResults runAnalysis(AnalysisConfiguration analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor) {
-    return engineFacade.runAnalysis(getProject(), analysisConfig, issueListener, monitor);
-  }
-
-  @Override
-  protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<RawIssue>> rawIssuesPerResource, TriggerType triggerType,
+  protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<RawIssueDto>> rawIssuesPerResource, TriggerType triggerType,
     IProgressMonitor monitor) {
     super.trackIssues(docPerFile, rawIssuesPerResource, triggerType, monitor);
     if (triggerType.shouldMatchAsync()) {
@@ -80,8 +53,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob {
   }
 
   @Override
-  protected void trackFileIssues(ISonarLintFile file, List<RawIssueTrackable> trackables, ProjectIssueTracker issueTracker, TriggerType triggerType,
-    int totalTrackedFiles,
+  protected void trackFileIssues(ISonarLintFile file, List<RawIssueTrackable> trackables, ProjectIssueTracker issueTracker, TriggerType triggerType, int totalTrackedFiles,
     IProgressMonitor monitor) {
     super.trackFileIssues(file, trackables, issueTracker, triggerType, totalTrackedFiles, monitor);
     if (!triggerType.shouldMatchAsync()) {

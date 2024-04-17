@@ -20,10 +20,12 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import org.assertj.core.groups.Tuple;
+import org.awaitility.Awaitility;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -84,6 +86,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     SonarLintLogger.get().addLogListener(listener);
 
     project = importEclipseProject("SimpleJdtProject");
+    Awaitility.await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(AnalyzeProjectJob.analysisReadyByConfigurationScopeId).isNotEmpty());
   }
 
   @AfterClass
@@ -113,8 +116,8 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     ruleConfig.getParams().put("format", "^[0-9]+$");
     SonarLintGlobalConfiguration.saveRulesConfig(List.of(ruleConfig));
 
-    var underTest = new AnalyzeStandaloneProjectJob(new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze),
-      TriggerType.EDITOR_CHANGE, false, true));
+    var underTest = new AnalyzeProjectJob(new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze),
+      TriggerType.EDITOR_CHANGE, false));
     underTest.schedule();
     assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
     var status = underTest.getResult();
@@ -135,8 +138,8 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     workspace.addResourceChangeListener(mcl);
 
     try {
-      var underTest = new AnalyzeStandaloneProjectJob(
-        new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.EDITOR_CHANGE, false, false));
+      var underTest = new AnalyzeProjectJob(
+        new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.EDITOR_CHANGE, false));
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
@@ -172,8 +175,8 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     workspace.addResourceChangeListener(mcl);
 
     try {
-      var underTest = new AnalyzeStandaloneProjectJob(
-        new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.MANUAL, true, false));
+      var underTest = new AnalyzeProjectJob(
+        new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.MANUAL, true));
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
@@ -207,8 +210,8 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     var slProject = new DefaultSonarLintProjectAdapter(project);
     var fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);
 
-    var underTest = new AnalyzeStandaloneProjectJob(
-      new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze), TriggerType.EDITOR_CHANGE, false, false));
+    var underTest = new AnalyzeProjectJob(
+      new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze), TriggerType.EDITOR_CHANGE, false));
     underTest.schedule();
     assertThat(underTest.join(20_000, new NullProgressMonitor())).isTrue();
     var status = underTest.getResult();

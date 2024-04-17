@@ -243,6 +243,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   }
 
   @Test
+  @Ignore("SLE-847")
   public void shouldAnalyseJavaJunit() {
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/java-junit", "java-junit");

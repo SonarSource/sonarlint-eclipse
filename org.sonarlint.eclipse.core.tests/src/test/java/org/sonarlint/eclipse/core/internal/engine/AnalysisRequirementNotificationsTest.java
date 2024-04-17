@@ -20,35 +20,24 @@
 package org.sonarlint.eclipse.core.internal.engine;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.internal.NotificationListener;
-import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.PluginDetails;
-import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
-import org.sonarsource.sonarlint.core.plugin.commons.api.SkipReason;
-import org.sonarsource.sonarlint.core.plugin.commons.api.SkipReason.UnsatisfiedRuntimeRequirement.RuntimeRequirement;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.plugin.DidSkipLoadingPluginParams.SkipReason;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class AnalysisRequirementNotificationsTest {
 
   private static final List<Notification> notifications = new ArrayList<>();
-  private final AnalysisResults analysisResults = mock(AnalysisResults.class);
-  Map<ClientInputFile, SonarLanguage> detectedLang = new HashMap<>();
 
   @BeforeClass
-  public static void prepare() throws Exception {
+  public static void prepare() {
     SonarLintNotifications.get().addNotificationListener(new NotificationListener() {
       @Override
       public void showNotification(Notification notif) {
@@ -61,48 +50,29 @@ public class AnalysisRequirementNotificationsTest {
   public void clear() {
     notifications.clear();
     AnalysisRequirementNotifications.resetCachedMessages();
-    when(analysisResults.languagePerFile()).thenReturn(detectedLang);
-  }
-
-  @Test
-  public void dontNotifyIfNoFilesAnalyzed() {
-    AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, Collections.emptyList());
-    assertThat(notifications).isEmpty();
-  }
-
-  @Test
-  public void dontNotifyIfNoLanguagesDetected() {
-    detectedLang.put(mock(ClientInputFile.class), null);
-    AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, Collections.emptyList());
-    assertThat(notifications).isEmpty();
   }
 
   @Test
   public void notifyIfSkippedLanguage_JRE() {
-    detectedLang.put(mock(ClientInputFile.class), SonarLanguage.JAVA);
-    List<PluginDetails> plugins = List.of(new PluginDetails("java", "Java", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.JRE, "1.8", "11")));
-    AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, plugins);
-    assertThat(notifications).usingFieldByFieldElementComparator()
-      .containsOnly(
-        new Notification(
+    AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(Language.JAVA, SkipReason.UNSATISFIED_JRE, "11", "1.8");
+    assertThat(notifications).usingRecursiveComparison()
+      .isEqualTo(
+        List.of(new Notification(
           "Analyzer Requirement",
           "SonarLint failed to analyze Java code",
           "SonarLint requires Java runtime version 11 or later to analyze Java code. Current version is 1.8.\n" +
-            "See <a href=\"https://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM\">the Eclipse Wiki</a> to configure your IDE to run with a more recent JRE."));
+            "See <a href=\"https://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM\">the Eclipse Wiki</a> to configure your IDE to run with a more recent JRE.")));
   }
 
   @Test
   public void notifyIfSkippedLanguage_Node() {
-    detectedLang.put(mock(ClientInputFile.class), SonarLanguage.JS);
-    List<PluginDetails> plugins = List.of(
-      new PluginDetails("javascript", "JS/TS", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.NODEJS, "7.2", "8.0")));
-    AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, plugins);
-    assertThat(notifications).usingFieldByFieldElementComparator().containsOnly(
-      new Notification(
+    AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(Language.JS, SkipReason.UNSATISFIED_NODE_JS, "8.0", "7.2");
+    assertThat(notifications).usingRecursiveComparison().isEqualTo(
+      List.of(new Notification(
         "Analyzer Requirement",
         "SonarLint failed to analyze JavaScript code",
         "SonarLint requires Node.js runtime version 8.0 or later to analyze JavaScript code. Current version is 7.2.\n" +
-          "Please configure the Node.js path in the <a href=\"#edit-settings\">SonarLint settings</a>."));
+          "Please configure the Node.js path in the <a href=\"#edit-settings\">SonarLint settings</a>.")));
   }
 
 }

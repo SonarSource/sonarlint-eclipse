@@ -26,32 +26,19 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.StoragePathManager;
-import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
-import org.sonarlint.eclipse.core.internal.engine.SkippedPluginsNotifier;
-import org.sonarlint.eclipse.core.internal.jobs.SonarLintUtilsLogOutput;
-import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.AnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.EngineConfiguration;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssueListener;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.SonarLintAnalysisEngine;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarCloudConnectionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarQubeConnectionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.SonarProjectDto;
@@ -70,43 +57,12 @@ public class ConnectionFacade {
   @Nullable
   private String organization;
   private boolean hasAuth;
-  @Nullable
-  private SonarLintAnalysisEngine wrappedEngine;
   private final List<IConnectionStateListener> facadeListeners = new ArrayList<>();
   private boolean notificationsDisabled;
   private final Map<String, SonarProjectDto> cachedSonarProjectsByKey = new ConcurrentHashMap<>();
 
   ConnectionFacade(String id) {
     this.id = id;
-  }
-
-  @Nullable
-  private synchronized SonarLintAnalysisEngine getOrCreateEngine() {
-    if (wrappedEngine == null) {
-      SonarLintLogger.get().info("Starting SonarLint engine for connection '" + id + "'...");
-      var builder = EngineConfiguration.builder()
-        .setWorkDir(StoragePathManager.getConnectionSpecificWorkDir(getId()))
-        .setLogOutput(new SonarLintUtilsLogOutput())
-        .setClientPid(SonarLintUtils.getPlatformPid());
-
-      var globalConfig = builder.build();
-      try {
-        this.wrappedEngine = new SonarLintAnalysisEngine(globalConfig, SonarLintBackendService.get().getBackend(), id);
-        SkippedPluginsNotifier.notifyForSkippedPlugins(wrappedEngine.getPluginDetails(), id);
-      } catch (Throwable e) {
-        SonarLintLogger.get().error("Unable to start connected SonarLint engine", e);
-        wrappedEngine = null;
-      }
-    }
-    return wrappedEngine;
-  }
-
-  private <G> Optional<G> withEngine(Function<SonarLintAnalysisEngine, G> function) {
-    getOrCreateEngine();
-    if (wrappedEngine != null) {
-      return Optional.ofNullable(function.apply(wrappedEngine));
-    }
-    return Optional.empty();
   }
 
   public void notifyAllListenersStateChanged() {
@@ -186,7 +142,6 @@ public class ConnectionFacade {
   }
 
   public synchronized void delete() {
-    doStop();
     for (var sonarLintProject : getBoundProjects()) {
       unbind(sonarLintProject);
     }
@@ -210,26 +165,6 @@ public class ConnectionFacade {
     this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
     this.notificationsDisabled = notificationsDisabled;
     SonarLintCorePlugin.getConnectionManager().updateConnection(this, username, password);
-  }
-
-  public AnalysisResults runAnalysis(ISonarLintProject project, AnalysisConfiguration config, RawIssueListener issueListener, IProgressMonitor monitor) {
-    var configScopeId = ConfigScopeSynchronizer.getConfigScopeId(project);
-    return withEngine(engine -> {
-      var analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"), configScopeId);
-      AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, engine.getPluginDetails());
-      return analysisResults;
-    }).orElseThrow(() -> new IllegalStateException("Engine is not available"));
-  }
-
-  public synchronized void stop() {
-    doStop();
-  }
-
-  private void doStop() {
-    if (wrappedEngine != null) {
-      wrappedEngine.stop();
-      wrappedEngine = null;
-    }
   }
 
   private static Stream<ISonarLintProject> getOpenedProjects() {

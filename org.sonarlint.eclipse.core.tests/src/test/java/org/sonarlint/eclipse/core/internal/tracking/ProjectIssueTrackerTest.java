@@ -33,7 +33,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TextRangeDto;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,8 +89,8 @@ public class ProjectIssueTrackerTest {
 
   @Test
   public void should_track_first_issues_as_unknown_creation_date() {
-    var issue1 = mock(RawIssue.class);
-    var issue2 = mock(RawIssue.class);
+    var issue1 = mock(RawIssueDto.class);
+    var issue2 = mock(RawIssueDto.class);
     underTest.processRawIssues(file1, List.of(new RawIssueTrackable(issue1), new RawIssueTrackable(issue2)));
     assertThat(underTest.getTracked(file1))
       .extracting(TrackedIssue::getIssueFromAnalysis, TrackedIssue::getCreationDate)
@@ -103,8 +103,8 @@ public class ProjectIssueTrackerTest {
 
     var now = System.currentTimeMillis();
 
-    var issue1 = mock(RawIssue.class);
-    var issue2 = mock(RawIssue.class);
+    var issue1 = mock(RawIssueDto.class);
+    var issue2 = mock(RawIssueDto.class);
     underTest.processRawIssues(file1, List.of(new RawIssueTrackable(issue1), new RawIssueTrackable(issue2)));
     assertThat(underTest.getTracked(file1))
       .extracting(TrackedIssue::getCreationDate)
@@ -113,16 +113,16 @@ public class ProjectIssueTrackerTest {
 
   @Test
   public void should_add_creation_date_for_new_issues_after_first_analysis() {
-    var issue1 = mock(RawIssue.class);
+    var issue1 = mock(RawIssueDto.class);
     when(issue1.getRuleKey()).thenReturn("rule1");
-    when(issue1.getMessage()).thenReturn("Message issue1");
+    when(issue1.getPrimaryMessage()).thenReturn("Message issue1");
     underTest.processRawIssues(file1, List.of(new RawIssueTrackable(issue1)));
 
     var now = System.currentTimeMillis();
 
-    var issue2 = mock(RawIssue.class);
+    var issue2 = mock(RawIssueDto.class);
     when(issue2.getRuleKey()).thenReturn("rule2");
-    when(issue2.getMessage()).thenReturn("Message issue2");
+    when(issue2.getPrimaryMessage()).thenReturn("Message issue2");
     underTest.processRawIssues(file1, List.of(new RawIssueTrackable(issue2)));
     assertThat(underTest.getTracked(file1))
       .extracting(TrackedIssue::getCreationDate)
@@ -131,16 +131,16 @@ public class ProjectIssueTrackerTest {
 
   @Test
   public void should_preserve_known_issues_with_null_date() {
-    var issue1 = mock(RawIssue.class);
+    var issue1 = mock(RawIssueDto.class);
     when(issue1.getRuleKey()).thenReturn("rule1");
-    when(issue1.getMessage()).thenReturn("Message issue1");
+    when(issue1.getPrimaryMessage()).thenReturn("Message issue1");
     underTest.processRawIssues(file1, List.of(new RawIssueTrackable(issue1)));
 
     var now = System.currentTimeMillis();
 
-    var issue2 = mock(RawIssue.class);
+    var issue2 = mock(RawIssueDto.class);
     when(issue2.getRuleKey()).thenReturn("rule2");
-    when(issue2.getMessage()).thenReturn("Message issue2");
+    when(issue2.getPrimaryMessage()).thenReturn("Message issue2");
     underTest.processRawIssues(file1, List.of(new RawIssueTrackable(issue1), new RawIssueTrackable(issue2)));
     assertThat(underTest.getTracked(file1))
       .extracting(TrackedIssue::getIssueFromAnalysis, TrackedIssue::getCreationDate)
@@ -157,13 +157,13 @@ public class ProjectIssueTrackerTest {
 
   @Test
   public void should_drop_disappeared_issues() {
-    var issue1 = mock(RawIssue.class);
+    var issue1 = mock(RawIssueDto.class);
     when(issue1.getRuleKey()).thenReturn("rule1");
-    when(issue1.getMessage()).thenReturn("Message issue1");
+    when(issue1.getPrimaryMessage()).thenReturn("Message issue1");
     when(issue1.getTextRange()).thenReturn(new TextRangeDto(1, 2, 3, 4));
-    var issue2 = mock(RawIssue.class);
+    var issue2 = mock(RawIssueDto.class);
     when(issue2.getRuleKey()).thenReturn("rule1");
-    when(issue2.getMessage()).thenReturn("Message issue2");
+    when(issue2.getPrimaryMessage()).thenReturn("Message issue2");
     when(issue1.getTextRange()).thenReturn(new TextRangeDto(2, 2, 3, 4));
 
     underTest.processRawIssues(file1, List.of(new RawIssueTrackable(issue1), new RawIssueTrackable(issue2)));
@@ -177,18 +177,18 @@ public class ProjectIssueTrackerTest {
 
   @Test
   public void should_not_match_issues_with_different_rule_key() {
-    var issue1 = mock(RawIssue.class);
+    var issue1 = mock(RawIssueDto.class);
     when(issue1.getRuleKey()).thenReturn("rule1");
-    when(issue1.getMessage()).thenReturn("Message issue");
+    when(issue1.getPrimaryMessage()).thenReturn("Message issue");
     when(issue1.getTextRange()).thenReturn(new TextRangeDto(1, 2, 3, 4));
 
     underTest.processRawIssues(file1, List.of(new RawIssueTrackable(issue1)));
 
     var tracked1 = underTest.getTracked(file1).iterator().next();
 
-    var issue2 = mock(RawIssue.class);
+    var issue2 = mock(RawIssueDto.class);
     when(issue2.getRuleKey()).thenReturn("rule2");
-    when(issue2.getMessage()).thenReturn("Message issue");
+    when(issue2.getPrimaryMessage()).thenReturn("Message issue");
     when(issue2.getTextRange()).thenReturn(new TextRangeDto(1, 2, 3, 4));
 
     underTest.processRawIssues(file1, List.of(new RawIssueTrackable(issue2)));
@@ -201,23 +201,23 @@ public class ProjectIssueTrackerTest {
 
   @Test
   public void should_match_local_issues_by_text_range_hash() {
-    var issue1 = mock(RawIssue.class);
+    var issue1 = mock(RawIssueDto.class);
     when(issue1.getRuleKey()).thenReturn("rule1");
-    when(issue1.getMessage()).thenReturn("Message issue");
+    when(issue1.getPrimaryMessage()).thenReturn("Message issue");
     when(issue1.getTextRange()).thenReturn(new TextRangeDto(1, 2, 3, 4));
     var rawIssue1 = new RawIssueTrackable(issue1, "// TODO", "  // TODO");
 
     underTest.processRawIssues(file1, List.of(rawIssue1));
 
-    var movedIssue = mock(RawIssue.class);
+    var movedIssue = mock(RawIssueDto.class);
     when(movedIssue.getRuleKey()).thenReturn("rule1");
-    when(movedIssue.getMessage()).thenReturn("Message issue");
+    when(movedIssue.getPrimaryMessage()).thenReturn("Message issue");
     when(issue1.getTextRange()).thenReturn(new TextRangeDto(2, 2, 3, 4));
     var movedRawIssue = new RawIssueTrackable(movedIssue, "// TODO", "  // TODO");
 
-    var nonMatchingIssue = mock(RawIssue.class);
+    var nonMatchingIssue = mock(RawIssueDto.class);
     when(nonMatchingIssue.getRuleKey()).thenReturn("rule1");
-    when(nonMatchingIssue.getMessage()).thenReturn("Message issue");
+    when(nonMatchingIssue.getPrimaryMessage()).thenReturn("Message issue");
     when(issue1.getTextRange()).thenReturn(new TextRangeDto(1, 2, 3, 4));
     var nonMatchingRawIssue = new RawIssueTrackable(nonMatchingIssue, "// TODO2", "  // TODO2");
 

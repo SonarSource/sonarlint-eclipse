@@ -31,22 +31,20 @@ import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 
 public class DefaultPreAnalysisContext implements IPreAnalysisContext {
 
   private final ISonarLintProject project;
   private final Map<String, String> analysisProperties;
   private final Path tempDir;
-  private final Map<ISonarLintFile, ClientInputFile> filesToAnalyze;
+  private final Map<ISonarLintFile, EclipseInputFile> filesToAnalyze;
 
-  public DefaultPreAnalysisContext(ISonarLintProject project, Map<String, String> analysisProperties, List<ClientInputFile> filesToAnalyze, Path tempDir) {
+  public DefaultPreAnalysisContext(ISonarLintProject project, Map<String, String> analysisProperties, List<EclipseInputFile> filesToAnalyze, Path tempDir) {
     this.project = project;
     this.analysisProperties = analysisProperties;
     this.filesToAnalyze = Collections
       .unmodifiableMap(filesToAnalyze.stream()
-        .map(EclipseInputFile.class::cast)
-        .collect(Collectors.toMap(EclipseInputFile::getClientObject, Function.identity())));
+        .collect(Collectors.toMap(EclipseInputFile::getFile, Function.identity())));
     this.tempDir = tempDir;
   }
 

@@ -89,9 +89,7 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
   private static void scheduleAnalysis(FileWithDocument fileWithDoc) {
     var file = fileWithDoc.getFile();
 
-    // When the user just applied a quick fix, we don't have to check for unsupported languages as nothing really has
-    // changed on the current state of the IDE / projects. It would just be unnecessary noise ^^
-    var request = new AnalyzeProjectRequest(file.getProject(), List.of(fileWithDoc), TriggerType.QUICK_FIX, false, false);
+    var request = new AnalyzeProjectRequest(file.getProject(), List.of(fileWithDoc), TriggerType.QUICK_FIX, false);
 
     AnalysisJobsScheduler.scheduleAutoAnalysisIfEnabled(request);
   }

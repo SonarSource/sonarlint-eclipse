@@ -23,6 +23,7 @@ import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,11 +31,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -44,13 +49,16 @@ import org.sonarsource.sonarlint.core.rpc.client.ConfigScopeNotFoundException;
 import org.sonarsource.sonarlint.core.rpc.client.ConnectionNotFoundException;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintCancelChecker;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintRpcClientDelegate;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.event.DidReceiveServerHotspotEvent;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.GetProxyPasswordAuthenticationResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.ProxyDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.X509CertificateDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.plugin.DidSkipLoadingPluginParams.SkipReason;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.TelemetryClientLiveAttributesResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.ClientFileDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TokenDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.UsernamePasswordDto;
 
@@ -59,6 +67,16 @@ import org.sonarsource.sonarlint.core.rpc.protocol.common.UsernamePasswordDto;
  *
  */
 public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcClientDelegate {
+
+  @Override
+  public Path getBaseDir(String configurationScopeId) throws ConfigScopeNotFoundException {
+    var project = SonarLintUtils.resolveProject(configurationScopeId);
+    var projectLocation = project.getResource().getLocation();
+    // In some unfrequent cases the project may be virtual and don't have physical location
+    // so fallback to use analysis work dir that was created before
+    var analysisWorkDir = project.getWorkingDir().resolve("sonarlint");
+    return projectLocation != null ? projectLocation.toFile().toPath() : analysisWorkDir;
+  }
 
   @Override
   public List<ClientFileDto> listFiles(String configScopeId) throws ConfigScopeNotFoundException {
@@ -178,6 +196,25 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
   @Override
   public TelemetryClientLiveAttributesResponse getTelemetryLiveAttributes() {
     return new TelemetryClientLiveAttributesResponse(Map.of());
+  }
+
+  @Override
+  public void didDetectSecret() {
+    SonarLintNotifications.get().showNotificationIfFirstSecretDetected();
+  }
+
+  @Override
+  public void didRaiseIssue(String configurationScopeId, UUID analysisId, RawIssueDto rawIssue) {
+    var currentAnalysis = RunningAnalysesTracker.get().getById(analysisId);
+    if (currentAnalysis != null) {
+      currentAnalysis.addRawIssue(rawIssue);
+    }
+  }
+
+  @Override
+  public void didSkipLoadingPlugin(String configurationScopeId, Language language, SkipReason reason, String minVersion, @Nullable String currentVersion) {
+    SonarLintUtils.tryResolveProject(configurationScopeId)
+      .ifPresent(project -> AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(language, reason, minVersion, currentVersion));
   }
 
 }

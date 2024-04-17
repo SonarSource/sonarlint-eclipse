@@ -76,8 +76,7 @@ public class DeactivateRuleUtils {
 
     // Assuming the user is willingly changing the rules for a standalone project, don't check for unsupported
     // languages as this is not the correct trigger in this moment!
-    AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE,
-      filter, false);
+    AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE, filter);
   }
 
   private static void removeAnnotations(IMarker marker) {

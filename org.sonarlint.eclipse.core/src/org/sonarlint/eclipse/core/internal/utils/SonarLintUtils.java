@@ -36,6 +36,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
@@ -76,6 +77,21 @@ public class SonarLintUtils {
       return false;
     }
     return true;
+  }
+
+  @Nullable
+  public static ISonarLintFile findFileFromUri(URI fileUri) {
+    var files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(fileUri);
+    if (files.length == 0) {
+      return null;
+    }
+    for (var file : files) {
+      var slFile = SonarLintUtils.adapt(file, ISonarLintFile.class);
+      if (slFile != null) {
+        return slFile;
+      }
+    }
+    return null;
   }
 
   public static String getPluginVersion() {

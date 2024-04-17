@@ -20,11 +20,8 @@
 package org.sonarlint.eclipse.core.internal.event;
 
 import java.util.Set;
-import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public interface AnalysisEvent {
   Set<ISonarLintProject> getProjects();
-
-  Set<SonarLintLanguage> getUnavailableLanguages();
 }

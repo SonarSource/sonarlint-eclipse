@@ -43,7 +43,7 @@ import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.IssueSeverity;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TextRangeDto;
 
@@ -115,7 +115,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
    */
   private TrackedIssue newMockTrackable() {
     var trackedIssue = mock(TrackedIssue.class);
-    var rawIssue = mock(RawIssue.class);
+    var rawIssue = mock(RawIssueDto.class);
     when(trackedIssue.getIssueFromAnalysis()).thenReturn(rawIssue);
 
     // mandatory non-nulls
@@ -182,7 +182,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
   public void test_marker_of_trackable_with_rule_context() throws Exception {
     var trackable = newMockTrackable();
 
-    when(trackable.getIssueFromAnalysis().getRuleDescriptionContextKey()).thenReturn(Optional.of("struts"));
+    when(trackable.getIssueFromAnalysis().getRuleDescriptionContextKey()).thenReturn("struts");
 
     var markers = processTrackable(trackable);
     assertThat(markers).hasSize(1);

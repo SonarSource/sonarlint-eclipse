@@ -71,8 +71,8 @@ public class MarkAsResolvedJob extends Job {
       SonarLintNotifications.get()
         .showNotification(new Notification("Issue marked as resolved", "The issue was successfully marked as resolved", null));
       if (!isTaint) {
-        var request = new AnalyzeProjectRequest(project, List.of(new FileWithDocument(file, null)), TriggerType.AFTER_RESOLVE, false, false);
-        AbstractAnalyzeProjectJob.create(request).schedule();
+        var request = new AnalyzeProjectRequest(project, List.of(new FileWithDocument(file, null)), TriggerType.AFTER_RESOLVE, false);
+        AnalyzeProjectJob.create(request).schedule();
       }
       return Status.OK_STATUS;
     } catch (ExecutionException e) {
