@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
+import org.sonarsource.sonarlint.core.commons.api.progress.CanceledException;
 
 public class JobUtils {
 
@@ -59,6 +60,20 @@ public class JobUtils {
         return future.get(100, TimeUnit.MILLISECONDS);
       } catch (TimeoutException t) {
         continue;
+      }
+    }
+  }
+
+  public static <T> T waitForFutureInJob(IProgressMonitor monitor, CompletableFuture<T> future) throws InterruptedException, ExecutionException {
+    while (true) {
+      if (monitor.isCanceled()) {
+        future.cancel(true);
+        throw new CanceledException();
+      }
+      try {
+        return future.get(100, TimeUnit.MILLISECONDS);
+      } catch (TimeoutException t) {
+        // nothing to do, retry another iteration
       }
     }
   }

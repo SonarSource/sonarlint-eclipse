@@ -19,13 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.eclipse.core.filesystem.EFS;
@@ -33,8 +27,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
-import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
 
 /**
  * Two situations:
@@ -42,11 +34,8 @@ import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
  *   - if document is <code>null</code> then file is not open but that doesn't mean we can read from FS, since the file might be stored on a remote FS
  *
  */
-class EclipseInputFile implements ClientInputFile {
-  private final boolean isTestFile;
+class EclipseInputFile {
   private final ISonarLintFile file;
-  @Nullable
-  private final SonarLanguage language;
   @Nullable
   private final IDocument editorDocument;
   private final Path tempDirectory;
@@ -54,16 +43,17 @@ class EclipseInputFile implements ClientInputFile {
   private Path filePath;
   private final long documentModificationStamp;
 
-  EclipseInputFile(boolean isTestFile, ISonarLintFile file, Path tempDirectory, @Nullable IDocument editorDocument, @Nullable SonarLanguage language) {
-    this.isTestFile = isTestFile;
+  EclipseInputFile(ISonarLintFile file, Path tempDirectory, @Nullable IDocument editorDocument) {
     this.file = file;
     this.tempDirectory = tempDirectory;
-    this.language = language;
     this.editorDocument = editorDocument;
     this.documentModificationStamp = editorDocument != null ? ((IDocumentExtension4) editorDocument).getModificationStamp() : 0;
   }
 
-  @Override
+  public ISonarLintFile getFile() {
+    return file;
+  }
+
   public String getPath() {
     if (filePath == null) {
       initFromFS(file, tempDirectory);
@@ -85,50 +75,6 @@ class EclipseInputFile implements ClientInputFile {
     } catch (Exception e) {
       throw new IllegalStateException("Unable to find path for file " + file, e);
     }
-  }
-
-  @Override
-  public String relativePath() {
-    return file.getProjectRelativePath();
-  }
-
-  @Override
-  public boolean isTest() {
-    return isTestFile;
-  }
-
-  @Override
-  public SonarLanguage language() {
-    return language;
-  }
-
-  @Override
-  public Charset getCharset() {
-    return StandardCharsets.UTF_8;
-  }
-
-  @Override
-  public ISonarLintFile getClientObject() {
-    return file;
-  }
-
-  @Override
-  public URI uri() {
-    return file.uri();
-  }
-
-  @Override
-  public String contents() throws IOException {
-    // Prefer to use editor Document when file is already opened in an editor
-    if (editorDocument != null) {
-      return editorDocument.get();
-    }
-    return file.getDocument().get();
-  }
-
-  @Override
-  public InputStream inputStream() throws IOException {
-    return new ByteArrayInputStream(contents().getBytes(getCharset()));
   }
 
   public boolean hasDocumentOlderThan(IDocument document) {

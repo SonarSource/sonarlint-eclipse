@@ -24,8 +24,6 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
-import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
 
 public class SonarLintNotifications {
   private static final SonarLintNotifications instance = new SonarLintNotifications();
@@ -53,8 +51,8 @@ public class SonarLintNotifications {
     }
   }
 
-  public void showNotificationIfFirstSecretDetected(RawIssue issue) {
-    if (issue.getRuleKey().startsWith(SonarLanguage.SECRETS.getSonarLanguageKey()) && SonarLintGlobalConfiguration.secretsNeverDetected()) {
+  public void showNotificationIfFirstSecretDetected() {
+    if (SonarLintGlobalConfiguration.secretsNeverDetected()) {
       SonarLintNotifications.get().showNotification(new SonarLintNotifications.Notification(
         "Secret(s) detected", "SonarLint detected some secrets in one of the open files.",
         "SonarLint detected some secrets in one of the open files. " +

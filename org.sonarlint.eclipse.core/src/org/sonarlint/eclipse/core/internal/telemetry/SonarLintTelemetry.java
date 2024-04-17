@@ -19,22 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.telemetry;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 import org.eclipse.core.runtime.Platform;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
-import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
-import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.legacy.analysis.RawIssue;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.telemetry.TelemetryRpcService;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.AddQuickFixAppliedForRuleParams;
-import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.AddReportedRulesParams;
-import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.AnalysisDoneOnSingleLanguageParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.DevNotificationsClickedParams;
 
 public class SonarLintTelemetry {
@@ -57,20 +48,6 @@ public class SonarLintTelemetry {
         sb.append(platformBundle.getVersion());
       });
     return sb.toString();
-  }
-
-  public static void updateTelemetryAfterAnalysis(AnalysisResults result, long start, Map<ISonarLintIssuable, List<RawIssue>> issuesPerResource) {
-    if (result.languagePerFile().size() == 1) {
-      var languageOfTheSingleFile = result.languagePerFile().entrySet().iterator().next().getValue();
-      if (languageOfTheSingleFile != null) {
-        var rpcLanguage = org.sonarsource.sonarlint.core.rpc.protocol.common.Language.valueOf(languageOfTheSingleFile.name());
-        getTelemetryService().analysisDoneOnSingleLanguage(new AnalysisDoneOnSingleLanguageParams(rpcLanguage, (int) (System.currentTimeMillis() - start)));
-      }
-    } else {
-      getTelemetryService().analysisDoneOnMultipleFiles();
-    }
-    getTelemetryService()
-      .addReportedRules(new AddReportedRulesParams(issuesPerResource.values().stream().flatMap(Collection::stream).map(RawIssue::getRuleKey).collect(Collectors.toSet())));
   }
 
   private static TelemetryRpcService getTelemetryService() {

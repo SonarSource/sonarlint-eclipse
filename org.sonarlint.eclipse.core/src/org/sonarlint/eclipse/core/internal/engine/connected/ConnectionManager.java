@@ -79,7 +79,6 @@ public class ConnectionManager {
     var old = facadesByConnectionId.get(connectionId);
     if (old != null) {
       loadConnection(event.getNode(), old);
-      old.stop();
       fireConnectionEvent(old, EVENT_CHANGED);
     } else {
       var newFacade = new ConnectionFacade(connectionId);
@@ -175,7 +174,6 @@ public class ConnectionManager {
       throw unableToLoadConnectionList(e);
     }
     connectionsListeners.clear();
-    facadesByConnectionId.values().forEach(c -> c.stop());
   }
 
   public void addConnectionManagerListener(IConnectionManagerListener listener) {

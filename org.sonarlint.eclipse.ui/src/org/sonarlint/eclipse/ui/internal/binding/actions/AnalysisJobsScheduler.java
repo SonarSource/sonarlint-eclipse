@@ -28,7 +28,7 @@ import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
-import org.sonarlint.eclipse.core.internal.jobs.AbstractAnalyzeProjectJob;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
@@ -50,7 +50,7 @@ public class AnalysisJobsScheduler {
     }
     var projectConfiguration = SonarLintCorePlugin.loadConfig(project);
     if (projectConfiguration.isAutoEnabled()) {
-      AbstractAnalyzeProjectJob.create(request).schedule();
+      AnalyzeProjectJob.create(request).schedule();
     }
   }
 
@@ -59,36 +59,30 @@ public class AnalysisJobsScheduler {
    * Use null for project parameter to analyze open files in all projects.
    */
   public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType,
-    Predicate<ISonarLintFile> filter, boolean unavailableLanguagesCheck) {
+    Predicate<ISonarLintFile> filter) {
     var filesByProject = PlatformUtils.collectOpenedFiles(project, filter);
 
     for (var entry : filesByProject.entrySet()) {
       var aProject = entry.getKey();
-      var request = new AnalyzeProjectRequest(aProject, entry.getValue(), triggerType, false, unavailableLanguagesCheck);
+      var request = new AnalyzeProjectRequest(aProject, entry.getValue(), triggerType, false);
       scheduleAutoAnalysisIfEnabled(request);
     }
   }
 
   public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType) {
-    scheduleAnalysisOfOpenFiles(project, triggerType, f -> true, true);
+    scheduleAnalysisOfOpenFiles(project, triggerType, f -> true);
   }
 
-  public static void scheduleAnalysisOfOpenFiles(List<ISonarLintProject> projects, TriggerType triggerType,
-    boolean unavailableLanguagesCheck) {
-    projects.forEach(p -> scheduleAnalysisOfOpenFiles(p, triggerType, f -> true, unavailableLanguagesCheck));
-  }
-
-  public static void scheduleAnalysisOfOpenFiles(Job job, List<ISonarLintProject> projects, TriggerType triggerType,
-    boolean unsupportedLanguageCheck) {
-    JobUtils.scheduleAfterSuccess(job, () -> scheduleAnalysisOfOpenFiles(projects, triggerType, unsupportedLanguageCheck));
+  public static void scheduleAnalysisOfOpenFiles(List<ISonarLintProject> projects, TriggerType triggerType) {
+    projects.forEach(p -> scheduleAnalysisOfOpenFiles(p, triggerType, f -> true));
   }
 
   public static void scheduleAnalysisOfOpenFilesInBoundProjects(ConnectionFacade connection, TriggerType triggerType) {
-    scheduleAnalysisOfOpenFiles(connection.getBoundProjects(), triggerType, false);
+    scheduleAnalysisOfOpenFiles(connection.getBoundProjects(), triggerType);
   }
 
   public static void scheduleAnalysisOfOpenFiles(Job job, List<ISonarLintProject> projects, TriggerType triggerType) {
-    JobUtils.scheduleAfterSuccess(job, () -> scheduleAnalysisOfOpenFiles(projects, triggerType, false));
+    JobUtils.scheduleAfterSuccess(job, () -> scheduleAnalysisOfOpenFiles(projects, triggerType));
   }
 
   public static void scheduleAnalysisOfOpenFilesInBoundProjects(Job job, ConnectionFacade server, TriggerType triggerType) {

@@ -52,8 +52,8 @@ public class ReOpenResolvedJob extends Job {
       .showNotification(new Notification("Re-Opening resolved Issue", "The issue was successfully re-opened", null));
     if (!isTaint) {
       var request = new AnalyzeProjectRequest(project, List.of(new FileWithDocument(file, null)),
-        TriggerType.AFTER_RESOLVE, false, false);
-      AbstractAnalyzeProjectJob.create(request).schedule();
+        TriggerType.AFTER_RESOLVE, false);
+      AnalyzeProjectJob.create(request).schedule();
     }
     return Status.OK_STATUS;
   }

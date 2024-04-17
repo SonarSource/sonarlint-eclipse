@@ -32,7 +32,6 @@ public class AnalyzeProjectRequest {
   private final Collection<FileWithDocument> files;
   private final TriggerType triggerType;
   private final boolean shouldClearReport;
-  private final boolean checkUnsupportedLanguages;
 
   public static class FileWithDocument {
     private final ISonarLintFile file;
@@ -56,12 +55,11 @@ public class AnalyzeProjectRequest {
   }
 
   public AnalyzeProjectRequest(ISonarLintProject project, Collection<FileWithDocument> files, TriggerType triggerType,
-    boolean shouldClearReport, boolean checkUnsupportedLanguages) {
+    boolean shouldClearReport) {
     this.project = project;
     this.triggerType = triggerType;
     this.files = files;
     this.shouldClearReport = shouldClearReport;
-    this.checkUnsupportedLanguages = checkUnsupportedLanguages;
   }
 
   public Collection<FileWithDocument> getFiles() {
@@ -78,9 +76,5 @@ public class AnalyzeProjectRequest {
 
   public boolean shouldClearReport() {
     return shouldClearReport;
-  }
-
-  public boolean checkUnsupportedLanguages() {
-    return checkUnsupportedLanguages;
   }
 }

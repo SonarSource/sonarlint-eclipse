@@ -57,14 +57,16 @@ import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.tracking.DigestUtils;
 import org.sonarlint.eclipse.core.internal.tracking.TrackedIssue;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.listener.TaintVulnerabilitiesListener;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TaintVulnerabilityDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TaintVulnerabilityDto.FlowDto.LocationDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TextRangeWithHashDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.QuickFixDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.TextRangeDto;
 
 public class SonarLintMarkerUpdater {
 
@@ -318,7 +320,7 @@ public class SonarLintMarkerUpdater {
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackedIssue.getRuleKey());
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR,
-      trackedIssue.getIssueFromAnalysis().getRuleDescriptionContextKey().orElse(null));
+      trackedIssue.getIssueFromAnalysis().getRuleDescriptionContextKey());
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.SEVERITY, SonarLintGlobalConfiguration.getMarkerSeverity());
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.MESSAGE, trackedIssue.getMessage());
@@ -332,7 +334,7 @@ public class SonarLintMarkerUpdater {
 
     var issueFromAnalysis = trackedIssue.getIssueFromAnalysis();
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR,
-      issueFromAnalysis.getCleanCodeAttribute().orElse(null));
+      issueFromAnalysis.getCleanCodeAttribute());
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_IMPACTS_ATTR,
       MarkerUtils.encodeImpacts(issueFromAnalysis.getImpacts()));
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR,
@@ -349,7 +351,7 @@ public class SonarLintMarkerUpdater {
     for (var engineFlow : trackedIssue.getIssueFromAnalysis().getFlows()) {
       var flow = new MarkerFlow(i);
       flows.add(flow);
-      var locations = new ArrayList<>(engineFlow.locations());
+      var locations = new ArrayList<>(engineFlow.getLocations());
       Collections.reverse(locations);
       for (var l : locations) {
         var flowLocation = new MarkerFlowLocation(flow, l.getMessage());
@@ -366,24 +368,21 @@ public class SonarLintMarkerUpdater {
       return;
     }
     var qfs = new ArrayList<MarkerQuickFix>();
-    for (var engineQuickFix : trackedIssue.getIssueFromAnalysis().quickFixes()) {
+    for (var engineQuickFix : trackedIssue.getIssueFromAnalysis().getQuickFixes()) {
       createQuickFix(document, issuable, qfs, engineQuickFix);
     }
     marker.setAttribute(MarkerUtils.SONAR_MARKER_QUICK_FIXES_ATTR, new MarkerQuickFixes(qfs));
   }
 
-  private static void createQuickFix(IDocument document, ISonarLintIssuable issuable, List<MarkerQuickFix> qfs, QuickFix engineQuickFix) {
-    var qf = new MarkerQuickFix(engineQuickFix.message());
-    for (var edits : engineQuickFix.inputFileEdits()) {
-      var inputFile = (EclipseInputFile) edits.target();
-      if (!issuable.equals(inputFile.getClientObject())) {
-        SonarLintLogger.get().debug("Quick fix on multiple files is not supported yet: " + engineQuickFix.message());
+  private static void createQuickFix(IDocument document, ISonarLintIssuable issuable, List<MarkerQuickFix> qfs, QuickFixDto rpcQuickFix) {
+    var qf = new MarkerQuickFix(rpcQuickFix.message());
+    for (var edits : rpcQuickFix.fileEdits()) {
+      var fileWithEdit = SonarLintUtils.findFileFromUri(edits.target());
+      if (!issuable.equals(fileWithEdit)) {
+        SonarLintLogger.get().debug("Quick fix on multiple files is not supported yet: " + rpcQuickFix.message());
         return;
       }
-      if (inputFile.hasDocumentOlderThan(document)) {
-        SonarLintLogger.get().debug("Document has changed since quick fix was contributed: " + engineQuickFix.message());
-        return;
-      }
+      // should we discard the quick fix if the document has changed since the analysis?
       for (var txtEditFromEngine : edits.textEdits()) {
         var markerForTextEdit = createMarkerForTextRange(document, issuable.getResource(), SonarLintCorePlugin.MARKER_ON_THE_FLY_QUICK_FIX_ID, null,
           txtEditFromEngine.range());
@@ -391,7 +390,7 @@ public class SonarLintMarkerUpdater {
           var textEdit = new MarkerTextEdit(markerForTextEdit.get(), txtEditFromEngine.newText());
           qf.addTextEdit(textEdit);
         } else {
-          SonarLintLogger.get().debug("Unable to create text edit marker for quick fix: " + engineQuickFix.message());
+          SonarLintLogger.get().debug("Unable to create text edit marker for quick fix: " + rpcQuickFix.message());
           return;
         }
       }
@@ -399,8 +398,7 @@ public class SonarLintMarkerUpdater {
     qfs.add(qf);
   }
 
-  private static Optional<IMarker> createMarkerForTextRange(IDocument document, IResource resource, String markerId, @Nullable String message,
-    org.sonarsource.sonarlint.core.commons.api.@Nullable TextRange textRange) {
+  private static Optional<IMarker> createMarkerForTextRange(IDocument document, IResource resource, String markerId, @Nullable String message, @Nullable TextRangeDto textRange) {
     try {
       var marker = resource.createMarker(markerId);
       if (message != null) {

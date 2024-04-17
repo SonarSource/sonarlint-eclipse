@@ -31,7 +31,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class AnalyzeProjectsJob extends WorkspaceJob {
@@ -62,11 +61,9 @@ public class AnalyzeProjectsJob extends WorkspaceJob {
         }
         global.setTaskName("Analyzing project " + project.getName());
 
-        // If the project is bound, we don't have to check for unsupported languages.
-        var req = new AnalyzeProjectRequest(project, entry.getValue(), TriggerType.MANUAL, false,
-          !SonarLintUtils.isBoundToConnection(project));
+        var req = new AnalyzeProjectRequest(project, entry.getValue(), TriggerType.MANUAL, false);
 
-        var job = AbstractAnalyzeProjectJob.create(req);
+        var job = AnalyzeProjectJob.create(req);
         var subMonitor = analysisMonitor.newChild(1);
         job.run(subMonitor);
         subMonitor.done();

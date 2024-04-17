@@ -34,11 +34,12 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessRpcClient;
-import org.sonarlint.eclipse.core.internal.jobs.AbstractAnalyzeProjectJob;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesMarkerUpdateJob;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
@@ -56,6 +57,7 @@ import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueContext;
 import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
+import org.sonarlint.eclipse.ui.internal.popup.LanguageFromConnectedModePopup;
 import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
 import org.sonarlint.eclipse.ui.internal.popup.NoBindingSuggestionFoundPopup;
 import org.sonarlint.eclipse.ui.internal.popup.SingleBindingSuggestionPopup;
@@ -81,6 +83,7 @@ import org.sonarsource.sonarlint.core.rpc.protocol.client.progress.ReportProgres
 import org.sonarsource.sonarlint.core.rpc.protocol.client.progress.StartProgressParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.smartnotification.ShowSmartNotificationParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 
 public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient {
 
@@ -269,7 +272,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
 
             // also schedule analyze of opened files based on synced information
             AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE,
-              f -> SonarLintUtils.isBoundToConnection(f, connection), false);
+              f -> SonarLintUtils.isBoundToConnection(f, connection));
           }
         }
       });
@@ -372,9 +375,9 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
         + "' changed ready status for analysis to: " + areReadyForAnalysis);
     }
 
-    AbstractAnalyzeProjectJob.changeAnalysisReadiness(configurationScopeIds, areReadyForAnalysis);
+    AnalyzeProjectJob.changeAnalysisReadiness(configurationScopeIds, areReadyForAnalysis);
     if (areReadyForAnalysis) {
-      AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(projects, TriggerType.ANALYSIS_READY, false);
+      AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(projects, TriggerType.ANALYSIS_READY);
     }
   }
 
@@ -457,5 +460,15 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
         dialog.open();
       }
     });
+  }
+
+  @Override
+  public void promoteExtraEnabledLanguagesInConnectedMode(String configurationScopeId, Set<Language> languagesToPromote) {
+    var projectOpt = SonarLintUtils.tryResolveProject(configurationScopeId);
+    if (projectOpt.isEmpty()) {
+      return;
+    }
+    var languages = languagesToPromote.stream().map(language -> SonarLintLanguage.valueOf(language.name())).collect(Collectors.toList());
+    LanguageFromConnectedModePopup.displayPopupIfNotIgnored(projectOpt.get(), languages);
   }
 }

@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -28,7 +29,6 @@ import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
@@ -41,11 +41,11 @@ import org.sonarsource.sonarlint.core.client.utils.Language;
  *  only available in connected mode.
  */
 public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
-  private final List<ISonarLintProject> projects;
+  private final ISonarLintProject project;
   private final List<SonarLintLanguage> languages;
 
-  public LanguageFromConnectedModePopup(List<ISonarLintProject> projects, List<SonarLintLanguage> languages) {
-    this.projects = projects;
+  public LanguageFromConnectedModePopup(ISonarLintProject project, List<SonarLintLanguage> languages) {
+    this.project = project;
     this.languages = languages;
   }
 
@@ -73,7 +73,7 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.RULES, getShell().getDisplay()));
 
     if (SonarLintCorePlugin.getConnectionManager().checkForSonarCloud()) {
-      addLink("Bind to SonarCloud", e -> ProjectBindingWizard.createDialog(getParentShell(), projects));
+      addLink("Bind to SonarCloud", e -> ProjectBindingWizard.createDialog(getParentShell(), Set.of(project)));
     } else {
       addLink("Try SonarCloud for free",
         e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.SONARCLOUD_SIGNUP_LINK, getShell().getDisplay()));
@@ -98,7 +98,7 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
   }
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
-  public static void displayPopupIfNotIgnored(List<ISonarLintProject> projects, List<SonarLintLanguage> languages) {
+  public static void displayPopupIfNotIgnored(ISonarLintProject project, List<SonarLintLanguage> languages) {
     if (languages.isEmpty() || PopupUtils.popupCurrentlyDisplayed(LanguageFromConnectedModePopup.class)
       || SonarLintGlobalConfiguration.ignoreMissingFeatureNotifications()) {
       return;
@@ -107,12 +107,7 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
     Display.getDefault().asyncExec(() -> {
       PopupUtils.addCurrentlyDisplayedPopup(LanguageFromConnectedModePopup.class);
 
-      // Because we can analyze multiple projects at the same time and maybe some of them are already bound, we have to
-      // filter out the ones already bound.
-      var projectsNotBound = projects.stream()
-        .filter(project -> !SonarLintUtils.isBoundToConnection(project)).collect(Collectors.toList());
-
-      var popup = new LanguageFromConnectedModePopup(projectsNotBound, languages);
+      var popup = new LanguageFromConnectedModePopup(project, languages);
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);
       popup.open();
