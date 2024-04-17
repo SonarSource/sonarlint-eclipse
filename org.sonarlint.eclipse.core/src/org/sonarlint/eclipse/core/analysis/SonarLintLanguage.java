@@ -33,6 +33,7 @@ public enum SonarLintLanguage {
   COBOL,
   HTML,
   JAVA,
+  JCL,
   JS,
   JSP,
   KOTLIN,
