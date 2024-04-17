@@ -72,6 +72,7 @@
 
     <!-- Sloop embedded CLI version for fragment projects -->
     <sloop.version>10.1.0.77331</sloop.version>
+    <sloop.version>10.1.0.77633</sloop.version>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
