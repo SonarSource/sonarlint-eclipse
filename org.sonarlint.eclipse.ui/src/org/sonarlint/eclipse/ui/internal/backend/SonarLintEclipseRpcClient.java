@@ -317,16 +317,21 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
 
   @Override
   public void log(LogParams params) {
+    var message = params.getMessage();
+    var stackTrace = params.getStackTrace() != null
+      ? ("\n\n" + params.getStackTrace())
+      : "";
+    
     switch (params.getLevel()) {
       case TRACE:
       case DEBUG:
-        SonarLintLogger.get().debug(params.getMessage());
+        SonarLintLogger.get().debug(message + stackTrace);
         break;
       case ERROR:
-        SonarLintLogger.get().error(params.getMessage());
+        SonarLintLogger.get().error(message + stackTrace);
         break;
       default:
-        SonarLintLogger.get().info(params.getMessage());
+        SonarLintLogger.get().info(message + stackTrace);
     }
   }
 
