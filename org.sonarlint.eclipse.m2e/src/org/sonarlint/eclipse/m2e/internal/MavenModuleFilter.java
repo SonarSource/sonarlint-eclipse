@@ -19,20 +19,35 @@
  */
 package org.sonarlint.eclipse.m2e.internal;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.core.resource.ISonarLintProjectHierarchyProvider;
 
-public class MavenModuleFilter implements ISonarLintFileAdapterParticipant {
-
+public class MavenModuleFilter implements ISonarLintFileAdapterParticipant, ISonarLintProjectHierarchyProvider {
   private final boolean isM2ePresent;
+  private final boolean isMavenPresent;
 
   public MavenModuleFilter() {
     this.isM2ePresent = isM2ePresent();
+    this.isMavenPresent = isMavenPresent();
   }
 
   private static boolean isM2ePresent() {
     try {
       Class.forName("org.eclipse.m2e.core.MavenPlugin");
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
+  }
+
+  private static boolean isMavenPresent() {
+    try {
+      Class.forName("org.apache.maven.project.MavenProject");
       return true;
     } catch (ClassNotFoundException e) {
       return false;
@@ -47,4 +62,33 @@ public class MavenModuleFilter implements ISonarLintFileAdapterParticipant {
     return false;
   }
 
+  @Override
+  public String getHierarchyProviderIdentifier() {
+    return "Maven (found by the SonarLint m2e adapter)";
+  }
+
+  @Override
+  public boolean partOfHierarchy(ISonarLintProject project) {
+    if (isM2ePresent && isMavenPresent) {
+      return MavenUtils.isPartOfHierarchy(project);
+    }
+    return false;
+  }
+
+  @Override
+  @Nullable
+  public ISonarLintProject getRootProject(ISonarLintProject project) {
+    if (isM2ePresent && isMavenPresent) {
+      return MavenUtils.getRootProjectInWorkspace(project);
+    }
+    return null;
+  }
+
+  @Override
+  public Collection<ISonarLintProject> getSubProjects(ISonarLintProject project) {
+    if (isM2ePresent && isMavenPresent) {
+      return MavenUtils.getProjectSubProjects(project);
+    }
+    return Collections.emptyList();
+  }
 }

@@ -58,6 +58,24 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
   @SuppressWarnings("unchecked")
   @Override
   protected void doCreateControl(Composite container) {
+    // When using the Connection suggestion we only use this page but for that we have to display the information
+    // regarding the SonarQube URL / SonarCloud organization and project key
+    if (model.isFromConnectionSuggestion()) {
+      var connectionLabel = new Label(container, SWT.WRAP);
+
+      var organization = model.getOrganization();
+      if (organization == null) {
+        connectionLabel.setText("The token is used for setting up the connection to the SonarQube server URL '"
+          + model.getServerUrl() + "'.");
+      } else {
+        connectionLabel.setText("The token is used for setting up the connection with SonarCloud to the organization '"
+          + organization + "'.");
+      }
+
+      var gd = new GridData(GridData.FILL_HORIZONTAL);
+      gd.horizontalSpan = 3;
+      connectionLabel.setLayoutData(gd);
+    }
 
     createTokenField(container);
     createOpenSecurityPageButton(container);

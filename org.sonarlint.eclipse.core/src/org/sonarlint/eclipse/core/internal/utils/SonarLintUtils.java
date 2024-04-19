@@ -19,10 +19,15 @@
  */
 package org.sonarlint.eclipse.core.internal.utils;
 
+import java.net.URI;
 import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
+import java.util.stream.Stream;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -34,6 +39,7 @@ import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
+import org.sonarsource.sonarlint.core.rpc.client.ConfigScopeNotFoundException;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 
 public class SonarLintUtils {
@@ -182,5 +188,22 @@ public class SonarLintUtils {
     }
 
     return adapted;
+  }
+
+  public static ISonarLintProject resolveProject(String configScopeId) throws ConfigScopeNotFoundException {
+    var projectOpt = tryResolveProject(configScopeId);
+    if (projectOpt.isEmpty()) {
+      SonarLintLogger.get().debug("Unable to resolve project: " + configScopeId);
+      throw new ConfigScopeNotFoundException();
+    }
+    return projectOpt.get();
+  }
+
+  public static Optional<ISonarLintProject> tryResolveProject(String configScopeId) {
+    var projectUri = URI.create(configScopeId);
+    return Stream.of(ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(projectUri))
+      .map(c -> adapt(c, ISonarLintProject.class))
+      .filter(Objects::nonNull)
+      .findFirst();
   }
 }

@@ -17,28 +17,20 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.ui.internal.popup;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.swt.widgets.Composite;
 
-/** Base class for all SonarLint jobs, for level specific jobs see subclasses */
-public abstract class AbstractSonarJob extends Job {
-  protected AbstractSonarJob(String title) {
-    super(title);
-    setPriority(Job.DECORATE);
+/** Base class for all notifications that are fading away automatically */
+public abstract class AbstractSonarLintToastPopup extends AbstractSonarLintPopup {
+  protected AbstractSonarLintToastPopup(int delayClose) {
+    setFadingEnabled(true);
+    setDelayClose(delayClose);
   }
 
+  /** Toast notifications shouldn't add anything to the pop-up beside the message */
   @Override
-  public final IStatus run(final IProgressMonitor monitor) {
-    try {
-      return doRun(monitor);
-    } catch (CoreException e) {
-      return e.getStatus();
-    }
+  protected final void createContentArea(Composite composite) {
+    super.createContentArea(composite);
   }
-
-  protected abstract IStatus doRun(final IProgressMonitor monitor) throws CoreException;
 }

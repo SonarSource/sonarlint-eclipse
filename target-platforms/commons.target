@@ -7,7 +7,7 @@
       <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20230531010532/repository/"/>
     </location>
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <repository location="https://download.eclipse.org/lsp4j/updates/releases/0.21.1/"/>
+      <repository location="https://download.eclipse.org/lsp4j/updates/releases/0.22.0/"/>
 	  <unit id="org.eclipse.lsp4j.jsonrpc" version="0.0.0"/>
     </location>
 	  <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
@@ -15,25 +15,25 @@
 			  <dependency>
 				  <groupId>org.sonarsource.sonarlint.core</groupId>
                   <artifactId>sonarlint-rpc-protocol</artifactId>
-				  <version>10.1.0.77633</version>
+				  <version>10.1.0.77682</version>
 				  <type>jar</type>
 			  </dependency>
 			  <dependency>
 				  <groupId>org.sonarsource.sonarlint.core</groupId>
                   <artifactId>sonarlint-rpc-java-client</artifactId>
-				  <version>10.1.0.77633</version>
+				  <version>10.1.0.77682</version>
 				  <type>jar</type>
 			  </dependency>
 			  <dependency>
 				  <groupId>org.sonarsource.sonarlint.core</groupId>
                   <artifactId>sonarlint-java-client-utils</artifactId>
-				  <version>10.1.0.77633</version>
+				  <version>10.1.0.77682</version>
 				  <type>jar</type>
 			  </dependency>
 			  <dependency>
 				  <groupId>org.sonarsource.sonarlint.core</groupId>
                   <artifactId>sonarlint-java-client-legacy</artifactId>
-				  <version>10.1.0.77633</version>
+				  <version>10.1.0.77682</version>
                   <classifier>osgi</classifier>
 				  <type>jar</type>
 			  </dependency>

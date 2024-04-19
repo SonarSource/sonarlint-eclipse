@@ -17,16 +17,24 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.ui.internal.dialog;
 
-/** Base class for all jobs running at a Eclipse global configuration level */
-public abstract class AbstractSonarGlobalConfigurationJob extends AbstractSonarJob {
-  protected AbstractSonarGlobalConfigurationJob(String title) {
-    super(title);
-  }
+import java.util.List;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
-  @Override
-  public final boolean belongsTo(Object family) {
-    return "org.sonarlint.eclipse.globalConfigurationJob".equals(family);
+/**
+ *  When more than one project hierarchy is found and the user has to choose the one to use, this is displayed. As
+ *  different providers might be named the same we will disable duplicates and also only offer the user to choose one
+ *  provider at the time.
+ */
+public class ProjectHierarchySelectionDialog extends ElementListSelectionDialog {
+  public ProjectHierarchySelectionDialog(Shell shell, List<String> hierarchies) {
+    super(shell, new LabelProvider());
+    setTitle("Choose hierarchical project provider to use:");
+    setAllowDuplicates(false);
+    setMultipleSelection(false);
+    setElements(hierarchies.toArray());
   }
 }

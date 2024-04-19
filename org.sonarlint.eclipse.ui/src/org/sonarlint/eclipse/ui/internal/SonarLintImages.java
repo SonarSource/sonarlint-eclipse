@@ -35,6 +35,8 @@ public final class SonarLintImages {
   public static final ImageDescriptor IMG_WIZBAN_NEW_CONNECTION = createImageDescriptor("new_server_wiz.png"); //$NON-NLS-1$
   public static final ImageDescriptor UPDATE_IMG = createImageDescriptor("update.gif"); //$NON-NLS-1$
   public static final ImageDescriptor SYNCED_IMG = createImageDescriptor("synced.gif"); //$NON-NLS-1$
+  public static final ImageDescriptor PLACEHOLDER_IMG = createImageDescriptor("placeholder.png"); //$NON-NLS-1$
+  public static final ImageDescriptor SHARE_IMG = createImageDescriptor("share.png"); //$NON-NLS-1$
   public static final ImageDescriptor MARK_OCCURENCES_IMG = createImageDescriptor("mark_occurrences.png"); //$NON-NLS-1$
   public static final ImageDescriptor WIZ_NEW_SERVER = createImageDescriptor("wiz_new_server.gif"); //$NON-NLS-1$
   public static final ImageDescriptor SQ_LABEL_DECORATOR = createImageDescriptor("onde-label-decorator.gif"); //$NON-NLS-1$

@@ -23,12 +23,13 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 
 public class AssistCreatingAutomaticConnectionJob extends AbstractAssistCreatingConnectionJob {
   private final String tokenValue;
 
-  public AssistCreatingAutomaticConnectionJob(String serverUrl, String tokenValue) {
-    super("Assist automatic creation of Connected Mode", serverUrl, true);
+  public AssistCreatingAutomaticConnectionJob(Either<String, String> serverUrlOrOrganization, String tokenValue) {
+    super("Assist automatic creation of Connected Mode", serverUrlOrOrganization, true, false);
     this.tokenValue = tokenValue;
   }
 

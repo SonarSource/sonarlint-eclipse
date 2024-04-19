@@ -28,37 +28,57 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 
 public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
-  protected final String serverUrl;
+  protected final Either<String, String> serverUrlOrOrganization;
+  protected final boolean automaticSetUp;
+  protected final boolean fromConnectionSuggestion;
   @Nullable
   protected String connectionId;
-  protected final boolean automaticSetUp;
+  @Nullable
+  protected String username;
 
-  protected AbstractAssistCreatingConnectionJob(String title, String serverUrl, boolean automaticSetUp) {
+  /** Assistance either to SonarQube / SonarCloud, can be coming from Connection Suggestion! */
+  protected AbstractAssistCreatingConnectionJob(String title, Either<String, String> serverUrlOrOrganization,
+    boolean automaticSetup, boolean fromConnectionSuggestion) {
     super(title);
     // We don't want to have this job visible to the user, as there should be a dialog anyway
     setSystem(true);
 
-    this.serverUrl = serverUrl;
-    this.automaticSetUp = automaticSetUp;
+    this.serverUrlOrOrganization = serverUrlOrOrganization;
+    this.automaticSetUp = automaticSetup;
+    this.fromConnectionSuggestion = fromConnectionSuggestion;
   }
 
   @Override
   public IStatus runInUIThread(IProgressMonitor monitor) {
     var shell = DisplayUtils.bringToFront();
-    var dialog = new ConfirmConnectionCreationDialog(shell, serverUrl, automaticSetUp);
-    if (dialog.open() != 0) {
-      return Status.CANCEL_STATUS;
+
+    // Currently we only ask the user if they trust a SonarQube server, SonarCloud we trust of course!
+    if (serverUrlOrOrganization.isLeft()) {
+      var dialog = new ConfirmConnectionCreationDialog(shell, serverUrlOrOrganization.getLeft(), automaticSetUp);
+      if (dialog.open() != 0) {
+        return Status.CANCEL_STATUS;
+      }
     }
 
-    var model = new ServerConnectionModel();
-    model.setConnectionType(ConnectionType.ONPREMISE);
-    model.setServerUrl(serverUrl);
+    var model = new ServerConnectionModel(fromConnectionSuggestion);
+    if (serverUrlOrOrganization.isLeft()) {
+      model.setConnectionType(ConnectionType.ONPREMISE);
+      model.setServerUrl(serverUrlOrOrganization.getLeft());
+    } else {
+      model.setOrganization(serverUrlOrOrganization.getRight());
+    }
+
+    if (fromConnectionSuggestion) {
+      model.setNotificationsEnabled(true);
+    }
 
     var connection = createConnection(model);
     if (connection != null) {
       this.connectionId = connection.getId();
+      this.username = model.getUsername();
       return Status.OK_STATUS;
     }
 

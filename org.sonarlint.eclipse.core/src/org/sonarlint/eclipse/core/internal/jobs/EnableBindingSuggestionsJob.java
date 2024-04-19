@@ -19,26 +19,32 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import org.eclipse.core.runtime.CoreException;
+import java.util.Collection;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-/** Base class for all SonarLint jobs, for level specific jobs see subclasses */
-public abstract class AbstractSonarJob extends Job {
-  protected AbstractSonarJob(String title) {
-    super(title);
-    setPriority(Job.DECORATE);
+/**
+ *  Job to enable all binding suggestions of specific projects based on their own configuration which is coming from
+ *  the IDE side (stored in Eclipse settings). Is is useful (when scheduled for some time after the binding) in order
+ *  to prevent stuck "Suggest Binding" messages to appear in the IDE when a project is already bound!
+ */
+public class EnableBindingSuggestionsJob extends Job {
+  private final Collection<ISonarLintProject> projects;
+
+  public EnableBindingSuggestionsJob(Collection<ISonarLintProject> projects) {
+    super("Try to enable binding suggestions on project(s) ...");
+    this.projects = projects;
   }
 
   @Override
-  public final IStatus run(final IProgressMonitor monitor) {
-    try {
-      return doRun(monitor);
-    } catch (CoreException e) {
-      return e.getStatus();
+  protected IStatus run(IProgressMonitor monitor) {
+    for (var project : projects) {
+      ConfigScopeSynchronizer.enableAllBindingSuggestions(project);
     }
+    return Status.OK_STATUS;
   }
-
-  protected abstract IStatus doRun(final IProgressMonitor monitor) throws CoreException;
 }

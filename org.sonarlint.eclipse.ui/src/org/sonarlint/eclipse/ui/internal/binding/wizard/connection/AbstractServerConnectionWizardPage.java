@@ -54,7 +54,7 @@ public abstract class AbstractServerConnectionWizardPage extends WizardPage {
 
     setControl(container);
 
-    ((WizardDialog) getContainer()).addPageChangingListener((ServerConnectionWizard) getWizard());
+    ((WizardDialog) getContainer()).addPageChangingListener((AbstractConnectionWizard) getWizard());
   }
 
   protected abstract void doCreateControl(Composite container);

@@ -25,7 +25,6 @@ import java.util.List;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
@@ -35,6 +34,7 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ModelObject;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.org.OrganizationDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TokenDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.UsernamePasswordDto;
 
@@ -60,6 +60,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   private final boolean edit;
+  private final boolean fromConnectionSuggestion;
   private ConnectionType connectionType = ConnectionType.SONARCLOUD;
   private AuthMethod authMethod = AuthMethod.TOKEN;
   private String connectionId;
@@ -72,12 +73,18 @@ public class ServerConnectionModel extends ModelObject {
 
   private List<ISonarLintProject> selectedProjects;
 
-  public ServerConnectionModel() {
+  public ServerConnectionModel(boolean fromConnectionSuggestion) {
     this.edit = false;
+    this.fromConnectionSuggestion = fromConnectionSuggestion;
+  }
+
+  public ServerConnectionModel() {
+    this(false);
   }
 
   public ServerConnectionModel(ConnectionFacade connection) {
     this.edit = true;
+    this.fromConnectionSuggestion = false;
     this.connectionId = connection.getId();
     this.serverUrl = connection.getHost();
     this.connectionType = SonarLintUtils.getSonarCloudUrl().equals(serverUrl) ? ConnectionType.SONARCLOUD : ConnectionType.ONPREMISE;
@@ -97,6 +104,10 @@ public class ServerConnectionModel extends ModelObject {
 
   public boolean isEdit() {
     return edit;
+  }
+
+  public boolean isFromConnectionSuggestion() {
+    return fromConnectionSuggestion;
   }
 
   public ConnectionType getConnectionType() {

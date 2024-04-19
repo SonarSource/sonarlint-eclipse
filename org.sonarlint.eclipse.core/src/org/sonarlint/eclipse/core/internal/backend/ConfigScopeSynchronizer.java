@@ -119,10 +119,36 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
   }
 
   private static BindingConfigurationDto toBindingDto(ISonarLintProject p) {
+    return toBindingDto(p, false);
+  }
+
+  private static BindingConfigurationDto toBindingDto(ISonarLintProject p, boolean disableBindingSuggestions) {
     var config = SonarLintCorePlugin.loadConfig(p);
     var projectBinding = config.getProjectBinding();
     return new BindingConfigurationDto(projectBinding.map(EclipseProjectBinding::getConnectionId).orElse(null),
       projectBinding.map(EclipseProjectBinding::getProjectKey).orElse(null),
-      config.isBindingSuggestionsDisabled());
+      disableBindingSuggestions || config.isBindingSuggestionsDisabled());
+  }
+
+  /**
+   *  It might be useful to disable the binding suggestions for a specific project (e.g. Connection creation with
+   *  directly followed binding) no matter what the configuration of the specific project is on that matter.
+   */
+  public static void disableAllBindingSuggestions(ISonarLintProject p) {
+    SonarLintBackendService.get()
+      .getBackend()
+      .getConfigurationService()
+      .didUpdateBinding(new DidUpdateBindingParams(getConfigScopeId(p), toBindingDto(p, true)));
+  }
+
+  /**
+   *  After the binding suggestions for a specific project were disabled, we want to disable them again based on the
+   *  project configuration (to not enable suggestions for project that disabled them manually).
+   */
+  public static void enableAllBindingSuggestions(ISonarLintProject p) {
+    SonarLintBackendService.get()
+      .getBackend()
+      .getConfigurationService()
+      .didUpdateBinding(new DidUpdateBindingParams(getConfigScopeId(p), toBindingDto(p, false)));
   }
 }

@@ -88,6 +88,7 @@ public class SonarLintGlobalConfiguration {
   private static final String PREF_USER_SURVEY_LAST_LINK = "userSurveyLastLink"; //$NON-NLS-1$
   private static final String PREF_SOON_UNSUPPORTED_CONNECTIONS = "soonUnsupportedSonarQubeConnections"; //$NON-NLS-1$
   private static final String PREF_NO_AUTOMATIC_BUILD_WARNING = "noAutomaticBuildWarning"; //$NON-NLS-1$
+  private static final String PREF_NO_CONNECTION_SUGGESTIONS = "NoConnectionSuggestions"; //$NON-NLS-1$
 
   // notifications on missing features from standalone mode / enhanced features from connected mode
   public static final String PREF_IGNORE_MISSING_FEATURES = "ignoreNotificationsAboutMissingFeatures"; //$NON-NLS-1$
@@ -439,5 +440,13 @@ public class SonarLintGlobalConfiguration {
 
   public static void setNoAutomaticBuildWarning() {
     setPreferenceBoolean(getWorkspaceLevelPreferenceNode(), PREF_NO_AUTOMATIC_BUILD_WARNING, true);
+  }
+
+  public static boolean noConnectionSuggestions() {
+    return getPreferenceBoolean(PREF_NO_CONNECTION_SUGGESTIONS);
+  }
+
+  public static void setNoConnectionSuggestions() {
+    setPreferenceBoolean(getWorkspaceLevelPreferenceNode(), PREF_NO_CONNECTION_SUGGESTIONS, true);
   }
 }
