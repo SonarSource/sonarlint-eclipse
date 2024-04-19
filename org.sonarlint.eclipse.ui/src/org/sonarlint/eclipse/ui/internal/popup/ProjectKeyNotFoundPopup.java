@@ -21,9 +21,9 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.graphics.Image;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 
 /** Notification pop-up displayed for project key(s) not found on SonarQube / SonarCloud */
 public class ProjectKeyNotFoundPopup extends AbstractSonarLintPopup {

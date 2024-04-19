@@ -20,12 +20,12 @@
 package org.sonarlint.eclipse.ui.internal.binding.assist;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.AbstractConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 
 public class AssistCreatingManualConnectionJob extends AbstractAssistCreatingConnectionJob {
   public AssistCreatingManualConnectionJob(Either<String, String> serverUrlOrOrganization) {

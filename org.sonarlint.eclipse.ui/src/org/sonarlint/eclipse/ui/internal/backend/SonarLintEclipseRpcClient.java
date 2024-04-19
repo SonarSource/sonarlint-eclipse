@@ -32,8 +32,6 @@ import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.lsp4j.jsonrpc.CancelChecker;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -64,6 +62,7 @@ import org.sonarlint.eclipse.ui.internal.popup.SuggestConnectionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.SuggestMultipleConnectionsPopup;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
+import org.sonarsource.sonarlint.core.rpc.client.SonarLintCancelChecker;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.binding.BindingSuggestionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TaintVulnerabilityDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.binding.AssistBindingParams;
@@ -79,6 +78,7 @@ import org.sonarsource.sonarlint.core.rpc.protocol.client.message.ShowSoonUnsupp
 import org.sonarsource.sonarlint.core.rpc.protocol.client.progress.ReportProgressParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.progress.StartProgressParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.smartnotification.ShowSmartNotificationParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 
 public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient {
 
@@ -148,7 +148,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
   }
 
   @Override
-  public AssistCreatingConnectionResponse assistCreatingConnection(AssistCreatingConnectionParams params, CancelChecker cancelChecker) throws CancellationException {
+  public AssistCreatingConnectionResponse assistCreatingConnection(AssistCreatingConnectionParams params, SonarLintCancelChecker cancelChecker) throws CancellationException {
     var baseUrl = params.getServerUrl();
 
     try {
@@ -182,7 +182,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
   }
 
   @Override
-  public AssistBindingResponse assistBinding(AssistBindingParams params, CancelChecker cancelChecker) throws CancellationException {
+  public AssistBindingResponse assistBinding(AssistBindingParams params, SonarLintCancelChecker cancelChecker) throws CancellationException {
     try {
       SonarLintLogger.get().debug("Assist creating a new binding...");
       var job = new AssistBindingJob(params.getConnectionId(), params.getProjectKey());

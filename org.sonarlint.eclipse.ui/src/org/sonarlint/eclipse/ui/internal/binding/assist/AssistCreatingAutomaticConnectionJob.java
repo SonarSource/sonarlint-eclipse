@@ -20,10 +20,10 @@
 package org.sonarlint.eclipse.ui.internal.binding.assist;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 
 public class AssistCreatingAutomaticConnectionJob extends AbstractAssistCreatingConnectionJob {
   private final String tokenValue;

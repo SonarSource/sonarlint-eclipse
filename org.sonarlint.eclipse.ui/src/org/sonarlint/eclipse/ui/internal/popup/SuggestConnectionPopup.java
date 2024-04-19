@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.util.List;
 import java.util.Map;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -29,6 +28,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistSuggestConnectionJob;
 import org.sonarlint.eclipse.ui.internal.dialog.SuggestConnectionDialog;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 
 /**
  *  Notification pop-up that is shown for each connection where there might be more than one project key which can have

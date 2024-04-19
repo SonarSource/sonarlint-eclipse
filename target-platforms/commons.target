@@ -7,7 +7,7 @@
       <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20230531010532/repository/"/>
     </location>
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <repository location="https://download.eclipse.org/lsp4j/updates/releases/0.21.1/"/>
+      <repository location="https://download.eclipse.org/lsp4j/updates/releases/0.22.0/"/>
 	  <unit id="org.eclipse.lsp4j.jsonrpc" version="0.0.0"/>
     </location>
 	  <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">

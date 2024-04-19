@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.util.HashMap;
 import java.util.List;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -31,6 +30,7 @@ import org.sonarlint.eclipse.ui.internal.binding.assist.AssistSuggestConnectionJ
 import org.sonarlint.eclipse.ui.internal.dialog.SuggestMultipleConnectionSelectionDialog;
 import org.sonarlint.eclipse.ui.internal.dialog.SuggestMultipleConnectionsDialog;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.connection.ConnectionSuggestionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 
 /**
  *  Notification pop-up that is shown for each Eclipse project where more than one connection suggestion was found. In

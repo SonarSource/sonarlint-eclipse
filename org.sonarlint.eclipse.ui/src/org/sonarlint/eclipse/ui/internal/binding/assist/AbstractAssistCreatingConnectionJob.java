@@ -23,12 +23,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.ui.progress.UIJob;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 
 public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
   protected final Either<String, String> serverUrlOrOrganization;
