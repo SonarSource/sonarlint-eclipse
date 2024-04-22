@@ -41,8 +41,10 @@ import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessRpcCl
 import org.sonarlint.eclipse.core.internal.jobs.AbstractAnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesMarkerUpdateJob;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.binding.ProjectSuggestionDto;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AbstractAssistCreatingConnectionJob;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistBindingJob;
@@ -190,6 +192,15 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
       job.join();
       if (job.getResult().isOK()) {
         SonarLintLogger.get().debug("Successfully created binding");
+
+        if (SonarLintTelemetry.isEnabled()) {
+          if (params.isFromSharedConfiguration()) {
+            SonarLintTelemetry.addedImportedBindings();
+          } else {
+            SonarLintTelemetry.addedAutomaticBindings();
+          }
+        }
+
         return new AssistBindingResponse(ConfigScopeSynchronizer.getConfigScopeId(job.getProject()));
       }
       throw new IllegalStateException(job.getResult().getMessage(), job.getResult().getException());
@@ -333,7 +344,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
     var stackTrace = params.getStackTrace() != null
       ? ("\n\n" + params.getStackTrace())
       : "";
-    
+
     switch (params.getLevel()) {
       case TRACE:
       case DEBUG:
@@ -378,8 +389,8 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
       return;
     }
 
-    var organizationBasedConnections = new HashMap<String, HashMap<String, List<ISonarLintProject>>>();
-    var serverUrlBasedConnections = new HashMap<String, HashMap<String, List<ISonarLintProject>>>();
+    var organizationBasedConnections = new HashMap<String, HashMap<String, List<ProjectSuggestionDto>>>();
+    var serverUrlBasedConnections = new HashMap<String, HashMap<String, List<ProjectSuggestionDto>>>();
     var multipleSuggestions = new HashMap<ISonarLintProject, List<ConnectionSuggestionDto>>();
 
     for (var entry : suggestionsByConfigScope.entrySet()) {
@@ -397,6 +408,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
         continue;
       }
 
+      var isFromSharedConfiguration = suggestions.get(0).isFromSharedConfiguration();
       var eitherSuggestion = suggestions.get(0).getConnectionSuggestion();
       if (eitherSuggestion.isLeft()) {
         var suggestion = eitherSuggestion.getLeft();
@@ -409,7 +421,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
         sonarProjects.putIfAbsent(projectKey, new ArrayList<>());
 
         var projects = sonarProjects.get(projectKey);
-        projects.add(project);
+        projects.add(new ProjectSuggestionDto(project, isFromSharedConfiguration));
       } else {
         var suggestion = eitherSuggestion.getRight();
         var organization = suggestion.getOrganization();
@@ -421,7 +433,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
         sonarProjects.putIfAbsent(projectKey, new ArrayList<>());
 
         var projects = sonarProjects.get(projectKey);
-        projects.add(project);
+        projects.add(new ProjectSuggestionDto(project, isFromSharedConfiguration));
       }
     }
 

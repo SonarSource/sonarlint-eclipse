@@ -24,8 +24,8 @@ import java.util.Map;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.binding.ProjectSuggestionDto;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistSuggestConnectionJob;
 import org.sonarlint.eclipse.ui.internal.dialog.SuggestConnectionDialog;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
@@ -37,10 +37,10 @@ import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
  */
 public class SuggestConnectionPopup extends AbstractSonarLintPopup {
   private final Either<String, String> serverUrlOrOrganization;
-  private final Map<String, List<ISonarLintProject>> projectMapping;
+  private final Map<String, List<ProjectSuggestionDto>> projectMapping;
 
   public SuggestConnectionPopup(Either<String, String> serverUrlOrOrganization,
-    Map<String, List<ISonarLintProject>> projectMapping) {
+    Map<String, List<ProjectSuggestionDto>> projectMapping) {
     this.serverUrlOrOrganization = serverUrlOrOrganization;
     this.projectMapping = projectMapping;
   }
@@ -67,7 +67,7 @@ public class SuggestConnectionPopup extends AbstractSonarLintPopup {
     }
 
     return prefix + "' the project '" + projectKey
-      + "' can be connected to the local project '" + mappedProjects.get(0).getName()
+      + "' can be connected to the local project '" + mappedProjects.get(0).getProject().getName()
       + "'. Do you want to connect and bind the project?";
   }
 

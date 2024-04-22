@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.binding.ProjectSuggestionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 
 /**
@@ -42,10 +42,10 @@ import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
  */
 public class SuggestConnectionDialog extends Dialog {
   private final Either<String, String> serverUrlOrOrganization;
-  private final Map<String, List<ISonarLintProject>> projectMapping;
+  private final Map<String, List<ProjectSuggestionDto>> projectMapping;
 
   public SuggestConnectionDialog(Shell parentShell, Either<String, String> serverUrlOrOrganization,
-    Map<String, List<ISonarLintProject>> projectMapping) {
+    Map<String, List<ProjectSuggestionDto>> projectMapping) {
     super(parentShell);
     this.serverUrlOrOrganization = serverUrlOrOrganization;
     this.projectMapping = projectMapping;
@@ -62,9 +62,9 @@ public class SuggestConnectionDialog extends Dialog {
     for (var entry : projectMapping.entrySet()) {
       var projectKeyTreeItem = new TreeItem(tree, SWT.NONE);
       projectKeyTreeItem.setText("Remote project '" + entry.getKey() + "'");
-      for (var project : entry.getValue()) {
+      for (var projectSuggestion : entry.getValue()) {
         var projectTreeItem = new TreeItem(projectKeyTreeItem, SWT.NONE);
-        projectTreeItem.setText("Eclipse project '" + project.getName() + "'");
+        projectTreeItem.setText("Eclipse project '" + projectSuggestion.getProject().getName() + "'");
       }
     }
 

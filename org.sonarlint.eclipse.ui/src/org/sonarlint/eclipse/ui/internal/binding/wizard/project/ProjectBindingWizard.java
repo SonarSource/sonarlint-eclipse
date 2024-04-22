@@ -39,6 +39,7 @@ import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
@@ -174,6 +175,15 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
       var connectionId = connection.getId();
       getDialogSettings().put(STORE_LAST_SELECTED_CONNECTION_ID, connectionId);
       ProjectBindingProcess.bindProjects(connectionId, model.getEclipseProjects(), model.getSonarProjectKey());
+
+      // Every time a binding is created via the wizard then the binding was done manually, even if there were possible
+      // suggestions - the user just turned them down or decided otherwise! For "automatic" binding (either from normal
+      // SonarQube / SonarCloud property files found or the shared Connected Mode configurations) we always try to
+      // create the connection and binding without invoking the UI at all!
+      if (SonarLintTelemetry.isEnabled()) {
+        SonarLintTelemetry.addedManualBindings();
+      }
+
       return true;
     }
   }

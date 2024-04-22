@@ -34,7 +34,9 @@ import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.EnableBindingSuggestionsJob;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.binding.ProjectSuggestionDto;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.AbstractConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.SuggestConnectionWizard;
@@ -49,10 +51,10 @@ import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TokenDto;
 
 public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnectionJob {
-  private final Map<String, List<ISonarLintProject>> projectMapping;
+  private final Map<String, List<ProjectSuggestionDto>> projectMapping;
 
   public AssistSuggestConnectionJob(Either<String, String> serverUrlOrOrganization,
-    Map<String, List<ISonarLintProject>> projectMapping) {
+    Map<String, List<ProjectSuggestionDto>> projectMapping) {
     super("Connected Mode suggestion for " + (serverUrlOrOrganization.isLeft() ? "SonarQube" : "SonarCloud"),
       serverUrlOrOrganization, false, true);
     this.projectMapping = projectMapping;
@@ -62,8 +64,8 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
   public IStatus runInUIThread(IProgressMonitor monitor) {
     // disable the binding suggestions of all projects involved
     for (var entry : projectMapping.entrySet()) {
-      for (var project : entry.getValue()) {
-        ConfigScopeSynchronizer.disableAllBindingSuggestions(project);
+      for (var projectSuggestion : entry.getValue()) {
+        ConfigScopeSynchronizer.disableAllBindingSuggestions(projectSuggestion.getProject());
       }
     }
 
@@ -75,7 +77,7 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
     // (possibly) enable the binding suggestions of all projects involved, but asynchronously
     var projects = new ArrayList<ISonarLintProject>();
     for (var entry : projectMapping.entrySet()) {
-      projects.addAll(entry.getValue());
+      projects.addAll(entry.getValue().stream().map(state -> state.getProject()).collect(Collectors.toList()));
     }
     var job = new EnableBindingSuggestionsJob(projects);
     job.schedule(1000);
@@ -136,13 +138,27 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
         continue;
       }
 
-      var projects = entry.getValue();
+      var projectSuggestions = entry.getValue();
+      var projects = projectSuggestions.stream().map(state -> state.getProject()).collect(Collectors.toList());
       ProjectBindingProcess.bindProjects(connectionId, projects, projectKey);
       new ProjectBoundPopup(projectKey, projects, serverUrlOrOrganization.isRight()).open();
+      invokeTelemetryAfterSuccess(projectSuggestions);
     }
 
     if (!projectKeysUnavailable.isEmpty()) {
       new ProjectKeyNotFoundPopup(projectKeysUnavailable, serverUrlOrOrganization).open();
+    }
+  }
+
+  private static void invokeTelemetryAfterSuccess(List<ProjectSuggestionDto> projectSuggestions) {
+    if (SonarLintTelemetry.isEnabled()) {
+      for (var projectSuggestion : projectSuggestions) {
+        if (projectSuggestion.getIsFromSharedConfiguration()) {
+          SonarLintTelemetry.addedImportedBindings();
+        } else {
+          SonarLintTelemetry.addedAutomaticBindings();
+        }
+      }
     }
   }
 }

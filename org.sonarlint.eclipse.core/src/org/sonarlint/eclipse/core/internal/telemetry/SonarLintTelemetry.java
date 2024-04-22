@@ -110,4 +110,15 @@ public class SonarLintTelemetry {
     getTelemetryService().taintVulnerabilitiesInvestigatedLocally();
   }
 
+  public static void addedManualBindings() {
+    getTelemetryService().addedManualBindings();
+  }
+
+  public static void addedImportedBindings() {
+    getTelemetryService().addedImportedBindings();
+  }
+
+  public static void addedAutomaticBindings() {
+    getTelemetryService().addedAutomaticBindings();
+  }
 }
