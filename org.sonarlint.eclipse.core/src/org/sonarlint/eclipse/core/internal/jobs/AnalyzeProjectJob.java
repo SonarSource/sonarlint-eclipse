@@ -33,11 +33,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -429,7 +426,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     try {
       RunningAnalysesTracker.get().track(analysisState);
       var future = SonarLintBackendService.get().analyzeFiles(getProject(), analysisId, docPerFiles, extraProps, startTime);
-      AnalyzeFilesResponse response = JobUtils.waitForFutureInJob(monitor, future);
+      var response = JobUtils.waitForFutureInJob(monitor, future);
       SonarLintLogger.get().info("Found " + analysisState.getIssueCount() + " issue(s)");
       return response;
     } catch (InterruptedException e) {
