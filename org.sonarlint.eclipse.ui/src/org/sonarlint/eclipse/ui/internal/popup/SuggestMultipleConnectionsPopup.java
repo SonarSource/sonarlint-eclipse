@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.binding.ProjectSuggestionDto;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistSuggestConnectionJob;
 import org.sonarlint.eclipse.ui.internal.dialog.SuggestMultipleConnectionSelectionDialog;
 import org.sonarlint.eclipse.ui.internal.dialog.SuggestMultipleConnectionsDialog;
@@ -94,6 +95,7 @@ public class SuggestMultipleConnectionsPopup extends AbstractSonarLintPopup {
       // from the dialog response we have to get back the actual connection suggestion
       var suggestion = dialog.getSuggestionFromElement(selection);
 
+      var isFromSharedConnectedMode = suggestion.isFromSharedConfiguration();
       var isSonarQube = suggestion.getConnectionSuggestion().isLeft();
       var projectKey = isSonarQube
         ? suggestion.getConnectionSuggestion().getLeft().getProjectKey()
@@ -106,8 +108,8 @@ public class SuggestMultipleConnectionsPopup extends AbstractSonarLintPopup {
         serverUrlOrOrganization = Either.forRight(suggestion.getConnectionSuggestion().getRight().getOrganization());
       }
 
-      var projectMapping = new HashMap<String, List<ISonarLintProject>>();
-      projectMapping.put(projectKey, List.of(project));
+      var projectMapping = new HashMap<String, List<ProjectSuggestionDto>>();
+      projectMapping.put(projectKey, List.of(new ProjectSuggestionDto(project, isFromSharedConnectedMode)));
 
       var job = new AssistSuggestConnectionJob(serverUrlOrOrganization, projectMapping);
       job.schedule();
