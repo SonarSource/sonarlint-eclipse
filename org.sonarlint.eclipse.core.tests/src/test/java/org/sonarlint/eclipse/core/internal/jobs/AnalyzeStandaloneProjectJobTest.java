@@ -20,12 +20,11 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.IOException;
-import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import org.assertj.core.groups.Tuple;
-import org.awaitility.Awaitility;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -65,7 +64,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
   private static IProject project;
 
   @BeforeClass
-  public static void addLogListener() throws IOException, CoreException {
+  public static void addLogListener() throws IOException, CoreException, InterruptedException {
     listener = new LogListener() {
 
       @Override
@@ -86,7 +85,19 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     SonarLintLogger.get().addLogListener(listener);
 
     project = importEclipseProject("SimpleJdtProject");
-    Awaitility.await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(AnalyzeProjectJob.analysisReadyByConfigurationScopeId).isNotEmpty());
+
+    // After importing projects we have to await them being readied by SLCORE:
+    // -> first they are not yet ready when imported
+    var everyProjectAnalysisReady = false;
+    for (var i = 0; i < 20; i++) {
+      var map = new HashMap<String, Boolean>(AnalyzeProjectJob.analysisReadyByConfigurationScopeId);
+      if (!map.isEmpty() && map.keySet().stream().filter(key -> !map.get(key).booleanValue()).count() == 0) {
+        everyProjectAnalysisReady = true;
+        break;
+      }
+      Thread.sleep(100);
+    }
+    assertThat(everyProjectAnalysisReady).isTrue();
   }
 
   @AfterClass
