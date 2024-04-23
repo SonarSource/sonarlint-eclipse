@@ -9,7 +9,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
-    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@5.4.2
+    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@5.5.0
     with:
       publishToBinaries: true
       slackChannel: squad-ide-eclipse
