@@ -66,6 +66,7 @@ import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintProperties;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.PydevPackageExplorer;
 import org.sonarlint.eclipse.its.reddeer.views.ReportView;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -126,6 +127,22 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     preferences = GeneralWorkspaceBuildPreferences.open();
     preferences.enableAutomaticBuild();
     preferences.ok();
+  }
+
+  /** See SLE-854: JDT tries to find files with 'Java-like' extensions even if they're not Java */
+  @Test
+  public void test_jdt_java_like_extension_COBOL() {
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("connected", "connected");
+
+    var cobolFile = rootProject.getResource("Test.cbl");
+    openFileAndWaitForAnalysisCompletion(cobolFile);
+
+    // even when no language found, the Secrets analyzer should at least give it a shot^^
+    var consoleText = new SonarLintConsole().getConsoleView().getConsoleText();
+    assertThat(consoleText)
+      .contains("Execute Sensor: TextAndSecretsSensor")
+      .doesNotContain("File 'Test.cbl' excluded by 'JavaProjectConfiguratorExtension'");
   }
 
   @Test
