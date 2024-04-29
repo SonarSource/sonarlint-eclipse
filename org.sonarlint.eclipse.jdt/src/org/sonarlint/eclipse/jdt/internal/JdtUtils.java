@@ -80,7 +80,13 @@ public class JdtUtils {
       var fileExtensions = javaContentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
       return List.of(fileExtensions).contains(file.getFileExtension());
     }
-    return !javaElt.getJavaProject().isOnClasspath(javaElt) || !isStructureKnown(javaElt);
+
+    // SLE-854 When a supposed Java file was found, we also have to check if it is a Java project. When not a Java
+    // project, we shouldn't exclude files just because there is no JavaProject and no classpath configured correctly.
+    // The file might have been flagged as Java because `JavaCore.getJavaLikeExtensions()` tried to categorize the file
+    // by accident!
+    return hasJavaNature(file.getProject())
+      && (!javaElt.getJavaProject().isOnClasspath(javaElt) || !isStructureKnown(javaElt));
   }
 
   private static boolean isStructureKnown(IJavaElement javaElt) {
