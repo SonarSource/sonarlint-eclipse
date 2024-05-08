@@ -22,9 +22,5 @@ Require-Bundle: org.eclipse.core.resources,
  assertj-core,
  org.objenesis,
  net.bytebuddy.byte-buddy,
- com.google.protobuf;bundle-version="3.25.1",
- org.sonarsource.sonarlint.core.sonarlint-rpc-protocol,
- org.sonarsource.sonarlint.core.sonarlint-rpc-java-client,
- org.sonarsource.sonarlint.core.sonarlint-java-client-utils,
- org.sonarsource.sonarlint.core.sonarlint-java-client-legacy
+ org.sonarsource.sonarlint.core.sonarlint-java-client-osgi
 Bundle-RequiredExecutionEnvironment: JavaSE-11

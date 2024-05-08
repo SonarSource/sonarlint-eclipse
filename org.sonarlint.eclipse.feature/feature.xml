@@ -102,31 +102,6 @@
          version="0.0.0"/>
 
    <plugin
-         id="org.sonarsource.sonarlint.core.sonarlint-rpc-protocol"
+         id="org.sonarsource.sonarlint.core.sonarlint-java-client-osgi"
          version="0.0.0"/>
-
-   <plugin
-         id="org.sonarsource.sonarlint.core.sonarlint-rpc-java-client"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.sonarsource.sonarlint.core.sonarlint-java-client-utils"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.sonarsource.sonarlint.core.sonarlint-java-client-legacy"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.eclipse.lsp4j.jsonrpc"
-         version="0.0.0"/>
-
-   <plugin
-         id="com.google.gson"
-         version="0.0.0"/>
-
-   <plugin
-         id="com.google.protobuf"
-         version="0.0.0"/>
-
 </feature>
