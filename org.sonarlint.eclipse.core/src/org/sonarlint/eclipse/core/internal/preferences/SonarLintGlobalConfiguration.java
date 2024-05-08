@@ -19,10 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.preferences;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.reflect.TypeToken;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,6 +56,10 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.DidChangeClientNodeJsPathParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.StandaloneRuleConfigDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.UpdateStandaloneRulesConfigurationParams;
+import org.sonarsource.sonarlint.shaded.com.google.gson.Gson;
+import org.sonarsource.sonarlint.shaded.com.google.gson.JsonParseException;
+import org.sonarsource.sonarlint.shaded.com.google.gson.annotations.SerializedName;
+import org.sonarsource.sonarlint.shaded.com.google.gson.reflect.TypeToken;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
