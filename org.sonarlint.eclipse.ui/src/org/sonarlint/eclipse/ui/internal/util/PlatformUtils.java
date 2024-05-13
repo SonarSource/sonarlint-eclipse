@@ -28,7 +28,6 @@ import java.util.function.Predicate;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.preference.PreferenceDialog;
@@ -49,6 +48,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -171,9 +171,11 @@ public final class PlatformUtils {
       if (part == null) {
         continue;
       }
-      var editorFile = Adapters.adapt(part.getEditorInput(), IFile.class);
+      var editorFile = SonarLintUtils.adapt(part.getEditorInput(), IFile.class,
+        "[PlatformUtils#findInOtherEditors] Try get Eclipse file of editor input '" + part.getTitle() + "'");
       if (editorFile != null) {
-        var editorSlFile = Adapters.adapt(editorFile, ISonarLintFile.class);
+        var editorSlFile = SonarLintUtils.adapt(editorFile, ISonarLintFile.class,
+          "[PlatformUtils#findInOtherEditors] Try get file of Eclipse file '" + editorFile.getName() + "'");
         if (editorSlFile != null && editorSlFile.equals(file)) {
           return part;
         }
@@ -193,7 +195,8 @@ public final class PlatformUtils {
       var input = editorPart.getEditorInput();
       if (input instanceof IFileEditorInput) {
         var file = ((IFileEditorInput) input).getFile();
-        var slFile = Adapters.adapt(file, ISonarLintFile.class);
+        var slFile = SonarLintUtils.adapt(file, ISonarLintFile.class,
+          "[PlatformUtils#doIfSonarLintFileInEditor] Try get file of editor input '" + file.getName() + "'");
         if (slFile != null) {
           consumer.accept(slFile, editorPart);
         }
@@ -227,7 +230,8 @@ public final class PlatformUtils {
     var input = editor.getEditorInput();
     if (input instanceof IFileEditorInput) {
       var file = ((IFileEditorInput) input).getFile();
-      var sonarFile = Adapters.adapt(file, ISonarLintFile.class);
+      var sonarFile = SonarLintUtils.adapt(file, ISonarLintFile.class,
+        "[PlatformUtils#collectOpenedFile] Try get file of editor input '" + file.getName() + "'");
       if (sonarFile != null && (project == null || sonarFile.getProject().equals(project)) && filter.test(sonarFile)) {
         filesByProject.putIfAbsent(sonarFile.getProject(), new ArrayList<>());
         if (editor instanceof ITextEditor) {

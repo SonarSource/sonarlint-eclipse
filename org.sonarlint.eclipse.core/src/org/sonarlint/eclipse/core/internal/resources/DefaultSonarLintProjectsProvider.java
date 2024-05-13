@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.Platform;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 
@@ -43,7 +43,8 @@ public class DefaultSonarLintProjectsProvider implements ISonarLintProjectsProvi
     return Stream.of(ResourcesPlugin.getWorkspace().getRoot().getProjects())
       .filter(prj -> !isTechnicalProject(prj.getName()))
       .filter(IProject::isAccessible)
-      .map(p -> Adapters.adapt(p, ISonarLintProject.class))
+      .map(p -> SonarLintUtils.adapt(p, ISonarLintProject.class,
+        "[DefaultSonarLintProjectsProvider#get] Try get project of Eclipse project '" + p.getName() + "'"))
       .filter(not(Objects::isNull))
       .collect(Collectors.toList());
   }

@@ -29,7 +29,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -119,17 +118,21 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
       return false;
     }
 
-    var resourceSonarLintProject = Adapters.adapt(delta.getResource().getProject(), ISonarLintProject.class);
+    var resourceSonarLintProject = SonarLintUtils.adapt(delta.getResource().getProject(), ISonarLintProject.class,
+      "[SonarLintPostBuildListener#visitDelta] Try get project of Eclipse project '"
+        + delta.getResource().getProject() + "'");
     if (resourceSonarLintProject != null && !SonarLintUtils.isSonarLintFileCandidate(delta.getResource())) {
       return false;
     }
 
-    var sonarLintProject = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
+    var sonarLintProject = SonarLintUtils.adapt(delta.getResource(), ISonarLintProject.class,
+      "[SonarLintPostBuildListener#visitDelta] Try get project of resource '" + delta.getResource() + "'");
     if (sonarLintProject != null) {
       return SonarLintCorePlugin.loadConfig(sonarLintProject).isAutoEnabled();
     }
 
-    var sonarLintFile = Adapters.adapt(delta.getResource(), ISonarLintFile.class);
+    var sonarLintFile = SonarLintUtils.adapt(delta.getResource(), ISonarLintFile.class,
+      "[SonarLintPostBuildListener#visitDelta] Try get file of resource '" + delta.getResource() + "'");
     if (sonarLintFile != null && (isChanged(delta) || isAdded(delta))) {
       changedFiles.add(sonarLintFile);
       return true;

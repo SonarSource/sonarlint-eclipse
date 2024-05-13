@@ -20,7 +20,7 @@
 package org.sonarlint.eclipse.core.internal.quickfixes;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class MarkerTextEdit {
@@ -42,7 +42,9 @@ public class MarkerTextEdit {
   }
 
   public boolean isValid() {
-    return marker.exists() && Adapters.adapt(marker.getResource(), ISonarLintFile.class) != null;
+    return marker.exists()
+      && SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class,
+        "[MarkerTextEdit#isValid] Try get file of marker '" + marker.toString() + "'") != null;
   }
 
 }

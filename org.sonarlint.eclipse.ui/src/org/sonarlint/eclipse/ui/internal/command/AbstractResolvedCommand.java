@@ -84,7 +84,7 @@ public abstract class AbstractResolvedCommand extends AbstractIssueCommand imple
       if (binding.isPresent()) {
         element.setIcon(binding.get().getConnectionFacade().isSonarCloud()
           ? SonarLintImages.SONARCLOUD_16
-            : SonarLintImages.SONARQUBE_16);
+          : SonarLintImages.SONARQUBE_16);
       }
     }
   }
@@ -92,7 +92,8 @@ public abstract class AbstractResolvedCommand extends AbstractIssueCommand imple
   /** Try to get the ISonarLint file from the marker */
   @Nullable
   protected ISonarLintFile tryGetISonarLintFile(IMarker marker, String errorTitle, String errorMessage) {
-    var slFile = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class);
+    var slFile = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class,
+      "[AbstractResolvedCommand#tryGetISonarLintFile] Try get file of marker '" + marker.toString() + "'");
     if (slFile == null) {
       currentWindow.getShell().getDisplay()
         .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), errorTitle, errorMessage));
@@ -110,7 +111,7 @@ public abstract class AbstractResolvedCommand extends AbstractIssueCommand imple
     }
     if (serverIssue == null) {
       currentWindow.getShell().getDisplay()
-      .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), errorTitle, errorMessage));
+        .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(), errorTitle, errorMessage));
     }
 
     return serverIssue;

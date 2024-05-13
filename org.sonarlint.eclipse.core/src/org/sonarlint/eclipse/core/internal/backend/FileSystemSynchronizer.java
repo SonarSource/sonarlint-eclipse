@@ -32,7 +32,6 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -127,7 +126,8 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     var res = delta.getResource();
     switch (delta.getKind()) {
       case IResourceDelta.ADDED:
-        var slFile = Adapters.adapt(res, ISonarLintFile.class);
+        var slFile = SonarLintUtils.adapt(res, ISonarLintFile.class,
+          "[FileSystemSynchronizer#visitDeltaPostChange] Try get file from event '" + res + "' (added)");
 
         // INFO: When importing projects all files are considered to be "added", so don't suggest connections twice by
         // providing SLCORE with the "added" SonarLint configuration files besides the
@@ -145,7 +145,8 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
         }
         break;
       case IResourceDelta.CHANGED:
-        var changedSlFile = Adapters.adapt(res, ISonarLintFile.class);
+        var changedSlFile = SonarLintUtils.adapt(res, ISonarLintFile.class,
+          "[FileSystemSynchronizer#visitDeltaPostChange] Try get file from event '" + res + "' (changed)");
         if (changedSlFile != null) {
           var interestingChangeForSlBackend = false;
           var flags = delta.getFlags();

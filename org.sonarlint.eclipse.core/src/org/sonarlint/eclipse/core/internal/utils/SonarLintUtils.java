@@ -86,7 +86,8 @@ public class SonarLintUtils {
       return null;
     }
     for (var file : files) {
-      var slFile = SonarLintUtils.adapt(file, ISonarLintFile.class);
+      var slFile = SonarLintUtils.adapt(file, ISonarLintFile.class,
+        "[SonarLintUtils#findFileFromUri] Try find file from '" + file.getName() + "'");
       if (slFile != null) {
         return slFile;
       }
@@ -193,14 +194,20 @@ public class SonarLintUtils {
 
   /**
    *  Wrapper around {@link org.eclipse.core.runtime.Adapters#adapt(Object, Class)} in order to log debug information
-   *  which we then can use when debugging / investigating issues.
+   *  which we then can use when debugging / investigating issues. Tracing is used for checking when this does not
+   *  succeed!
    */
   @Nullable
-  public static <T> T adapt(Object sourceObject, Class<T> adapter) {
+  public static <T> T adapt(@Nullable Object sourceObject, Class<T> adapter, String trace) {
+    if (sourceObject == null) {
+      SonarLintLogger.get().debug(trace);
+      return null;
+    }
+
     var adapted = Adapters.adapt(sourceObject, adapter);
     if (adapted == null) {
-      SonarLintLogger.get().debug("'" + sourceObject.toString() + "' could not be adapted to '"
-        + adapter.toString() + "'");
+      SonarLintLogger.get().debug(trace + " -> '" + sourceObject.toString() + "' could not be adapted to '"
+        + adapter.getCanonicalName() + "'");
     }
 
     return adapted;
@@ -218,7 +225,8 @@ public class SonarLintUtils {
   public static Optional<ISonarLintProject> tryResolveProject(String configScopeId) {
     var projectUri = URI.create(configScopeId);
     return Stream.of(ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(projectUri))
-      .map(c -> adapt(c, ISonarLintProject.class))
+      .map(c -> adapt(c, ISonarLintProject.class,
+        "[SonarLintUtils#tryResolveProject] Try adapt configScopeId '" + configScopeId + "'"))
       .filter(Objects::nonNull)
       .findFirst();
   }

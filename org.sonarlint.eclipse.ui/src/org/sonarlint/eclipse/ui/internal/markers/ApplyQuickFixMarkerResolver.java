@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.markers;
 
 import java.util.List;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.DocumentRewriteSession;
 import org.eclipse.jface.text.DocumentRewriteSessionType;
@@ -44,6 +43,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
@@ -70,7 +70,8 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
 
   @Override
   public void run(IMarker marker) {
-    var file = Adapters.adapt(marker.getResource(), ISonarLintFile.class);
+    var file = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class,
+      "[ApplyQuickFixMarkerResolver#run] Try get file of marker '" + marker.toString() + "'");
     if (file == null) {
       return;
     }

@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.List;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -37,6 +36,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
@@ -61,7 +61,8 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
   }
 
   public ISonarLintProject getProject() {
-    return Adapters.adapt(getElement(), ISonarLintProject.class);
+    return SonarLintUtils.adapt(getElement(), ISonarLintProject.class,
+      "[SonarLintProjectPropertyPage#getProject] Try get project of preference page '" + getElement().toString() + "'");
   }
 
   public SonarLintProjectConfiguration getProjectConfig() {

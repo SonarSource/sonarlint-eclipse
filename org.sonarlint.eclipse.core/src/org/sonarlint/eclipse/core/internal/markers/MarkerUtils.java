@@ -177,10 +177,9 @@ public final class MarkerUtils {
    *  @return specific matching status of a markers' issue
    */
   public static FindingMatchingStatus getMatchingStatus(IMarker marker, @Nullable String markerServerKey) {
-    var slFile = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class);
+    var slFile = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class,
+      "[MarkerUtils#getMatchingStatus] Try get file of marker '" + marker.toString() + "'");
     if (slFile == null) {
-      SonarLintLogger.get().debug("MarkerUtils.getMatchingStatus: Resolving project of marker '" + marker.toString()
-        + "' was not possible due to the file not being adaptable.");
       return FindingMatchingStatus.NOT_MATCHED;
     }
 

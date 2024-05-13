@@ -20,13 +20,13 @@
 package org.sonarlint.eclipse.ui.internal;
 
 import java.util.Collection;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProviderChangedEvent;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
@@ -37,7 +37,8 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
   @Override
   public void decorate(Object element, IDecoration decoration) {
-    var project = Adapters.adapt(element, ISonarLintProject.class);
+    var project = SonarLintUtils.adapt(element, ISonarLintProject.class,
+      "[SonarLintProjectDecorator#decorate] Try get project of object '" + element + "'");
     if (project != null && project.isOpen()) {
       var config = SonarLintCorePlugin.loadConfig(project);
       if (!config.isAutoEnabled()) {

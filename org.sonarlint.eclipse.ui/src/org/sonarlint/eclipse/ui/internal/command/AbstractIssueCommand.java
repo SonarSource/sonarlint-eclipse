@@ -25,13 +25,11 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -56,7 +54,8 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
 
     var elems = selection.toList();
     for (var elem : elems) {
-      var marker = Adapters.adapt(elem, IMarker.class);
+      var marker = SonarLintUtils.adapt(elem, IMarker.class,
+        "[AbstractIssueCommand#getSelectedMarker] Try get marker of object '" + elem + "'");
       if (marker != null) {
         selectedSonarMarkers.add(marker);
       }
@@ -66,10 +65,9 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
 
   /** Check for issue binding: Either SonarQube or SonarCloud */
   protected static Optional<ResolvedBinding> getBinding(IMarker marker) {
-    var slFile = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class);
+    var slFile = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class,
+      "[AbstractIssueCommand#getBinding] Try get file of marker '" + marker + "'");
     if (slFile == null) {
-      SonarLintLogger.get().debug("AbstractIssueCommand: Resolving binding from project connected to file of marker '"
-        + marker.toString() + "' was not possible due to the file not being adaptable.");
       return Optional.empty();
     }
 

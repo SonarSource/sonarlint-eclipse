@@ -21,9 +21,9 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class MarkerPropertyTester extends PropertyTester {
@@ -33,12 +33,14 @@ public class MarkerPropertyTester extends PropertyTester {
    */
   @Override
   public boolean test(Object receiver, String property, Object[] args, @Nullable Object expectedValue) {
-    var marker = Adapters.adapt(receiver, IMarker.class);
+    var marker = SonarLintUtils.adapt(receiver, IMarker.class,
+      "[MarkerPropertyTester#test] Try get marker of object '" + receiver + "'");
     if (marker == null) {
       return false;
     }
 
-    var sonarLintFile = Adapters.adapt(marker.getResource(), ISonarLintFile.class);
+    var sonarLintFile = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class,
+      "[MarkerPropertyTester#test] Try to get file of marker '" + marker.toString() + "'");
     if (sonarLintFile == null) {
       return false;
     }

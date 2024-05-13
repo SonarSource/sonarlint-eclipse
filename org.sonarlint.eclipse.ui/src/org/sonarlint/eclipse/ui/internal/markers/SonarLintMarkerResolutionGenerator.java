@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
@@ -31,6 +30,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
 import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
@@ -111,7 +111,8 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   }
 
   private static boolean isStandaloneIssue(IMarker marker) {
-    var sonarLintFile = Adapters.adapt(marker.getResource(), ISonarLintFile.class);
+    var sonarLintFile = SonarLintUtils.adapt(marker.getResource(), ISonarLintFile.class,
+      "[SonarLintMarkerResolutionGenerator#isStandaloneIssue] Try get file of marker '" + marker.toString() + "'");
     if (sonarLintFile == null) {
       return false;
     }

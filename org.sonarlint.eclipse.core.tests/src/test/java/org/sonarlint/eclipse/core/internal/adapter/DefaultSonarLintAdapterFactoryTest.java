@@ -30,13 +30,13 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.IDocument;
 import org.junit.Before;
 import org.junit.Test;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -60,7 +60,8 @@ public class DefaultSonarLintAdapterFactoryTest extends SonarTestCase {
     var filePath = tempProjectBasedir.append("MyProg.cbl");
     var cobolFile = new CobolFile(filePath, tempProject);
 
-    var sonarLintFile = Adapters.adapt(cobolFile, ISonarLintFile.class);
+    var sonarLintFile = SonarLintUtils.adapt(cobolFile, ISonarLintFile.class,
+      "[DefaultSonarLintAdapterFactoryTest#mimic_cobol_ide] Try get file from COBOL '" + cobolFile.getName() + "'");
 
     assertThat(sonarLintFile).isNotNull();
     assertThat(sonarLintFile.getProject().getName()).isEqualTo("module");

@@ -20,11 +20,11 @@
 package org.sonarlint.eclipse.core.internal.resources;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -86,11 +86,13 @@ public class SonarLintPropertyTester extends PropertyTester {
       return ((ISonarLintFile) receiver).getProject();
     }
     if (receiver instanceof IAdaptable) {
-      var project = Adapters.adapt(receiver, ISonarLintProject.class);
+      var project = SonarLintUtils.adapt(receiver, ISonarLintProject.class,
+        "[SonarLintPropertyTester#getProject] Try get project of object '" + receiver + "'");
       if (project != null) {
         return project;
       }
-      var file = Adapters.adapt(receiver, ISonarLintFile.class);
+      var file = SonarLintUtils.adapt(receiver, ISonarLintFile.class,
+        "[SonarLintPropertyTester#getProject] Try get file of object '" + receiver + "'");
       if (file != null) {
         return file.getProject();
       }

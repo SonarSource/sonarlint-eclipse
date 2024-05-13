@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class MavenUtils {
@@ -69,7 +69,8 @@ public class MavenUtils {
    *  a project either contains sub-modules or if there is a parent project (that is not a dependency).
    */
   public static boolean isPartOfHierarchy(ISonarLintProject project) {
-    var iProject = Adapters.adapt(project.getResource(), IProject.class);
+    var iProject = SonarLintUtils.adapt(project.getResource(), IProject.class,
+      "[MavenUtils#isPartOfHierarchy] Try find Eclipse from '" + project.getName() + "'");
     if (!M2eUtils.checkIfMavenProject(iProject)) {
       return false;
     }
@@ -102,10 +103,12 @@ public class MavenUtils {
   public static ISonarLintProject getRootProjectInWorkspace(ISonarLintProject project) {
     var projectManager = MavenPlugin.getMavenProjectRegistry();
 
-    // If an exception is thrown here due to the Adapters.adapt(...) returning null, something must be broken on the
-    // IDE side as isPartOfHierarchy(...) already made that adaption and the contract is to call it prior to calling
-    // this method!
-    var projectFacade = projectManager.create(Adapters.adapt(project.getResource(), IProject.class), null);
+    // If an exception is thrown here due to the SonarLintUtils.adapt(...) returning null, something must be broken on
+    // the IDE side as isPartOfHierarchy(...) already made that adaption and the contract is to call it prior to
+    // calling this method!
+    var slProject = SonarLintUtils.adapt(project.getResource(), IProject.class,
+      "[MavenUtils#getRootProjectInWorkspace] Try find Eclipse from '" + project.getName() + "'");
+    var projectFacade = projectManager.create(slProject, null);
     if (projectFacade == null) {
       return null;
     }
@@ -120,7 +123,9 @@ public class MavenUtils {
       var rootProjectFacade = projectManager.getMavenProject(rootProject.getGroupId(), rootProject.getArtifactId(),
         rootProject.getVersion());
       if (rootProjectFacade != null) {
-        return Adapters.adapt(rootProjectFacade.getProject(), ISonarLintProject.class);
+        return SonarLintUtils.adapt(rootProjectFacade.getProject(), ISonarLintProject.class,
+          "[MavenUtils#getRootProjectInWorkspace] Try get SonarLint project from '" + rootProjectFacade.getFinalName()
+            + "'");
       }
     } catch (CoreException ex) {
       SonarLintLogger.get().error(ex.getMessage(), ex);
@@ -134,10 +139,12 @@ public class MavenUtils {
 
     var projectManager = MavenPlugin.getMavenProjectRegistry();
 
-    // If an exception is thrown here due to the Adapters.adapt(...) returning null, something must be broken on the
-    // IDE side as isPartOfHierarchy(...) already made that adaption and the contract is to call it prior to calling
-    // this method!
-    var projectFacade = projectManager.create(Adapters.adapt(project.getResource(), IProject.class), null);
+    // If an exception is thrown here due to the SonarLintUtils.adapt(...) returning null, something must be broken on
+    // the IDE side as isPartOfHierarchy(...) already made that adaption and the contract is to call it prior to
+    // calling this method!
+    var slProject = SonarLintUtils.adapt(project.getResource(), IProject.class,
+      "[MavenUtils#getProjectSubProjects] Try find Eclipse from '" + project.getName() + "'");
+    var projectFacade = projectManager.create(slProject, null);
     if (projectFacade == null) {
       return modules;
     }
@@ -148,7 +155,11 @@ public class MavenUtils {
       for (var mavenProjectFacade : projectManager.getProjects()) {
         var mavenProject = mavenProjectFacade.getMavenProject(null);
         if (checkIfPossibleParentProject(mavenProject, parentProject)) {
-          modules.add(Adapters.adapt(mavenProjectFacade.getProject(), ISonarLintProject.class));
+          var possibleSlProject = SonarLintUtils.adapt(mavenProjectFacade.getProject(), ISonarLintProject.class,
+            "[MavenUtils#getProjectSubProjects] Try get SonarLint project from '" + mavenProject.getName() + "'");
+          if (possibleSlProject != null) {
+            modules.add(possibleSlProject);
+          }
         }
       }
     } catch (CoreException ex) {
