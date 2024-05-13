@@ -28,7 +28,6 @@ import java.util.Map;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
@@ -44,6 +43,7 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectsJob;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.MessageDialogUtils;
@@ -80,7 +80,7 @@ public class AnalyzeCommand extends AbstractHandler {
     if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
       MessageDialogUtils.enhancedWithConnectedModeInformation(shell, "Are you working with a CI/CD pipeline?",
         "Running an analysis with SonarQube / SonarCloud in your pipeline might be better suited for analyzing "
-        + "multiple files or a whole project!");
+          + "multiple files or a whole project!");
     } else if (totalFileCount > 10 && !askConfirmation(shell)) {
       // Asking for a few files (e.g. analyzing a package) is annoying, increasing the threshold in order to not spam
       // pop-ups to the user!
@@ -155,7 +155,8 @@ public class AnalyzeCommand extends AbstractHandler {
     if (input instanceof IFileEditorInput) {
       var doc = ((ITextEditor) activeEditor).getDocumentProvider().getDocument(activeEditor.getEditorInput());
       var file = ((IFileEditorInput) input).getFile();
-      var sonarLintFile = Adapters.adapt(file, ISonarLintFile.class);
+      var sonarLintFile = SonarLintUtils.adapt(file, ISonarLintFile.class,
+        "[AnalyzeCommand#findEditedFile] Try get file of editor input '" + file + "'");
       return sonarLintFile != null ? new FileWithDocument(sonarLintFile, doc) : null;
     }
     return null;

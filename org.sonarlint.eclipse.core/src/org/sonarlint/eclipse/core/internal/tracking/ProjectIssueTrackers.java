@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.runtime.Adapters;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
@@ -50,7 +50,8 @@ public class ProjectIssueTrackers implements IResourceChangeListener {
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
     if (event.getType() == IResourceChangeEvent.PRE_CLOSE || event.getType() == IResourceChangeEvent.PRE_DELETE) {
-      var project = Adapters.adapt(event.getResource(), ISonarLintProject.class);
+      var project = SonarLintUtils.adapt(event.getResource(), ISonarLintProject.class,
+        "[ProjectIssueTrackers#resourceChanged] Try get project of event '" + event.getResource() + "'");
       if (project != null) {
         var removed = registry.remove(project);
         if (removed != null) {

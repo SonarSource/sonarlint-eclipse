@@ -29,7 +29,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.team.core.RepositoryProvider;
@@ -96,7 +95,8 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
           if (!SonarLintUtils.isSonarLintFileCandidate(resource)) {
             return false;
           }
-          var sonarLintFile = Adapters.adapt(resource, ISonarLintFile.class);
+          var sonarLintFile = SonarLintUtils.adapt(resource, ISonarLintFile.class,
+            "[DefaultSonarLintProjectAdapter#files] Try get file of resource '" + resource + "'");
           if (sonarLintFile != null) {
             result.add(sonarLintFile);
           }
@@ -142,9 +142,11 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
   }
 
   private static void collect(Subscriber subscriber, IResource resource, Collection<ISonarLintFile> changedFiles) throws TeamException {
-    var file = Adapters.adapt(resource, IFile.class);
+    var file = SonarLintUtils.adapt(resource, IFile.class,
+      "[DefaultSonarLintProjectAdapter#collect] Try get Eclipse file of resource '" + resource + "'");
     if (file != null) {
-      var sonarLintFile = Adapters.adapt(file, ISonarLintFile.class);
+      var sonarLintFile = SonarLintUtils.adapt(file, ISonarLintFile.class,
+        "[DefaultSonarLintProjectAdapter#collect] Try get file of Eclipse file '" + file + "'");
       if (sonarLintFile != null) {
         var syncInfo = subscriber.getSyncInfo(resource);
         if (syncInfo != null && !SyncInfo.isInSync(syncInfo.getKind())) {

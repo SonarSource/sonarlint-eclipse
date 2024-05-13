@@ -26,13 +26,13 @@ import java.util.Set;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer;
@@ -80,7 +80,8 @@ public final class SelectionUtils {
   }
 
   private static void collectProjects(Set<ISonarLintProject> selectedProjects, Object elem, boolean onlyIfProjectSupportsFullAnalysis) {
-    var container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
+    var container = SonarLintUtils.adapt(elem, ISonarLintProjectContainer.class,
+      "[SelectionUtils#collectProjects] Try get container of object '" + elem.toString() + "'");
     if (container != null) {
       selectedProjects.addAll(container.projects().stream()
         .filter(ISonarLintProject::isOpen)
@@ -88,7 +89,8 @@ public final class SelectionUtils {
         .collect(toList()));
       return;
     }
-    var project = Adapters.adapt(elem, ISonarLintProject.class);
+    var project = SonarLintUtils.adapt(elem, ISonarLintProject.class,
+      "[SelectionUtils#collectProjects] Try get project of object '" + elem.toString() + "'");
     if (project != null && project.isOpen() && (!onlyIfProjectSupportsFullAnalysis || project.supportsFullAnalysis())) {
       selectedProjects.add(project);
     }
@@ -113,17 +115,20 @@ public final class SelectionUtils {
 
   private static void collectFiles(Set<ISonarLintFile> selectedFiles, Object elem, boolean onlyIfProjectSupportsFullAnalysis) {
     // SLE-503 Start with the more specific to the more generic
-    var file = Adapters.adapt(elem, ISonarLintFile.class);
+    var file = SonarLintUtils.adapt(elem, ISonarLintFile.class,
+      "[SelectionUtils#collectFiles] Try get file of object '" + elem.toString() + "'");
     if (file != null) {
       selectedFiles.add(file);
       return;
     }
-    var project = Adapters.adapt(elem, ISonarLintProject.class);
+    var project = SonarLintUtils.adapt(elem, ISonarLintProject.class,
+      "[SelectionUtils#collectFiles] Try get project of object '" + elem.toString() + "'");
     if (project != null && project.isOpen() && (!onlyIfProjectSupportsFullAnalysis || project.supportsFullAnalysis())) {
       selectedFiles.addAll(project.files());
       return;
     }
-    var container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
+    var container = SonarLintUtils.adapt(elem, ISonarLintProjectContainer.class,
+      "[SelectionUtils#collectFiles] Try get container of object '" + elem.toString() + "'");
     if (container != null) {
       container.projects().stream()
         .filter(ISonarLintProject::isOpen)
@@ -153,7 +158,8 @@ public final class SelectionUtils {
   }
 
   private static void processElement(List<IMarker> selectedSonarMarkers, Object elem) throws CoreException {
-    var marker = Adapters.adapt(elem, IMarker.class);
+    var marker = SonarLintUtils.adapt(elem, IMarker.class,
+      "[SelectionUtils#processElement] Try get marker of object '" + elem.toString() + "'");
     if (marker != null && isSonarLintMarker(marker)) {
       selectedSonarMarkers.add(marker);
     }

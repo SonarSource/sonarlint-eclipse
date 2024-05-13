@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.views;
 
 import java.util.Objects;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.action.Action;
@@ -36,6 +35,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.job.DisplayProjectRuleDescriptionJob;
@@ -147,14 +147,17 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     var issueImpacts = MarkerUtils.decodeImpacts(
       element.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_IMPACTS_ATTR, null));
 
-
     // Update project rule description asynchronous
-    new DisplayProjectRuleDescriptionJob(
-      Adapters.adapt(element.getResource(), ISonarLintIssuable.class).getProject(),
-      ruleKey, issueType, issueSeverity, issueImpacts,
-      element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, null),
-      ruleDetailsPanel)
-        .schedule();
+    var slIssuable = SonarLintUtils.adapt(element.getResource(), ISonarLintIssuable.class,
+      "[RuleDescriptionWebView#showRuleDescription] Try get issueable from marker '" + element.toString() + "'");
+    if (slIssuable != null) {
+      new DisplayProjectRuleDescriptionJob(
+        slIssuable.getProject(),
+        ruleKey, issueType, issueSeverity, issueImpacts,
+        element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, null),
+        ruleDetailsPanel)
+          .schedule();
+    }
   }
 
   @Override

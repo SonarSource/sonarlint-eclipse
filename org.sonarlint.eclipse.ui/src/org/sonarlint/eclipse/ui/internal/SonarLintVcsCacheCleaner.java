@@ -22,9 +22,9 @@ package org.sonarlint.eclipse.ui.internal;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -43,7 +43,8 @@ public class SonarLintVcsCacheCleaner implements IResourceChangeListener {
 
   private static boolean visitDelta(IResourceDelta delta) {
     if ((delta.getFlags() & IResourceDelta.OPEN) != 0) {
-      var project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
+      var project = SonarLintUtils.adapt(delta.getResource(), ISonarLintProject.class,
+        "[SonarLintVcsCacheCleaner#visitDelta] Try get project of event '" + delta.getResource() + "'");
       if (project != null && (!project.isOpen())) {
         VcsService.projectClosed(project);
       }

@@ -24,7 +24,6 @@ import java.util.regex.PatternSyntaxException;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.Dialog;
@@ -329,7 +328,8 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
         return ValidationStatus.ok();
       }
       var obj = arr[0];
-      var file = Adapters.adapt(obj, ISonarLintFile.class);
+      var file = SonarLintUtils.adapt(obj, ISonarLintFile.class,
+        "[EditProjectExclusionsDialog#selectFile] Try get file of selection '" + obj + "'");
       return file != null ? ValidationStatus.ok() : ValidationStatus.error("Select a file");
     };
 
@@ -342,7 +342,9 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
         }
 
         if (element instanceof IFile) {
-          var file = Adapters.adapt(element, ISonarLintFile.class);
+          var iFile = (IFile) element;
+          var file = SonarLintUtils.adapt(iFile, ISonarLintFile.class,
+            "[EditProjectExclusionsDialog#selectFile] Try get file of Eclipse file '" + iFile.getName() + "'");
           return file != null;
         }
         return false;
@@ -364,7 +366,8 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
 
     if (dialog.open() == Window.OK) {
       var obj = dialog.getFirstResult();
-      var file = Adapters.adapt(obj, ISonarLintFile.class);
+      var file = SonarLintUtils.adapt(obj, ISonarLintFile.class,
+        "[EditProjectExclusionsDialog#selectFile] Try get file of selection '" + obj + "'");
       if (file != null) {
         editItem = new ExclusionItem(Type.FILE, file.getProjectRelativePath());
         fileField.setText(editItem.item());

@@ -21,9 +21,9 @@ package org.sonarlint.eclipse.core.internal.vcs;
 
 import java.util.Optional;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.egit.core.info.GitInfo;
 import org.eclipse.jgit.lib.Repository;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 /**
@@ -36,7 +36,8 @@ public class EGit5dot12VcsFacade extends AbstractEGitVcsFacade {
   @Override
   public boolean isIgnored(ISonarLintFile file) {
     try {
-      var gitInfo = Adapters.adapt(file.getResource(), GitInfo.class);
+      var gitInfo = SonarLintUtils.adapt(file.getResource(), GitInfo.class,
+        "[EGit5dot12VcsFacade#isIgnored] Try get GitInfo from file '" + file.getName() + "'");
       if (gitInfo == null) {
         return false;
       }
@@ -50,7 +51,8 @@ public class EGit5dot12VcsFacade extends AbstractEGitVcsFacade {
   @Override
   Optional<Repository> getRepo(IResource resource) {
     try {
-      var gitInfo = Adapters.adapt(resource, GitInfo.class);
+      var gitInfo = SonarLintUtils.adapt(resource, GitInfo.class,
+        "[EGit5dot12VcsFacade#getRepo] Try get GitInfo from resource '" + resource + "'");
       return Optional.ofNullable(gitInfo).map(GitInfo::getRepository);
     } catch (NoClassDefFoundError notFound) {
       // SLE-785 Workaround for IDz

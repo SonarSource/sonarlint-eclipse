@@ -24,13 +24,13 @@ import java.util.List;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.rpc.protocol.SonarLintRpcServer;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.binding.BindingConfigurationDto;
@@ -64,14 +64,18 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
       backend.getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(addedScopes));
       projectsToAdd.forEach(p -> SonarLintProjectConfigurationManager.registerPreferenceChangeListenerForBindingProperties(p, this::projectPreferencesChanged));
     } else if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
-      var project = Adapters.adapt(event.getResource(), ISonarLintProject.class);
+      var project = SonarLintUtils.adapt(event.getResource(), ISonarLintProject.class,
+        "[ConfigScopeSynchronizer#resourceChanged] Try get SonarLint project from event '" + event.getResource()
+          + "' (pre close)");
       if (project != null) {
         SonarLintLogger.get().debug("Project about to be closed: " + project.getName());
         backend.getConfigurationService()
           .didRemoveConfigurationScope(new DidRemoveConfigurationScopeParams(getConfigScopeId(project)));
       }
     } else if (event.getType() == IResourceChangeEvent.PRE_DELETE) {
-      var project = Adapters.adapt(event.getResource(), ISonarLintProject.class);
+      var project = SonarLintUtils.adapt(event.getResource(), ISonarLintProject.class,
+        "[ConfigScopeSynchronizer#resourceChanged] Try get SonarLint project from event '" + event.getResource()
+          + "' (pre delete)");
       if (project != null) {
         SonarLintLogger.get().debug("Project about to be deleted: " + project.getName());
         backend.getConfigurationService()
@@ -82,7 +86,9 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
 
   private static boolean visitDeltaPostChange(IResourceDelta delta, List<ISonarLintProject> projectsToAdd) {
     if ((delta.getFlags() & IResourceDelta.OPEN) != 0) {
-      var project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
+      var project = SonarLintUtils.adapt(delta.getResource(), ISonarLintProject.class,
+        "[ConfigScopeSynchronizer#resourceChanged] Try get SonarLint project from event '"
+          + delta.getResource() + "' (post change / opened)");
       if (project != null && project.isOpen()) {
         SonarLintLogger.get().debug("Project opened: " + project.getName());
         projectsToAdd.add(project);

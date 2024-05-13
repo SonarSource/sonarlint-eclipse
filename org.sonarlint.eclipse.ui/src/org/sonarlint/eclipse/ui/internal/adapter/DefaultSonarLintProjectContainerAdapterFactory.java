@@ -21,10 +21,10 @@ package org.sonarlint.eclipse.ui.internal.adapter;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.IWorkingSet;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer;
 
@@ -41,12 +41,14 @@ public class DefaultSonarLintProjectContainerAdapterFactory implements IAdapterF
     public Collection<ISonarLintProject> projects() {
       var result = new ArrayList<ISonarLintProject>();
       for (var elem : workingSet.getElements()) {
-        var project = Adapters.adapt(elem, ISonarLintProject.class);
+        var project = SonarLintUtils.adapt(elem, ISonarLintProject.class,
+          "[DefaultSonarLintProjectContainer#projects] Try get project of working set '" + elem + "'");
         if (project != null) {
           result.add(project);
           continue;
         }
-        var container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
+        var container = SonarLintUtils.adapt(elem, ISonarLintProjectContainer.class,
+          "[DefaultSonarLintProjectContainer#projects] Try get container of working set '" + elem + "'");
         if (container != null) {
           result.addAll(container.projects());
         }
