@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
@@ -130,15 +131,29 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
       + "it using your PATH environment variable.";
 
     public NodeJsField(Composite parent) {
-      super(SonarLintGlobalConfiguration.PREF_NODEJS_PATH, "Node.js executable path:", parent);
+      super(SonarLintGlobalConfiguration.PREF_NODEJS_PATH, "Node.js executable path:", parent, false);
     }
 
     @Override
     void provideDefaultValue() {
       getTextControl().setToolTipText(NODE_JS_TOOLTIP);
-      final var detectedNodeJs = SonarLintBackendService.get().getBackend().getAnalysisService().getAutoDetectedNodeJs().join().getDetails();
-      var detectedNodeJsPath = detectedNodeJs == null ? null : detectedNodeJs.getPath();
-      getTextControl().setMessage(detectedNodeJsPath != null ? detectedNodeJsPath.toString() : "Node.js not found");
+
+      String detectedNodeJs;
+      try {
+        var nodeJs = SonarLintBackendService.get().getBackend().getAnalysisService().getAutoDetectedNodeJs()
+          .join()
+          .getDetails();
+        if (nodeJs != null) {
+          detectedNodeJs = nodeJs.getPath().toString();
+        } else {
+          detectedNodeJs = "Node.js not found";
+        }
+      } catch (Exception err) {
+        // JSON-RPC error or backend not initialized -> shouldn't impact the preference page
+        SonarLintLogger.get().debug("SonarLint backend not responding on Node.js", err);
+        detectedNodeJs = "Node.js not found, backend not responding";
+      }
+      getTextControl().setMessage(detectedNodeJs);
     }
 
     /** INFO: For now we don't check if the Node.js version is actually correct and supported, we can do so in the future! */
@@ -154,7 +169,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
       + "responsibility to make sure that it works correctly!";
 
     public Java17Field(Composite parent) {
-      super(SonarLintGlobalConfiguration.PREF_JAVA17_PATH, "Java 17+ installation path:", parent);
+      super(SonarLintGlobalConfiguration.PREF_JAVA17_PATH, "Java 17+ installation path:", parent, true);
     }
 
     @Override
