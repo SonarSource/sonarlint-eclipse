@@ -32,6 +32,7 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -69,6 +70,9 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
 
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
+    if (event.getBuildKind() == IncrementalProjectBuilder.CLEAN_BUILD) {
+      return;
+    }
     var changedOrAddedFiles = new ArrayList<ISonarLintFile>();
     var removedFiles = new ArrayList<URI>();
     try {
