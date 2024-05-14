@@ -27,13 +27,17 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.preference.StringButtonFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 
 /** This is used as a base for all path based preferences */
 public abstract class AbstractPathField extends StringButtonFieldEditor {
-  protected AbstractPathField(String preferenceName, String labelText, Composite parent) {
+  private final boolean requireFolder;
+
+  protected AbstractPathField(String preferenceName, String labelText, Composite parent, boolean requireFolder) {
     super(preferenceName, labelText, parent);
     setChangeButtonText("Browse ...");
+    this.requireFolder = requireFolder;
   }
 
   @Override
@@ -66,15 +70,22 @@ public abstract class AbstractPathField extends StringButtonFieldEditor {
   @Nullable
   @Override
   protected String changePressed() {
-    var dialog = new FileDialog(getShell(), SWT.OPEN);
-    if (getStringValue().trim().length() > 0) {
-      dialog.setFileName(getStringValue());
+    String fileOrFolder;
+    if (requireFolder) {
+      var dialog = new DirectoryDialog(getShell(), SWT.OPEN);
+      fileOrFolder = dialog.open();
+    } else {
+      var dialog = new FileDialog(getShell(), SWT.OPEN);
+      if (getStringValue().trim().length() > 0) {
+        dialog.setFileName(getStringValue());
+      }
+      fileOrFolder = dialog.open();
     }
-    var file = dialog.open();
-    if (file != null) {
-      file = file.trim();
-      if (file.length() > 0) {
-        return file;
+
+    if (fileOrFolder != null) {
+      fileOrFolder = fileOrFolder.trim();
+      if (fileOrFolder.length() > 0) {
+        return fileOrFolder;
       }
     }
     return null;
