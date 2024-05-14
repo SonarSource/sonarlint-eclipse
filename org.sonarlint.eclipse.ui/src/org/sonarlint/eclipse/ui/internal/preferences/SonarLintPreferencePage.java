@@ -39,7 +39,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.TestFileClassifier;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarlint.eclipse.core.internal.utils.FileUtils;
+import org.sonarlint.eclipse.core.internal.utils.JavaRuntimeUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -165,8 +165,9 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
   private static class Java17Field extends AbstractPathField {
     private static final String JAVA_17_TOOLTIP = "SonarLint provides its own JRE to run part of the plug-in out of "
-      + "process. You can provide an explicit Java 17+ installation to be used instead, but be cautious as it is your "
-      + "responsibility to make sure that it works correctly!";
+      + "process if Eclipse is not running with a Java 17+ one that can be used. You can provide an explicit Java 17+ "
+      + "installation to be used instead, e.g. when your IDE is running on Java 16 or lower. But be cautious as it is "
+      + "your responsibility to make sure that it works correctly!";
 
     public Java17Field(Composite parent) {
       super(SonarLintGlobalConfiguration.PREF_JAVA17_PATH, "Java 17+ installation path:", parent, true);
@@ -175,14 +176,24 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     @Override
     void provideDefaultValue() {
       getTextControl().setToolTipText(JAVA_17_TOOLTIP);
-      final var java17Path = SonarLintGlobalConfiguration.getJava17Path();
-      getTextControl().setMessage(java17Path != null ? java17Path.toString() : "User controlled Java 17+ not configured");
+
+      var javaRuntimeInformation = JavaRuntimeUtils.getJavaRuntime();
+      switch (javaRuntimeInformation.getProvider()) {
+        case SELF_MANAGED:
+          getTextControl().setMessage(javaRuntimeInformation.getPath().toString());
+          break;
+        case ECLIPSE_MANAGED:
+          getTextControl().setMessage("Using Java installation of Eclipse");
+          break;
+        case SONARLINT_BUNDLED:
+          getTextControl().setMessage("Using Java installation of SonarLint");
+      }
     }
 
     /** INFO: For now we only check for the Java executable being present, not if actually Java 17+, we can do so in the future! */
     @Override
     boolean checkStateFurther(Path value) {
-      var exists = FileUtils.checkForJavaExecutable(value);
+      var exists = JavaRuntimeUtils.checkForJavaExecutable(value);
       if (!exists) {
         setErrorMessage("Java executable could not be found inside: " + value.resolve("bin").toString());
       }
