@@ -52,7 +52,7 @@ import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
-import org.sonarlint.eclipse.core.internal.utils.FileUtils;
+import org.sonarlint.eclipse.core.internal.utils.JavaRuntimeUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -145,14 +145,21 @@ public class SonarLintBackendService {
           var sloopBasedir = sloopJarPath.getParent().getParent();
           SonarLintLogger.get().debug("Sloop located in " + sloopBasedir);
 
-          var java17Path = SonarLintGlobalConfiguration.getJava17Path();
-          if (java17Path != null && !FileUtils.checkForJavaExecutable(java17Path)) {
-            SonarLintLogger.get().info(
-              "Falling back to bundled JRE, as the one provided could not be located in " + java17Path.toString());
-            java17Path = null;
-            fixExecutablePermissions();
+          var javaRuntimeInformation = JavaRuntimeUtils.getJavaRuntime();
+          var javaRuntimePath = javaRuntimeInformation.getPath();
+          switch (javaRuntimeInformation.getProvider()) {
+            case SELF_MANAGED:
+              SonarLintLogger.get().info("Using self-managed Java installation");
+              fixExecutablePermissions();
+              break;
+            case ECLIPSE_MANAGED:
+              SonarLintLogger.get().info("Using Java installation of Eclipse");
+              break;
+            case SONARLINT_BUNDLED:
+              SonarLintLogger.get().info("Using Java installation of SonarLint");
           }
-          var sloop = sloopLauncher.start(sloopBasedir, java17Path);
+
+          var sloop = sloopLauncher.start(sloopBasedir, javaRuntimePath);
           sloop.onExit().thenAccept(SonarLintBackendService::onSloopExit);
           backend = sloop.getRpcServer();
 

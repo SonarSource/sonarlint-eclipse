@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.Locale;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public class FileUtils {
@@ -50,29 +49,5 @@ public class FileUtils {
     } catch (IOException e) {
       throw new IllegalStateException("Unable to create directory: " + path, e);
     }
-  }
-
-  /**
-   *  Check basic Java installation structures for macOS / Linux / Windows
-   *  -> ${value}/bin/java or ${value}/bin/java.exe
-   *  -> We do not care for macOS JDK bundles (build like a macOS application)!
-   *
-   *  @param installationDirectory where to look
-   *  @return true if executable found, false otherwise
-   */
-  public static boolean checkForJavaExecutable(Path installationDirectory) {
-    // Check basic Java installation structures for macOS / Linux / Windows
-    // -> ${value}/bin/java or ${value}/bin/java.exe
-    // -> We do not care for macOS JDK bundles (build like a macOS application)!
-    Path executable;
-
-    var osName = System.getProperty("os.name");
-    if (osName != null && osName.toLowerCase(Locale.getDefault()).startsWith("win")) {
-      executable = installationDirectory.resolve("bin/java.exe");
-    } else {
-      executable = installationDirectory.resolve("bin/java");
-    }
-
-    return Files.exists(executable);
   }
 }
