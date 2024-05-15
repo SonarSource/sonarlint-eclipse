@@ -26,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +51,7 @@ import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
+import org.sonarlint.eclipse.core.internal.utils.DurationUtils;
 import org.sonarlint.eclipse.core.internal.utils.JavaRuntimeUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
@@ -246,11 +246,16 @@ public class SonarLintBackendService {
 
   private static HttpConfigurationDto getHttpConfiguration() {
     return new HttpConfigurationDto(
-      new SslConfigurationDto(getPathProperty("sonarlint.ssl.trustStorePath"), System.getProperty("sonarlint.ssl.trustStorePassword"),
-        System.getProperty("sonarlint.ssl.trustStoreType"), getPathProperty("sonarlint.ssl.keyStorePath"), System.getProperty("sonarlint.ssl.keyStorePassword"),
+      new SslConfigurationDto(getPathProperty("sonarlint.ssl.trustStorePath"),
+        System.getProperty("sonarlint.ssl.trustStorePassword"),
+        System.getProperty("sonarlint.ssl.trustStoreType"),
+        getPathProperty("sonarlint.ssl.keyStorePath"),
+        System.getProperty("sonarlint.ssl.keyStorePassword"),
         System.getProperty("sonarlint.ssl.keyStoreType")),
-      getTimeoutProperty("sonarlint.http.connectTimeout"), getTimeoutProperty("sonarlint.http.socketTimeout"), getTimeoutProperty("sonarlint.http.connectionRequestTimeout"),
-      getTimeoutProperty("sonarlint.http.responseTimeout"));
+      DurationUtils.getTimeoutProperty("sonarlint.http.connectTimeout"),
+      DurationUtils.getTimeoutProperty("sonarlint.http.socketTimeout"),
+      DurationUtils.getTimeoutProperty("sonarlint.http.connectionRequestTimeout"),
+      DurationUtils.getTimeoutProperty("sonarlint.http.responseTimeout"));
   }
 
   @Nullable
@@ -267,12 +272,6 @@ public class SonarLintBackendService {
   private static Path getPathProperty(String propertyName) {
     var property = System.getProperty(propertyName);
     return property == null ? null : Paths.get(property);
-  }
-
-  @Nullable
-  private static Duration getTimeoutProperty(String propertyName) {
-    var property = System.getProperty(propertyName);
-    return property == null ? null : Duration.parse(property);
   }
 
   private static void onSloopExit(int exitCode) {
