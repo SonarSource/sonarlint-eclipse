@@ -199,7 +199,7 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
   }
 
   @Override
-  public void didDetectSecret() {
+  public void didDetectSecret(String configScopeId) {
     SonarLintNotifications.get().showNotificationIfFirstSecretDetected();
   }
 
