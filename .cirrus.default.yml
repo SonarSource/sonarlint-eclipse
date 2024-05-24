@@ -66,6 +66,19 @@ maven_cache_qa: &SETUP_MAVEN_CACHE_QA
       - /usr/bin/find . -name pom.xml -not -path './its/*' -exec cat {} \+
       - cat target-platforms/commons.target its/target-platforms/*.target
 
+orchestrator_cache_qa: &SETUP_ORCHESTRATOR_CACHE
+  set_orchestrator_home_script: |
+    export THIS_MONTH=$(date '+%Y-%m')
+    echo "THIS_MONTH=${THIS_MONTH}" >> $CIRRUS_ENV
+    echo "ORCHESTRATOR_HOME=${CIRRUS_WORKING_DIR}/orchestrator/${THIS_MONTH}" >> $CIRRUS_ENV
+  mkdir_orchestrator_home_script: |
+    echo "Create dir ${ORCHESTRATOR_HOME} if needed"
+    mkdir -p ${ORCHESTRATOR_HOME}
+  orchestrator_cache:
+    folder: ${ORCHESTRATOR_HOME}
+    fingerprint_script: echo ${THIS_MONTH}
+    reupload_on_changes: 'true'
+
 build_task:
   # name: "Build and stage to repox"
   <<: *ONLY_IF
@@ -168,6 +181,7 @@ qa_task:
         SQ_VERSION: 'DEV'
         QA_CATEGORY: 'Latest'
   <<: *SETUP_MAVEN_CACHE_QA
+  <<: *SETUP_ORCHESTRATOR_CACHE
   download_staged_update_site_script: |
     set -euo pipefail
     source cirrus-env QA
@@ -210,6 +224,21 @@ qa_task:
       format: junit
     slack_notification_script: |
       .cirrus/slack-notification.sh
+
+inspect_orchestrator_cache_task:
+  <<: *ONLY_IF
+  depends_on: qa
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 1
+    memory: 1G
+  <<: *SETUP_ORCHESTRATOR_CACHE
+  inspect_cache_script: |
+    echo "Inspecting cache ${ORCHESTRATOR_HOME}..."
+    cd "${ORCHESTRATOR_HOME}"
+    ls -l
+    find .
+    echo "Inspecting cache done."
 
 sonarqube_task:
   # name: "Run SonarQube analysis"
