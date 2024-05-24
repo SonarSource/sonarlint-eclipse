@@ -42,6 +42,20 @@ maven_cache_qa: &SETUP_MAVEN_CACHE
       - /usr/bin/find . -name pom.xml -not -path './its/*' -exec cat {} \+
       - cat target-platforms/build.target target-platforms/commons.target its/target-platforms/*.target
 
+# Orchestrator cache for integration tests (Connected Mode with SonarQube)
+orchestrator_cache_qa: &SETUP_ORCHESTRATOR_CACHE
+  set_orchestrator_home_script: |
+    export THIS_MONTH=$(date '+%Y-%m')
+    echo "THIS_MONTH=${THIS_MONTH}" >> $CIRRUS_ENV
+    echo "ORCHESTRATOR_HOME=${CIRRUS_WORKING_DIR}/orchestrator/${THIS_MONTH}" >> $CIRRUS_ENV
+  mkdir_orchestrator_home_script: |
+    echo "Create dir ${ORCHESTRATOR_HOME} if needed"
+    mkdir -p ${ORCHESTRATOR_HOME}
+  orchestrator_cache:
+    folder: ${ORCHESTRATOR_HOME}
+    fingerprint_script: echo ${THIS_MONTH}
+    reupload_on_changes: 'true'
+
 # Run iBuilds compatibility tests (with packaged update site for that)
 qa_ibuilds_task:
   <<: *ONLY_IF
@@ -72,6 +86,7 @@ qa_ibuilds_task:
         SQ_VERSION: 'DEV'
         QA_CATEGORY: 'Latest'
   <<: *SETUP_MAVEN_CACHE
+  <<: *SETUP_ORCHESTRATOR_CACHE
   prepare_update_site_script: |
     set -euo pipefail
     source cirrus-env QA
@@ -112,3 +127,19 @@ qa_ibuilds_task:
       format: junit
     slack_notification_script: |
       .cirrus/slack-notification.sh
+
+# Inspect orchestrator cache
+inspect_orchestrator_cache_task:
+  <<: *ONLY_IF
+  depends_on: qa_ibuilds
+  eks_container:
+    <<: *CONTAINER_DEFINITION
+    cpu: 1
+    memory: 1G
+  <<: *SETUP_ORCHESTRATOR_CACHE
+  inspect_cache_script: |
+    echo "Inspecting cache ${ORCHESTRATOR_HOME}..."
+    cd "${ORCHESTRATOR_HOME}"
+    ls -l
+    find .
+    echo "Inspecting cache done."
