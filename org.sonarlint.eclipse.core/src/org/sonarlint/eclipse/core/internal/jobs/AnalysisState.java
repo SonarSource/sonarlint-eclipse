@@ -19,44 +19,47 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import java.util.ArrayList;
+import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
-import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
+import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.RaisedIssueDto;
 
 public class AnalysisState {
   private final UUID id;
-  private final ISonarLintProject project;
-  private final Map<ISonarLintIssuable, List<RawIssueDto>> issuesPerResource;
-  private long issueCount = 0;
+  private final TriggerType triggerType;
+  private Map<URI, List<RaisedIssueDto>> issuesByFileUri = new HashMap<>();
+  private boolean isIntermediatePublication;
 
-  public AnalysisState(UUID analysisId, ISonarLintProject project, Map<ISonarLintIssuable, List<RawIssueDto>> issuesPerResource) {
+  public AnalysisState(UUID analysisId, TriggerType triggerType) {
     this.id = analysisId;
-    this.project = project;
-    this.issuesPerResource = issuesPerResource;
+    this.triggerType = triggerType;
   }
 
   public UUID getId() {
     return id;
   }
 
-  public void addRawIssue(RawIssueDto rawIssue) {
-    issueCount++;
-    var fileUri = rawIssue.getFileUri();
-    var issuable = fileUri == null ? project : SonarLintUtils.findFileFromUri(fileUri);
-    if (issuable == null) {
-      SonarLintLogger.get().error("Cannot retrieve the file on which an issue has been raised. File URI is " + fileUri);
-      return;
-    }
-    issuesPerResource.computeIfAbsent(issuable, k -> new ArrayList<>()).add(rawIssue);
+  public void setRaisedIssues(Map<URI, List<RaisedIssueDto>> issuesByFileUri, boolean isIntermediatePublication) {
+    this.issuesByFileUri = issuesByFileUri;
+    this.isIntermediatePublication = isIntermediatePublication;
+  }
+
+  public TriggerType getTriggerType() {
+    return triggerType;
   }
 
   public long getIssueCount() {
-    return issueCount;
+    return issuesByFileUri.values().stream().map(l -> l.size()).reduce((a, b) -> a + b).orElse(0);
+  }
+
+  public Map<URI, List<RaisedIssueDto>> getIssuesByFileUri() {
+    return issuesByFileUri;
+  }
+
+  public boolean isIntermediatePublication() {
+    return isIntermediatePublication;
   }
 }

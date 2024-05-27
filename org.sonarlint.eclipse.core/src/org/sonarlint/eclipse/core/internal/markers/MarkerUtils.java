@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.markers;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -43,7 +44,9 @@ import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarsource.sonarlint.core.commons.api.TextRange;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.ImpactDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TextRangeWithHashDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.RaisedIssueDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.CleanCodeAttribute;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.ImpactSeverity;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.IssueSeverity;
@@ -124,6 +127,7 @@ public final class MarkerUtils {
     return encoded == null ? null : CleanCodeAttribute.valueOf(encoded);
   }
 
+  // TODO: Delete?
   @Nullable
   public static String encodeHighestImpact(
     @Nullable Map<SoftwareQuality, ImpactSeverity> decoded) {
@@ -141,10 +145,27 @@ public final class MarkerUtils {
   }
 
   @Nullable
+  public static String encodeHighestImpact(List<ImpactDto> impacts) {
+    if (impacts.isEmpty()) {
+      return null;
+    }
+
+    var severities = impacts.stream().map(ImpactDto::getImpactSeverity).collect(Collectors.toSet());
+    if (severities.contains(ImpactSeverity.HIGH)) {
+      return ImpactSeverity.HIGH.name();
+    }
+
+    return severities.contains(ImpactSeverity.MEDIUM)
+      ? ImpactSeverity.MEDIUM.name()
+      : ImpactSeverity.LOW.name();
+  }
+
+  @Nullable
   public static ImpactSeverity decodeHighestImpact(@Nullable String encoded) {
     return encoded == null ? null : ImpactSeverity.valueOf(encoded);
   }
 
+  // TODO: Delete?
   @Nullable
   public static String encodeImpacts(
     @Nullable Map<SoftwareQuality, ImpactSeverity> decoded) {
@@ -155,6 +176,19 @@ public final class MarkerUtils {
     var mapAsString = new StringBuilder();
     for (var entry : decoded.entrySet()) {
       mapAsString.append(entry.getKey() + "=" + entry.getValue().name() + ",");
+    }
+    return mapAsString.delete(mapAsString.length() - 1, mapAsString.length()).toString();
+  }
+
+  @Nullable
+  public static String encodeImpacts(List<ImpactDto> impacts) {
+    if (impacts.isEmpty()) {
+      return null;
+    }
+
+    var mapAsString = new StringBuilder();
+    for (var impact : impacts) {
+      mapAsString.append(impact.getSoftwareQuality() + "=" + impact.getImpactSeverity() + ",");
     }
     return mapAsString.delete(mapAsString.length() - 1, mapAsString.length()).toString();
   }
@@ -281,6 +315,11 @@ public final class MarkerUtils {
   @Nullable
   public static String getRuleKey(IMarker marker) {
     return marker.getAttribute(SONAR_MARKER_RULE_KEY_ATTR, null);
+  }
+
+  /** Coming from {@link RaisedIssueDto#getId()} the marker attribute cannot be null! */
+  public static UUID getTrackedIssueId(IMarker marker) {
+    return UUID.fromString(marker.getAttribute(SONAR_MARKER_TRACKED_ISSUE_ID_ATTR, null));
   }
 
   public static MarkerFlows getIssueFlows(IMarker marker) {

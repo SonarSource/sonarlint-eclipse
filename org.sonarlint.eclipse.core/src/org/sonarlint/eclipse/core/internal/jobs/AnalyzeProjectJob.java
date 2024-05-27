@@ -28,9 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,13 +36,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
@@ -59,22 +54,15 @@ import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTracker;
-import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
 import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.internal.utils.FileUtils;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.commons.api.progress.CanceledException;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.AnalyzeFilesResponse;
-import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
-import org.sonarsource.sonarlint.core.rpc.protocol.common.TextRangeDto;
 
 import static java.text.MessageFormat.format;
 
@@ -87,6 +75,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private final ISonarLintProject project;
   private final List<SonarLintProperty> extraProps;
   private final TriggerType triggerType;
+  // TODO: Remove
   private final boolean shouldClearReport;
   private final Collection<FileWithDocument> files;
 
@@ -100,10 +89,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   public static AbstractSonarProjectJob create(AnalyzeProjectRequest request) {
-    return SonarLintCorePlugin.getConnectionManager()
-      .resolveBinding(request.getProject())
-      .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request))
-      .orElseGet(() -> new AnalyzeProjectJob(request));
+    return new AnalyzeProjectJob(request);
   }
 
   public static void changeAnalysisReadiness(Set<String> configurationScopeIds, boolean readiness) {
@@ -152,16 +138,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       Map<ISonarLintFile, IDocument> filesToAnalyzeMap = filesToAnalyze
         .stream()
         .collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()), HashMap::putAll);
-
-      SonarLintLogger.get().debug("Clear markers on " + excludedFiles.size() + " excluded files");
-      ResourcesPlugin.getWorkspace().run(m -> {
-        excludedFiles.forEach(SonarLintMarkerUpdater::clearMarkers);
-
-        if (shouldClearReport) {
-          SonarLintMarkerUpdater.deleteAllMarkersFromReport();
-        }
-      }, monitor);
-
       if (filesToAnalyze.isEmpty()) {
         return Status.OK_STATUS;
       }
@@ -178,8 +154,16 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
       extraProps.forEach(sonarProperty -> mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue()));
 
+      // We have to remove all markers from the report view first as SonarLintMarkerUpdater works per file and the
+      // SonarLint Report view can have markers from multiple files we might not catch: E.g. analyzed two files first
+      // and afterwards only analyzed one -> markers from both are shown!
+      if (shouldClearReport) {
+        SonarLintMarkerUpdater.deleteAllMarkersFromReport();
+      }
+
       if (!inputFiles.isEmpty()) {
-        runAnalysisAndUpdateMarkers(filesToAnalyzeMap, monitor, mergedExtraProps);
+        var start = System.currentTimeMillis();
+        var result = run(filesToAnalyzeMap, mergedExtraProps, start, monitor);
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
@@ -241,17 +225,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return ignored;
   }
 
-  private void runAnalysisAndUpdateMarkers(Map<ISonarLintFile, IDocument> docPerFiles, final IProgressMonitor monitor, Map<String, String> mergedExtraProps) throws CoreException {
-    var issuesPerResource = new LinkedHashMap<ISonarLintIssuable, List<RawIssueDto>>();
-    docPerFiles.keySet().forEach(slFile -> issuesPerResource.put(slFile, new ArrayList<>()));
-
-    var start = System.currentTimeMillis();
-    var result = run(docPerFiles, mergedExtraProps, issuesPerResource, start, monitor);
-    if (!monitor.isCanceled()) {
-      updateMarkers(docPerFiles, issuesPerResource, result, triggerType, monitor);
-    }
-  }
-
   private static List<EclipseInputFile> buildInputFiles(Path tempDirectory, final Map<ISonarLintFile, IDocument> filesToAnalyze) {
     var inputFiles = new ArrayList<EclipseInputFile>(filesToAnalyze.size());
 
@@ -301,100 +274,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return usedConfigurators;
   }
 
-  private void updateMarkers(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<RawIssueDto>> issuesPerResource, AnalyzeFilesResponse result,
-    TriggerType triggerType, final IProgressMonitor monitor) throws CoreException {
-    var failedFileUris = result.getFailedAnalysisFiles();
-    var successfulFiles = issuesPerResource.entrySet().stream()
-      .filter(e -> !failedFileUris.contains(e.getKey().getResource().getLocationURI()))
-      // TODO handle non-file-level issues
-      .filter(e -> e.getKey() instanceof ISonarLintFile)
-      .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-
-    ResourcesPlugin.getWorkspace().run(m -> trackIssues(docPerFile, successfulFiles, triggerType, monitor), monitor);
-  }
-
-  protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile,
-    Map<ISonarLintIssuable, List<RawIssueDto>> rawIssuesPerResource, TriggerType triggerType,
-    final IProgressMonitor monitor) {
-    if (rawIssuesPerResource.entrySet().isEmpty()) {
-      return;
-    }
-
-    // To access the preference service only once and not per issue
-    var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
-
-    // To access the preference service only once and not per issue
-    var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
-
-    // If the project connection offers changing the status on anticipated issues (SonarQube 10.2+) we can enable the
-    // context menu option on the markers.
-    var viableForStatusChange = SonarLintUtils.checkProjectSupportsAnticipatedStatusChange(getProject());
-
-    var issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getProject());
-
-    for (var entry : rawIssuesPerResource.entrySet()) {
-      if (monitor.isCanceled()) {
-        return;
-      }
-      var file = (ISonarLintFile) entry.getKey();
-      var openedDocument = Optional.ofNullable(docPerFile.get(file));
-      var rawIssues = entry.getValue();
-      List<RawIssueTrackable> trackables;
-      if (!rawIssues.isEmpty()) {
-        var document = openedDocument.orElseGet(file::getDocument);
-        trackables = rawIssues.stream().map(issue -> transform(issue, file, document)).collect(Collectors.toList());
-      } else {
-        trackables = Collections.emptyList();
-      }
-      trackFileIssues(file, trackables, issueTracker, triggerType, rawIssuesPerResource.size(), monitor);
-      var tracked = issueTracker.getTracked(file);
-      SonarLintMarkerUpdater.createOrUpdateMarkers(file, openedDocument, tracked, triggerType, issuePeriodPreference,
-        issueFilterPreference, viableForStatusChange);
-    }
-  }
-
-  protected void trackFileIssues(ISonarLintFile file, List<RawIssueTrackable> trackables, ProjectIssueTracker issueTracker, TriggerType triggerType,
-    int totalTrackedFiles,
-    IProgressMonitor monitor) {
-    issueTracker.processRawIssues(file, trackables);
-  }
-
-  private static RawIssueTrackable transform(RawIssueDto issue, ISonarLintFile resource, IDocument document) {
-    var textRange = issue.getTextRange();
-    if (textRange == null) {
-      return new RawIssueTrackable(issue);
-    }
-    var textRangeContent = readTextRangeContent(resource, document, textRange);
-    var lineContent = readLineContent(resource, document, textRange.getStartLine());
-    return new RawIssueTrackable(issue, textRangeContent, lineContent);
-  }
-
-  @Nullable
-  private static String readTextRangeContent(ISonarLintFile resource, IDocument document, TextRangeDto textRange) {
-    var position = MarkerUtils.getPosition(document, textRange);
-    if (position != null) {
-      try {
-        return document.get(position.getOffset(), position.getLength());
-      } catch (BadLocationException e) {
-        SonarLintLogger.get().error("failed to get text range content of resource " + resource.getName(), e);
-      }
-    }
-    return null;
-  }
-
-  @Nullable
-  private static String readLineContent(ISonarLintFile resource, IDocument document, int startLine) {
-    var position = MarkerUtils.getPosition(document, startLine);
-    if (position != null) {
-      try {
-        return document.get(position.getOffset(), position.getLength());
-      } catch (BadLocationException e) {
-        SonarLintLogger.get().error("Failed to get line content of file " + resource.getName(), e);
-      }
-    }
-    return null;
-  }
-
   private static void analysisCompleted(Collection<ProjectConfigurator> usedDeprecatedConfigurators, Collection<IAnalysisConfigurator> usedConfigurators,
     Map<String, String> properties, final IProgressMonitor monitor) {
     var unmodifiableMap = Collections.unmodifiableMap(properties);
@@ -420,13 +299,15 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private AnalyzeFilesResponse run(final Map<ISonarLintFile, IDocument> docPerFiles, final Map<String, String> extraProps,
-    final Map<ISonarLintIssuable, List<RawIssueDto>> issuesPerResource, long startTime, IProgressMonitor monitor) {
+    long startTime, IProgressMonitor monitor) {
     var analysisId = UUID.randomUUID();
-    var analysisState = new AnalysisState(analysisId, getProject(), issuesPerResource);
+    var analysisState = new AnalysisState(analysisId, triggerType);
     try {
       RunningAnalysesTracker.get().track(analysisState);
-      var future = SonarLintBackendService.get().analyzeFiles(getProject(), analysisId, docPerFiles, extraProps, startTime);
+
+      var future = SonarLintBackendService.get().analyzeFilesAndTrack(getProject(), analysisId, docPerFiles.keySet(), extraProps, triggerType.shouldUpdate(), startTime);
       var response = JobUtils.waitForFutureInJob(monitor, future);
+
       SonarLintLogger.get().info("Found " + analysisState.getIssueCount() + " issue(s)");
       return response;
     } catch (InterruptedException e) {
@@ -434,8 +315,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       throw new CanceledException();
     } catch (ExecutionException e) {
       throw new IllegalStateException(e);
-    } finally {
-      RunningAnalysesTracker.get().finish(analysisState);
     }
   }
 }

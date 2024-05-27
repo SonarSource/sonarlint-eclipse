@@ -46,7 +46,6 @@ public class ProjectBindingProcess {
         SonarLintCorePlugin.saveConfig(p, projectConfig);
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
-        SonarLintCorePlugin.clearIssueTracker(p);
         AnalysisJobsScheduler.notifyBindingViewAfterBindingChange(p, oldBinding.map(EclipseProjectBinding::getConnectionId).orElse(null));
       }
     });

@@ -42,6 +42,8 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
+import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -49,11 +51,11 @@ import org.sonarsource.sonarlint.core.rpc.client.ConfigScopeNotFoundException;
 import org.sonarsource.sonarlint.core.rpc.client.ConnectionNotFoundException;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintCancelChecker;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintRpcClientDelegate;
-import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.event.DidReceiveServerHotspotEvent;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.GetProxyPasswordAuthenticationResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.ProxyDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.X509CertificateDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.RaisedIssueDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.plugin.DidSkipLoadingPluginParams.SkipReason;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.TelemetryClientLiveAttributesResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.ClientFileDto;
@@ -204,11 +206,46 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
   }
 
   @Override
-  public void didRaiseIssue(String configurationScopeId, UUID analysisId, RawIssueDto rawIssue) {
+  public void raiseIssues(String configurationScopeId, Map<URI, List<RaisedIssueDto>> issuesByFileUri, boolean isIntermediatePublication, UUID analysisId) {
     var currentAnalysis = RunningAnalysesTracker.get().getById(analysisId);
-    if (currentAnalysis != null) {
-      currentAnalysis.addRawIssue(rawIssue);
+    if (currentAnalysis == null) {
+      return;
     }
+
+    ISonarLintProject project;
+    try {
+      project = SonarLintUtils.resolveProject(configurationScopeId);
+    } catch (ConfigScopeNotFoundException err) {
+      RunningAnalysesTracker.get().finish(currentAnalysis);
+      return;
+    }
+
+    currentAnalysis.setRaisedIssues(issuesByFileUri, isIntermediatePublication);
+    if (isIntermediatePublication) {
+      return;
+    }
+
+    // TODO: Build Eclipse Job around this
+
+    // To access the preference service only once and not per issue
+    var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
+
+    // To access the preference service only once and not per issue
+    var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
+
+    // If the project connection offers changing the status on anticipated issues (SonarQube 10.2+) we can enable the
+    // context menu option on the markers.
+    var viableForStatusChange = SonarLintUtils.checkProjectSupportsAnticipatedStatusChange(project);
+
+    for (var entry : currentAnalysis.getIssuesByFileUri().entrySet()) {
+      var slFile = SonarLintUtils.findFileFromUri(entry.getKey());
+      if (slFile != null) {
+        SonarLintMarkerUpdater.createOrUpdateMarkers(slFile, entry.getValue(), currentAnalysis.getTriggerType(),
+          issuePeriodPreference, issueFilterPreference, viableForStatusChange);
+      }
+    }
+
+    RunningAnalysesTracker.get().finish(currentAnalysis);
   }
 
   @Override
