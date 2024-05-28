@@ -25,6 +25,8 @@ import static org.assertj.core.api.Assertions.tuple;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -51,6 +53,8 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
+import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
@@ -63,6 +67,29 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   private static LogListener listener;
   private static IProject project;
+
+  protected static class MarkerUpdateListener implements AnalysisListener {
+    private CountDownLatch markersUpdatedLatch = new CountDownLatch(0);
+
+    public void prepareOneAnalysis() {
+      markersUpdatedLatch = new CountDownLatch(1);
+    }
+
+    public boolean waitForMarkers() throws InterruptedException {
+      return markersUpdatedLatch.await(30, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void usedAnalysis(AnalysisEvent event) {
+      markersUpdatedLatch.countDown();
+    }
+  }
+
+  protected static MarkerUpdateListener markerUpdateListener = new MarkerUpdateListener();
+
+  protected static void prepareOneAnalysis() {
+    markerUpdateListener.markersUpdatedLatch = new CountDownLatch(1);
+  }
 
   @BeforeClass
   public static void addLogListener() throws IOException, CoreException, InterruptedException {
@@ -85,6 +112,8 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     };
     SonarLintLogger.get().addLogListener(listener);
 
+    SonarLintCorePlugin.getAnalysisListenerManager().addListener(markerUpdateListener);
+
     project = importEclipseProject("SimpleJdtProject");
 
     // After importing projects we have to await them being readied by SLCORE:
@@ -103,6 +132,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   @AfterClass
   public static void removeLogListener() {
+    SonarLintCorePlugin.getAnalysisListenerManager().removeListener(markerUpdateListener);
     SonarLintLogger.get().removeLogListener(listener);
   }
 
