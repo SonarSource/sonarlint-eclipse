@@ -57,6 +57,7 @@ import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 
 public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
@@ -228,10 +229,14 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     var status = underTest.getResult();
     assertThat(status.isOK()).isTrue();
 
+    await().untilAsserted(() -> {
+      assertThat(List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
+        .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR))
+        .contains(tuple("/SimpleJdtProject/src/main/java/com/quickfix/FileWithQuickFixes.java", 8,
+          "Replace the type specification in this constructor call with the diamond operator (\"<>\").", "java:S2293"));
+    });
+
     var markers = List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR))
-      .contains(tuple("/SimpleJdtProject/src/main/java/com/quickfix/FileWithQuickFixes.java", 8,
-        "Replace the type specification in this constructor call with the diamond operator (\"<>\").", "java:S2293"));
     var markerWithQuickFix = markers.stream().filter(m -> m.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "").equals("java:S2293")).findFirst().get();
     var issueQuickFixes = MarkerUtils.getIssueQuickFixes(markerWithQuickFix);
     assertThat(issueQuickFixes.getQuickFixes()).hasSize(1);

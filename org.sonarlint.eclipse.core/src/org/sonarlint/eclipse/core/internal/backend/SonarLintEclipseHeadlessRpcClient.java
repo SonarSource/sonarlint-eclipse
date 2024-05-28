@@ -42,8 +42,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
-import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.jobs.IssuesMarkerUpdateJob;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -220,32 +219,13 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
       return;
     }
 
-    currentAnalysis.setRaisedIssues(issuesByFileUri, isIntermediatePublication);
+    currentAnalysis.setRaisedIssues(configurationScopeId, issuesByFileUri, isIntermediatePublication);
     if (isIntermediatePublication) {
       return;
     }
 
-    // TODO: Build Eclipse Job around this
-
-    // To access the preference service only once and not per issue
-    var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
-
-    // To access the preference service only once and not per issue
-    var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
-
-    // If the project connection offers changing the status on anticipated issues (SonarQube 10.2+) we can enable the
-    // context menu option on the markers.
-    var viableForStatusChange = SonarLintUtils.checkProjectSupportsAnticipatedStatusChange(project);
-
-    for (var entry : currentAnalysis.getIssuesByFileUri().entrySet()) {
-      var slFile = SonarLintUtils.findFileFromUri(entry.getKey());
-      if (slFile != null) {
-        SonarLintMarkerUpdater.createOrUpdateMarkers(slFile, entry.getValue(), currentAnalysis.getTriggerType(),
-          issuePeriodPreference, issueFilterPreference, viableForStatusChange);
-      }
-    }
-
-    RunningAnalysesTracker.get().finish(currentAnalysis);
+    var job = new IssuesMarkerUpdateJob(project, analysisId);
+    job.schedule();
   }
 
   @Override

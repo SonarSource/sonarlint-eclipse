@@ -51,7 +51,6 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.backend.RunningAnalysesTracker;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -167,14 +166,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
-
-      SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners(new AnalysisEvent() {
-        @Override
-        public Set<ISonarLintProject> getProjects() {
-          return Set.of(getProject());
-        }
-      });
-
       SonarLintLogger.get().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
     } catch (CanceledException e) {
       return Status.CANCEL_STATUS;
@@ -307,8 +298,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
       var future = SonarLintBackendService.get().analyzeFilesAndTrack(getProject(), analysisId, docPerFiles.keySet(), extraProps, triggerType.shouldUpdate(), startTime);
       var response = JobUtils.waitForFutureInJob(monitor, future);
-
-      SonarLintLogger.get().info("Found " + analysisState.getIssueCount() + " issue(s)");
       return response;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

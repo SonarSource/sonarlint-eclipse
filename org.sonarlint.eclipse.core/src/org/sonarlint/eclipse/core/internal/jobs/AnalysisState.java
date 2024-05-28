@@ -20,17 +20,17 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.RaisedIssueDto;
 
 public class AnalysisState {
   private final UUID id;
   private final TriggerType triggerType;
-  private Map<URI, List<RaisedIssueDto>> issuesByFileUri = new HashMap<>();
+  private Map<String, Map<URI, List<RaisedIssueDto>>> issuesByFileUriForConfigScopeId = new ConcurrentHashMap<>();
   private boolean isIntermediatePublication;
 
   public AnalysisState(UUID analysisId, TriggerType triggerType) {
@@ -42,8 +42,8 @@ public class AnalysisState {
     return id;
   }
 
-  public void setRaisedIssues(Map<URI, List<RaisedIssueDto>> issuesByFileUri, boolean isIntermediatePublication) {
-    this.issuesByFileUri = issuesByFileUri;
+  public void setRaisedIssues(String configScopeId, Map<URI, List<RaisedIssueDto>> issuesByFileUri, boolean isIntermediatePublication) {
+    this.issuesByFileUriForConfigScopeId.put(configScopeId, issuesByFileUri);
     this.isIntermediatePublication = isIntermediatePublication;
   }
 
@@ -51,12 +51,13 @@ public class AnalysisState {
     return triggerType;
   }
 
-  public long getIssueCount() {
-    return issuesByFileUri.values().stream().map(l -> l.size()).reduce((a, b) -> a + b).orElse(0);
+  public long getIssueCount(String configScopeId) {
+    return issuesByFileUriForConfigScopeId.getOrDefault(configScopeId, Map.of())
+      .values().stream().map(l -> l.size()).reduce((a, b) -> a + b).orElse(0);
   }
 
-  public Map<URI, List<RaisedIssueDto>> getIssuesByFileUri() {
-    return issuesByFileUri;
+  public Map<URI, List<RaisedIssueDto>> getIssuesByFileUri(String configScopeId) {
+    return issuesByFileUriForConfigScopeId.getOrDefault(configScopeId, Map.of());
   }
 
   public boolean isIntermediatePublication() {
