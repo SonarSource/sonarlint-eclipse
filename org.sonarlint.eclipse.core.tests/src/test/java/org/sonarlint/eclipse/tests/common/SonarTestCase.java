@@ -33,6 +33,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.eclipse.core.resources.IProject;
@@ -46,6 +48,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
+import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
@@ -72,6 +76,28 @@ public abstract class SonarTestCase {
   protected static File getProject(String projectName) throws IOException {
     var destDir = new File(projectsWorkdir, projectName);
     return getProject(projectName, destDir);
+  }
+
+  protected static class MarkerUpdateListener implements AnalysisListener {
+    private CountDownLatch markersUpdatedLatch = new CountDownLatch(0);
+
+    @Override
+    public void usedAnalysis(AnalysisEvent event) {
+      markersUpdatedLatch.countDown();
+    }
+  
+    public void prepareOneAnalysis() {
+      markersUpdatedLatch = new CountDownLatch(1);
+    }
+
+    public void waitForMarkers() throws InterruptedException {
+      markersUpdatedLatch.await(10, TimeUnit.SECONDS);
+    }
+  };
+  protected static MarkerUpdateListener markerUpdateListener = new MarkerUpdateListener();
+
+  protected static void prepareOneAnalysis() {
+    markerUpdateListener.markersUpdatedLatch = new CountDownLatch(1);
   }
 
   /**
@@ -200,10 +226,13 @@ public abstract class SonarTestCase {
 
     // Clear all registered connections to prevent auto-binding or auto-sync to create unexpected logs
     SonarLintCorePlugin.getConnectionManager().getConnections().forEach(s -> SonarLintCorePlugin.getConnectionManager().removeConnection(s));
+
+    SonarLintCorePlugin.getAnalysisListenerManager().addListener(markerUpdateListener);
   }
 
   @AfterClass
   final static public void end() throws Exception {
+    SonarLintCorePlugin.getAnalysisListenerManager().removeListener(markerUpdateListener);
     final var description = workspace.getDescription();
     description.setAutoBuilding(true);
     workspace.setDescription(description);
