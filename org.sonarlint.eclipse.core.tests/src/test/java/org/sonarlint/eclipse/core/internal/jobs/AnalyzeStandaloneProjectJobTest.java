@@ -128,12 +128,14 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     ruleConfig.getParams().put("format", "^[0-9]+$");
     SonarLintGlobalConfiguration.saveRulesConfig(List.of(ruleConfig));
 
+    markerUpdateListener.prepareOneAnalysis();
     var underTest = new AnalyzeProjectJob(new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze),
       TriggerType.EDITOR_CHANGE, false));
     underTest.schedule();
     assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
     var status = underTest.getResult();
     assertThat(status.isOK()).isTrue();
+    assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
     var markers = List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE))
@@ -150,11 +152,13 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     workspace.addResourceChangeListener(mcl);
 
     try {
+      markerUpdateListener.prepareOneAnalysis();
       var underTest = new AnalyzeProjectJob(
         new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.EDITOR_CHANGE, false));
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
+      assertThat(markerUpdateListener.waitForMarkers()).isTrue(); 
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
 
@@ -163,9 +167,11 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       // Run the same analysis a second time to ensure the behavior is the same when markers are already present
       mcl.clearCounter();
 
+      markerUpdateListener.prepareOneAnalysis();
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
+      assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
 
@@ -193,7 +199,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
-      markerUpdateListener.waitForMarkers();
+      assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);
 
@@ -207,7 +213,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
-      markerUpdateListener.waitForMarkers();
+      assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);
 
@@ -233,7 +239,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     assertThat(underTest.join(20_000, new NullProgressMonitor())).isTrue();
     var status = underTest.getResult();
     assertThat(status.isOK()).isTrue();
-    markerUpdateListener.waitForMarkers();
+    assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
     assertThat(List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
       .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR))

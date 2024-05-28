@@ -90,8 +90,8 @@ public abstract class SonarTestCase {
       markersUpdatedLatch = new CountDownLatch(1);
     }
 
-    public void waitForMarkers() throws InterruptedException {
-      markersUpdatedLatch.await(10, TimeUnit.SECONDS);
+    public boolean waitForMarkers() throws InterruptedException {
+      return markersUpdatedLatch.await(10, TimeUnit.SECONDS);
     }
   };
   protected static MarkerUpdateListener markerUpdateListener = new MarkerUpdateListener();

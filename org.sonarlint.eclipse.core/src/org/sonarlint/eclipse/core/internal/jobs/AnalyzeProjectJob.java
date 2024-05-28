@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -157,7 +158,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       // SonarLint Report view can have markers from multiple files we might not catch: E.g. analyzed two files first
       // and afterwards only analyzed one -> markers from both are shown!
       if (shouldClearReport) {
-        SonarLintMarkerUpdater.deleteAllMarkersFromReport();
+        ResourcesPlugin.getWorkspace().run(m -> SonarLintMarkerUpdater.deleteAllMarkersFromReport(), monitor);
       }
 
       if (!inputFiles.isEmpty()) {

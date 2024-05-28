@@ -21,6 +21,8 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.Set;
 import java.util.UUID;
+
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -66,13 +68,15 @@ public class IssuesMarkerUpdateJob extends AbstractSonarJob {
     // context menu option on the markers.
     var viableForStatusChange = SonarLintUtils.checkProjectSupportsAnticipatedStatusChange(project);
 
-    for (var entry : currentAnalysis.getIssuesByFileUri(configScopeId).entrySet()) {
-      var slFile = SonarLintUtils.findFileFromUri(entry.getKey());
-      if (slFile != null) {
-        SonarLintMarkerUpdater.createOrUpdateMarkers(slFile, entry.getValue(), currentAnalysis.getTriggerType(),
+    ResourcesPlugin.getWorkspace().run(m -> {
+      for (var entry : currentAnalysis.getIssuesByFileUri(configScopeId).entrySet()) {
+        var slFile = SonarLintUtils.findFileFromUri(entry.getKey());
+        if (slFile != null) {
+          SonarLintMarkerUpdater.createOrUpdateMarkers(slFile, entry.getValue(), currentAnalysis.getTriggerType(),
           issuePeriodPreference, issueFilterPreference, viableForStatusChange);
+        }
       }
-    }
+    }, monitor);
 
     RunningAnalysesTracker.get().finish(currentAnalysis);
 
