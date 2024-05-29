@@ -32,7 +32,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -294,17 +293,37 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     long startTime, IProgressMonitor monitor) {
     var analysisId = UUID.randomUUID();
     var analysisState = new AnalysisState(analysisId, triggerType);
+    // TODO: Add the "IssueMarkerUpdaterJobFinishedListener" (maybe another name is better) to the AnalysisState to be
+    // invoked when IssueMarkerUpdaterJob is finished successfully. See the stuff with the CountdownLatch below.
+
     try {
       RunningAnalysesTracker.get().track(analysisState);
 
       var future = SonarLintBackendService.get().analyzeFilesAndTrack(getProject(), analysisId, docPerFiles.keySet(), extraProps, triggerType.shouldUpdate(), startTime);
       var response = JobUtils.waitForFutureInJob(monitor, future);
+
+      // TODO: Wait for the flag in the AnalysisState that the IssueMarkerUpdaterJob was finished successfully
+      // TODO: Alternately enable a CountDownLatch of a minute or so (don't quote me on that) and if this ends before
+      // the info is coming in in the AnalysisState that the IssueMarkerUpdaterJob was finished successfully
+      // (Listener), finish off this job anyway by calling "RunningAnalysesTracker.get().finish(analysisState);" what
+      // is currently in the catch but should move to the finnaly once again!
+
+      // Why the latch in the first place? raiseIssues(...) on a project with no files / only files with no issues is
+      // not called (ask Damien) as they filter out files / configurationScopeIds without issues :(
+
       return response;
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new CanceledException();
-    } catch (ExecutionException e) {
-      throw new IllegalStateException(e);
+    } catch (Exception err) {
+      // TODO: Remove this and move it to the finally, it is just for the meantime!
+      // If the analysis fails, a raiseIssues(...) maybe still called. If that is the case, finish of the analysis here
+      // and the raiseIssues(...) will run in its guard that the analysis is not available anymore.
+      RunningAnalysesTracker.get().finish(analysisState);
+
+      if (err instanceof InterruptedException) {
+        Thread.currentThread().interrupt();
+        throw new CanceledException();
+      } else {
+        throw new IllegalStateException(err);
+      }
     }
   }
 }
