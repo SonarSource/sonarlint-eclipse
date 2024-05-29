@@ -230,8 +230,8 @@ inspect_orchestrator_cache_task:
   depends_on: qa
   eks_container:
     <<: *CONTAINER_DEFINITION
-    cpu: 1
-    memory: 1G
+    cpu: 4
+    memory: 8G
   <<: *SETUP_ORCHESTRATOR_CACHE
   inspect_cache_script: |
     echo "Inspecting cache ${ORCHESTRATOR_HOME}..."
