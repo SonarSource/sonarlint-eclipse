@@ -141,7 +141,9 @@ validate_task:
     /etc/init.d/xvfb stop
   cleanup_before_cache_script: cleanup_maven_repository
   on_failure:
-    mvn_log_artifacts:
+    mvn_startTestLog_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/work/configuration/*.log"
+    mvn_runTestLog_artifacts:
       path: "${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/work/data/.metadata/.log"
     xvfb_log_artifacts:
       path: "${CIRRUS_WORKING_DIR}/Xvfb.out"
@@ -208,8 +210,6 @@ qa_task:
       /etc/init.d/xvfb stop
     test_recording_artifacts:
       path: "${CIRRUS_WORKING_DIR}/recording_${QA_CATEGORY}.mp4"
-    log_artifacts:
-      path: "its/build/idea-sandbox/system/log"
     jacoco_artifacts:
       path: "${CIRRUS_WORKING_DIR}/it-coverage*.exec"
   on_failure:
