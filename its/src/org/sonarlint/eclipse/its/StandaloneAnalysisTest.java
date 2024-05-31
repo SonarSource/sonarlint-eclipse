@@ -195,6 +195,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(helloJavaFile);
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
@@ -231,6 +232,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     // Trigger manual analysis of a single file
     doAndWaitForSonarLintAnalysisJob(() -> new ContextMenu(helloJavaFile.getTreeItem()).getItem("SonarLint", "Analyze").select());
 
+    waitForMarkers(textEditor, 1);
     assertThat(textEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
@@ -309,6 +311,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 2);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
@@ -327,6 +330,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("lambda.yaml"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
@@ -344,6 +348,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("file.css"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
@@ -361,6 +366,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("file.ts"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
@@ -382,6 +388,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "use", "UseUtils.java"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
@@ -455,6 +462,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "HelloLinked.java"));
 
     var defaultEditor = new DefaultEditor("HelloLinked.java");
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(tuple("Replace this use of System.out by a logger.", 13));
@@ -493,6 +501,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(tuple("Replace this use of System.out by a logger.", 9));

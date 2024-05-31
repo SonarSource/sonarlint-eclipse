@@ -50,6 +50,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(project.getResource("src", "hello", "Hello.java"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
@@ -80,6 +81,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(project.getResource("src", "hello", "MonsterClass.java"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 13);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .contains(
@@ -111,6 +113,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(project.getResource("src", "root", "nested", "example.py"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .contains(tuple("Replace print statement by built-in function.", 10));

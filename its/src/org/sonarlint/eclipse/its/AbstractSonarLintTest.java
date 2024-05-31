@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -59,6 +60,7 @@ import org.eclipse.reddeer.swt.impl.button.FinishButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.workbench.impl.editor.AbstractEditor;
 import org.eclipse.reddeer.workbench.impl.shell.WorkbenchShell;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
@@ -259,6 +261,10 @@ public abstract class AbstractSonarLintTest {
 
     // If we have any SonarLint for Eclipse user survey, just click it away as we don't test the behavior!
     shellByName("SonarLint - New Eclipse user survey").ifPresent(DefaultShell::close);
+  }
+
+  protected void waitForMarkers(AbstractEditor editor, int expectedMarkersCount) {
+    Awaitility.await().untilAsserted(() -> assertThat(editor.getMarkers()).hasSize(expectedMarkersCount));
   }
 
   protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {

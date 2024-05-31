@@ -50,11 +50,13 @@ public class MavenTest extends AbstractSonarLintTest {
     rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open();
     assertThat(scheduledAnalysisJobCount.get()).isEqualTo(previousAnalysisJobCount);
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 0);
     assertThat(defaultEditor.getMarkers()).isEmpty();
     defaultEditor.close();
 
     openFileAndWaitForAnalysisCompletion(sampleModule1Project.getResource("src/main/java", "hello", "Hello1.java"));
     defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
@@ -64,6 +66,7 @@ public class MavenTest extends AbstractSonarLintTest {
       // Issues on pom.xml
       openFileAndWaitForAnalysisCompletion(rootProject.getResource("pom.xml"));
       defaultEditor = new DefaultEditor();
+      waitForMarkers(defaultEditor, 1);
       assertThat(defaultEditor.getMarkers())
         .extracting(Marker::getText, Marker::getLineNumber)
         .containsExactly(tuple("Replace \"pom.name\" with \"project.name\".", 11));

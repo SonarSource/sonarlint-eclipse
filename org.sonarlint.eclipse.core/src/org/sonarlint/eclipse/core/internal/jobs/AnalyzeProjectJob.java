@@ -313,11 +313,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
       return response;
     } catch (Exception err) {
-      // TODO: Remove this and move it to the finally, it is just for the meantime!
-      // If the analysis fails, a raiseIssues(...) maybe still called. If that is the case, finish of the analysis here
-      // and the raiseIssues(...) will run in its guard that the analysis is not available anymore.
-      RunningAnalysesTracker.get().finish(analysisState);
-
       if (err instanceof InterruptedException) {
         Thread.currentThread().interrupt();
         throw new CanceledException();

@@ -139,7 +139,7 @@ public class SonarLintMarkerUpdater {
         .map(Entry::getValue)
         .collect(Collectors.toSet());
 
-      createOrUpdateMarkers2(file, markersForFile, issues, triggerType, issuePeriodPreference, issueFilterPreference, viableForStatusChange);
+      createOrUpdateMarkers(file, markersForFile, issues, triggerType, issuePeriodPreference, issueFilterPreference, viableForStatusChange);
 
       for (var marker : previousMarkersToDelete) {
         marker.delete();
@@ -203,7 +203,7 @@ public class SonarLintMarkerUpdater {
     return Optional.empty();
   }
 
-  private static void createOrUpdateMarkers2(ISonarLintFile file, Map<UUID, IMarker> markersForFile,
+  private static void createOrUpdateMarkers(ISonarLintFile file, Map<UUID, IMarker> markersForFile,
     List<RaisedIssueDto> issues, TriggerType triggerType, final String issuePeriodPreference,
     final String issueFilterPreference, final boolean viableForStatusChange) throws CoreException {
 

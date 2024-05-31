@@ -43,6 +43,7 @@ public class SecretsTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("secret"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
@@ -60,6 +61,7 @@ public class SecretsTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
@@ -83,6 +85,7 @@ public class SecretsTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("secret.txt"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 0);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .isEmpty();

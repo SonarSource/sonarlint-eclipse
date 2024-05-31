@@ -205,27 +205,19 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
   }
 
   @Override
-  public void raiseIssues(String configurationScopeId, Map<URI, List<RaisedIssueDto>> issuesByFileUri, boolean isIntermediatePublication, UUID analysisId) {
-    var currentAnalysis = RunningAnalysesTracker.get().getById(analysisId);
-    if (currentAnalysis == null) {
-      return;
-    }
-
+  public void raiseIssues(String configurationScopeId, Map<URI, List<RaisedIssueDto>> issuesByFileUri, boolean isIntermediatePublication, @Nullable UUID analysisId) {
     ISonarLintProject project;
     try {
       project = SonarLintUtils.resolveProject(configurationScopeId);
     } catch (ConfigScopeNotFoundException err) {
-      RunningAnalysesTracker.get().finish(currentAnalysis);
       return;
     }
 
-    currentAnalysis.setRaisedIssues(configurationScopeId, issuesByFileUri, isIntermediatePublication);
     if (isIntermediatePublication) {
       return;
     }
 
-    var job = new IssuesMarkerUpdateJob(project, analysisId);
-    job.schedule();
+    new IssuesMarkerUpdateJob(project, issuesByFileUri, analysisId).schedule();
   }
 
   @Override

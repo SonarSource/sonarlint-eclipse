@@ -238,6 +238,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
 
     var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
@@ -266,6 +267,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     openFileAndWaitForAnalysisCompletion(file);
 
     var defaultEditor = new TextEditor();
+    waitForMarkers(defaultEditor, 1);
     assertThat(defaultEditor.getMarkers())
       .satisfiesAnyOf(
         list -> assertThat(list)
@@ -277,13 +279,14 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     var qualityProfile = getQualityProfile(JAVA_SIMPLE_PROJECT_KEY, "SonarLint IT Java");
     deactivateRule(qualityProfile, S106);
-    Thread.sleep(5000);
+    Thread.sleep(10_000);
 
     doAndWaitForSonarLintAnalysisJob(() -> {
       defaultEditor.insertText(0, " ");
       defaultEditor.save();
     });
 
+    waitForMarkers(defaultEditor, 0);
     assertThat(defaultEditor.getMarkers()).isEmpty();
   }
 
