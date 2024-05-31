@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.its;
 
 import org.eclipse.reddeer.eclipse.jdt.ui.javaeditor.JavaEditor;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
@@ -45,21 +46,23 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     var helloFile = javaSimple.getProjectItem("src", "hello", "Hello.java");
     openFileAndWaitForAnalysisCompletion(helloFile);
+    waitForMarkers(new DefaultEditor(), 1);
 
     var sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
-      .containsOnly(tuple("Hello.java", "Replace this use of System.out by a logger.", ""));
+      .containsOnly(tuple("Hello.java", "Replace this use of System.out by a logger.", "few seconds ago"));
 
     // Change content
     var javaEditor = new JavaEditor("Hello.java");
     javaEditor.insertText(7, 43, "\nSystem.out.println(\"Hello1\");");
     doAndWaitForSonarLintAnalysisJob(() -> javaEditor.save());
+    waitForMarkers(new DefaultEditor(), 2);
 
     sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
-      .containsOnly(tuple("Hello.java", "Replace this use of System.out by a logger.", ""),
+      .containsOnly(tuple("Hello.java", "Replace this use of System.out by a logger.", "few seconds ago"),
         tuple("Hello.java", "Replace this use of System.out by a logger.", "few seconds ago"));
   }
 
@@ -77,43 +80,48 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     var helloFile = jsSimple.getProjectItem("src", "hello.js");
     openFileAndWaitForAnalysisCompletion(helloFile);
+    waitForMarkers(new DefaultEditor(), 1);
 
     var sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
-      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""));
+      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", "few seconds ago"));
 
     // Change content
     var textEditor = new TextEditor("hello.js");
     textEditor.insertText(2, 17, "\nlet i;");
     doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
+    waitForMarkers(new DefaultEditor(), 2);
 
     sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
-      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
+      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", "few seconds ago"),
         tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
 
     // Insert content that should crash analyzer
     var beforeCrash = textEditor.getText();
     textEditor.insertText(3, 8, "\nbl ah");
     doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
+    // One additional marker from JSDT
+    waitForMarkers(new DefaultEditor(), 3);
 
     // Issues are still there
     sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
-      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
+      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", "few seconds ago"),
         tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
 
     // Fix parsing issue
     textEditor.setText(beforeCrash);
     doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
+    waitForMarkers(new DefaultEditor(), 2);
 
     sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getCreationDate)
-      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
+      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", "few seconds ago"),
         tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
 
   }
