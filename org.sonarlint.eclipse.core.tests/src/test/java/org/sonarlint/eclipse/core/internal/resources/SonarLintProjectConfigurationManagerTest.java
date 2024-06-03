@@ -22,8 +22,11 @@ package org.sonarlint.eclipse.core.internal.resources;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -37,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
 
   private static final String PROJECT_WITH_DEPRECATED_SETTINGS = "DeprecatedModuleBinding";
+  private static final CountDownLatch expectedErrorsFromBackend = new CountDownLatch(4);
   private final List<String> infos = new ArrayList<>();
   private final List<String> errors = new ArrayList<>();
 
@@ -51,6 +55,8 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
       @Override
       public void error(String msg, boolean fromAnalyzer) {
         errors.add(msg);
+        // Making sure that these logs from the backend are caught here and do not pollute other tests
+        expectedErrorsFromBackend.countDown();
       }
 
       @Override
@@ -59,6 +65,11 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
 
     });
 
+  }
+
+  @AfterClass
+  public static void waitForCoreMessages() throws Throwable {
+    assertThat(expectedErrorsFromBackend.await(30, TimeUnit.SECONDS)).isTrue();
   }
 
   @Test
