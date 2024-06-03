@@ -24,12 +24,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
@@ -37,7 +35,6 @@ import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.utils.ClientFileExclusions;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.file.GetFilesStatusResponse;
 
 public class FileExclusionsChecker {
   private final ClientFileExclusions projectExclusions;
@@ -66,24 +63,6 @@ public class FileExclusionsChecker {
     var notExcluded = new HashSet<ISonarLintFile>();
     notExcluded.addAll(filesByUri.values());
 
-    SonarLintCorePlugin.getConnectionManager()
-      .resolveBinding(project)
-      .ifPresent(binding -> {
-        GetFilesStatusResponse statuses;
-        try {
-          statuses = JobUtils.waitForFuture(monitor, SonarLintBackendService.get().getFilesStatus(project, filesByUri.values()));
-        } catch (InterruptedException | ExecutionException e) {
-          throw new IllegalStateException("Unable to get exclusions", e);
-        }
-
-        statuses.getFileStatuses().forEach((uri, status) -> {
-          if (status.isExcluded()) {
-            var file = filesByUri.get(uri);
-            notExcluded.remove(file);
-            logIfNeeded(file, log, "server side");
-          }
-        });
-      });
     return notExcluded;
   }
 

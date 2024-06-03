@@ -26,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,8 +67,6 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.branch.DidVcsReposito
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.config.DidChangeCredentialsParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.GetAllProjectsParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.SonarProjectDto;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.file.GetFilesStatusParams;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.file.GetFilesStatusResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.ClientConstantInfoDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.FeatureFlagsDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.HttpConfigurationDto;
@@ -408,11 +405,6 @@ public class SonarLintBackendService {
 
   public CompletableFuture<ListAllResponse> listAllTaintVulnerabilities(ISonarLintProject project) {
     return getBackend().getTaintVulnerabilityTrackingService().listAll(new ListAllParams(ConfigScopeSynchronizer.getConfigScopeId(project)));
-  }
-
-  public CompletableFuture<GetFilesStatusResponse> getFilesStatus(ISonarLintProject project, Collection<ISonarLintFile> notExcluded) {
-    return getBackend().getFileService().getFilesStatus(
-      new GetFilesStatusParams(Map.of(ConfigScopeSynchronizer.getConfigScopeId(project), notExcluded.stream().map(ISonarLintFile::uri).collect(Collectors.toList()))));
   }
 
   public CompletableFuture<GetSharedConnectedModeConfigFileResponse> getSharedConnectedModeConfigFileContents(ISonarLintProject project) {
