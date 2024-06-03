@@ -533,8 +533,7 @@ public class SonarLintMarkerUpdater {
    *  markers should stay in standalone mode because the preference is only applied in connected mode!
    */
   private static boolean shouldHidePreNewCodeIssueMarker(RaisedIssueDto issue, final String issuePeriodPreference) {
-    return issue.getServerKey() != null
-      && Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE, issuePeriodPreference)
+    return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE, issuePeriodPreference)
       && !issue.isOnNewCode();
   }
 
