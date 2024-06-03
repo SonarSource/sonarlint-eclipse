@@ -42,7 +42,6 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
@@ -120,12 +119,12 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  public static void createOrUpdateMarkers(ISonarLintFile file, List<RaisedIssueDto> issues, TriggerType triggerType, final String issuePeriodPreference,
+  public static void createOrUpdateMarkers(ISonarLintFile file, List<RaisedIssueDto> issues, boolean issuesAreOnTheFly, final String issuePeriodPreference,
     final String issueFilterPreference, final boolean viableForStatusChange) {
 
     try {
       var markersForFile = Stream.of(file.getResource().findMarkers(
-        triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_ID : SonarLintCorePlugin.MARKER_REPORT_ID,
+        issuesAreOnTheFly ? SonarLintCorePlugin.MARKER_ON_THE_FLY_ID : SonarLintCorePlugin.MARKER_REPORT_ID,
         false,
         IResource.DEPTH_ZERO))
         .collect(Collectors.toMap(MarkerUtils::getTrackedIssueId, marker -> marker));
@@ -139,7 +138,7 @@ public class SonarLintMarkerUpdater {
         .map(Entry::getValue)
         .collect(Collectors.toSet());
 
-      createOrUpdateMarkers(file, markersForFile, issues, triggerType, issuePeriodPreference, issueFilterPreference, viableForStatusChange);
+      createOrUpdateMarkers(file, markersForFile, issues, issuesAreOnTheFly, issuePeriodPreference, issueFilterPreference, viableForStatusChange);
 
       for (var marker : previousMarkersToDelete) {
         marker.delete();
@@ -204,7 +203,7 @@ public class SonarLintMarkerUpdater {
   }
 
   private static void createOrUpdateMarkers(ISonarLintFile file, Map<UUID, IMarker> markersForFile,
-    List<RaisedIssueDto> issues, TriggerType triggerType, final String issuePeriodPreference,
+    List<RaisedIssueDto> issues, boolean issuesAreOnTheFly, final String issuePeriodPreference,
     final String issueFilterPreference, final boolean viableForStatusChange) throws CoreException {
 
     var lazyInitDocument = file.getDocument();
@@ -224,25 +223,25 @@ public class SonarLintMarkerUpdater {
 
       // try to update the marker (if possible), otherwise create it
       if (markerForIssue == null) {
-        markerForIssue = createMarker(issueId, file, triggerType);
+        markerForIssue = createMarker(issueId, file, issuesAreOnTheFly);
       }
 
       updateMarkerAttributes(lazyInitDocument, issue, markerForIssue, viableForStatusChange);
-      createFlowMarkersForLocalIssues(lazyInitDocument, file, issue, markerForIssue, triggerType);
-      createQuickFixMarkersForLocalIssues(lazyInitDocument, file, issue, markerForIssue, triggerType);
+      createFlowMarkersForLocalIssues(lazyInitDocument, file, issue, markerForIssue, issuesAreOnTheFly);
+      createQuickFixMarkersForLocalIssues(lazyInitDocument, file, issue, markerForIssue, issuesAreOnTheFly);
     }
   }
 
   // TODO: This is the new one that will work for RaisedFindingDto (RaisedIssueDto / RaisedHotSpotDto) and TaintVulnerabilityDto
-  private static IMarker createMarker(UUID id, ISonarLintIssuable issuable, TriggerType triggerType) throws CoreException {
+  private static IMarker createMarker(UUID id, ISonarLintIssuable issuable, boolean issuesAreOnTheFly) throws CoreException {
     var marker = issuable.getResource()
-      .createMarker(triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_ID : SonarLintCorePlugin.MARKER_REPORT_ID);
+      .createMarker(issuesAreOnTheFly ? SonarLintCorePlugin.MARKER_ON_THE_FLY_ID : SonarLintCorePlugin.MARKER_REPORT_ID);
     marker.setAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR, MarkerUtils.encodeUuid(id));
     return marker;
   }
 
-  private static String markerIdForFlows(TriggerType triggerType) {
-    return triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID : SonarLintCorePlugin.MARKER_REPORT_FLOW_ID;
+  private static String markerIdForFlows(boolean issuesAreOnTheFly) {
+    return issuesAreOnTheFly ? SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID : SonarLintCorePlugin.MARKER_REPORT_FLOW_ID;
   }
 
   private static void createTaintMarker(IDocument document, ISonarLintIssuable issuable, TaintVulnerabilityDto taintIssue,
@@ -335,9 +334,9 @@ public class SonarLintMarkerUpdater {
       String.valueOf(introductionDate));
   }
 
-  private static void createFlowMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, RaisedIssueDto issue, IMarker marker, TriggerType triggerType)
+  private static void createFlowMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, RaisedIssueDto issue, IMarker marker, boolean issuesAreOnTheFly)
     throws CoreException {
-    var flowMarkerId = markerIdForFlows(triggerType);
+    var flowMarkerId = markerIdForFlows(issuesAreOnTheFly);
     var flows = new ArrayList<MarkerFlow>();
     var i = 1;
     for (var engineFlow : issue.getFlows()) {
@@ -354,9 +353,9 @@ public class SonarLintMarkerUpdater {
     marker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, new MarkerFlows(flows));
   }
 
-  private static void createQuickFixMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, RaisedIssueDto issue, IMarker marker, TriggerType triggerType)
+  private static void createQuickFixMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, RaisedIssueDto issue, IMarker marker, boolean issuesAreOnTheFly)
     throws CoreException {
-    if (!triggerType.isOnTheFly()) {
+    if (!issuesAreOnTheFly) {
       return;
     }
     var qfs = new ArrayList<MarkerQuickFix>();

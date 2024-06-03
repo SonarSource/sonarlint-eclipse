@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -293,32 +294,46 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     long startTime, IProgressMonitor monitor) {
     var analysisId = UUID.randomUUID();
     var analysisState = new AnalysisState(analysisId, triggerType);
-    // TODO: Add the "IssueMarkerUpdaterJobFinishedListener" (maybe another name is better) to the AnalysisState to be
-    // invoked when IssueMarkerUpdaterJob is finished successfully. See the stuff with the CountdownLatch below.
 
     try {
       RunningAnalysesTracker.get().track(analysisState);
 
-      var future = SonarLintBackendService.get().analyzeFilesAndTrack(getProject(), analysisId, docPerFiles.keySet(), extraProps, triggerType.shouldUpdate(), startTime);
-      var response = JobUtils.waitForFutureInJob(monitor, future);
-
-      // TODO: Wait for the flag in the AnalysisState that the IssueMarkerUpdaterJob was finished successfully
-      // TODO: Alternately enable a CountDownLatch of a minute or so (don't quote me on that) and if this ends before
-      // the info is coming in in the AnalysisState that the IssueMarkerUpdaterJob was finished successfully
-      // (Listener), finish off this job anyway by calling "RunningAnalysesTracker.get().finish(analysisState);" what
-      // is currently in the catch but should move to the finnaly once again!
-
-      // Why the latch in the first place? raiseIssues(...) on a project with no files / only files with no issues is
-      // not called (ask Damien) as they filter out files / configurationScopeIds without issues :(
-
-      return response;
+      var future = SonarLintBackendService.get().analyzeFilesAndTrack(getProject(), analysisId, docPerFiles.keySet(), extraProps, triggerType.shouldFetch(), startTime);
+      return JobUtils.waitForFutureInJob(monitor, future);
     } catch (Exception err) {
+      // If the analysis fails we assume that there will also be no "raiseIssues(...)" called. If so, we only handle it
+      // incorrectly if this fails on a manual analysis invocation (we assume it is an update coming from SonarLint
+      // Core to existing issues).
+      // If we wouldn't "finish" the analysis here and there would be no "raiseIssues(...)" with
+      // "isIntermediatePublication" set to false called, this AnalysisState object would still be in memory until the
+      // IDE (ergo SonarLint) is restarted.
+      new FinishAnalysisStateJob(analysisState).schedule(5000);
+
       if (err instanceof InterruptedException) {
         Thread.currentThread().interrupt();
         throw new CanceledException();
       } else {
         throw new IllegalStateException(err);
       }
+    }
+  }
+
+  /**
+   *  As the "raiseIssues(...)" calls can come in asynchronously if the "analyzeFilesAndTrack" throws an exception
+   *  right at the end we offer any of this calls some time to come in.
+   */
+  private static class FinishAnalysisStateJob extends AbstractSonarJob {
+    private final AnalysisState analysisState;
+
+    protected FinishAnalysisStateJob(AnalysisState analysisState) {
+      super("Finish analysis " + analysisState.getId());
+      this.analysisState = analysisState;
+    }
+
+    @Override
+    protected IStatus doRun(IProgressMonitor monitor) throws CoreException {
+      RunningAnalysesTracker.get().finish(analysisState);
+      return Status.OK_STATUS;
     }
   }
 }

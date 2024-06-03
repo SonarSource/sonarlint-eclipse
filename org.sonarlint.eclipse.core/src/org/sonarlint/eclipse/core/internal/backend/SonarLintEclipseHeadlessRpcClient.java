@@ -217,7 +217,19 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
       return;
     }
 
-    new IssuesMarkerUpdateJob(project, issuesByFileUri, analysisId).schedule();
+    // Due to the AnalysisTracker using a ConcurrentHashMap, we have to explicitly check that the key ("analysisId") is
+    // not null before trying to get the value associated to this key.
+    var currentAnalysis = analysisId == null ? null : RunningAnalysesTracker.get().getById(analysisId);
+    if (currentAnalysis != null) {
+      RunningAnalysesTracker.get().finish(currentAnalysis);
+    }
+
+    // When no analysisId provided or no analysis can be found we assume that this is some form of update triggered by
+    // SonarLint Core. In this case we handle them as "on-the-fly" markers as "report" markers cannot be updated, they
+    // show an immutable state.
+    final var issuesAreOnTheFly = currentAnalysis == null || currentAnalysis.getTriggerType().isOnTheFly();
+
+    new IssuesMarkerUpdateJob(project, issuesByFileUri, issuesAreOnTheFly).schedule();
   }
 
   @Override

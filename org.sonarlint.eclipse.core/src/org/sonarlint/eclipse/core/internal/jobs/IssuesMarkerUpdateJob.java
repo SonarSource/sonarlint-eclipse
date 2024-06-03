@@ -23,17 +23,13 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.backend.RunningAnalysesTracker;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -42,25 +38,17 @@ import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.RaisedIssueDto;
 public class IssuesMarkerUpdateJob extends AbstractSonarJob {
   private final ISonarLintProject project;
   private final Map<URI, List<RaisedIssueDto>> issuesByFileUri;
-  @Nullable
-  private final UUID analysisId;
+  private final boolean issuesAreOnTheFly;
 
-  public IssuesMarkerUpdateJob(ISonarLintProject project, Map<URI, List<RaisedIssueDto>> issuesByFileUri, @Nullable UUID analysisId) {
-    super("Update issues markers for analysis " + analysisId);
+  public IssuesMarkerUpdateJob(ISonarLintProject project, Map<URI, List<RaisedIssueDto>> issuesByFileUri, boolean issuesAreOnTheFly) {
+    super("Update issues markers for project " + project.getName());
     this.project = project;
     this.issuesByFileUri = issuesByFileUri;
-    this.analysisId = analysisId;
+    this.issuesAreOnTheFly = issuesAreOnTheFly;
   }
 
   @Override
   protected IStatus doRun(IProgressMonitor monitor) throws CoreException {
-    // Assuming that the trigger is "editor change" if a running analysis can't be found
-    var currentAnalysis = RunningAnalysesTracker.get().getById(analysisId);
-    if (currentAnalysis != null) {
-      RunningAnalysesTracker.get().finish(currentAnalysis);
-    }
-    final var triggerType = currentAnalysis != null ? currentAnalysis.getTriggerType() : TriggerType.EDITOR_CHANGE;
-
     SonarLintLogger.get().info("Found " + countAllIssues() + " issue(s) on project '"
       + project.getName() + "'");
 
@@ -78,7 +66,7 @@ public class IssuesMarkerUpdateJob extends AbstractSonarJob {
       for (var entry : issuesByFileUri.entrySet()) {
         var slFile = SonarLintUtils.findFileFromUri(entry.getKey());
         if (slFile != null) {
-          SonarLintMarkerUpdater.createOrUpdateMarkers(slFile, entry.getValue(), triggerType,
+          SonarLintMarkerUpdater.createOrUpdateMarkers(slFile, entry.getValue(), issuesAreOnTheFly,
             issuePeriodPreference, issueFilterPreference, viableForStatusChange);
         }
       }
