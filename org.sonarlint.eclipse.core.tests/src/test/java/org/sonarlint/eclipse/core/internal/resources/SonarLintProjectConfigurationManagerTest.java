@@ -22,27 +22,42 @@ package org.sonarlint.eclipse.core.internal.resources;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.scope.ConfigurationScopeDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.scope.DidAddConfigurationScopesParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.scope.DidRemoveConfigurationScopeParams;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
 
   private static final String PROJECT_WITH_DEPRECATED_SETTINGS = "DeprecatedModuleBinding";
-  private static final CountDownLatch expectedErrorsFromBackend = new CountDownLatch(4);
   private final List<String> infos = new ArrayList<>();
   private final List<String> errors = new ArrayList<>();
+
+  @BeforeClass
+  public static void declareConfigScopes() {
+    SonarLintBackendService.get().getBackend().getConfigurationService().didAddConfigurationScopes(new DidAddConfigurationScopesParams(List.of(
+      new ConfigurationScopeDto(PROJECT_WITH_DEPRECATED_SETTINGS, null, true, PROJECT_WITH_DEPRECATED_SETTINGS, null),
+      new ConfigurationScopeDto("SimpleProject", null, true, "SimpleProject", null))));
+  }
+
+  @AfterClass
+  public static void removeConfigScopes() {
+    SonarLintBackendService.get().getBackend().getConfigurationService().didRemoveConfigurationScope(new DidRemoveConfigurationScopeParams(PROJECT_WITH_DEPRECATED_SETTINGS));
+    SonarLintBackendService.get().getBackend().getConfigurationService().didRemoveConfigurationScope(new DidRemoveConfigurationScopeParams("SimpleProject"));
+  }
 
   @Before
   public void prepare() throws Exception {
@@ -55,8 +70,6 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
       @Override
       public void error(String msg, boolean fromAnalyzer) {
         errors.add(msg);
-        // Making sure that these logs from the backend are caught here and do not pollute other tests
-        expectedErrorsFromBackend.countDown();
       }
 
       @Override
@@ -65,11 +78,6 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
 
     });
 
-  }
-
-  @AfterClass
-  public static void waitForCoreMessages() throws Throwable {
-    assertThat(expectedErrorsFromBackend.await(30, TimeUnit.SECONDS)).isTrue();
   }
 
   @Test
