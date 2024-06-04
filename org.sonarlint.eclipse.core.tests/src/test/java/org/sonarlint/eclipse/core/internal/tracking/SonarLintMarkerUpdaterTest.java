@@ -68,7 +68,10 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
       @Override
       public void error(String msg, boolean fromAnalyzer) {
-        errors.add(msg);
+        // XXX Ugly hack to ignore asynchronous error messages from the backend
+        if (!msg.startsWith("Attempt to update binding in configuration scope ")) {
+          errors.add(msg);
+        }
       }
 
       @Override
