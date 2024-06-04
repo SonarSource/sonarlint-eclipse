@@ -43,7 +43,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
@@ -59,7 +58,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.rpc.client.SloopLauncher;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintRpcClientDelegate;
 import org.sonarsource.sonarlint.core.rpc.protocol.SonarLintRpcServer;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.AnalyzeFilesParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.AnalyzeFilesAndTrackParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.AnalyzeFilesResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.binding.GetSharedConnectedModeConfigFileParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.binding.GetSharedConnectedModeConfigFileResponse;
@@ -413,9 +412,9 @@ public class SonarLintBackendService {
       .getSharedConnectedModeConfigFileContents(new GetSharedConnectedModeConfigFileParams(ConfigScopeSynchronizer.getConfigScopeId(project)));
   }
 
-  public CompletableFuture<AnalyzeFilesResponse> analyzeFiles(ISonarLintProject project, UUID analysisId, Map<ISonarLintFile, IDocument> docPerFiles,
-    Map<String, String> extraProps, long startTime) {
-    var fileUris = docPerFiles.keySet().stream().map(file -> file.getResource().getLocationURI()).collect(Collectors.toList());
-    return getBackend().getAnalysisService().analyzeFiles(new AnalyzeFilesParams(ConfigScopeSynchronizer.getConfigScopeId(project), analysisId, fileUris, extraProps, startTime));
+  public CompletableFuture<AnalyzeFilesResponse> analyzeFilesAndTrack(ISonarLintProject project, UUID analysisId, List<URI> fileURIs,
+    Map<String, String> extraProps, boolean shouldFetchServerIssues, long startTime) {
+    return getBackend().getAnalysisService().analyzeFilesAndTrack(
+      new AnalyzeFilesAndTrackParams(ConfigScopeSynchronizer.getConfigScopeId(project), analysisId, fileURIs, extraProps, shouldFetchServerIssues, startTime));
   }
 }

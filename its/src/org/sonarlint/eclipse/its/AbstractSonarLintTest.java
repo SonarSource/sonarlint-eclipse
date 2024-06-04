@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.groups.Tuple;
+import org.awaitility.Awaitility;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -59,6 +61,8 @@ import org.eclipse.reddeer.swt.impl.button.FinishButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.workbench.impl.editor.AbstractEditor;
+import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.eclipse.reddeer.workbench.impl.shell.WorkbenchShell;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
@@ -77,8 +81,10 @@ import org.sonarlint.eclipse.its.reddeer.preferences.RuleConfigurationPreference
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssueFilter;
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssuePeriod;
+import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole.ShowConsoleOption;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
@@ -259,6 +265,57 @@ public abstract class AbstractSonarLintTest {
 
     // If we have any SonarLint for Eclipse user survey, just click it away as we don't test the behavior!
     shellByName("SonarLint - New Eclipse user survey").ifPresent(DefaultShell::close);
+  }
+
+  /** Waiting for markers to disappear in the editor */
+  protected void waitForNoMarkers(AbstractEditor editor) {
+    var markerType = "org.sonarlint.eclipse.onTheFlyIssueAnnotationType";
+
+    Awaitility.await()
+      .atMost(20, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertThat(editor.getMarkers())
+          .filteredOn(marker -> marker.getType().equals(markerType))
+          .isEmpty();
+      });
+  }
+
+  /** Waiting for markers to appear in the editor */
+  protected void waitForMarkers(AbstractEditor editor, Tuple... markers) {
+    var markerType = "org.sonarlint.eclipse.onTheFlyIssueAnnotationType";
+
+    Awaitility.await()
+      .atMost(20, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertThat(editor.getMarkers())
+          .filteredOn(marker -> marker.getType().equals(markerType))
+          .hasSize(markers.length);
+        assertThat(editor.getMarkers())
+          .filteredOn(marker -> marker.getType().equals(markerType))
+          .extracting(Marker::getText, Marker::getLineNumber)
+          .containsOnly(markers);
+      });
+  }
+
+  /** Waiting for markers to disappear in the SonarLint On-The-Fly view */
+  protected void waitForNoSonarLintMarkers(OnTheFlyView view) {
+    Awaitility.await()
+      .atMost(20, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertThat(view.getIssues()).isEmpty();
+      });
+  }
+
+  /** Waiting for markers to appear in the SonarLint On-The-Fly view */
+  protected void waitForSonarLintMarkers(OnTheFlyView view, Tuple... markers) {
+    Awaitility.await()
+      .atMost(20, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertThat(view.getIssues()).hasSize(markers.length);
+        assertThat(view.getIssues())
+          .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource, SonarLintIssueMarker::getCreationDate)
+          .containsOnly(markers);
+      });
   }
 
   protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {

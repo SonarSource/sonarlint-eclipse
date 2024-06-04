@@ -23,7 +23,6 @@ import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.eclipse.ui.markers.matcher.MarkerDescriptionMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
-import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.reddeer.conditions.RuleDescriptionViewIsLoaded;
@@ -48,11 +47,8 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     var project = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
 
     openFileAndWaitForAnalysisCompletion(project.getResource("src", "hello", "Hello.java"));
-
-    var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
+    waitForMarkers(new DefaultEditor(),
+      tuple("Replace this use of System.out by a logger.", 9));
 
     onTheFlyView.selectItem(0);
     ruleDescriptionView.open();
@@ -78,13 +74,13 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     var project = importExistingProjectIntoWorkspace("java/java-education-rule", "java-education-rule");
 
     openFileAndWaitForAnalysisCompletion(project.getResource("src", "hello", "MonsterClass.java"));
+    waitForMarkers(new DefaultEditor(),
+      tuple("Remove this unused \"dep2\" private field.", 6),
+      tuple("Remove this unused \"dep1\" private field.", 5),
+      tuple("Remove this unused \"dep3\" private field.", 7),
+      tuple("Split this “Monster Class” into smaller and more specialized ones to reduce its dependencies on other classes from 3 to the maximum authorized 2 or less.", 3));
 
-    var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .contains(
-        tuple("Split this “Monster Class” into smaller and more specialized ones to reduce its dependencies on other classes from 3 to the maximum authorized 2 or less.", 3));
-
+    // INFO: It is okey to not wait for the SonarLint markers here as it was done above for the markers in the editor!
     onTheFlyView.getIssues(new MarkerDescriptionMatcher(CoreMatchers.containsString("Monster Class"))).get(0).select();
     ruleDescriptionView.open();
 
@@ -109,11 +105,10 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     var project = importExistingProjectIntoWorkspace("python", "python");
 
     openFileAndWaitForAnalysisCompletion(project.getResource("src", "root", "nested", "example.py"));
-
-    var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .contains(tuple("Replace print statement by built-in function.", 10));
+    waitForMarkers(new DefaultEditor(),
+      tuple("Merge this if statement with the enclosing one.", 9),
+      tuple("Replace \"<>\" by \"!=\".", 9),
+      tuple("Replace print statement by built-in function.", 10));
 
     onTheFlyView.selectItem(2);
     ruleDescriptionView.open();

@@ -30,6 +30,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
@@ -76,6 +77,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTest {
@@ -178,13 +180,10 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     connectionNamePage.setConnectionName("test");
     wizard.next();
 
-    if (orchestrator.getServer().version().isGreaterThanOrEquals(8, 7)) {
-      // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
-      var notificationsPage = new ServerConnectionWizard.NotificationsPage(wizard);
-      assertThat(notificationsPage.areNotificationsEnabled()).isTrue();
-      assertThat(wizard.isNextEnabled()).isTrue();
-      wizard.next();
-    }
+    var notificationsPage = new ServerConnectionWizard.NotificationsPage(wizard);
+    assertThat(notificationsPage.areNotificationsEnabled()).isTrue();
+    assertThat(wizard.isNextEnabled()).isTrue();
+    wizard.next();
 
     assertThat(wizard.isNextEnabled()).isFalse();
     wizard.finish();
@@ -236,12 +235,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     waitForAnalysisReady(SECRET_JAVA_PROJECT_NAME);
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
-
-    var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 4));
+    waitForMarkers(new DefaultEditor(),
+      tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 4));
 
     var notificationShell = new DefaultShell("SonarLint - Secret(s) detected");
     new DefaultLink(notificationShell, "Dismiss").click();
@@ -265,26 +260,33 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     var file = rootProject.getResource("src", "hello", "Hello.java");
     openFileAndWaitForAnalysisCompletion(file);
 
+    // INFO: This is a corner case where we cannot use AbstractSonarLintTest#waitForMarkers!
     var defaultEditor = new TextEditor();
-    assertThat(defaultEditor.getMarkers())
-      .satisfiesAnyOf(
-        list -> assertThat(list)
-          .extracting(Marker::getText, Marker::getLineNumber)
-          .containsOnly(tuple("Replace this use of System.out by a logger.", 9)),
-        list -> assertThat(list)
-          .extracting(Marker::getText, Marker::getLineNumber)
-          .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", 9)));
+    await().untilAsserted(() -> {
+      assertThat(defaultEditor.getMarkers()).hasSize(1);
+      assertThat(defaultEditor.getMarkers())
+        .satisfiesAnyOf(
+          list -> assertThat(list)
+            .extracting(Marker::getText, Marker::getLineNumber)
+            .containsOnly(tuple("Replace this use of System.out by a logger.", 9)),
+          list -> assertThat(list)
+            .extracting(Marker::getText, Marker::getLineNumber)
+            .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", 9)));
+    });
 
     var qualityProfile = getQualityProfile(JAVA_SIMPLE_PROJECT_KEY, "SonarLint IT Java");
     deactivateRule(qualityProfile, S106);
-    Thread.sleep(5000);
 
-    doAndWaitForSonarLintAnalysisJob(() -> {
-      defaultEditor.insertText(0, " ");
-      defaultEditor.save();
+    await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+      Thread.sleep(5000);
+
+      doAndWaitForSonarLintAnalysisJob(() -> {
+        defaultEditor.insertText(0, " ");
+        defaultEditor.save();
+      });
+
+      assertThat(defaultEditor.getMarkers()).isEmpty();
     });
-
-    assertThat(defaultEditor.getMarkers()).isEmpty();
   }
 
   /**
@@ -312,14 +314,18 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     var file = rootProject.getResource("src", "hello", "Hello.java");
     openFileAndWaitForAnalysisCompletion(file);
 
-    await().untilAsserted(() -> assertThat(
-      onTheFlyView.getIssues(ISSUE_MATCHER)).satisfiesAnyOf(
-        list -> assertThat(list)
-          .extracting(i -> i.getDescription())
-          .containsOnly("Replace this use of System.out by a logger."),
-        list -> assertThat(list)
-          .extracting(i -> i.getDescription())
-          .containsOnly("Replace this use of System.out or System.err by a logger.")));
+    // INFO: This is a corner case where we cannot use AbstractSonarLintTest#waitForSonarLintMarkers!
+    await().untilAsserted(() -> {
+      assertThat(onTheFlyView.getIssues(ISSUE_MATCHER)).hasSize(1);
+      assertThat(onTheFlyView.getIssues(ISSUE_MATCHER))
+        .satisfiesAnyOf(
+          list -> assertThat(list)
+            .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource)
+            .containsOnly(tuple("Replace this use of System.out by a logger.", "Hello.java")),
+          list -> assertThat(list)
+            .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource)
+            .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", "Hello.java")));
+    });
 
     var emptyMatcher = new MarkerDescriptionMatcher(CoreMatchers.containsString(""));
 

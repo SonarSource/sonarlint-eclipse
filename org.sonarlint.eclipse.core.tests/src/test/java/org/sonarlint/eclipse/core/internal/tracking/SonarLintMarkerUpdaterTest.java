@@ -19,9 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -43,17 +43,14 @@ import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
-import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.RaisedIssueDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.IssueSeverity;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TextRangeDto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class SonarLintMarkerUpdaterTest extends SonarTestCase {
@@ -71,7 +68,11 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
       @Override
       public void error(String msg, boolean fromAnalyzer) {
-        errors.add(msg);
+        // XXX Ugly hack to ignore asynchronous error messages from the backend
+        if (!msg.startsWith("Attempt to update binding in configuration scope ")
+          && !msg.startsWith("org.sonarsource.sonarlint.core.serverconnection.storage.StorageException: Failed to read file:")) {
+          errors.add(msg);
+        }
       }
 
       @Override
@@ -94,62 +95,51 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     }
   }
 
-  private IMarker[] processTrackable(TrackedIssue... trackables) throws CoreException {
+  private IMarker[] processRaisedIssueDto(RaisedIssueDto... issues) throws CoreException {
     var relativePath = "src/Findbugs.java";
     var absolutePath = project.getLocation().toString() + "/" + relativePath;
     var location = Path.fromOSString(absolutePath);
     var file = workspace.getRoot().getFileForLocation(location);
     sonarLintFile = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), file);
     sonarLintFile = spy(sonarLintFile);
-    SonarLintMarkerUpdater.createOrUpdateMarkers(sonarLintFile, Optional.empty(), List.of(trackables),
-      TriggerType.EDITOR_CHANGE, SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME,
+    SonarLintMarkerUpdater.createOrUpdateMarkers(sonarLintFile, List.of(issues),
+      TriggerType.EDITOR_CHANGE.isOnTheFly(), SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME,
       SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, true);
 
     return project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE);
   }
 
-  /**
-   * Create a mock trackable with valid mandatory values and correct defaults.
-   *
-   * @return a mock trackable
-   */
-  private TrackedIssue newMockTrackable() {
-    var trackedIssue = mock(TrackedIssue.class);
-    var rawIssue = mock(RawIssueDto.class);
-    when(trackedIssue.getIssueFromAnalysis()).thenReturn(rawIssue);
-
-    // mandatory non-nulls
-    when(rawIssue.getTextRange()).thenReturn(new TextRangeDto(1, 2, 3, 4));
-    when(rawIssue.getSeverity()).thenReturn(IssueSeverity.MAJOR);
-
-    // explicit nulls, because Mockito uses 0 values otherwise
-    when(trackedIssue.getLine()).thenReturn(null);
-    when(trackedIssue.getCreationDate()).thenReturn(null);
-    return trackedIssue;
+  private RaisedIssueDto newMockRaisedIssueDto() {
+    var issue = mock(RaisedIssueDto.class);
+    when(issue.getId()).thenReturn(UUID.randomUUID());
+    when(issue.getTextRange()).thenReturn(new TextRangeDto(1, 2, 3, 4));
+    when(issue.getSeverity()).thenReturn(IssueSeverity.MAJOR);
+    when(issue.getIntroductionDate()).thenReturn(Instant.now());
+    return issue;
   }
 
   @Test
   public void test_marker_of_ordinary_trackable() throws Exception {
-    var trackable = newMockTrackable();
+    var issue = newMockRaisedIssueDto();
 
     var priority = 2;
     var severity = IssueSeverity.BLOCKER;
     var eclipseSeverity = 0;
-    when(trackable.getSeverity()).thenReturn(severity);
+    when(issue.getSeverity()).thenReturn(severity);
 
     var message = "Self assignment of field";
-    when(trackable.getMessage()).thenReturn(message);
+    when(issue.getPrimaryMessage()).thenReturn(message);
 
     var serverIssueKey = "dummy-serverIssueKey";
-    when(trackable.getServerIssueKey()).thenReturn(serverIssueKey);
+    when(issue.getServerKey()).thenReturn(serverIssueKey);
 
     var id = UUID.randomUUID();
-    when(trackable.getId()).thenReturn(id);
+    when(issue.getId()).thenReturn(id);
 
     var resolved = false;
-    when(trackable.isResolved()).thenReturn(resolved);
+    when(issue.isResolved()).thenReturn(resolved);
 
-    var markers = processTrackable(trackable);
+    var markers = processRaisedIssueDto(issue);
     assertThat(markers).hasSize(1);
     assertThat(markers[0].getAttribute(IMarker.PRIORITY)).isEqualTo(priority);
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR)).isNull();
@@ -164,13 +154,11 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
   @Test
   public void test_marker_of_trackable_with_text_range() throws Exception {
-    var trackable = newMockTrackable();
+    var issue = newMockRaisedIssueDto();
 
-    var line = 5;
-    when(trackable.getLine()).thenReturn(line);
-    when(trackable.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRangeDto(line, 4, 5, 14));
+    when(issue.getTextRange()).thenReturn(new TextRangeDto(5, 4, 5, 14));
 
-    var markers = processTrackable(trackable);
+    var markers = processRaisedIssueDto(issue);
     assertThat(markers).hasSize(1);
 
     assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
@@ -180,59 +168,23 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
   @Test
   public void test_marker_of_trackable_with_rule_context() throws Exception {
-    var trackable = newMockTrackable();
+    var issue = newMockRaisedIssueDto();
 
-    when(trackable.getIssueFromAnalysis().getRuleDescriptionContextKey()).thenReturn("struts");
+    when(issue.getRuleDescriptionContextKey()).thenReturn("struts");
 
-    var markers = processTrackable(trackable);
+    var markers = processRaisedIssueDto(issue);
     assertThat(markers).hasSize(1);
 
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR)).isEqualTo("struts");
   }
 
   @Test
-  public void dont_init_document_if_no_issues() throws Exception {
-    var trackable = newMockTrackable();
-
-    var line = 5;
-    when(trackable.getLine()).thenReturn(line);
-    when(trackable.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRangeDto(line, 4, 5, 14));
-
-    var markers = processTrackable();
-    assertThat(markers).isEmpty();
-
-    verify(sonarLintFile, never()).getDocument();
-  }
-
-  @Test
-  public void init_document_only_once_if_multiple_issues() throws Exception {
-    var trackable1 = newMockTrackable();
-
-    var line1 = 5;
-    when(trackable1.getLine()).thenReturn(line1);
-    when(trackable1.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRangeDto(line1, 4, 5, 14));
-
-    var trackable2 = newMockTrackable();
-
-    var line2 = 4;
-    when(trackable2.getLine()).thenReturn(line2);
-    when(trackable2.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRangeDto(line2, 4, 5, 14));
-
-    var markers = processTrackable(trackable1, trackable2);
-    assertThat(markers).hasSize(2);
-
-    verify(sonarLintFile, times(1)).getDocument();
-  }
-
-  @Test
   public void test_marker_of_trackable_with_line() throws Exception {
-    var trackable = newMockTrackable();
+    var issue = newMockRaisedIssueDto();
 
-    var line = 5;
-    when(trackable.getLine()).thenReturn(line);
-    when(trackable.getIssueFromAnalysis().getTextRange()).thenReturn(new TextRangeDto(line, 4, 5, 14));
+    when(issue.getTextRange()).thenReturn(new TextRangeDto(5, 4, 5, 14));
 
-    var markers = processTrackable(trackable);
+    var markers = processRaisedIssueDto(issue);
     assertThat(markers).hasSize(1);
 
     assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
@@ -242,29 +194,22 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
   @Test
   public void test_marker_of_trackable_without_line() throws Exception {
-    var trackable = newMockTrackable();
-    var markers = processTrackable(trackable);
+    var issue = newMockRaisedIssueDto();
+    var markers = processRaisedIssueDto(issue);
     assertThat(markers).hasSize(1);
     assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(1);
   }
 
   @Test
   public void test_marker_of_trackable_with_creation_date() throws Exception {
-    var trackable = newMockTrackable();
+    var issue = newMockRaisedIssueDto();
 
-    var creationDate = System.currentTimeMillis();
-    when(trackable.getCreationDate()).thenReturn(creationDate);
+    var introduction = Instant.now();
+    when(issue.getIntroductionDate()).thenReturn(introduction);
 
-    var markers = processTrackable(trackable);
+    var markers = processRaisedIssueDto(issue);
     assertThat(markers).hasSize(1);
-    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isEqualTo(Long.toString(creationDate));
-  }
-
-  @Test
-  public void test_marker_of_trackable_without_creation_date() throws Exception {
-    var trackable = newMockTrackable();
-    var markers = processTrackable(trackable);
-    assertThat(markers).hasSize(1);
-    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isNull();
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR))
+      .isEqualTo(Long.toString(introduction.toEpochMilli()));
   }
 }

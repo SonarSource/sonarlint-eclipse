@@ -22,6 +22,9 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import org.assertj.core.groups.Tuple;
@@ -47,6 +50,8 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
+import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
@@ -62,6 +67,29 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   private static LogListener listener;
   private static IProject project;
+
+  protected static class MarkerUpdateListener implements AnalysisListener {
+    private CountDownLatch markersUpdatedLatch = new CountDownLatch(0);
+
+    public void prepareOneAnalysis() {
+      markersUpdatedLatch = new CountDownLatch(1);
+    }
+
+    public boolean waitForMarkers() throws InterruptedException {
+      return markersUpdatedLatch.await(1, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public void usedAnalysis(AnalysisEvent event) {
+      markersUpdatedLatch.countDown();
+    }
+  }
+
+  protected static MarkerUpdateListener markerUpdateListener = new MarkerUpdateListener();
+
+  protected static void prepareOneAnalysis() {
+    markerUpdateListener.markersUpdatedLatch = new CountDownLatch(1);
+  }
 
   @BeforeClass
   public static void addLogListener() throws IOException, CoreException, InterruptedException {
@@ -84,24 +112,33 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     };
     SonarLintLogger.get().addLogListener(listener);
 
+    SonarLintCorePlugin.getAnalysisListenerManager().addListener(markerUpdateListener);
+
     project = importEclipseProject("SimpleJdtProject");
 
     // After importing projects we have to await them being readied by SLCORE:
     // -> first they are not yet ready when imported
-    var everyProjectAnalysisReady = false;
-    for (var i = 0; i < 20; i++) {
-      var map = new HashMap<String, Boolean>(AnalyzeProjectJob.analysisReadyByConfigurationScopeId);
-      if (!map.isEmpty() && map.keySet().stream().filter(key -> !map.get(key).booleanValue()).count() == 0) {
-        everyProjectAnalysisReady = true;
-        break;
+    var allProjectsReady = new CountDownLatch(1);
+    Executors.newSingleThreadExecutor().submit(() -> {
+      while (true) {
+        var map = new HashMap<String, Boolean>(AnalyzeProjectJob.analysisReadyByConfigurationScopeId);
+        if (!map.isEmpty() && map.values().stream().allMatch(Boolean::booleanValue)) {
+          allProjectsReady.countDown();
+          break;
+        }
+        try {
+          Thread.sleep(200);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
       }
-      Thread.sleep(100);
-    }
-    assertThat(everyProjectAnalysisReady).isTrue();
+    });
+    assertThat(allProjectsReady.await(5, TimeUnit.SECONDS)).isTrue();
   }
 
   @AfterClass
   public static void removeLogListener() {
+    SonarLintCorePlugin.getAnalysisListenerManager().removeListener(markerUpdateListener);
     SonarLintLogger.get().removeLogListener(listener);
   }
 
@@ -127,12 +164,14 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     ruleConfig.getParams().put("format", "^[0-9]+$");
     SonarLintGlobalConfiguration.saveRulesConfig(List.of(ruleConfig));
 
+    markerUpdateListener.prepareOneAnalysis();
     var underTest = new AnalyzeProjectJob(new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze),
       TriggerType.EDITOR_CHANGE, false));
     underTest.schedule();
     assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
     var status = underTest.getResult();
     assertThat(status.isOK()).isTrue();
+    assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
     var markers = List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE))
@@ -149,22 +188,25 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     workspace.addResourceChangeListener(mcl);
 
     try {
+      markerUpdateListener.prepareOneAnalysis();
       var underTest = new AnalyzeProjectJob(
         new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.EDITOR_CHANGE, false));
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
+      assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
-
-      assertThat(mcl.getEventCount()).isEqualTo(1);
+      assertThat(mcl.getEventCount()).isZero();
 
       // Run the same analysis a second time to ensure the behavior is the same when markers are already present
       mcl.clearCounter();
 
+      markerUpdateListener.prepareOneAnalysis();
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
+      assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
 
@@ -186,23 +228,25 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     workspace.addResourceChangeListener(mcl);
 
     try {
+      markerUpdateListener.prepareOneAnalysis();
       var underTest = new AnalyzeProjectJob(
         new AnalyzeProjectRequest(slProject, List.of(file1ToAnalyze, file2ToAnalyze), TriggerType.MANUAL, true));
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
+      assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);
-
-      // Only one event since there are no markers to clear
-      assertThat(mcl.getEventCount()).isEqualTo(1);
+      assertThat(mcl.getEventCount()).isZero();
 
       // Run the same analysis a second time to ensure the behavior is the same when markers are already present
       mcl.clearCounter();
 
+      markerUpdateListener.prepareOneAnalysis();
       underTest.schedule();
       assertThat(underTest.join(100_000, new NullProgressMonitor())).isTrue();
       assertThat(underTest.getResult().isOK()).isTrue();
+      assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);
 
@@ -221,17 +265,21 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     var slProject = new DefaultSonarLintProjectAdapter(project);
     var fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);
 
+    markerUpdateListener.prepareOneAnalysis();
     var underTest = new AnalyzeProjectJob(
       new AnalyzeProjectRequest(slProject, List.of(fileToAnalyze), TriggerType.EDITOR_CHANGE, false));
     underTest.schedule();
     assertThat(underTest.join(20_000, new NullProgressMonitor())).isTrue();
     var status = underTest.getResult();
     assertThat(status.isOK()).isTrue();
+    assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
-    var markers = List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR))
+    assertThat(List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
+      .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR))
       .contains(tuple("/SimpleJdtProject/src/main/java/com/quickfix/FileWithQuickFixes.java", 8,
         "Replace the type specification in this constructor call with the diamond operator (\"<>\").", "java:S2293"));
+
+    var markers = List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     var markerWithQuickFix = markers.stream().filter(m -> m.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "").equals("java:S2293")).findFirst().get();
     var issueQuickFixes = MarkerUtils.getIssueQuickFixes(markerWithQuickFix);
     assertThat(issueQuickFixes.getQuickFixes()).hasSize(1);
