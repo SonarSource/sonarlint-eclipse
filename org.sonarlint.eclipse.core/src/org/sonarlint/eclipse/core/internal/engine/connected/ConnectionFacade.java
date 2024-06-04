@@ -156,7 +156,6 @@ public class ConnectionFacade {
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID);
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_FLOW_ID);
-    SonarLintCorePlugin.clearIssueTracker(project);
   }
 
   public void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsDisabled) {

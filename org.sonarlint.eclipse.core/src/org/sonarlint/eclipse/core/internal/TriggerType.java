@@ -20,62 +20,39 @@
 package org.sonarlint.eclipse.core.internal;
 
 public enum TriggerType {
-  ANALYSIS_READY("Analysis Ready", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
-  EDITOR_OPEN("Editor open", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
-  MANUAL("Manual trigger", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.SYNC),
-  MANUAL_CHANGESET("Manual trigger changeset", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.SYNC),
-  EDITOR_CHANGE("Editor change", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
-  BINDING_CHANGE("Binding change", ServerIssueUpdateStrategy.UPDATE, ServerMatchingStrategy.ASYNC),
-  STANDALONE_CONFIG_CHANGE("Standalone config change", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
-  NODEJS_CONFIG_CHANGE("Node.js config change", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
-  QUICK_FIX("Quick fix", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
-  AFTER_RESOLVE("After resolve", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC),
-  SERVER_EVENT("Server Event", ServerIssueUpdateStrategy.NO_UPDATE, ServerMatchingStrategy.ASYNC);
+  ANALYSIS_READY("Analysis Ready", ServerIssueFetchStrategy.FETCH),
+  EDITOR_OPEN("Editor open", ServerIssueFetchStrategy.FETCH),
+  MANUAL("Manual trigger", ServerIssueFetchStrategy.FETCH),
+  MANUAL_CHANGESET("Manual trigger changeset", ServerIssueFetchStrategy.FETCH),
+  EDITOR_CHANGE("Editor change", ServerIssueFetchStrategy.DONT_FETCH),
+  BINDING_CHANGE("Binding change", ServerIssueFetchStrategy.FETCH),
+  STANDALONE_CONFIG_CHANGE("Standalone config change", ServerIssueFetchStrategy.DONT_FETCH),
+  QUICK_FIX("Quick fix", ServerIssueFetchStrategy.DONT_FETCH),
+  AFTER_RESOLVE("After resolve", ServerIssueFetchStrategy.DONT_FETCH);
+
+  /** For the analysis out of process this information is required */
+  private enum ServerIssueFetchStrategy {
+    DONT_FETCH,
+    FETCH
+  }
 
   private final String name;
+  private final ServerIssueFetchStrategy fetchStrategy;
 
-  /**
-   * @deprecated this is only used by old SonarQube versions (and SonarCloud). Can be removed when we get issue updates through SSE in all cases (starting from SQ 9.6).
-   */
-  private enum ServerIssueUpdateStrategy {
-    NO_UPDATE,
-    UPDATE
-  }
-
-  private enum ServerMatchingStrategy {
-    /**
-     * Wait for server issue matching before creating/updating markers
-     */
-    SYNC,
-    /**
-     * Create/update markers as soon as possible after analysis, and update later after server issue matching
-     */
-    ASYNC
-  }
-
-  private final ServerIssueUpdateStrategy updateStrategy;
-  private final ServerMatchingStrategy matchingStrategy;
-
-  TriggerType(String name, ServerIssueUpdateStrategy updateStrategy, ServerMatchingStrategy matchingStrategy) {
+  TriggerType(String name, ServerIssueFetchStrategy fetchStrategy) {
     this.name = name;
-    this.updateStrategy = updateStrategy;
-    this.matchingStrategy = matchingStrategy;
+    this.fetchStrategy = fetchStrategy;
   }
 
   public String getName() {
     return name;
   }
 
-  public boolean shouldUpdate() {
-    return updateStrategy == ServerIssueUpdateStrategy.UPDATE;
-  }
-
-  public boolean shouldMatchAsync() {
-    return matchingStrategy == ServerMatchingStrategy.ASYNC;
+  public boolean shouldFetch() {
+    return fetchStrategy == ServerIssueFetchStrategy.FETCH;
   }
 
   public boolean isOnTheFly() {
     return this != MANUAL && this != MANUAL_CHANGESET;
   }
-
 }

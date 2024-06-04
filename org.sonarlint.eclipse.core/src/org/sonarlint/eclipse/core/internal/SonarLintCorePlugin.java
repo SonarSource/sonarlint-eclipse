@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal;
 
 import org.eclipse.core.net.proxy.IProxyService;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.BundleContext;
@@ -34,8 +33,6 @@ import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
-import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTracker;
-import org.sonarlint.eclipse.core.internal.tracking.ProjectIssueTrackers;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class SonarLintCorePlugin extends Plugin {
@@ -53,8 +50,6 @@ public class SonarLintCorePlugin extends Plugin {
 
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectConfigurationManager configManager;
-
-  private ProjectIssueTrackers issueTrackerRegistry;
 
   private final ServiceTracker<IProxyService, IProxyService> proxyTracker;
 
@@ -81,9 +76,6 @@ public class SonarLintCorePlugin extends Plugin {
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
-
-    issueTrackerRegistry = new ProjectIssueTrackers();
-    ResourcesPlugin.getWorkspace().addResourceChangeListener(issueTrackerRegistry);
     SonarLintGlobalConfiguration.init();
   }
 
@@ -92,8 +84,6 @@ public class SonarLintCorePlugin extends Plugin {
     SonarLintBackendService.get().stop();
     proxyTracker.close();
 
-    ResourcesPlugin.getWorkspace().removeResourceChangeListener(issueTrackerRegistry);
-    issueTrackerRegistry.shutdown();
     if (connectionsManager != null) {
       connectionsManager.stop();
     }
@@ -107,14 +97,6 @@ public class SonarLintCorePlugin extends Plugin {
   @Nullable
   public IProxyService getProxyService() {
     return proxyTracker.getService();
-  }
-
-  public static ProjectIssueTracker getOrCreateIssueTracker(ISonarLintProject project) {
-    return getInstance().issueTrackerRegistry.getOrCreate(project);
-  }
-
-  public static void clearIssueTracker(ISonarLintProject project) {
-    getInstance().issueTrackerRegistry.get(project).ifPresent(ProjectIssueTracker::clear);
   }
 
   public static AnalysisListenerManager getAnalysisListenerManager() {

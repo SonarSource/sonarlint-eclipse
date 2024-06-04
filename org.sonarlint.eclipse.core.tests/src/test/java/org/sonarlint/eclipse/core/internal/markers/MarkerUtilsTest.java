@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.markers;
 
 import java.util.Collections;
+import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.junit.BeforeClass;
@@ -57,10 +58,8 @@ public class MarkerUtilsTest extends SonarTestCase {
     assertThat(MarkerUtils.encodeCleanCodeAttribute(CleanCodeAttribute.CLEAR)).isEqualTo(CleanCodeAttribute.CLEAR.name());
     assertThat(MarkerUtils.decodeCleanCodeAttribute(null)).isNull();
     assertThat(MarkerUtils.decodeCleanCodeAttribute(CleanCodeAttribute.CLEAR.name()).name()).isEqualTo(CleanCodeAttribute.CLEAR.name());
-    assertThat(MarkerUtils.encodeHighestImpact(null)).isNull();
-    assertThat(MarkerUtils.encodeHighestImpact(Collections.emptyMap())).isNull();
-    assertThat(MarkerUtils.encodeImpacts(null)).isNull();
-    assertThat(MarkerUtils.encodeImpacts(Collections.emptyMap())).isNull();
+    assertThat(MarkerUtils.encodeHighestImpact(List.of())).isNull();
+    assertThat(MarkerUtils.encodeImpacts(List.of())).isNull();
     assertThat(MarkerUtils.decodeImpacts(null)).isEqualTo(Collections.emptyMap());
   }
 

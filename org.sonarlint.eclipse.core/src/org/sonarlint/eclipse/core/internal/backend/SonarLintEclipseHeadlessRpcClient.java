@@ -26,6 +26,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
+import org.sonarlint.eclipse.core.internal.jobs.IssuesMarkerUpdateJob;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -49,11 +51,11 @@ import org.sonarsource.sonarlint.core.rpc.client.ConfigScopeNotFoundException;
 import org.sonarsource.sonarlint.core.rpc.client.ConnectionNotFoundException;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintCancelChecker;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintRpcClientDelegate;
-import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.event.DidReceiveServerHotspotEvent;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.GetProxyPasswordAuthenticationResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.ProxyDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.X509CertificateDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.RaisedIssueDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.plugin.DidSkipLoadingPluginParams.SkipReason;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.TelemetryClientLiveAttributesResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.ClientFileDto;
@@ -204,11 +206,39 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
   }
 
   @Override
-  public void didRaiseIssue(String configurationScopeId, UUID analysisId, RawIssueDto rawIssue) {
-    var currentAnalysis = RunningAnalysesTracker.get().getById(analysisId);
-    if (currentAnalysis != null) {
-      currentAnalysis.addRawIssue(rawIssue);
+  public void raiseIssues(String configurationScopeId, Map<URI, List<RaisedIssueDto>> issuesByFileUri, boolean isIntermediatePublication, @Nullable UUID analysisId) {
+    ISonarLintProject project;
+    try {
+      project = SonarLintUtils.resolveProject(configurationScopeId);
+    } catch (ConfigScopeNotFoundException err) {
+      return;
     }
+
+    if (isIntermediatePublication) {
+      return;
+    }
+
+    // Due to the AnalysisTracker using a ConcurrentHashMap, we have to explicitly check that the key ("analysisId") is
+    // not null before trying to get the value associated to this key.
+    var currentAnalysis = analysisId == null ? null : RunningAnalysesTracker.get().getById(analysisId);
+    if (currentAnalysis != null) {
+      // For all the file URIs that might not be present in "issuesByFileUri" (maybe due to issue removed, no issues
+      // present before or afterwards), we still have to include them! Otherwise situations like server-sent events for
+      // Quality Profile changed (deactivated rules) doesn't work anymore!
+      var fileURIs = currentAnalysis.getFileURIs();
+      for (var fileURI : fileURIs) {
+        issuesByFileUri.computeIfAbsent(fileURI, k -> Collections.<RaisedIssueDto>emptyList());
+      }
+
+      RunningAnalysesTracker.get().finish(currentAnalysis);
+    }
+
+    // When no analysisId provided or no analysis can be found we assume that this is some form of update triggered by
+    // SonarLint Core. In this case we handle them as "on-the-fly" markers as "report" markers cannot be updated, they
+    // show an immutable state.
+    final var issuesAreOnTheFly = currentAnalysis == null || currentAnalysis.getTriggerType().isOnTheFly();
+
+    new IssuesMarkerUpdateJob(project, issuesByFileUri, issuesAreOnTheFly).schedule();
   }
 
   @Override

@@ -24,14 +24,12 @@ import org.eclipse.reddeer.eclipse.condition.ProjectExists;
 import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
-import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 public class MavenTest extends AbstractSonarLintTest {
-
   @Test
   public void shouldNotAnalyzeResourcesInNestedModules() {
     new JavaPerspective().open();
@@ -50,25 +48,20 @@ public class MavenTest extends AbstractSonarLintTest {
     rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open();
     assertThat(scheduledAnalysisJobCount.get()).isEqualTo(previousAnalysisJobCount);
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers()).isEmpty();
+    waitForNoMarkers(defaultEditor);
     defaultEditor.close();
 
     openFileAndWaitForAnalysisCompletion(sampleModule1Project.getResource("src/main/java", "hello", "Hello1.java"));
     defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
+    waitForMarkers(defaultEditor,
+      tuple("Replace this use of System.out by a logger.", 9));
     defaultEditor.close();
 
-    if (!platformVersion().toString().startsWith("4.4") && !platformVersion().toString().startsWith("4.5")) {
-      // Issues on pom.xml
-      openFileAndWaitForAnalysisCompletion(rootProject.getResource("pom.xml"));
-      defaultEditor = new DefaultEditor();
-      assertThat(defaultEditor.getMarkers())
-        .extracting(Marker::getText, Marker::getLineNumber)
-        .containsExactly(tuple("Replace \"pom.name\" with \"project.name\".", 11));
-      defaultEditor.close();
-    }
+    // Issues on pom.xml
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("pom.xml"));
+    defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor,
+      tuple("Replace \"pom.name\" with \"project.name\".", 11));
+    defaultEditor.close();
   }
-
 }

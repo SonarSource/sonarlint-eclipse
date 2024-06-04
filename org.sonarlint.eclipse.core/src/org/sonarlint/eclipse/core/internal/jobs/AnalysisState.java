@@ -19,44 +19,31 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import java.util.ArrayList;
+import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
-import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.rpc.protocol.client.analysis.RawIssueDto;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 
 public class AnalysisState {
   private final UUID id;
-  private final ISonarLintProject project;
-  private final Map<ISonarLintIssuable, List<RawIssueDto>> issuesPerResource;
-  private long issueCount = 0;
+  private final List<URI> fileURIs;
+  private final TriggerType triggerType;
 
-  public AnalysisState(UUID analysisId, ISonarLintProject project, Map<ISonarLintIssuable, List<RawIssueDto>> issuesPerResource) {
+  public AnalysisState(UUID analysisId, List<URI> fileURIs, TriggerType triggerType) {
     this.id = analysisId;
-    this.project = project;
-    this.issuesPerResource = issuesPerResource;
+    this.fileURIs = fileURIs;
+    this.triggerType = triggerType;
+  }
+
+  public List<URI> getFileURIs() {
+    return fileURIs;
   }
 
   public UUID getId() {
     return id;
   }
 
-  public void addRawIssue(RawIssueDto rawIssue) {
-    issueCount++;
-    var fileUri = rawIssue.getFileUri();
-    var issuable = fileUri == null ? project : SonarLintUtils.findFileFromUri(fileUri);
-    if (issuable == null) {
-      SonarLintLogger.get().error("Cannot retrieve the file on which an issue has been raised. File URI is " + fileUri);
-      return;
-    }
-    issuesPerResource.computeIfAbsent(issuable, k -> new ArrayList<>()).add(rawIssue);
-  }
-
-  public long getIssueCount() {
-    return issueCount;
+  public TriggerType getTriggerType() {
+    return triggerType;
   }
 }
