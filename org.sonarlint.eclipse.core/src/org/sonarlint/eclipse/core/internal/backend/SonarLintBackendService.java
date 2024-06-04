@@ -420,11 +420,9 @@ public class SonarLintBackendService {
       .getSharedConnectedModeConfigFileContents(new GetSharedConnectedModeConfigFileParams(ConfigScopeSynchronizer.getConfigScopeId(project)));
   }
 
-  public CompletableFuture<AnalyzeFilesResponse> analyzeFilesAndTrack(ISonarLintProject project, UUID analysisId, Set<ISonarLintFile> files,
+  public CompletableFuture<AnalyzeFilesResponse> analyzeFilesAndTrack(ISonarLintProject project, UUID analysisId, List<URI> fileURIs,
     Map<String, String> extraProps, boolean shouldFetchServerIssues, long startTime) {
-    var filesByUri = files.stream().map(slFile -> slFile.getResource().getLocationURI()).collect(Collectors.toList());
-
     return getBackend().getAnalysisService().analyzeFilesAndTrack(
-      new AnalyzeFilesAndTrackParams(ConfigScopeSynchronizer.getConfigScopeId(project), analysisId, filesByUri, extraProps, shouldFetchServerIssues, startTime));
+      new AnalyzeFilesAndTrackParams(ConfigScopeSynchronizer.getConfigScopeId(project), analysisId, fileURIs, extraProps, shouldFetchServerIssues, startTime));
   }
 }

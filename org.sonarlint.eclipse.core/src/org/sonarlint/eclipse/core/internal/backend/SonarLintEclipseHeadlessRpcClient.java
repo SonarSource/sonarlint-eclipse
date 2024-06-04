@@ -26,6 +26,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -221,6 +222,14 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
     // not null before trying to get the value associated to this key.
     var currentAnalysis = analysisId == null ? null : RunningAnalysesTracker.get().getById(analysisId);
     if (currentAnalysis != null) {
+      // For all the file URIs that might not be present in "issuesByFileUri" (maybe due to issue removed, no issues
+      // present before or afterwards), we still have to include them! Otherwise situations like server-sent events for
+      // Quality Profile changed (deactivated rules) doesn't work anymore!
+      var fileURIs = currentAnalysis.getFileURIs();
+      for (var fileURI : fileURIs) {
+        issuesByFileUri.computeIfAbsent(fileURI, k -> Collections.<RaisedIssueDto>emptyList());
+      }
+
       RunningAnalysesTracker.get().finish(currentAnalysis);
     }
 

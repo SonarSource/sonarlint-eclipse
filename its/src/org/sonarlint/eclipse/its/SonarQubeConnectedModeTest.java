@@ -30,6 +30,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
@@ -76,6 +77,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTest {
@@ -274,16 +276,17 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     var qualityProfile = getQualityProfile(JAVA_SIMPLE_PROJECT_KEY, "SonarLint IT Java");
     deactivateRule(qualityProfile, S106);
-    Thread.sleep(5000);
 
-    doAndWaitForSonarLintAnalysisJob(() -> {
-      defaultEditor.insertText(0, " ");
-      defaultEditor.save();
+    await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+      Thread.sleep(5000);
+
+      doAndWaitForSonarLintAnalysisJob(() -> {
+        defaultEditor.insertText(0, " ");
+        defaultEditor.save();
+      });
+
+      assertThat(defaultEditor.getMarkers()).isEmpty();
     });
-    defaultEditor.close();
-    openFileAndWaitForAnalysisCompletion(file);
-
-    waitForNoMarkers(new DefaultEditor());
   }
 
   /**

@@ -19,16 +19,24 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 
 public class AnalysisState {
   private final UUID id;
+  private final List<URI> fileURIs;
   private final TriggerType triggerType;
 
-  public AnalysisState(UUID analysisId, TriggerType triggerType) {
+  public AnalysisState(UUID analysisId, List<URI> fileURIs, TriggerType triggerType) {
     this.id = analysisId;
+    this.fileURIs = fileURIs;
     this.triggerType = triggerType;
+  }
+
+  public List<URI> getFileURIs() {
+    return fileURIs;
   }
 
   public UUID getId() {

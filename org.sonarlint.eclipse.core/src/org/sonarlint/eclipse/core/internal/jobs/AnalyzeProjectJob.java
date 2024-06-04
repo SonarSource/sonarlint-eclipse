@@ -163,7 +163,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
       if (!inputFiles.isEmpty()) {
         var start = System.currentTimeMillis();
-        var result = run(filesToAnalyzeMap, mergedExtraProps, start, monitor);
+        var result = run(filesToAnalyzeMap.keySet(), mergedExtraProps, start, monitor);
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
@@ -290,15 +290,17 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   }
 
-  private AnalyzeFilesResponse run(final Map<ISonarLintFile, IDocument> docPerFiles, final Map<String, String> extraProps,
+  private AnalyzeFilesResponse run(final Set<ISonarLintFile> files, final Map<String, String> extraProps,
     long startTime, IProgressMonitor monitor) {
+    var fileURIs = files.stream().map(slFile -> slFile.getResource().getLocationURI()).collect(Collectors.toList());
+
     var analysisId = UUID.randomUUID();
-    var analysisState = new AnalysisState(analysisId, triggerType);
+    var analysisState = new AnalysisState(analysisId, fileURIs, triggerType);
 
     try {
       RunningAnalysesTracker.get().track(analysisState);
 
-      var future = SonarLintBackendService.get().analyzeFilesAndTrack(getProject(), analysisId, docPerFiles.keySet(), extraProps, triggerType.shouldFetch(), startTime);
+      var future = SonarLintBackendService.get().analyzeFilesAndTrack(getProject(), analysisId, fileURIs, extraProps, triggerType.shouldFetch(), startTime);
       return JobUtils.waitForFutureInJob(monitor, future);
     } catch (Exception err) {
       // If the analysis fails we assume that there will also be no "raiseIssues(...)" called. If so, we only handle it

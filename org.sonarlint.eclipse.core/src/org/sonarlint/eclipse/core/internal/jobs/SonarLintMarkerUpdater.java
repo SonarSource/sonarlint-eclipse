@@ -138,7 +138,9 @@ public class SonarLintMarkerUpdater {
         .map(Entry::getValue)
         .collect(Collectors.toSet());
 
-      createOrUpdateMarkers(file, markersForFile, issues, issuesAreOnTheFly, issuePeriodPreference, issueFilterPreference, viableForStatusChange);
+      if (!issues.isEmpty()) {
+        createOrUpdateMarkers(file, markersForFile, issues, issuesAreOnTheFly, issuePeriodPreference, issueFilterPreference, viableForStatusChange);
+      }
 
       for (var marker : previousMarkersToDelete) {
         marker.delete();
