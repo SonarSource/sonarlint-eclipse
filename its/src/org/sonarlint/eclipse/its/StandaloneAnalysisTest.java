@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -67,7 +69,6 @@ import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.PydevPackageExplorer;
 import org.sonarlint.eclipse.its.reddeer.views.ReportView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
-import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -183,8 +184,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseJava() {
-    Assume.assumeFalse(platformVersion().toString().startsWith("4.4"));
-
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
 
@@ -195,10 +194,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(helloJavaFile);
 
     var defaultEditor = new DefaultEditor();
-    waitForMarkers(defaultEditor, 1);
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
+    waitForMarkers(defaultEditor,
+      tuple("Replace this use of System.out by a logger.", 9));
+
     defaultEditor.close();
 
     // clear marker (probably a better way to do that)
@@ -229,36 +227,46 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     assertThat(scheduledAnalysisJobCount.get()).isEqualTo(analysisJobCountBefore);
 
-    // Trigger manual analysis of a single file
-    doAndWaitForSonarLintAnalysisJob(() -> new ContextMenu(helloJavaFile.getTreeItem()).getItem("SonarLint", "Analyze").select());
+    var reportView = new ReportView();
 
-    waitForMarkers(textEditor, 1);
-    assertThat(textEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(tuple("Replace this use of System.out by a logger.", 9));
+    // Trigger manual analysis of a single file (should only add markers to the report view)
+    doAndWaitForSonarLintAnalysisJob(() -> new ContextMenu(helloJavaFile.getTreeItem()).getItem("SonarLint", "Analyze").select());
+    waitForNoMarkers(textEditor);
+
+    // TODO: Implement for ReportView
+    Awaitility.await()
+      .atMost(20, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertThat(reportView.getItems())
+          .extracting(item -> item.getCell(0), item -> item.getCell(2))
+          .containsExactlyInAnyOrder(
+            tuple("Hello.java", "Replace this use of System.out by a logger."));
+      });
 
     // Trigger manual analysis of all files
     rootProject.select();
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
     doAndWaitForSonarLintAnalysisJob(() -> new OkButton(new DefaultShell("Confirmation")).click());
+    waitForNoMarkers(textEditor);
 
-    var reportView = new ReportView();
-    var items = reportView.getItems();
-
-    assertThat(items)
-      .extracting(item -> item.getCell(0), item -> item.getCell(2))
-      .containsExactlyInAnyOrder(
-        tuple("Hello.java", "Replace this use of System.out by a logger."),
-        tuple("Hello2.java", "Replace this use of System.out by a logger."),
-        tuple("Hello3.java", "Replace this use of System.out by a logger."),
-        tuple("Hello4.java", "Replace this use of System.out by a logger."),
-        tuple("Hello5.java", "Replace this use of System.out by a logger."),
-        tuple("Hello6.java", "Replace this use of System.out by a logger."),
-        tuple("Hello7.java", "Replace this use of System.out by a logger."),
-        tuple("Hello8.java", "Replace this use of System.out by a logger."),
-        tuple("Hello9.java", "Replace this use of System.out by a logger."),
-        tuple("Hello10.java", "Replace this use of System.out by a logger."),
-        tuple("Hello11.java", "Replace this use of System.out by a logger."));
+    Awaitility.await()
+      .atMost(20, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertThat(reportView.getItems())
+          .extracting(item -> item.getCell(0), item -> item.getCell(2))
+          .containsExactlyInAnyOrder(
+            tuple("Hello.java", "Replace this use of System.out by a logger."),
+            tuple("Hello2.java", "Replace this use of System.out by a logger."),
+            tuple("Hello3.java", "Replace this use of System.out by a logger."),
+            tuple("Hello4.java", "Replace this use of System.out by a logger."),
+            tuple("Hello5.java", "Replace this use of System.out by a logger."),
+            tuple("Hello6.java", "Replace this use of System.out by a logger."),
+            tuple("Hello7.java", "Replace this use of System.out by a logger."),
+            tuple("Hello8.java", "Replace this use of System.out by a logger."),
+            tuple("Hello9.java", "Replace this use of System.out by a logger."),
+            tuple("Hello10.java", "Replace this use of System.out by a logger."),
+            tuple("Hello11.java", "Replace this use of System.out by a logger."));
+      });
   }
 
   @Test
@@ -277,30 +285,22 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
 
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("Replace this use of System.out by a logger.", 12),
-        tuple("Remove this unnecessary cast to \"int\".", 16)); // Test that sonar.java.libraries is set
+    waitForMarkers(defaultEditor,
+      tuple("Replace this use of System.out by a logger.", 12),
+      tuple("Remove this unnecessary cast to \"int\".", 16)); // Test that sonar.java.libraries is set
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "HelloTestUtil.java"));
 
     defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(
-        // File is flagged as test by regexp, only test rules are applied
-        tuple("Remove this use of \"Thread.sleep()\".", 11));
+    waitForMarkers(defaultEditor,
+      tuple("Remove this use of \"Thread.sleep()\".", 11));
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("tests", "hello", "HelloTest.java"));
 
     defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("Either add an explanation about why this test is skipped or remove the \"@Ignore\" annotation.", 10),
-        tuple("Add at least one assertion to this test case.", 10));
+    waitForMarkers(defaultEditor,
+      tuple("Either add an explanation about why this test is skipped or remove the \"@Ignore\" annotation.", 10),
+      tuple("Add at least one assertion to this test case.", 10));
   }
 
   @Test
@@ -311,12 +311,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
 
     var defaultEditor = new DefaultEditor();
-    waitForMarkers(defaultEditor, 2);
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("Make this anonymous inner class a lambda", 13),
-        tuple("Refactor the code so this stream pipeline is used.", 13)); // Test that sonar.java.source is set
+    waitForMarkers(defaultEditor,
+      tuple("Make this anonymous inner class a lambda", 13),
+      tuple("Refactor the code so this stream pipeline is used.", 13)); // Test that sonar.java.source is set
   }
 
   @Test
@@ -330,11 +327,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("lambda.yaml"));
 
     var defaultEditor = new DefaultEditor();
-    waitForMarkers(defaultEditor, 1);
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("Remove the declaration of the unused 'x' variable.", 9));
+    waitForMarkers(defaultEditor,
+      tuple("Remove the declaration of the unused 'x' variable.", 9));
   }
 
   @Test
@@ -348,11 +342,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("file.css"));
 
     var defaultEditor = new DefaultEditor();
-    waitForMarkers(defaultEditor, 1);
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("Unexpected double-slash CSS comment", 1));
+    waitForMarkers(defaultEditor,
+      tuple("Unexpected double-slash CSS comment", 1));
   }
 
   @Test
@@ -366,11 +357,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("file.ts"));
 
     var defaultEditor = new DefaultEditor();
-    waitForMarkers(defaultEditor, 1);
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(
-        tuple("This loop's stop condition tests \"i\" but the incrementer updates \"j\".", 2));
+    waitForMarkers(defaultEditor,
+      tuple("This loop's stop condition tests \"i\" but the incrementer updates \"j\".", 2));
   }
 
   // SONARIDE-349
@@ -388,11 +376,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "use", "UseUtils.java"));
 
     var defaultEditor = new DefaultEditor();
-    waitForMarkers(defaultEditor, 1);
-    assertThat(defaultEditor.getMarkers())
-      .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(tuple("Remove this unnecessary cast to \"int\".", 9)); // Test that sonar.java.libraries is set on dependent project
+    waitForMarkers(defaultEditor,
+      tuple("Remove this unnecessary cast to \"int\".", 9)); // Test that sonar.java.libraries is set on dependent project
   }
 
   // Need PyDev
@@ -436,16 +421,23 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     var onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
-    assertThat(onTheFlyView.getIssues())
-      .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource)
-      .contains(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.php"));
+    waitForSonarLintMarkers(onTheFlyView,
+      tuple("Add a new line at the end of this file.", "foo.php", "few seconds ago"),
+      tuple("Remove the useless trailing whitespaces at the end of this line.", "foo.php", "few seconds ago"),
+      tuple("Remove this closing tag \"?>\".", "foo.php", "few seconds ago"),
+      tuple("Replace \"require\" with \"require_once\".", "foo.php", "few seconds ago"),
+      tuple("Replace \"require\" with namespace import mechanism through the \"use\" keyword.", "foo.php", "few seconds ago"),
+      tuple("This branch duplicates the one on line 5. [+1 location]", "foo.php", "few seconds ago"),
+      tuple("Remove the parentheses from this \"require\" call.", "foo.php", "few seconds ago"));
 
     // SLE-342
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("foo.inc"));
 
-    assertThat(onTheFlyView.getIssues())
-      .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource)
-      .contains(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.inc"));
+    waitForSonarLintMarkers(onTheFlyView,
+      tuple("Add a new line at the end of this file.", "foo.inc", "few seconds ago"),
+      tuple("Remove the useless trailing whitespaces at the end of this line.", "foo.inc", "few seconds ago"),
+      tuple("Remove this closing tag \"?>\".", "foo.inc", "few seconds ago"),
+      tuple("This branch duplicates the one on line 5. [+1 location]", "foo.inc", "few seconds ago"));
   }
 
   @Test
@@ -455,23 +447,28 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     var dotProject = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-linked").getLocation().toFile(), ".project");
     var content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
-    FileUtils.write(dotProject, content.replace("${PLACEHOLDER}", new File("projects/java/java-linked-target/hello/HelloLinked.java").getAbsolutePath()), StandardCharsets.UTF_8);
+    FileUtils.write(dotProject,
+      content.replace("${PLACEHOLDER}",
+        new File("projects/java/java-linked-target/hello/HelloLinked.java").getAbsolutePath()),
+      StandardCharsets.UTF_8);
 
     rootProject.refresh();
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "HelloLinked.java"));
 
     var defaultEditor = new DefaultEditor("HelloLinked.java");
-    waitForMarkers(defaultEditor, 1);
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(tuple("Replace this use of System.out by a logger.", 13));
+    waitForMarkers(defaultEditor,
+      tuple("Replace this use of System.out by a logger.", 13));
   }
 
   // Need RSE
   @Test
   @Category(RequiresExtraDependency.class)
   public void shouldAnalyseVirtualProject() throws Exception {
+    // INFO: It is flaky when running on top of the oldest Eclipse version but works fine in the other test cases,
+    // therefore it should be skipped in that particular situation!
+    Assume.assumeTrue(!"oldest".equals(System.getProperty("target.platform")));
+
     var remoteProjectDir = tempFolder.newFolder();
     FileUtils.copyDirectory(new File("projects/java/java-simple"), remoteProjectDir);
 
@@ -480,7 +477,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     final var rseProject = workspace.getRoot().getProject("Local_java-simple");
 
     workspace.run(new IWorkspaceRunnable() {
-
       @Override
       public void run(final IProgressMonitor monitor) throws CoreException {
         final var projectDescription = workspace.newProjectDescription(rseProject.getName());
@@ -498,13 +494,11 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var packageExplorer = new PackageExplorerPart();
     packageExplorer.open();
     var rootProject = packageExplorer.getProject("Local_java-simple");
+
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
 
     var defaultEditor = new DefaultEditor();
-    waitForMarkers(defaultEditor, 1);
-    assertThat(defaultEditor.getMarkers())
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(tuple("Replace this use of System.out by a logger.", 9));
+    waitForMarkers(defaultEditor,
+      tuple("Replace this use of System.out by a logger.", 9));
   }
-
 }

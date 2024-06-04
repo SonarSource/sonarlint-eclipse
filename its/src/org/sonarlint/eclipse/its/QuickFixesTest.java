@@ -47,6 +47,7 @@ import org.eclipse.reddeer.swt.impl.table.DefaultTable;
 import org.eclipse.reddeer.workbench.condition.ContentAssistantShellIsOpened;
 import org.eclipse.reddeer.workbench.condition.TextEditorContainsText;
 import org.eclipse.reddeer.workbench.exception.WorkbenchLayerException;
+import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.AfterClass;
@@ -58,6 +59,7 @@ import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.Marker
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 @OpenPerspective(JavaPerspective.class)
 public class QuickFixesTest extends AbstractSonarLintTest {
@@ -89,6 +91,8 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   @Test
   public void shouldApplyQuickFixThroughContentAssist() {
     openQuickFixableFile();
+    waitForMarkers(new DefaultEditor(),
+      tuple("Remove this unnecessary cast to \"int\".", 9));
 
     var editor = new TextEditor(FILE_NAME);
     editor.setCursorPosition(8, 14);
@@ -124,6 +128,8 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   @Test
   public void shouldApplyQuickFixThroughMarkerContextMenu() {
     openQuickFixableFile();
+    waitForMarkers(new DefaultEditor(),
+      tuple("Remove this unnecessary cast to \"int\".", 9));
 
     var editor = new TextEditor(FILE_NAME);
     editor.activate();
@@ -135,6 +141,8 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   @Test
   public void shouldApplyQuickFixThroughOnTheFlyViewContextMenu() {
     openQuickFixableFile();
+    waitForMarkers(new DefaultEditor(),
+      tuple("Remove this unnecessary cast to \"int\".", 9));
 
     var editor = new TextEditor(FILE_NAME);
     editor.activate();
@@ -148,6 +156,8 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   @Test
   public void shouldApplyQuickFixOnClosedFileThroughMarkerContextMenu() {
     openQuickFixableFile();
+    waitForMarkers(new DefaultEditor(),
+      tuple("Remove this unnecessary cast to \"int\".", 9));
 
     new TextEditor(FILE_NAME).close();
 
@@ -159,6 +169,9 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   @Test
   public void shouldApplyQuickFixInDirtyFile() {
     openQuickFixableFile();
+    waitForMarkers(new DefaultEditor(),
+      tuple("Remove this unnecessary cast to \"int\".", 9));
+
     var editor = new TextEditor(FILE_NAME);
     editor.insertText(0, PLACEHOLDER_LICENSE_HEADER);
 
@@ -170,6 +183,9 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   @Test
   public void shouldApplyQuickFixAfterFileModifiedOnFileSystem() throws IOException {
     var file = openQuickFixableFile();
+    waitForMarkers(new DefaultEditor(),
+      tuple("Remove this unnecessary cast to \"int\".", 9));
+
     var editor = new TextEditor(FILE_NAME);
     var ioFile = ResourcesPlugin.getWorkspace().getRoot().getProject(QUICK_FIXES_PROJECT_NAME).getFile("src/hello/" + FILE_NAME).getLocation().toFile();
     Files.write(ioFile.toPath(), (PLACEHOLDER_LICENSE_HEADER + editor.getText()).getBytes());
@@ -185,6 +201,9 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   @Test
   public void shouldNotProposeQuickFixWhenTargetRangeIsInvalid() {
     openQuickFixableFile();
+    waitForMarkers(new DefaultEditor(),
+      tuple("Remove this unnecessary cast to \"int\".", 9));
+
     new TextEditor(FILE_NAME).insertText(8, 14, "random change");
 
     var quickFixWizard = findQuickFixableMarkerInProblemsView().openQuickFix();
