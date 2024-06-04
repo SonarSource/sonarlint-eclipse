@@ -25,7 +25,6 @@ import org.sonarsource.sonarlint.core.commons.api.progress.ClientProgressMonitor
 public class WrappedProgressMonitor implements ClientProgressMonitor {
 
   private final IProgressMonitor wrapped;
-  private int worked = 0;
 
   public WrappedProgressMonitor(IProgressMonitor wrapped, String taskName) {
     this.wrapped = wrapped;
@@ -35,23 +34,6 @@ public class WrappedProgressMonitor implements ClientProgressMonitor {
   @Override
   public boolean isCanceled() {
     return wrapped.isCanceled();
-  }
-
-  @Override
-  public void setFraction(float fraction) {
-    var total = (int) (fraction * 100);
-    wrapped.worked(total - worked);
-    this.worked = total;
-  }
-
-  @Override
-  public void setMessage(String msg) {
-    wrapped.subTask(msg);
-  }
-
-  @Override
-  public void setIndeterminate(boolean arg0) {
-    // Not available in Eclipse
   }
 
 }
