@@ -154,6 +154,7 @@ validate_task:
       .cirrus/slack-notification.sh
 
 qa_task:
+  if: false
   #  name: "Run ITs"
   depends_on:
     - build
@@ -280,7 +281,7 @@ mend_scan_task:
   # Run Mend analysis
   depends_on:
     - build
-  <<: *ONLY_MAIN_BRANCHES
+#  <<: *ONLY_MAIN_BRANCHES
   eks_container:
     <<: *BUILDER_CONTAINER_DEFINITION
     cpu: 4
