@@ -51,18 +51,15 @@ public class TaintIssuesMarkerUpdateJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-
       // To access the preference service only once and not per issue
-      var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
-
-      // To access the preference service only once and not per issue
-      var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
+      var issuesIncludingResolved = SonarLintGlobalConfiguration.issuesIncludingResolved();
+      var issuesOnlyNewCode = SonarLintGlobalConfiguration.issuesOnlyNewCode();
 
       for (var issuable : issuables) {
         if (monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
         }
-        SonarLintMarkerUpdater.refreshMarkersForTaint(issuable, engineFacade, issuePeriodPreference, issueFilterPreference, monitor);
+        SonarLintMarkerUpdater.refreshMarkersForTaint(issuable, engineFacade, issuesIncludingResolved, issuesOnlyNewCode, monitor);
       }
       return Status.OK_STATUS;
     } catch (Throwable t) {

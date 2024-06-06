@@ -53,10 +53,8 @@ public class TaintIssuesUpdateOnFileOpenedJob extends Job {
   protected IStatus run(IProgressMonitor monitor) {
     try {
       // To access the preference service only once and not per issue
-      var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
-
-      // To access the preference service only once and not per issue
-      var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
+      var issuesIncludingResolved = SonarLintGlobalConfiguration.issuesIncludingResolved();
+      var issuesOnlyNewCode = SonarLintGlobalConfiguration.issuesOnlyNewCode();
 
       for (var issuable : issuables) {
         if (monitor.isCanceled()) {
@@ -64,7 +62,7 @@ public class TaintIssuesUpdateOnFileOpenedJob extends Job {
         }
         if (issuable instanceof ISonarLintFile) {
           var file = ((ISonarLintFile) issuable);
-          SonarLintMarkerUpdater.refreshMarkersForTaint(file, engineFacade, issuePeriodPreference, issueFilterPreference, monitor);
+          SonarLintMarkerUpdater.refreshMarkersForTaint(file, engineFacade, issuesIncludingResolved, issuesOnlyNewCode, monitor);
         }
       }
       return Status.OK_STATUS;

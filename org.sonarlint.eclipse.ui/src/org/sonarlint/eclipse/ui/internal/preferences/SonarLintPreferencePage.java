@@ -23,13 +23,13 @@ import java.nio.file.Path;
 import java.util.Objects;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -48,6 +48,7 @@ import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueContext;
 import org.sonarlint.eclipse.ui.internal.job.TaintIssuesJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
+import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 /**
  * Preference page for the workspace.
@@ -84,37 +85,37 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
       Messages.SonarPreferencePage_label_test_file_glob_patterns, getFieldEditorParent()));
     addField(new NodeJsField(getFieldEditorParent()));
 
+    PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
+
+    addField(new BooleanFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_INCLUDE_RESOLVED,
+      "Show SonarLint markers for resolved issues as well",
+      getFieldEditorParent()));
+
     // INFO: For the label to take up all the horizontal space in the grid (the size we cannot get), we have to use a
     // high span as it will be set internally to the actual grid width if ours is too big: Otherwise the
     // settings label from the line below would shift one row up!
     var issueFilterLabel = new Link(getFieldEditorParent(), SWT.NONE);
-    issueFilterLabel.setText("<a>Learn how</a> SonarLint markers can be resolved from within your IDE.");
+    issueFilterLabel.setText("SonarLint markers can be resolved from within your IDE. <a>Learn how</a>.");
     issueFilterLabel.setLayoutData(labelLayoutData);
     issueFilterLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.MARK_ISSUES_LINK, e.display));
 
-    addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER,
-      Messages.SonarPreferencePage_label_issue_filter,
-      new String[][] {
-        {"Non-resolved issues", SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED},
-        {"All issues (including resolved)", SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_ALL}},
+    PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
+
+    addField(new BooleanFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_ONLY_NEW_CODE,
+      "Show SonarLint markers only for new code",
       getFieldEditorParent()));
 
     var issuePeriodLabel = new Link(getFieldEditorParent(), SWT.NONE);
-    issuePeriodLabel.setText("<a>Learn how</a> SonarLint markers can help you focus on new code to deliver Clean Code.");
+    issuePeriodLabel.setText("Focussing on new code helps you practice <a>Clean as You Code</a>.");
+    issuePeriodLabel.setToolTipText("In Standalone Mode, any code added or changed in the last 30 days is considered "
+      + "new code. Projects in Connected Mode can benefit from a more accurate new code definition based on your "
+      + "SonarQube or SonarCloud settings.");
     issuePeriodLabel.setLayoutData(labelLayoutData);
     issuePeriodLabel.addListener(SWT.Selection,
-      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.ISSUE_PERIOD_LINK, e.display));
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CLEAN_AS_YOU_CODE, e.display));
 
-    addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD,
-      Messages.SonarPreferencePage_label_issue_period,
-      new String[][] {
-        {"Overall code", SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_ALLTIME},
-        {"New code", SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE}},
-      getFieldEditorParent()));
-
-    var separator = new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL);
-    separator.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, Integer.MAX_VALUE, 1));
+    PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
 
     var powerUserLabel = new Link(getFieldEditorParent(), SWT.NONE);
     powerUserLabel.setText("This section targets power users who want to tweak SonarLint even more. Please refer to <a>the documentation</a>.");
@@ -203,16 +204,16 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
   @Override
   public boolean performOk() {
-    var previousIssueFilter = SonarLintGlobalConfiguration.getIssueFilter();
-    var previousIssuePeriod = SonarLintGlobalConfiguration.getIssuePeriod();
+    var issuesIncludingResolved = SonarLintGlobalConfiguration.issuesIncludingResolved();
+    var issuesOnlyNewCode = SonarLintGlobalConfiguration.issuesOnlyNewCode();
     var previousTestFileGlobPatterns = SonarLintGlobalConfiguration.getTestFileGlobPatterns();
     var previousNodeJsPath = SonarLintGlobalConfiguration.getNodejsPath();
     var previousJava17Path = SonarLintGlobalConfiguration.getJava17Path();
     var result = super.performOk();
     var anyPreferenceChanged = false;
 
-    var issueFilterChanged = !previousIssueFilter.equals(SonarLintGlobalConfiguration.getIssueFilter());
-    var issuePeriodChanged = !previousIssuePeriod.equals(SonarLintGlobalConfiguration.getIssuePeriod());
+    var issueFilterChanged = issuesIncludingResolved != SonarLintGlobalConfiguration.issuesIncludingResolved();
+    var issuePeriodChanged = issuesOnlyNewCode != SonarLintGlobalConfiguration.issuesOnlyNewCode();
     if (issueFilterChanged || issuePeriodChanged) {
       TaintIssuesJobsScheduler.scheduleUpdateAfterPreferenceChange();
       anyPreferenceChanged = true;

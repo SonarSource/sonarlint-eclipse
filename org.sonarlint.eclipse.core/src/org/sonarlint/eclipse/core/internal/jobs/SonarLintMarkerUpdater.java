@@ -119,8 +119,8 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  public static void createOrUpdateMarkers(ISonarLintFile file, List<RaisedIssueDto> issues, boolean issuesAreOnTheFly, final String issuePeriodPreference,
-    final String issueFilterPreference, final boolean viableForStatusChange) {
+  public static void createOrUpdateMarkers(ISonarLintFile file, List<RaisedIssueDto> issues, boolean issuesAreOnTheFly, final boolean issuesIncludingResolved,
+    final boolean issuesOnlyNewCode, final boolean viableForStatusChange) {
 
     try {
       var markersForFile = Stream.of(file.getResource().findMarkers(
@@ -139,7 +139,7 @@ public class SonarLintMarkerUpdater {
         .collect(Collectors.toSet());
 
       if (!issues.isEmpty()) {
-        createOrUpdateMarkers(file, markersForFile, issues, issuesAreOnTheFly, issuePeriodPreference, issueFilterPreference, viableForStatusChange);
+        createOrUpdateMarkers(file, markersForFile, issues, issuesAreOnTheFly, issuesIncludingResolved, issuesOnlyNewCode, viableForStatusChange);
       }
 
       for (var marker : previousMarkersToDelete) {
@@ -150,8 +150,8 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  public static void refreshMarkersForTaint(ISonarLintFile currentFile,
-    ConnectionFacade facade, final String issuePeriodPreference, final String issueFilterPreference, IProgressMonitor monitor) throws InterruptedException, ExecutionException {
+  public static void refreshMarkersForTaint(ISonarLintFile currentFile, ConnectionFacade facade, final boolean issuesIncludingResolved,
+    final boolean issuesOnlyNewCode, IProgressMonitor monitor) throws InterruptedException, ExecutionException {
     deleteTaintMarkers(currentFile);
 
     var project = currentFile.getProject();
@@ -173,8 +173,8 @@ public class SonarLintMarkerUpdater {
 
     var actualTaintMarkersCreated = false;
     for (var taintIssue : taintVulnerabilities) {
-      if (!(shouldHideResolvedTaintMarker(taintIssue, issueFilterPreference)
-        || shouldHidePreNewCodeTaintMarker(taintIssue, issuePeriodPreference))) {
+      if (!(shouldHideResolvedTaintMarker(taintIssue, issuesIncludingResolved)
+        || shouldHidePreNewCodeTaintMarker(taintIssue, issuesOnlyNewCode))) {
         var optFileForTaint = findFileForLocationInBoundProjects(bindings, taintIssue.getIdeFilePath());
         if (optFileForTaint.isEmpty()) {
           continue;
@@ -205,8 +205,8 @@ public class SonarLintMarkerUpdater {
   }
 
   private static void createOrUpdateMarkers(ISonarLintFile file, Map<UUID, IMarker> markersForFile,
-    List<RaisedIssueDto> issues, boolean issuesAreOnTheFly, final String issuePeriodPreference,
-    final String issueFilterPreference, final boolean viableForStatusChange) throws CoreException {
+    List<RaisedIssueDto> issues, boolean issuesAreOnTheFly, final boolean issuesIncludingResolved,
+    final boolean issuesOnlyNewCode, final boolean viableForStatusChange) throws CoreException {
 
     var lazyInitDocument = file.getDocument();
 
@@ -215,8 +215,8 @@ public class SonarLintMarkerUpdater {
       var markerForIssue = markersForFile.get(issueId);
 
       // Delete all issue markers that
-      if (shouldHideResolvedIssueMarker(issue, issueFilterPreference)
-        || shouldHidePreNewCodeIssueMarker(issue, issuePeriodPreference)) {
+      if (shouldHideResolvedIssueMarker(issue, issuesIncludingResolved)
+        || shouldHidePreNewCodeIssueMarker(issue, issuesOnlyNewCode)) {
         if (markerForIssue != null) {
           markerForIssue.delete();
         }
@@ -524,29 +524,25 @@ public class SonarLintMarkerUpdater {
   }
 
   /** Markers should not be set / should be removed for issues already resolved when preference is set */
-  private static boolean shouldHideResolvedIssueMarker(RaisedIssueDto issue, final String issueFilterPreference) {
-    return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, issueFilterPreference)
-      && issue.isResolved();
+  private static boolean shouldHideResolvedIssueMarker(RaisedIssueDto issue, final boolean issuesIncludingResolved) {
+    return !issuesIncludingResolved && issue.isResolved();
   }
 
   /**
    *  Markers should not be set / should be removed for issues not on new code when preference is set. Of course
    *  markers should stay in standalone mode because the preference is only applied in connected mode!
    */
-  private static boolean shouldHidePreNewCodeIssueMarker(RaisedIssueDto issue, final String issuePeriodPreference) {
-    return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE, issuePeriodPreference)
-      && !issue.isOnNewCode();
+  private static boolean shouldHidePreNewCodeIssueMarker(RaisedIssueDto issue, final boolean issuesOnlyNewCode) {
+    return issuesOnlyNewCode && !issue.isOnNewCode();
   }
 
   /** Taint marker should not be set / should be removed for issues already resolved when preference is set */
-  private static boolean shouldHideResolvedTaintMarker(TaintVulnerabilityDto issue, final String issueFilterPreference) {
-    return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, issueFilterPreference)
-      && issue.isResolved();
+  private static boolean shouldHideResolvedTaintMarker(TaintVulnerabilityDto issue, final boolean issuesIncludingResolved) {
+    return !issuesIncludingResolved && issue.isResolved();
   }
 
   /** Taint markers should not be set / should be removed for issues not on new code when preference is set! */
-  private static boolean shouldHidePreNewCodeTaintMarker(TaintVulnerabilityDto issue, final String issuePeriodPreference) {
-    return Objects.equals(SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE, issuePeriodPreference)
-      && !issue.isOnNewCode();
+  private static boolean shouldHidePreNewCodeTaintMarker(TaintVulnerabilityDto issue, final boolean issuesOnlyNewCode) {
+    return issuesOnlyNewCode && !issue.isOnNewCode();
   }
 }
