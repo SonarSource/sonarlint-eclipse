@@ -19,11 +19,13 @@
  */
 package org.sonarlint.eclipse.its;
 
+import org.eclipse.reddeer.eclipse.ui.markers.matcher.MarkerDescriptionMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.reddeer.preferences.RuleConfigurationPreferences;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
@@ -45,7 +47,9 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
     checkIssueIsDefault();
 
-    doAndWaitForSonarLintAnalysisJob(() -> onTheFlyView.getIssues().get(1).deactivateRule());
+    var cognitiveComplexityMarkerMatcher = new MarkerDescriptionMatcher(
+      CoreMatchers.containsString("Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed."));
+    doAndWaitForSonarLintAnalysisJob(() -> onTheFlyView.getIssues(cognitiveComplexityMarkerMatcher).get(0).deactivateRule());
 
     var defaultEditor = new DefaultEditor();
     await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
