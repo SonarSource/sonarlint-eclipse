@@ -20,27 +20,33 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
-import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
+import org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencePage;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
 /**
@@ -49,12 +55,15 @@ import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
  *
  */
 public class SonarLintProjectPropertyPage extends PropertyPage {
-
-  private Button enabledBtn;
-  private Link addServerLink;
-  private Link bindLink;
   private Composite container;
+  private Button enabledBtn;
   private Link boundDetails;
+  private Link bindLink;
+
+  // Information displayed regarding New Code preference, only displayed if enabled!
+  private Label newCodeHeader;
+  private Link newCodeInformation;
+  private Link newCodeProjectStatus;
 
   public SonarLintProjectPropertyPage() {
     setTitle(Messages.SonarProjectPropertyPage_title);
@@ -85,6 +94,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     layout.marginHeight = 0;
     layout.marginWidth = 0;
 
+    // Binding information and settings
     enabledBtn = new Button(container, SWT.CHECK);
     enabledBtn.setText("Run SonarLint automatically");
     enabledBtn.setSelection(getProjectConfig().isAutoEnabled());
@@ -97,58 +107,111 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     boundDetails.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_BENEFITS, e.display));
 
-    addServerLink = new Link(container, SWT.NONE);
-    var gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
+    // New Code information
+    newCodeHeader = new Label(container, SWT.NONE);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalSpan = 2;
-    addServerLink.setLayoutData(gd);
-    addServerLink.addSelectionListener(new SelectionAdapter() {
+    newCodeHeader.setLayoutData(gd);
+    var fontData = newCodeHeader.getFont().getFontData()[0];
+    var font = new Font(parent.getShell().getDisplay(),
+      new FontData(fontData.getName(), fontData.getHeight(), SWT.BOLD));
+    newCodeHeader.setFont(font);
+
+    newCodeInformation = new Link(container, SWT.NONE);
+    newCodeInformation.setLayoutData(gd);
+    newCodeInformation.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        var connectionId = getProjectConfig().getProjectBinding().map(EclipseProjectBinding::getConnectionId)
-          .orElseThrow(() -> new IllegalStateException("This link should only be visible when there is a serverId"));
-        var wd = ServerConnectionWizard.createDialog(container.getShell(), connectionId);
-        if (wd.open() == Window.OK) {
-          updateState();
+        final var dialog = PreferencesUtil.createPreferenceDialogOn(container.getShell(), SonarLintPreferencePage.ID, null, null);
+        if (dialog.open() == Window.OK) {
+          updateNewCodeState();
+          container.requestLayout();
         }
       }
     });
 
+    newCodeProjectStatus = new Link(container, SWT.NONE);
+    newCodeProjectStatus.setLayoutData(gd);
+    newCodeProjectStatus.addListener(SWT.Selection,
+      e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_BENEFITS, e.display));
+
+    // The link to update / set-up a binding.
     bindLink = new Link(container, SWT.NONE);
-    gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
-    gd.horizontalSpan = 2;
     bindLink.setLayoutData(gd);
     bindLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         final var dialog = ProjectBindingWizard.createDialog(container.getShell(), List.of(getProject()));
         if (dialog.open() == Window.OK) {
-          updateState();
+          updateConnectionState();
+          container.requestLayout();
         }
       }
     });
 
-    updateState();
+    updateConnectionState();
+    updateNewCodeState();
+    container.requestLayout();
 
     return container;
   }
 
-  private void updateState() {
+  private void updateConnectionState() {
     var projectBinding = getProjectConfig().getProjectBinding();
     if (projectBinding.isPresent()) {
+      var connectionOpt = SonarLintCorePlugin.getConnectionManager().findById(projectBinding.get().getConnectionId());
+      if (connectionOpt.isEmpty()) {
+        throw new IllegalStateException("There must be a valid connection to for this project");
+      }
+
       boundDetails
-        .setText("Bound to the project '" + projectBinding.get().getProjectKey() + "' on connection '" + serverName(projectBinding.get().getConnectionId()) + "'");
-      bindLink.setText("<a>Update project binding</a>");
+        .setText("Bound to the project '" + projectBinding.get().getProjectKey() + "' to "
+          + (connectionOpt.get().getOrganization() == null ? "SonarQube" : "SonarCloud")
+          + " on connection '" + serverName(projectBinding.get().getConnectionId()) + "'.");
+      bindLink.setText("<a>Change Binding...</a>");
+      bindLink.setVisible(true);
     } else {
       boundDetails.setText("Using SonarLint in Connected Mode with SonarQube/SonarCloud will offer you a lot of benefits. <a>Learn more</a>");
       bindLink.setText("<a>Bind this Eclipse project to SonarQube/SonarCloud...</a>");
+      bindLink.setVisible(true);
     }
-    if (projectBinding.isPresent() && SonarLintCorePlugin.getConnectionManager().resolveBinding(getProject()).isEmpty()) {
-      addServerLink.setText("<a>Re-create SonarQube/SonarCloud connection '" + projectBinding.get().getConnectionId() + "'</a>");
-      addServerLink.setVisible(true);
+  }
+
+  private void updateNewCodeState() {
+    var projectBinding = getProjectConfig().getProjectBinding();
+    var isNewCode = SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE.equals(SonarLintGlobalConfiguration.getIssuePeriod());
+    if (isNewCode) {
+      newCodeHeader.setText("Focus on New Code is enabled");
+      newCodeInformation.setText("Only SonarLint markers in new code are shown. Go to the <a>SonarLint preferences</a> to change this setting.");
+
+      newCodeProjectStatus.setVisible(true);
+
+      String newCodeDefinition;
+      boolean isSupported;
+      try {
+        var response = SonarLintBackendService.get().getNewCodeDefinition(getProject()).get();
+        isSupported = response.isSupported();
+        newCodeDefinition = response.getDescription();
+        newCodeDefinition = Character.toLowerCase(newCodeDefinition.charAt(0)) + newCodeDefinition.substring(1);
+      } catch (ExecutionException | InterruptedException err) {
+        throw new IllegalStateException("There must be New Code definition for this project", err);
+      }
+
+      if (projectBinding.isPresent() && !isSupported) {
+        newCodeProjectStatus.setText("This project is bound, but the " + newCodeDefinition + ".");
+      } else if (projectBinding.isPresent()) {
+        newCodeProjectStatus.setText("This project is bound and based on the connection settings, any code changed or "
+          + "added " + newCodeDefinition + " is considered new code.");
+      } else {
+        newCodeProjectStatus.setText("This project is not bound. Any code changed or added "
+          + newCodeDefinition + " is considered new code.");
+      }
     } else {
-      addServerLink.setVisible(false);
+      newCodeHeader.setText("Focus on New Code is disabled");
+      newCodeInformation.setText("SonarLint markers in overall code are shown. Go to the <a>SonarLint preferences</a> to change this setting.");
+
+      newCodeProjectStatus.setVisible(false);
     }
-    container.requestLayout();
   }
 
   private static String serverName(final String connectionId) {
