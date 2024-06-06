@@ -110,7 +110,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
       tuple("Replace \"<>\" by \"!=\".", 9),
       tuple("Replace print statement by built-in function.", 10));
 
-    onTheFlyView.selectItem(2);
+    onTheFlyView.selectFirstItemWithDescription("Replace print statement by built-in function.");
     ruleDescriptionView.open();
 
     new WaitUntil(new RuleDescriptionViewIsLoaded(ruleDescriptionView));

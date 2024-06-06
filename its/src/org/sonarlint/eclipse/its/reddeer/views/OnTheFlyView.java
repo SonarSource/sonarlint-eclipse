@@ -68,6 +68,10 @@ public class OnTheFlyView extends AbstractMarkersSupportView {
     getIssues().get(index).select();
   }
 
+  public void selectFirstItemWithDescription(String description) {
+    getIssues().stream().filter(i -> description.equals(i.getDescription())).findFirst().ifPresent(SonarLintIssueMarker::select);
+  }
+
   public void groupByImpact() {
     this.activate();
     new WorkbenchPartMenuItem("Group By", "Impact").select();
