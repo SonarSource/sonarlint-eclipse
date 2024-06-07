@@ -65,13 +65,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>4.0.6</tycho.version>
     <jdk.min.version>11</jdk.min.version>
-    <!-- Same protobuf version than the one in SonarLint Core-->
-    <protobuf.version>3.25.1</protobuf.version>
     <jacoco.version>0.8.8</jacoco.version>
     <jarsigner.version>3.0.0</jarsigner.version>
 
     <!-- Sloop embedded CLI version for fragment projects -->
-    <sloop.version>10.2.0.78029</sloop.version>
+    <sloop.version>10.3.0.78194</sloop.version>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->

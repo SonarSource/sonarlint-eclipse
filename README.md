@@ -48,21 +48,13 @@ Normally, m2e will automatically suggest to install missing connectors (Tycho co
 4. Open `target-platforms/dev.target` with the target platform editor
     - Click **Set as Target Platform** (or **Reload Target Platform**) in the top-right corner
 
-At this point you should be all set, unless Eclipse is not able to generate protobuf sources.
+At this point you should be all set.
 Following the explanations [here](https://github.com/trustin/os-maven-plugin) may help.
 
 In some (older?) flavors of Eclipse, you may need to install `m2eclipse` and then Tycho extension to `m2eclipse`:
 
 1. Window -> Preferences -> Maven -> Discovery -> Open Catalog
 2. Install **Tycho Configurator**
-
-### Eclipse quirks
-
-Strange issues in Eclipse and their remedies.
-
-- Sometimes, for no apparent reason, the generated protobuf classes may disappear,
-  and Eclipse may report compilation errors when resolving these class names, symbols.
-  The workaround is to run `mvn compile` and refresh the views in Eclipse (click on the project and press `F5`).
 
 Running
 -------

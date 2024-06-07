@@ -34,8 +34,7 @@ import org.sonarsource.sonarlint.core.rpc.protocol.common.TextRangeDto;
 /**
  *  When we open an existing SonarQube issue in the IDE we directly want to match the incomplete issue information we
  *  get with the markers we already have on the project files and not go via the
- *  {@link org.sonarlint.eclipse.core.internal.tracking.TrackedIssue} or
- *  {@link org.sonarsource.sonarlint.core.serverconnection.issues.ServerTaintIssue} objects.
+ *  {@link org.sonarsource.sonarlint.core.rpc.protocol.client.issue.IssueDetailsDto}.
  *
  *  Sometimes issues might not be found because of the workspace preferences regarding new code / issue filter!
  */
