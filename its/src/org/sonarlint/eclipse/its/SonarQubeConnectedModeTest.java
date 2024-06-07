@@ -57,7 +57,6 @@ import org.junit.Test;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.reddeer.conditions.RuleDescriptionViewIsLoaded;
 import org.sonarlint.eclipse.its.reddeer.dialogs.MarkIssueAsDialog;
-import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssuePeriod;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView.Binding;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
@@ -77,7 +76,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTest {
@@ -464,13 +462,13 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(2));
 
-    setNewCodePreference(IssuePeriod.NEW_CODE);
+    setFocusOnNewCode(true);
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src/main/java", "taint", "taint_issue.java"));
 
     await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(2));
 
-    setNewCodePreference(IssuePeriod.ALL_TIME);
+    setFocusOnNewCode(false);
 
     // 3) bind to project on SonarQube / check issues and taint vulnerabilities exist
     createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
@@ -509,7 +507,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(2));
     await().untilAsserted(() -> assertThat(taintVulnerabilitiesView.getItems()).hasSize(1));
 
-    setNewCodePreference(IssuePeriod.NEW_CODE);
+    setFocusOnNewCode(true);
 
     await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).isEmpty());
     await().untilAsserted(() -> assertThat(taintVulnerabilitiesView.getItems()).isEmpty());

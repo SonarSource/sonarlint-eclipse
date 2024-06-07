@@ -20,8 +20,10 @@
 package org.sonarlint.eclipse.its.reddeer.preferences;
 
 import org.eclipse.reddeer.core.matcher.WithLabelMatcher;
+import org.eclipse.reddeer.core.matcher.WithTextMatcher;
 import org.eclipse.reddeer.core.reference.ReferencedComposite;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyPage;
+import org.eclipse.reddeer.swt.impl.button.CheckBox;
 import org.eclipse.reddeer.swt.impl.combo.DefaultCombo;
 import org.eclipse.reddeer.swt.impl.text.DefaultText;
 
@@ -40,12 +42,12 @@ public class SonarLintPreferences extends PropertyPage {
     new DefaultCombo(this, new WithLabelMatcher("SonarLint markers severity:")).setSelection(severity.getTextInCombo());
   }
 
-  public void setIssueFilterPreference(IssueFilter filter) {
-    new DefaultCombo(this, new WithLabelMatcher("SonarLint markers shown for:")).setSelection(filter.getTextInCombo());
+  public void setShowAllMarkers(boolean showAllMarkers) {
+    new CheckBox(this, new WithTextMatcher("Show SonarLint markers for resolved issues as well")).toggle(showAllMarkers);
   }
 
-  public void setNewCodePreference(IssuePeriod period) {
-    new DefaultCombo(this, new WithLabelMatcher("SonarLint markers shown on:")).setSelection(period.getTextInCombo());
+  public void setFocusOnNewCode(boolean focusOnNewCode) {
+    new CheckBox(this, new WithTextMatcher("Show SonarLint markers only for new code")).toggle(focusOnNewCode);
   }
 
   public enum MarkerSeverity {
@@ -54,36 +56,6 @@ public class SonarLintPreferences extends PropertyPage {
     private final String textInCombo;
 
     private MarkerSeverity(String textInCombo) {
-      this.textInCombo = textInCombo;
-    }
-
-    public String getTextInCombo() {
-      return textInCombo;
-    }
-  }
-
-  public enum IssuePeriod {
-    ALL_TIME("Overall code"),
-    NEW_CODE("New code");
-
-    private final String textInCombo;
-
-    private IssuePeriod(String textInCombo) {
-      this.textInCombo = textInCombo;
-    }
-
-    public String getTextInCombo() {
-      return textInCombo;
-    }
-  }
-
-  public enum IssueFilter {
-    NON_RESOLVED("Non-resolved issues"),
-    ALL_ISSUES("All issues (including resolved)");
-
-    private final String textInCombo;
-
-    private IssueFilter(String textInCombo) {
       this.textInCombo = textInCombo;
     }
 

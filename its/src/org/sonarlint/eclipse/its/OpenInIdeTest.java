@@ -55,8 +55,6 @@ import org.sonarlint.eclipse.its.reddeer.conditions.SonarLintTaintVulnerabilitie
 import org.sonarlint.eclipse.its.reddeer.dialogs.ConfirmConnectionCreationDialog;
 import org.sonarlint.eclipse.its.reddeer.dialogs.OpenInIdeDialog;
 import org.sonarlint.eclipse.its.reddeer.dialogs.ProjectSelectionDialog;
-import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssueFilter;
-import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssuePeriod;
 import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintTaintVulnerabilitiesView;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
@@ -348,7 +346,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     new OpenInIdeDialog().ok();
 
     // 5) change preferences regarding new code / issue filter + change file content
-    setNewCodePreference(IssuePeriod.NEW_CODE);
+    setFocusOnNewCode(true);
 
     // INFO: We get rid of the file and create a new one from scratch to simulate actual changes happening after the
     // last SonarQube analysis. Doing it by just changing the file was too flaky in the build pipeline!
@@ -377,7 +375,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     new OpenInIdeDialog().yes();
 
     Thread.sleep(500); // we have to wait for the preference page to open and to get the job data
-    setIssueFilterPreference(IssueFilter.ALL_ISSUES);
+    setShowAllMarkers(true);
 
     new WaitUntil(new OpenInIdeDialogOpened(), TimePeriod.DEFAULT);
     new OpenInIdeDialog().ok();

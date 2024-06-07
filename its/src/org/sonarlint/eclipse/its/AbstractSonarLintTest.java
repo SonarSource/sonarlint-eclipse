@@ -79,8 +79,6 @@ import org.sonarlint.eclipse.its.reddeer.conditions.AnalysisReady;
 import org.sonarlint.eclipse.its.reddeer.preferences.FileAssociationsPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.RuleConfigurationPreferences;
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences;
-import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssueFilter;
-import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences.IssuePeriod;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole.ShowConsoleOption;
@@ -157,26 +155,26 @@ public abstract class AbstractSonarLintTest {
 
     restoreDefaultRulesConfiguration();
 
-    setNewCodePreference(IssuePeriod.ALL_TIME);
+    setFocusOnNewCode(false);
 
     ROOT_UI.remove(PREF_SECRETS_EVER_DETECTED);
   }
 
-  protected static void setNewCodePreference(IssuePeriod period) {
+  protected static void setFocusOnNewCode(boolean focusOnNewCode) {
     var preferenceDialog = new WorkbenchPreferenceDialog();
     preferenceDialog.open();
     var preferences = new SonarLintPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
-    preferences.setNewCodePreference(period);
+    preferences.setFocusOnNewCode(focusOnNewCode);
     preferenceDialog.ok();
   }
 
-  protected static void setIssueFilterPreference(IssueFilter filter) {
+  protected static void setShowAllMarkers(boolean showAllMarkers) {
     var preferenceDialog = new WorkbenchPreferenceDialog();
     preferenceDialog.open();
     var preferences = new SonarLintPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
-    preferences.setIssueFilterPreference(filter);
+    preferences.setShowAllMarkers(showAllMarkers);
     preferenceDialog.ok();
   }
 
