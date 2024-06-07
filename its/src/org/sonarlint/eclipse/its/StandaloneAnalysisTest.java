@@ -37,8 +37,10 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.eclipse.condition.ProjectExists;
 import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyDialog;
+import org.eclipse.reddeer.eclipse.ui.markers.matcher.MarkerDescriptionMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.condition.ShellIsAvailable;
 import org.eclipse.reddeer.swt.impl.button.OkButton;
@@ -51,6 +53,7 @@ import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.core.StringContains;
 import org.junit.After;
 import org.junit.Assume;
@@ -72,6 +75,7 @@ import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 
 public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Before
@@ -500,5 +504,82 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var defaultEditor = new DefaultEditor();
     waitForMarkers(defaultEditor,
       tuple("Replace this use of System.out by a logger.", 9));
+  }
+
+  @Test
+  public void test_CaYC_Standalone_Mode() {
+    new JavaPerspective().open();
+    importExistingProjectIntoWorkspace("cayc/devoxx");
+
+    // Use package explorer to wait for module 1 since reddeer doesn't support hierarchical layout of project explorer
+    // https://github.com/eclipse/reddeer/issues/2161
+    var packageExplorer = new PackageExplorerPart();
+    new WaitUntil(new ProjectExists("devoxx", packageExplorer));
+    var project = packageExplorer.getProject("devoxx");
+
+    openFileAndWaitForAnalysisCompletion(
+      project.getResource("src/main/java", "devoxx", "QuizzUnreachableConditionalBranch.java"));
+
+    // 1) Check that old markers exists
+    // because the date will increase every year by one year, we cannot check the On-The-Fly view directly
+    var description = "Remove this expression which always evaluates to \"false\"";
+    var matcher = new MarkerDescriptionMatcher(
+      CoreMatchers.containsString(description));
+
+    var textEditor = new TextEditor();
+    waitForMarkers(textEditor,
+      tuple(description, 10));
+    var onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+
+    await().untilAsserted(() -> {
+      assertThat(onTheFlyView.getIssues(matcher)).hasSize(1);
+      assertThat(onTheFlyView.getIssues(matcher).get(0).getCreationDate())
+        .contains("years ago");
+      ;
+    });
+    textEditor.close();
+
+    // 2) Open project properties page and check New Code header
+    project.select();
+    var dialog = new PropertyDialog(project.getName());
+    dialog.open();
+    var sonarLintProjectProperties = new SonarLintProperties(dialog);
+    dialog.select(sonarLintProjectProperties);
+    await().untilAsserted(() -> {
+      assertThat(sonarLintProjectProperties.newCodeHeader().getText())
+        .isEqualTo("Focus on New Code is disabled");
+    });
+    dialog.ok();
+
+    // 3) Enable focus on New Code
+    setFocusOnNewCode(true);
+
+    // 4) Check that old markers are gone, create new one to validate
+    openFileAndWaitForAnalysisCompletion(
+      project.getResource("src/main/java", "devoxx", "QuizzUnreachableConditionalBranch.java"));
+
+    final var javaEditor = new TextEditor();
+    waitForNoMarkers(javaEditor);
+    waitForNoSonarLintMarkers(onTheFlyView);
+
+    javaEditor.insertText(1, 0, "// TODO: Hello World");
+    doAndWaitForSonarLintAnalysisJob(() -> javaEditor.save());
+    waitForMarkers(javaEditor,
+      tuple("Complete the task associated to this TODO comment.", 2));
+    waitForSonarLintMarkers(onTheFlyView,
+      tuple("Complete the task associated to this TODO comment.", "QuizzUnreachableConditionalBranch.java", "few seconds ago"));
+
+    // 5) Open project properties page and check New Code header
+    project.select();
+    dialog = new PropertyDialog(project.getName());
+    dialog.open();
+    var sonarLintProjectProperties2 = new SonarLintProperties(dialog);
+    dialog.select(sonarLintProjectProperties2);
+    await().untilAsserted(() -> {
+      assertThat(sonarLintProjectProperties2.newCodeHeader().getText())
+        .isEqualTo("Focus on New Code is enabled");
+    });
+    dialog.ok();
   }
 }
