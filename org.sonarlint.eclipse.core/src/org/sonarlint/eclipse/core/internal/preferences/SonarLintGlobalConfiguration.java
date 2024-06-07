@@ -68,12 +68,8 @@ public class SonarLintGlobalConfiguration {
 
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
   public static final int PREF_MARKER_SEVERITY_DEFAULT = IMarker.SEVERITY_INFO;
-  public static final String PREF_ISSUE_DISPLAY_FILTER = "issueFilter"; //$NON-NLS-1$
-  public static final String PREF_ISSUE_DISPLAY_FILTER_ALL = "allIssues"; //$NON-NLS-1$
-  public static final String PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED = "nonResolved"; //$NON-NLS-1$
-  public static final String PREF_ISSUE_PERIOD = "issuePeriod"; //$NON-NLS-1$
-  public static final String PREF_ISSUE_PERIOD_ALLTIME = "allTime"; //$NON-NLS-1$
-  public static final String PREF_ISSUE_PERIOD_NEWCODE = "newCode"; //$NON-NLS-1$
+  public static final String PREF_ISSUE_INCLUDE_RESOLVED = "allIssuesIncludingResolved"; //$NON-NLS-1$
+  public static final String PREF_ISSUE_ONLY_NEW_CODE = "onlyIssuesNewCode"; //$NON-NLS-1$
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
   public static final String PREF_FILE_EXCLUSIONS = "fileExclusions"; //$NON-NLS-1$
   public static final String PREF_RULES_CONFIG = "rulesConfig"; //$NON-NLS-1$
@@ -106,7 +102,7 @@ public class SonarLintGlobalConfiguration {
     }
   };
   private static final IPreferenceChangeListener workspaceRootNodeChangeListener = event -> {
-    if (PREF_ISSUE_PERIOD.equals(event.getKey())) {
+    if (PREF_ISSUE_ONLY_NEW_CODE.equals(event.getKey())) {
       SonarLintBackendService.get().getBackend().getNewCodeService().didToggleFocus();
     } else if (PREF_NODEJS_PATH.equals(event.getKey())) {
       AnalysisRequirementNotifications.resetCachedMessages();
@@ -135,14 +131,12 @@ public class SonarLintGlobalConfiguration {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_TEST_FILE_GLOB_PATTERNS, PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT, null);
   }
 
-  // INFO: Not to be confused with Eclipse marker view filters
-  public static String getIssueFilter() {
-    return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_ISSUE_DISPLAY_FILTER,
-      PREF_ISSUE_DISPLAY_FILTER_NONRESOLVED, null);
+  public static boolean issuesIncludingResolved() {
+    return getPreferenceBoolean(PREF_ISSUE_INCLUDE_RESOLVED);
   }
 
-  public static String getIssuePeriod() {
-    return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_ISSUE_PERIOD, PREF_ISSUE_PERIOD_ALLTIME, null);
+  public static boolean issuesOnlyNewCode() {
+    return getPreferenceBoolean(PREF_ISSUE_ONLY_NEW_CODE);
   }
 
   public static int getMarkerSeverity() {

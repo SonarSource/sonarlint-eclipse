@@ -179,8 +179,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
 
   private void updateNewCodeState() {
     var projectBinding = getProjectConfig().getProjectBinding();
-    var isNewCode = SonarLintGlobalConfiguration.PREF_ISSUE_PERIOD_NEWCODE.equals(SonarLintGlobalConfiguration.getIssuePeriod());
-    if (isNewCode) {
+    if (SonarLintGlobalConfiguration.issuesOnlyNewCode()) {
       newCodeHeader.setText("Focus on New Code is enabled");
       newCodeInformation.setText("Only SonarLint markers in new code are shown. Go to the <a>SonarLint preferences</a> to change this setting.");
 

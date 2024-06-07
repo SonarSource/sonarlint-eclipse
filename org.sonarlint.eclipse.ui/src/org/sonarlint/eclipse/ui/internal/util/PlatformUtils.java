@@ -32,7 +32,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
@@ -242,5 +246,16 @@ public final class PlatformUtils {
         }
       }
     }
+  }
+
+  /**
+   * This is a copy of {@link org.eclipse.debug.internal.ui.SWTFactory} in order to crate a separator
+   * between two UI elements, mostly to be used in preference pages.
+   */
+  public static void createHorizontalSpacer(Composite comp, int numlines) {
+    var lbl = new Label(comp, SWT.NONE);
+    var gd = new GridData(GridData.FILL_HORIZONTAL);
+    gd.horizontalSpan = numlines;
+    lbl.setLayoutData(gd);
   }
 }

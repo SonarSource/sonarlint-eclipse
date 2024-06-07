@@ -19,9 +19,13 @@
  */
 package org.sonarlint.eclipse.its.reddeer.preferences;
 
+import org.eclipse.reddeer.common.matcher.RegexMatcher;
+import org.eclipse.reddeer.core.matcher.WithTextMatcher;
 import org.eclipse.reddeer.core.reference.ReferencedComposite;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyPage;
+import org.eclipse.reddeer.swt.api.Label;
 import org.eclipse.reddeer.swt.impl.button.CheckBox;
+import org.eclipse.reddeer.swt.impl.label.DefaultLabel;
 
 public class SonarLintProperties extends PropertyPage {
 
@@ -35,4 +39,8 @@ public class SonarLintProperties extends PropertyPage {
     new CheckBox(this).click();
   }
 
+  public Label newCodeHeader() {
+    return new DefaultLabel(this,
+      new WithTextMatcher(new RegexMatcher("^Focus on New Code is.*$")));
+  }
 }

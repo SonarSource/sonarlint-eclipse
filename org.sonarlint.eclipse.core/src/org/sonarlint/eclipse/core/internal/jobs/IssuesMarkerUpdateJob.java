@@ -53,10 +53,8 @@ public class IssuesMarkerUpdateJob extends AbstractSonarJob {
       + project.getName() + "'");
 
     // To access the preference service only once and not per issue
-    var issueFilterPreference = SonarLintGlobalConfiguration.getIssueFilter();
-
-    // To access the preference service only once and not per issue
-    var issuePeriodPreference = SonarLintGlobalConfiguration.getIssuePeriod();
+    var issuesIncludingResolved = SonarLintGlobalConfiguration.issuesIncludingResolved();
+    var issuesOnlyNewCode = SonarLintGlobalConfiguration.issuesOnlyNewCode();
 
     // If the project connection offers changing the status on anticipated issues (SonarQube 10.2+) we can enable the
     // context menu option on the markers.
@@ -67,7 +65,7 @@ public class IssuesMarkerUpdateJob extends AbstractSonarJob {
         var slFile = SonarLintUtils.findFileFromUri(entry.getKey());
         if (slFile != null) {
           SonarLintMarkerUpdater.createOrUpdateMarkers(slFile, entry.getValue(), issuesAreOnTheFly,
-            issuePeriodPreference, issueFilterPreference, viableForStatusChange);
+            issuesIncludingResolved, issuesOnlyNewCode, viableForStatusChange);
         }
       }
 
