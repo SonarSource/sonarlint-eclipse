@@ -88,11 +88,8 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.GetEffectiveRul
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.GetStandaloneRuleDescriptionParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.GetStandaloneRuleDescriptionResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.ListAllStandaloneRulesDefinitionsResponse;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.ClientTrackedFindingDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.ListAllParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.ListAllResponse;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TrackWithServerIssuesParams;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TrackWithServerIssuesResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 
 import static java.util.Objects.requireNonNull;
@@ -175,7 +172,7 @@ public class SonarLintBackendService {
           var telemetryEnabled = !Boolean.parseBoolean(System.getProperty("sonarlint.telemetry.disabled", "false"));
 
           backend.initialize(new InitializeParams(
-            new ClientConstantInfoDto(getIdeName(), "SonarLint Eclipse " + SonarLintUtils.getPluginVersion(), SonarLintUtils.getPlatformPid()),
+            new ClientConstantInfoDto(getIdeName(), "SonarLint Eclipse " + SonarLintUtils.getPluginVersion()),
             new TelemetryClientConstantAttributesDto("eclipse", "SonarLint Eclipse", SonarLintUtils.getPluginVersion(), SonarLintTelemetry.ideVersionForTelemetry(),
               Map.of()),
             getHttpConfiguration(),
@@ -373,13 +370,6 @@ public class SonarLintBackendService {
     return getBackend()
       .getIssueService()
       .addComment(new AddIssueCommentParams(ConfigScopeSynchronizer.getConfigScopeId(project), serverIssueKey, text));
-  }
-
-  public CompletableFuture<TrackWithServerIssuesResponse> trackWithServerIssues(ISonarLintProject project,
-    Map<Path, List<ClientTrackedFindingDto>> clientTrackedIssuesByIdeRelativePath,
-    boolean shouldFetchIssuesFromServer) {
-    return getBackend().getIssueTrackingService().trackWithServerIssues(
-      new TrackWithServerIssuesParams(ConfigScopeSynchronizer.getConfigScopeId(project), clientTrackedIssuesByIdeRelativePath, shouldFetchIssuesFromServer));
   }
 
   public CompletableFuture<GetNewCodeDefinitionResponse> getNewCodeDefinition(ISonarLintProject project) {

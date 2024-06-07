@@ -32,15 +32,6 @@
     <version.jacoco.plugin>0.8.8</version.jacoco.plugin>
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <version>3.25.1</version>
-      <type>jar</type>
-    </dependency>
-  </dependencies>
-
   <build>
     <pluginManagement>
       <plugins>
