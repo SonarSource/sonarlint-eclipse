@@ -76,6 +76,7 @@
     <!-- ================== -->
     <sonar.java.source>11</sonar.java.source>
     <sonar.java.target>11</sonar.java.target>
+    <sonar.exclusions>**/.tycho-consumer-pom.xml</sonar.exclusions>
     <jarsigner.skip>true</jarsigner.skip>
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
