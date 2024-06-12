@@ -332,8 +332,14 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
     var project = projectOpt.get();
     var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(project);
     if (bindingOpt.isPresent()) {
+      // INFO: It can be that there is no file of that project currently opened, in that case return directly!
       var openedFiles = PlatformUtils.collectOpenedFiles(project, f -> true);
-      var files = openedFiles.get(project).stream()
+      var projectFiles = openedFiles.get(project);
+      if (projectFiles == null || projectFiles.isEmpty()) {
+        return;
+      }
+
+      var files = projectFiles.stream()
         .map(file -> file.getFile())
         .collect(Collectors.toList());
 
