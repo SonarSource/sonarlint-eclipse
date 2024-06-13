@@ -196,8 +196,9 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       assertThat(underTest.getResult().isOK()).isTrue();
       assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
+      // INFO: There should be one event coming in as the files just got new markers
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
-      assertThat(mcl.getEventCount()).isZero();
+      awaitAssertions(() -> assertThat(mcl.getEventCount()).isEqualTo(1));
 
       // Run the same analysis a second time to ensure the behavior is the same when markers are already present
       mcl.clearCounter();
@@ -208,11 +209,13 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       assertThat(underTest.getResult().isOK()).isTrue();
       assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
+      // One event, as on-the-fly markers aren't removed before the analysis and added afterwards: Only afterwards we
+      // try to check if we can re-use existing ones, otherwise delete old and create new ones. This is done in an
+      // atomic operation via "ResourcesPlugin.getWorkspace().run(m -> { ... });"!
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
-
-      assertThat(mcl.getEventCount()).isEqualTo(1);
-
+      awaitAssertions(() -> assertThat(mcl.getEventCount()).isEqualTo(1));
     } finally {
+      mcl.clearCounter();
       workspace.removeResourceChangeListener(mcl);
     }
 
@@ -236,8 +239,9 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       assertThat(underTest.getResult().isOK()).isTrue();
       assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
+      // INFO: There should be one event coming in as the files just got new markers
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);
-      assertThat(mcl.getEventCount()).isZero();
+      awaitAssertions(() -> assertThat(mcl.getEventCount()).isEqualTo(1));
 
       // Run the same analysis a second time to ensure the behavior is the same when markers are already present
       mcl.clearCounter();
@@ -251,9 +255,10 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);
 
       // Two events, one for clearing past markers, one to create new markers
-      assertThat(mcl.getEventCount()).isEqualTo(2);
-
+      // For report markers we delete them all before the analysis and don't re-use them like for the on-the-fly markers
+      awaitAssertions(() -> assertThat(mcl.getEventCount()).isEqualTo(2));
     } finally {
+      mcl.clearCounter();
       workspace.removeResourceChangeListener(mcl);
     }
 
