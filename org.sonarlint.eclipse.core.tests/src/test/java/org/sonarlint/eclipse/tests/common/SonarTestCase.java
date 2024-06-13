@@ -19,12 +19,6 @@
  */
 package org.sonarlint.eclipse.tests.common;
 
-import static java.nio.file.FileVisitResult.CONTINUE;
-import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
-import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.CopyOption;
@@ -41,7 +35,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -53,6 +46,12 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+
+import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Common test case for sonar-ide/eclipse projects.
@@ -73,6 +72,33 @@ public abstract class SonarTestCase {
   protected static File getProject(String projectName) throws IOException {
     var destDir = new File(projectsWorkdir, projectName);
     return getProject(projectName, destDir);
+  }
+
+  /** Quick and dirty implementation to mimic the Awaitility library to wait for up to 10 seconds */
+  protected static void awaitAssertions(Runnable runner) {
+    Throwable actualError = null;
+
+    var failed = true;
+    for (int i = 0; i < 10; i++) {
+      System.err.println("awaitAssertions round " + i + " started");
+      try {
+        runner.run();
+        failed = false;
+        break;
+      } catch (Throwable error) {
+        System.err.println("awaitAssertions round " + i + ":\n" + error.getMessage());
+        actualError = error;
+      }
+
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException ignored) {
+      }
+    }
+
+    if (failed) {
+      throw new AssertionError("awaitAssertions failed after 10 seconds", actualError);
+    }
   }
 
   /**
