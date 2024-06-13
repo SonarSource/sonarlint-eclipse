@@ -37,7 +37,8 @@ echo "Upload from $dogfood_site_dir to s3://$S3_BUCKET/$ROOT_BUCKET_KEY/..."
 aws s3 sync "$@" --delete "$dogfood_site_dir" "s3://$S3_BUCKET/$ROOT_BUCKET_KEY/"
 echo "Upload done"
 
-DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,origin:Origins.Items[0].DomainName}[?starts_with(origin,'$S3_BUCKET')].id" --output text)
+DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,origin:Origins.Items[1].DomainName}[?starts_with(origin,'$S3_BUCKET')].id" --output text)
+echo "Create CloudFront invalidation for distribution $DISTRIBUTION_ID"
 aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/$ROOT_BUCKET_KEY/*"
 echo "Dogfood site published to $BINARIES_URL/?prefix=$ROOT_BUCKET_KEY/"
 popd >/dev/null
