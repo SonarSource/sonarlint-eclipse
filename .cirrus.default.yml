@@ -95,7 +95,6 @@ build_task:
   build_script: |
     base64 --decode "${SM_CLIENT_CERT_FILE}.b64" > "${SM_CLIENT_CERT_FILE}"
     source cirrus-env BUILD-PRIVATE
-    .cirrus/mirrored_update_sites
     .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
   site_artifacts:
     paths: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
@@ -125,7 +124,6 @@ validate_task:
     metacity --sm-disable --replace &
     sleep 10 # give metacity some time to start
     source cirrus-env QA
-    .cirrus/mirrored_update_sites
     mvn -B -e -V verify -P-deploy-sonarsource,-release,-sign
     /etc/init.d/xvfb stop
   cleanup_before_cache_script: cleanup_maven_repository
@@ -173,7 +171,6 @@ qa_task:
   download_staged_update_site_script: |
     set -euo pipefail
     source cirrus-env QA
-    .cirrus/mirrored_update_sites
     source .cirrus/set_maven_build_version $BUILD_NUMBER
     mvn -B -e -V dependency:unpack -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:${PROJECT_VERSION}:zip -DoutputDirectory=${CIRRUS_WORKING_DIR}/staged-repository
   prepare_background_script: |
@@ -239,7 +236,6 @@ sonarqube_task:
     curl --no-progress-meter https://api.cirrus-ci.com/v1/artifact/build/$CIRRUS_BUILD_ID/jacoco.zip -o jacoco.zip
     unzip jacoco.zip -d ${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/
     source cirrus-env QA
-    .cirrus/mirrored_update_sites
     .cirrus/regular_mvn_build_deploy_analyze \
       -P-deploy-sonarsource,-release,-sign -Dmaven.install.skip=true -Dmaven.deploy.skip=true \
       -Pcoverage -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
@@ -266,7 +262,6 @@ mend_scan_task:
   <<: *SETUP_MAVEN_CACHE
   whitesource_script:
     - source cirrus-env QA
-    - source .cirrus/mirrored_update_sites
     - source .cirrus/set_maven_build_version $BUILD_NUMBER
     - mvn -B -e -V clean install -DskipTests -Dcyclonedx.skip=false
     - source ws_scan.sh
