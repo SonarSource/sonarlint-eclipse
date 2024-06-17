@@ -6,4 +6,4 @@ def main(ctx):
   if env.get("CIRRUS_BRANCH") != None:
     if env.get("CIRRUS_BRANCH").startswith("ibuilds-"):
       return yaml.dumps(load_features(ctx)) + fs.read(".cirrus.ibuilds.yml")
-  return yaml.dumps(load_features(ctx)) + fs.read(".cirrus.default.yml")
+  return yaml.dumps(load_features(ctx, aws=dict(env_type="dev"))) + fs.read(".cirrus.default.yml")
