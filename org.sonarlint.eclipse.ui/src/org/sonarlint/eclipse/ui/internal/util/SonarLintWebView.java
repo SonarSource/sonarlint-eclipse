@@ -131,7 +131,10 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
       browser.addProgressListener(ProgressListener.completedAdapter(event -> {
         updateBrowserHeightHint(browserLayoutData);
       }));
-      // This is to avoid the browser to capture mouse wheel events, and so preventing to scroll the parent scrollable
+
+      // This is to avoid the browser to capture mouse wheel events, and so preventing to scroll the parent scrollable.
+      // In case the browser contains links (a elements with href), we don't disable it for the user to still make use
+      // of the link, see "reload()" method down below!
       browser.setCapture(false);
       browser.setEnabled(false);
     } catch (SWTError e) {
@@ -282,6 +285,14 @@ public class SonarLintWebView extends Composite implements Listener, IPropertyCh
   }
 
   private void reload() {
+    // Enable the browser element to be clicked so links can be followed. As a rule description is made up of different
+    // browser instances, this will only impact the single one.
+    if (htmlBody.contains("href=\"http")) {
+      browser.setEnabled(true);
+    } else {
+      browser.setEnabled(false);
+    }
+
     browser.setText("<!doctype html><html><head>" + css() + "</head><body>" + htmlBody + "</body></html>");
     browser.requestLayout();
   }
