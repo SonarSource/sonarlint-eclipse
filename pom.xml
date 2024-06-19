@@ -69,7 +69,7 @@
     <jarsigner.version>3.0.0</jarsigner.version>
 
     <!-- Sloop embedded CLI version for fragment projects -->
-    <sloop.version>10.3.0.78220</sloop.version>
+    <sloop.version>10.3.0.78313</sloop.version>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
