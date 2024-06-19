@@ -107,7 +107,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
       getFieldEditorParent()));
 
     var issuePeriodLabel = new Link(getFieldEditorParent(), SWT.NONE);
-    issuePeriodLabel.setText("Focussing on new code helps you practice <a>Clean as You Code</a>.");
+    issuePeriodLabel.setText("Focusing on new code helps you practice <a>Clean as You Code</a>.");
     issuePeriodLabel.setToolTipText("In Standalone Mode, any code added or changed in the last 30 days is considered "
       + "new code. Projects in Connected Mode can benefit from a more accurate new code definition based on your "
       + "SonarQube or SonarCloud settings.");
