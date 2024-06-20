@@ -354,6 +354,8 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
       ? ("\n\n" + params.getStackTrace())
       : "";
 
+    // The tracing coming from SLCORE should not be confused with the SonarLintLogger#trace(String) message! This is
+    // only to be used for IDE-specific logging (e.g. adaptations, interaction with extension points, ...)
     switch (params.getLevel()) {
       case TRACE:
       case DEBUG:

@@ -137,17 +137,25 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   /** See SLE-854: JDT tries to find files with 'Java-like' extensions even if they're not Java */
   @Test
   public void test_jdt_java_like_extension_COBOL() {
-    new JavaPerspective().open();
-    var rootProject = importExistingProjectIntoWorkspace("connected", "connected");
+    // INFO: Here we check for the IDE-specific logs, so we have to enable them!
+    var consoleView = new SonarLintConsole();
+    try {
+      consoleView.enableIdeSpecificLogs(true);
 
-    var cobolFile = rootProject.getResource("Test.cbl");
-    openFileAndWaitForAnalysisCompletion(cobolFile);
+      new JavaPerspective().open();
+      var rootProject = importExistingProjectIntoWorkspace("connected", "connected");
 
-    // even when no language found, the Secrets analyzer should at least give it a shot^^
-    var consoleText = new SonarLintConsole().getConsoleView().getConsoleText();
-    assertThat(consoleText)
-      .contains("Execute Sensor: TextAndSecretsSensor")
-      .doesNotContain("File 'Test.cbl' excluded by 'JavaProjectConfiguratorExtension'");
+      var cobolFile = rootProject.getResource("Test.cbl");
+      openFileAndWaitForAnalysisCompletion(cobolFile);
+
+      // even when no language found, the Secrets analyzer should at least give it a shot^^
+      var consoleText = new SonarLintConsole().getConsoleView().getConsoleText();
+      assertThat(consoleText)
+        .contains("Execute Sensor: TextAndSecretsSensor")
+        .doesNotContain("File 'Test.cbl' excluded by 'JavaProjectConfiguratorExtension'");
+    } finally {
+      consoleView.enableIdeSpecificLogs(false);
+    }
   }
 
   @Test

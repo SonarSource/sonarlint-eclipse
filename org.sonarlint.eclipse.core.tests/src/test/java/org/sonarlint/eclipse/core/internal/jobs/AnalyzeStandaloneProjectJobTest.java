@@ -39,6 +39,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
@@ -108,6 +109,11 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       @Override
       public void debug(String msg, boolean fromAnalyzer) {
         System.out.println("DEBUG " + msg);
+      }
+
+      @Override
+      public void trace(@Nullable String msg) {
+        // INFO: We ignore Eclipse-specific tracing in UTs
       }
     };
     SonarLintLogger.get().addLogListener(listener);

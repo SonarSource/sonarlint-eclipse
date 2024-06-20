@@ -200,13 +200,13 @@ public class SonarLintUtils {
   @Nullable
   public static <T> T adapt(@Nullable Object sourceObject, Class<T> adapter, String trace) {
     if (sourceObject == null) {
-      SonarLintLogger.get().debug(trace);
+      SonarLintLogger.get().trace(trace);
       return null;
     }
 
     var adapted = Adapters.adapt(sourceObject, adapter);
     if (adapted == null) {
-      SonarLintLogger.get().debug(trace + " -> '" + sourceObject.toString() + "' could not be adapted to '"
+      SonarLintLogger.get().trace(trace + " -> '" + sourceObject.toString() + "' could not be adapted to '"
         + adapter.getCanonicalName() + "'");
     }
 

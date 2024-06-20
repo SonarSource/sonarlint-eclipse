@@ -70,6 +70,16 @@ public class SonarLintConsole {
     }
   }
 
+  public void enableIdeSpecificLogs(boolean enabled) {
+    consoleView.activate();
+    var menu = new ToolItemMenuItem(new DefaultToolItem(consoleView.getCTabItem().getFolder(), "Configure logs"), "IDE-specific traces");
+    if (!menu.isSelected() && enabled) {
+      menu.select();
+    } else if (menu.isSelected() && !enabled) {
+      menu.select();
+    }
+  }
+
   public void showConsole(ShowConsoleOption option) {
     consoleView.activate();
     var menu = new ToolItemMenuItem(new DefaultToolItem(consoleView.getCTabItem().getFolder(), "Show Console"), option.label);
