@@ -137,7 +137,7 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
     }
   }
 
-  public void trace(String msg) {
+  public void traceIdeMessage(String msg) {
     if (showIdeSpecificTracing()) {
       if (isShowConsoleOnOutput()) {
         bringConsoleToFront();

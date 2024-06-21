@@ -73,9 +73,11 @@ public class SonarLintConsole {
   public void enableIdeSpecificLogs(boolean enabled) {
     consoleView.activate();
     var menu = new ToolItemMenuItem(new DefaultToolItem(consoleView.getCTabItem().getFolder(), "Configure logs"), "IDE-specific traces");
-    if (!menu.isSelected() && enabled) {
-      menu.select();
-    } else if (menu.isSelected() && !enabled) {
+
+    // When the IDE-specific logs are not selected but we want to enable them, we "select" the menu item.
+    // When the IDE-specific logs are selected but we want to disable them, we "de-select" the menu item.
+    // -> `menu.select()` is used for toggling them on/off, not the greatest naming.
+    if ((!menu.isSelected() && enabled) || (menu.isSelected() && !enabled)) {
       menu.select();
     }
   }

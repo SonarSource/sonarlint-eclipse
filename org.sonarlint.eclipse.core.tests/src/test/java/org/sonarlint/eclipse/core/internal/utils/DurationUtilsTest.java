@@ -60,7 +60,7 @@ public class DurationUtilsTest {
       }
 
       @Override
-      public void trace(@Nullable String msg) {
+      public void traceIdeMessage(@Nullable String msg) {
         // INFO: We ignore Eclipse-specific tracing in UTs
       }
     });

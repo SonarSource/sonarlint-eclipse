@@ -113,9 +113,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
 
     @Override
-    public void trace(@Nullable String msg) {
+    public void traceIdeMessage(@Nullable String msg) {
       if (PlatformUI.isWorkbenchRunning()) {
-        doAsyncInUiThread(() -> getSonarConsole().trace(msg));
+        doAsyncInUiThread(() -> getSonarConsole().traceIdeMessage(msg));
       }
     }
 

@@ -80,7 +80,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
       }
 
       @Override
-      public void trace(@Nullable String msg) {
+      public void traceIdeMessage(@Nullable String msg) {
         // INFO: We ignore Eclipse-specific tracing in UTs
       }
     });

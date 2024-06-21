@@ -100,9 +100,9 @@ public class SonarLintLogger {
     }
   }
 
-  public void trace(String msg) {
+  public void traceIdeMessage(String msg) {
     for (LogListener listener : logListeners) {
-      listener.trace(msg);
+      listener.traceIdeMessage(msg);
     }
   }
 }

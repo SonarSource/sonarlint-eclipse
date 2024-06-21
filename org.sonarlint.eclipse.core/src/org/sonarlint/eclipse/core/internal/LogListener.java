@@ -34,5 +34,5 @@ public interface LogListener {
    *  ones are handled like debug messages. IDE-specific logging is something like adaptations, interaction with an
    *  extension point, ...
    */
-  void trace(@Nullable String msg);
+  void traceIdeMessage(@Nullable String msg);
 }

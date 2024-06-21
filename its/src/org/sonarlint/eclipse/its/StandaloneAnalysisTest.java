@@ -138,9 +138,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   public void test_jdt_java_like_extension_COBOL() {
     // INFO: Here we check for the IDE-specific logs, so we have to enable them!
-    var consoleView = new SonarLintConsole();
     try {
-      consoleView.enableIdeSpecificLogs(true);
+      new SonarLintConsole().enableIdeSpecificLogs(true);
 
       new JavaPerspective().open();
       var rootProject = importExistingProjectIntoWorkspace("connected", "connected");
@@ -148,13 +147,20 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       var cobolFile = rootProject.getResource("Test.cbl");
       openFileAndWaitForAnalysisCompletion(cobolFile);
 
-      // even when no language found, the Secrets analyzer should at least give it a shot^^
-      var consoleText = new SonarLintConsole().getConsoleView().getConsoleText();
-      assertThat(consoleText)
-        .contains("Execute Sensor: TextAndSecretsSensor")
-        .doesNotContain("File 'Test.cbl' excluded by 'JavaProjectConfiguratorExtension'");
+      // To see that the analysis ran and the file wasn't skipped by JDT, we await the "Analysis output" of the
+      // SonarText analyzer starting.
+      // To see that enabling the IDE-specific logs in the SonarLint Console worked, we wait for the adaptation
+      // trace message of the SonarLintPostBuildListener coming in.
+      // To see that the file wasn't excluded by JDT, we also check that that message is not in the logs: It cannot
+      // happen if the SonarText analyzer starting message is coming and vice versa.
+      Awaitility.await()
+        .untilAsserted(() -> assertThat(new SonarLintConsole().getConsoleView().getConsoleText())
+          .contains("Execute Sensor: TextAndSecretsSensor")
+          .contains(
+            "[SonarLintPostBuildListener#visitDelta] Try get project of resource 'L/connected/Test.cbl' -> 'L/connected/Test.cbl' could not be adapted to 'org.sonarlint.eclipse.core.resource.ISonarLintProject'")
+          .doesNotContain("File 'Test.cbl' excluded by 'JavaProjectConfiguratorExtension'"));
     } finally {
-      consoleView.enableIdeSpecificLogs(false);
+      new SonarLintConsole().enableIdeSpecificLogs(false);
     }
   }
 
