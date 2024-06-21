@@ -28,6 +28,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -78,6 +79,10 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
       public void debug(String msg, boolean fromAnalyzer) {
       }
 
+      @Override
+      public void traceIdeMessage(@Nullable String msg) {
+        // INFO: We ignore Eclipse-specific tracing in UTs
+      }
     });
     project = importEclipseProject("reference");
   }

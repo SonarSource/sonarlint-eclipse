@@ -38,6 +38,7 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
 
   public static final String P_VERBOSE_OUTPUT = "debugOutput"; //$NON-NLS-1$
   public static final String P_ANALYZER_OUTPUT = "showAnalyzerOutput"; //$NON-NLS-1$
+  public static final String P_IDE_TRACING_OUTPUT = "ideSpecificTracing"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE_NEVER = "never"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE_ON_OUTPUT = "onOutput"; //$NON-NLS-1$
@@ -48,12 +49,14 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
   private final MessageConsoleStream infoStream;
   private final MessageConsoleStream warnStream;
   private final MessageConsoleStream debugStream;
+  private final MessageConsoleStream traceStream;
 
   public SonarLintConsole(ImageDescriptor imageDescriptor) {
     super(TITLE, imageDescriptor);
     this.infoStream = newMessageStream();
     this.warnStream = newMessageStream();
     this.debugStream = newMessageStream();
+    this.traceStream = newMessageStream();
   }
 
   @Override
@@ -68,7 +71,7 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
 
     var linkColor = colorRegistry.get(JFacePreferences.HYPERLINK_COLOR);
     if (linkColor == null) {
-      linkColor = JFaceColors.getActiveHyperlinkText(display);
+      linkColor = JFaceColors.getHyperlinkText(display);
     }
 
     var errorColorColor = colorRegistry.get(JFacePreferences.ERROR_COLOR);
@@ -76,8 +79,14 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
       errorColorColor = JFaceColors.getErrorText(display);
     }
 
+    var activeLinkColor = colorRegistry.get(JFacePreferences.ACTIVE_HYPERLINK_COLOR);
+    if (activeLinkColor == null) {
+      activeLinkColor = JFaceColors.getActiveHyperlinkText(display);
+    }
+
     getWarnStream().setColor(errorColorColor);
     getDebugStream().setColor(linkColor);
+    getTraceStream().setColor(activeLinkColor);
   }
 
   public void bringConsoleToFront() {
@@ -128,6 +137,15 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
     }
   }
 
+  public void traceIdeMessage(String msg) {
+    if (showIdeSpecificTracing()) {
+      if (isShowConsoleOnOutput()) {
+        bringConsoleToFront();
+      }
+      write(getTraceStream(), msg);
+    }
+  }
+
   private static void write(MessageConsoleStream stream, String msg) {
     if (msg == null) {
       return;
@@ -145,6 +163,10 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
 
   public MessageConsoleStream getDebugStream() {
     return debugStream;
+  }
+
+  public MessageConsoleStream getTraceStream() {
+    return traceStream;
   }
 
   private static String getShowConsolePreference() {
@@ -165,6 +187,10 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
 
   public static boolean showAnalysisLogs() {
     return SonarLintUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarLintConsole.P_ANALYZER_OUTPUT);
+  }
+
+  public static boolean showIdeSpecificTracing() {
+    return SonarLintUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarLintConsole.P_IDE_TRACING_OUTPUT);
   }
 
   @Override

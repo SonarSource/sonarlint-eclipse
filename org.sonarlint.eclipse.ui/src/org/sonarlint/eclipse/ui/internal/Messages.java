@@ -52,6 +52,7 @@ public final class Messages extends NLS {
   public static String ConfigureLoggingAction_tooltip;
   public static String ConfigureLoggingAction_verbose_text;
   public static String ConfigureLoggingAction_analyzer_text;
+  public static String ConfigureLoggingAction_ide_tracing;
 
   public static String PropertyAndPreferencePage_useprojectsettings_label;
   public static String PropertyAndPreferencePage_useworkspacesettings_change;

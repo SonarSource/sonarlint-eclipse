@@ -66,7 +66,7 @@ public class TestFileClassifier {
   public boolean isTest(ISonarLintFile file) {
     for (var typeProvider : SonarLintExtensionTracker.getInstance().getTypeProviders()) {
       if (typeProvider.qualify(file) == ISonarLintFileType.TEST) {
-        SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' qualified as test by '" + typeProvider.getClass().getSimpleName() + "'");
+        SonarLintLogger.get().traceIdeMessage("File '" + file.getProjectRelativePath() + "' qualified as test by '" + typeProvider.getClass().getSimpleName() + "'");
         return true;
       }
     }

@@ -167,6 +167,7 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
       menu = new Menu(parent);
       addActionToMenu(menu, new MyAction(Messages.ConfigureLoggingAction_verbose_text, SonarLintConsole.P_VERBOSE_OUTPUT));
       addActionToMenu(menu, new MyAction(Messages.ConfigureLoggingAction_analyzer_text, SonarLintConsole.P_ANALYZER_OUTPUT));
+      addActionToMenu(menu, new MyAction(Messages.ConfigureLoggingAction_ide_tracing, SonarLintConsole.P_IDE_TRACING_OUTPUT));
       return menu;
     }
 

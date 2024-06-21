@@ -32,7 +32,9 @@ public class SonarLintPreferencesInitializer extends AbstractPreferenceInitializ
   public void initializeDefaultPreferences() {
     var node = DefaultScope.INSTANCE.getNode(SonarLintUiPlugin.PLUGIN_ID);
     node.put(SonarLintConsole.P_SHOW_CONSOLE, SonarLintConsole.P_SHOW_CONSOLE_ON_ERROR);
+    node.putBoolean(SonarLintConsole.P_VERBOSE_OUTPUT, false);
     node.putBoolean(SonarLintConsole.P_ANALYZER_OUTPUT, false);
+    node.putBoolean(SonarLintConsole.P_IDE_TRACING_OUTPUT, false);
     node.putInt(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY, SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY_DEFAULT);
     node.putBoolean(SonarLintGlobalConfiguration.PREF_ISSUE_INCLUDE_RESOLVED, false);
     node.putBoolean(SonarLintGlobalConfiguration.PREF_ISSUE_ONLY_NEW_CODE, false);

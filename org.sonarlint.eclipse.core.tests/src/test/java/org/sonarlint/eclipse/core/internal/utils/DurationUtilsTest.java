@@ -58,6 +58,11 @@ public class DurationUtilsTest {
       @Override
       public void debug(@Nullable String msg, boolean fromAnalyzer) {
       }
+
+      @Override
+      public void traceIdeMessage(@Nullable String msg) {
+        // INFO: We ignore Eclipse-specific tracing in UTs
+      }
     });
   }
 

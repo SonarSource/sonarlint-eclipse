@@ -29,4 +29,10 @@ public interface LogListener {
 
   void debug(@Nullable String msg, boolean fromAnalyzer);
 
+  /**
+   *  This should only be used for IDE-specific logging and is not intended for tracing messages from SLCORE as these
+   *  ones are handled like debug messages. IDE-specific logging is something like adaptations, interaction with an
+   *  extension point, ...
+   */
+  void traceIdeMessage(@Nullable String msg);
 }

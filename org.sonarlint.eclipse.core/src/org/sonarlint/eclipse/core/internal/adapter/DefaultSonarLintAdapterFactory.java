@@ -70,7 +70,7 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
     }
     for (var projectAdapterParticipant : SonarLintExtensionTracker.getInstance().getProjectAdapterParticipants()) {
       if (projectAdapterParticipant.exclude(project)) {
-        SonarLintLogger.get().debug("Project '" + project.getName() + "' excluded by '" + projectAdapterParticipant.getClass().getSimpleName() + "'");
+        SonarLintLogger.get().traceIdeMessage("Project '" + project.getName() + "' excluded by '" + projectAdapterParticipant.getClass().getSimpleName() + "'");
         return null;
       }
     }
@@ -108,7 +108,7 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
     // Not let's call the ISonarLintFileAdapterParticipant#exclude
     for (var fileAdapterParticipant : SonarLintExtensionTracker.getInstance().getFileAdapterParticipants()) {
       if (fileAdapterParticipant.exclude(file)) {
-        SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' excluded by '" + fileAdapterParticipant.getClass().getSimpleName() + "'");
+        SonarLintLogger.get().traceIdeMessage("File '" + file.getProjectRelativePath() + "' excluded by '" + fileAdapterParticipant.getClass().getSimpleName() + "'");
         return null;
       }
     }

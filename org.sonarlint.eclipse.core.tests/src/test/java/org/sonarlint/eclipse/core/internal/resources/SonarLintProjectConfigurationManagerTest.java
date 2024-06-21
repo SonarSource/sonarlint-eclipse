@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -57,8 +58,11 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
       public void debug(String msg, boolean fromAnalyzer) {
       }
 
+      @Override
+      public void traceIdeMessage(@Nullable String msg) {
+        // INFO: We ignore Eclipse-specific tracing in UTs
+      }
     });
-
   }
 
   @Test
