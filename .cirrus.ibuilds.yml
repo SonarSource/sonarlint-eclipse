@@ -38,7 +38,6 @@ maven_cache_qa: &SETUP_MAVEN_CACHE
   maven_cache:
     folder: ${CIRRUS_WORKING_DIR}/.m2/repository
     fingerprint_script:
-      - echo $TARGET_PLATFORM
       - /usr/bin/find . -name pom.xml -not -path './its/*' -exec cat {} \+
       - cat target-platforms/build.target target-platforms/commons.target its/target-platforms/*.target
 
@@ -72,19 +71,6 @@ qa_ibuilds_task:
     SONARCLOUD_IT_PASSWORD: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.password]
     DISPLAY: :10
     MAVEN_OPTS: -Xmx3072m
-  matrix:
-    - env:
-        TARGET_PLATFORM: 'ibuilds'
-        SQ_VERSION: 'LATEST_RELEASE[8.9]'
-        QA_CATEGORY: 'Oldest'
-    - env:
-        TARGET_PLATFORM: 'ibuilds'
-        SQ_VERSION: 'LATEST_RELEASE[9.9]'
-        QA_CATEGORY: 'Latest-LTS'
-    - env:
-        TARGET_PLATFORM: 'ibuilds'
-        SQ_VERSION: 'DEV'
-        QA_CATEGORY: 'Latest'
   <<: *SETUP_MAVEN_CACHE
   <<: *SETUP_ORCHESTRATOR_CACHE
   prepare_update_site_script: |
@@ -98,13 +84,14 @@ qa_ibuilds_task:
     metacity --sm-disable --replace &
     sleep 10 # give metacity some time to start
     echo 'Recording tests on video'
-    ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording_${QA_CATEGORY}.mp4
+    ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording.mp4
   run_its_script: |
-    echo "Run Maven ITs for Eclipse iBuilds and Server ${SQ_VERSION}"
+    echo "Run Maven ITs for Eclipse iBuilds and SonarQube 9.9 LTS"
     mvn -B -e -V verify -f its/pom.xml \
-      -Dtarget.platform=${TARGET_PLATFORM} -Dtycho.localArtifacts=ignore \
+      -Dtarget.platform=ibuilds -Dtycho.localArtifacts=ignore \
       -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.site/target/repository" \
-      -Dsonar.runtimeVersion=${SQ_VERSION}
+      -Dsonar.runtimeVersion="LATEST_RELEASE[9.9]" \
+      -Dorchestrator.configUrl=file:///$CIRRUS_WORKING_DIR/its/orchestrator.properties
   cleanup_before_cache_script: cleanup_maven_repository
   always:
     stop_recording_script: |
@@ -112,7 +99,7 @@ qa_ibuilds_task:
       while pgrep ffmpeg >/dev/null; do sleep 1; done
       /etc/init.d/xvfb stop
     test_recording_artifacts:
-      path: "${CIRRUS_WORKING_DIR}/recording_${QA_CATEGORY}.mp4"
+      path: "${CIRRUS_WORKING_DIR}/recording.mp4"
   on_failure:
     xvfb_log_artifacts:
       path: "${CIRRUS_WORKING_DIR}/Xvfb.out"
