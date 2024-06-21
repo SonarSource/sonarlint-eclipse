@@ -198,9 +198,15 @@ qa_task:
     ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording_${QA_CATEGORY}.mp4
   run_its_script: |
     echo "Run Maven ITs for Eclipse ${TARGET_PLATFORM} and Server ${SQ_VERSION}"
+
+    ORCHESTRATOR_CONFIG="-Dorchestrator.configUrl=file:///$CIRRUS_WORKING_DIR/its/orchestrator.properties"
+    if [[ "${TARGET_PLATFORM}" == "oldest" ]]; then
+      ORCHESTRATOR_CONFIG="-Dorchestrator.configUrl=file:///$CIRRUS_WORKING_DIR/its/orchestrator-oldest.properties"
+    fi
+
     mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify -f its/pom.xml -Pcoverage \
       -Dtarget.platform=${TARGET_PLATFORM} -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/staged-repository" -Dsonar.runtimeVersion=${SQ_VERSION} \
-      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
+      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec $ORCHESTRATOR_CONFIG
     mv it-coverage.exec it-coverage-${QA_CATEGORY}.exec
   cleanup_before_cache_script: cleanup_maven_repository
   always:
