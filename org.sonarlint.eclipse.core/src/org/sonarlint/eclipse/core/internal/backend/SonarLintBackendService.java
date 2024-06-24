@@ -184,6 +184,7 @@ public class SonarLintBackendService {
             embeddedPlugins,
             SonarLintUtils.getStandaloneEnabledLanguages().stream().map(l -> Language.valueOf(l.name())).collect(Collectors.toSet()),
             SonarLintUtils.getConnectedEnabledLanguages().stream().map(l -> Language.valueOf(l.name())).collect(Collectors.toSet()),
+            null,
             sqConnections,
             scConnections,
             null,
