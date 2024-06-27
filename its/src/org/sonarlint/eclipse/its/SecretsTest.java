@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
-import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.junit.Test;
 
@@ -41,8 +40,7 @@ public class SecretsTest extends AbstractSonarLintTest {
     waitForMarkers(new DefaultEditor(),
       tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 3));
 
-    var notificationShell = new DefaultShell("SonarLint - Secret(s) detected");
-    new DefaultLink(notificationShell, "Dismiss").click();
+    new DefaultLink(shellByName("SonarLint - Secret(s) detected").get(), "Dismiss").click();
   }
 
   @Test
@@ -54,8 +52,7 @@ public class SecretsTest extends AbstractSonarLintTest {
     waitForMarkers(new DefaultEditor(),
       tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 4));
 
-    var notificationShell = new DefaultShell("SonarLint - Secret(s) detected");
-    new DefaultLink(notificationShell, "Dismiss").click();
+    new DefaultLink(shellByName("SonarLint - Secret(s) detected").get(), "Dismiss").click();
   }
 
   @Test

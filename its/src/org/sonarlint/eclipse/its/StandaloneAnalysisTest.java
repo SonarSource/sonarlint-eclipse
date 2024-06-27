@@ -176,17 +176,17 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var abapFile = rootProject.getResource("Test.abap");
     openFileAndWaitForAnalysisCompletion(abapFile);
 
-    var notAnalyzed = new DefaultShell("SonarLint - Language could not be analyzed");
-    new DefaultLink(notAnalyzed, "Learn more").click();
-    new DefaultLink(notAnalyzed, "Try SonarCloud for free").click();
-    notAnalyzed.close();
+    var notAnalyzedOpt = shellByName("SonarLint - Language could not be analyzed");
+    notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Learn more").click());
+    notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Try SonarCloud for free").click());
+    notAnalyzedOpt.ifPresent(shell -> shell.close());
 
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
     var dialog = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
     doAndWaitForSonarLintAnalysisJob(dialog::learnMore);
 
-    notAnalyzed = new DefaultShell("SonarLint - Languages could not be analyzed");
-    new DefaultLink(notAnalyzed, "Don't show again").click();
+    notAnalyzedOpt = shellByName("SonarLint - Language could not be analyzed");
+    notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Don't show again").click());
 
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
     var dialog2 = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
@@ -219,7 +219,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     // clear marker (probably a better way to do that)
     onTheFlyView.getIssues().get(0).delete();
-    new PushButton(new DefaultShell("Delete Selected Entries"), "Delete").click();
+
+    new PushButton(shellByName("Delete Selected Entries").get(), "Delete").click();
     new WaitUntil(new OnTheFlyViewIsEmpty(onTheFlyView));
 
     rootProject.select();

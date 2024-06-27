@@ -352,7 +352,7 @@ public abstract class AbstractSonarLintTest {
    * @param title
    * @return
    */
-  private static Optional<DefaultShell> shellByName(String title) {
+  protected static Optional<DefaultShell> shellByName(String title) {
     try {
       return Optional.of(new DefaultShell(ShellLookup.getInstance().getShell(title, TimePeriod.SHORT)));
     } catch (Exception e) {
