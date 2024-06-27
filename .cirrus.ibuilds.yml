@@ -90,8 +90,7 @@ qa_ibuilds_task:
     mvn -B -e -V verify -f its/pom.xml \
       -Dtarget.platform=ibuilds -Dtycho.localArtifacts=ignore \
       -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.site/target/repository" \
-      -Dsonar.runtimeVersion="LATEST_RELEASE[9.9]" \
-      -Dorchestrator.configUrl=file:///$CIRRUS_WORKING_DIR/its/orchestrator.properties
+      -Dsonar.runtimeVersion="LATEST_RELEASE[9.9]"
   cleanup_before_cache_script: cleanup_maven_repository
   always:
     stop_recording_script: |

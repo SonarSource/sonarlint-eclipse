@@ -242,8 +242,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
   @Test
   public void shouldAutomaticallyUpdateRuleSetWhenChangedOnServer() throws Exception {
-    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(9, 4));
-
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/java-simple", JAVA_SIMPLE_PROJECT_KEY);
 
@@ -261,8 +259,11 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     // INFO: This is a corner case where we cannot use AbstractSonarLintTest#waitForMarkers!
     var defaultEditor = new TextEditor();
     await().untilAsserted(() -> {
-      assertThat(defaultEditor.getMarkers()).hasSize(1);
       assertThat(defaultEditor.getMarkers())
+        .filteredOn(marker -> marker.getType().equals("org.sonarlint.eclipse.onTheFlyIssueAnnotationType"))
+        .hasSize(1);
+      assertThat(defaultEditor.getMarkers())
+        .filteredOn(marker -> marker.getType().equals("org.sonarlint.eclipse.onTheFlyIssueAnnotationType"))
         .satisfiesAnyOf(
           list -> assertThat(list)
             .extracting(Marker::getText, Marker::getLineNumber)
@@ -283,7 +284,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
         defaultEditor.save();
       });
 
-      assertThat(defaultEditor.getMarkers()).isEmpty();
+      assertThat(defaultEditor.getMarkers())
+        .filteredOn(marker -> marker.getType().equals("org.sonarlint.eclipse.onTheFlyIssueAnnotationType"))
+        .isEmpty();
     });
   }
 
@@ -531,7 +534,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   private static void deactivateRule(QualityProfile qualityProfile, String ruleKey) {
     var request = new PostRequest("/api/qualityprofiles/deactivate_rule")
       .setParam("key", qualityProfile.getKey())
-      .setParam("rule", javaRuleKey(ruleKey));
+      .setParam("rule", "java:" + ruleKey);
     try (var response = adminWsClient.wsConnector().call(request)) {
       assertTrue("Unable to deactivate rule " + ruleKey, response.isSuccessful());
     }
@@ -540,15 +543,10 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   private static void activateRule(QualityProfile qualityProfile, String ruleKey) {
     var request = new PostRequest("/api/qualityprofiles/activate_rule")
       .setParam("key", qualityProfile.getKey())
-      .setParam("rule", javaRuleKey(ruleKey));
+      .setParam("rule", "java:" + ruleKey);
     try (var response = adminWsClient.wsConnector().call(request)) {
       assertTrue("Unable to activate rule " + ruleKey, response.isSuccessful());
     }
-  }
-
-  private static String javaRuleKey(String key) {
-    // Starting from SonarJava 6.0 (embedded in SQ 8.2), rule repository has been changed
-    return orchestrator.getServer().version().isGreaterThanOrEquals(8, 2) ? ("java:" + key) : ("squid:" + key);
   }
 
   private static void setNewCodePeriodToPreviousVersion(String projectKey) {

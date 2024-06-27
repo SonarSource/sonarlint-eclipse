@@ -236,12 +236,12 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     helloJavaFile.open();
 
     var textEditor = new TextEditor();
-    assertThat(textEditor.getMarkers()).isEmpty();
+    waitForNoMarkers(textEditor);
 
     textEditor.insertText(8, 29, "2");
     textEditor.save();
 
-    assertThat(textEditor.getMarkers()).isEmpty();
+    waitForNoMarkers(textEditor);
 
     assertThat(scheduledAnalysisJobCount.get()).isEqualTo(analysisJobCountBefore);
 

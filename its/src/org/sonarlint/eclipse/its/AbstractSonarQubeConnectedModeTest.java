@@ -133,11 +133,7 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
 
     connectionNamePage.setConnectionName("test");
     wizard.next();
-
-    if (orchestrator.getServer().version().isGreaterThanOrEquals(8, 7)) {
-      // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
-      wizard.next();
-    }
+    wizard.next();
     wizard.finish();
 
     new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
