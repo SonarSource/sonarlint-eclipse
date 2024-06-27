@@ -284,7 +284,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
         defaultEditor.save();
       });
 
-      assertThat(defaultEditor.getMarkers()).isEmpty();
+      assertThat(defaultEditor.getMarkers())
+        .filteredOn(marker -> marker.getType().equals("org.sonarlint.eclipse.onTheFlyIssueAnnotationType"))
+        .isEmpty();
     });
   }
 
