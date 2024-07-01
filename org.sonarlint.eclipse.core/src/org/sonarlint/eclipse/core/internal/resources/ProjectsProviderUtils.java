@@ -19,26 +19,16 @@
  */
 package org.sonarlint.eclipse.core.internal.resources;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
-import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 
 public class ProjectsProviderUtils {
 
   private ProjectsProviderUtils() {
     // Utility class
-  }
-
-  public static Collection<ISonarLintProject> allProjects() {
-    return SonarLintExtensionTracker.getInstance().getProjectsProviders().stream()
-      .map(ISonarLintProjectsProvider::get)
-      .flatMap(Collection::stream)
-      .collect(Collectors.toSet());
   }
 
   public enum WorkspaceProjectsBindingRatio {
@@ -54,7 +44,7 @@ public class ProjectsProviderUtils {
    *  - all projects bound (ret = 1)
    */
   public static WorkspaceProjectsBindingRatio boundToAllProjectsRatio() {
-    var allProjects = allProjects();
+    var allProjects = SonarLintUtils.allProjects();
     var numberOfAllProjects = allProjects.size();
     if (numberOfAllProjects == 0) {
       return WorkspaceProjectsBindingRatio.NONE_BOUND;
@@ -74,7 +64,7 @@ public class ProjectsProviderUtils {
   }
 
   public static Set<String> allConfigurationScopeIds() {
-    return allProjects().stream().map(ConfigScopeSynchronizer::getConfigScopeId)
+    return SonarLintUtils.allProjects().stream().map(ConfigScopeSynchronizer::getConfigScopeId)
       .collect(Collectors.toSet());
   }
 }

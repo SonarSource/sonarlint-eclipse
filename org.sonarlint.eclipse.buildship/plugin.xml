@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+   <extension
+         point="org.sonarlint.eclipse.core.projectHierarchyProvider">
+      <participant
+            class="org.sonarlint.eclipse.buildship.internal.GradleProjectConfigurationExtension">
+      </participant>
+   </extension>
+</plugin>

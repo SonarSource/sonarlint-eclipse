@@ -29,7 +29,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigurationManager;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.rpc.protocol.SonarLintRpcServer;
@@ -99,7 +98,7 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
   }
 
   public void init() {
-    var allProjects = ProjectsProviderUtils.allProjects();
+    var allProjects = SonarLintUtils.allProjects();
     var initialConfigScopes = allProjects.stream()
       .filter(ISonarLintProject::isOpen)
       .map(ConfigScopeSynchronizer::toConfigScopeDto)

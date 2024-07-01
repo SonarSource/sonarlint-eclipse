@@ -60,6 +60,10 @@
    <plugin
          id="org.sonarlint.eclipse.m2e"
          version="0.0.0"/>
+
+   <plugin
+         id="org.sonarlint.eclipse.buildship"
+         version="0.0.0"/>
    
    <plugin
          id="org.sonarlint.eclipse.pydev"

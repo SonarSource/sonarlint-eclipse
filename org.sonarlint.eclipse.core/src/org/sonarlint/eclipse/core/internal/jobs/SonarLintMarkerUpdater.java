@@ -53,7 +53,6 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.DigestUtils;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -80,7 +79,7 @@ public class SonarLintMarkerUpdater {
   }
 
   public static void deleteAllMarkersFromReport() {
-    ProjectsProviderUtils.allProjects().stream()
+    SonarLintUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
       .forEach(p -> {
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
@@ -89,7 +88,7 @@ public class SonarLintMarkerUpdater {
   }
 
   public static void deleteAllMarkersFromTaint() {
-    ProjectsProviderUtils.allProjects().stream()
+    SonarLintUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
       .forEach(p -> {
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_TAINT_ID);

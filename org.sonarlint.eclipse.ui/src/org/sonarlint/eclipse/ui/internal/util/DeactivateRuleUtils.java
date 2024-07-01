@@ -32,7 +32,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -86,7 +86,7 @@ public class DeactivateRuleUtils {
   }
 
   private static void removeReportIssuesMarkers(String ruleKey) {
-    ProjectsProviderUtils.allProjects().stream()
+    SonarLintUtils.allProjects().stream()
       .filter(p -> p.isOpen() && !SonarLintCorePlugin.loadConfig(p).isBound())
       .forEach(p -> Stream.concat(findSonarLintMarkers(p, SonarLintCorePlugin.MARKER_REPORT_ID), findSonarLintMarkers(p, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID))
         .filter(m -> ruleKey.equals(MarkerUtils.getRuleKey(m)))

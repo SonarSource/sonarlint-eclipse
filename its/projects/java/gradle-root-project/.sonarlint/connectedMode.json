@@ -1,0 +1,4 @@
+{
+    "sonarQubeUri": "http://localhost:9000",
+    "projectKey": "org.sonarlint.its.gradle:gradle-root-project"
+}

@@ -28,6 +28,7 @@
       <feature id="org.eclipse.platform"/>
       <feature id="org.eclipse.jdt"/>
       <feature id="org.eclipse.egit"/>
+      <feature id="org.eclipse.buildship"/>
       <feature id="org.sonarlint.eclipse.feature"/>
    </features>
 
