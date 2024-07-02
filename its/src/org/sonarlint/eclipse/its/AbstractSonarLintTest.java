@@ -48,6 +48,7 @@ import org.eclipse.reddeer.eclipse.condition.ConsoleHasText;
 import org.eclipse.reddeer.eclipse.condition.ProjectExists;
 import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.core.resources.Resource;
+import org.eclipse.reddeer.eclipse.selectionwizard.ImportMenuWizard;
 import org.eclipse.reddeer.eclipse.ui.navigator.resources.ProjectExplorer;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
@@ -83,6 +84,8 @@ import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole.ShowConsoleOption;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
+import org.sonarlint.eclipse.its.reddeer.wizards.GradleProjectImportWizardDialog;
+import org.sonarlint.eclipse.its.reddeer.wizards.WizardGradleProjectsImportPage;
 import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
@@ -316,7 +319,7 @@ public abstract class AbstractSonarLintTest {
       });
   }
 
-  protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
+  protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder, boolean isGradle) {
     var projectFolder = new File(projectsFolder, relativePathFromProjectsFolder);
     try {
       FileUtils.copyDirectory(new File("projects", relativePathFromProjectsFolder), projectFolder);
@@ -327,13 +330,22 @@ public abstract class AbstractSonarLintTest {
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
-    var dialog = new ExternalProjectImportWizardDialog();
-    dialog.open();
-    var importPage = new WizardProjectsImportPage(dialog);
-    importPage.copyProjectsIntoWorkspace(false);
-    importPage.setRootDirectory(projectFolder.getAbsolutePath());
-    var projects = importPage.getProjects();
-    assertThat(projects).hasSize(1);
+
+    ImportMenuWizard dialog;
+    if (isGradle) {
+      dialog = new GradleProjectImportWizardDialog();
+      dialog.open();
+      var importPage = new WizardGradleProjectsImportPage(dialog);
+      importPage.setRootDirectory(projectFolder.getAbsolutePath());
+    } else {
+      dialog = new ExternalProjectImportWizardDialog();
+      dialog.open();
+      var importPage = new WizardProjectsImportPage(dialog);
+      importPage.copyProjectsIntoWorkspace(false);
+      importPage.setRootDirectory(projectFolder.getAbsolutePath());
+      var projects = importPage.getProjects();
+      assertThat(projects).hasSize(1);
+    }
 
     // Don't use dialog.finish() as in PyDev there is an extra step before waiting for the windows to be closed
     Button button = new FinishButton(dialog);
@@ -361,7 +373,15 @@ public abstract class AbstractSonarLintTest {
   }
 
   protected static final Project importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder, String projectName) {
-    importExistingProjectIntoWorkspace(relativePathFromProjectsFolder);
+    return importExistingProjectIntoWorkspace(relativePathFromProjectsFolder, projectName, false);
+  }
+
+  protected static final Project importExistingGradleProjectIntoWorkspace(String relativePathFromProjectsFolder, String projectName) {
+    return importExistingProjectIntoWorkspace(relativePathFromProjectsFolder, projectName, true);
+  }
+
+  protected static final Project importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder, String projectName, boolean isGradle) {
+    importExistingProjectIntoWorkspace(relativePathFromProjectsFolder, isGradle);
     var projectExplorer = new ProjectExplorer();
     new WaitUntil(new ProjectExists(projectName, projectExplorer));
     new WaitUntil(new AnalysisReady(projectName), TimePeriod.getCustom(30));

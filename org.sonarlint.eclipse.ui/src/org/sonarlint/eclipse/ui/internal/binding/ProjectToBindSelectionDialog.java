@@ -28,7 +28,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 import static java.util.Comparator.comparing;
@@ -46,7 +46,7 @@ public class ProjectToBindSelectionDialog extends ElementListSelectionDialog {
 
   @Nullable
   public static ISonarLintProject pickProject(String projectKey, String connectionId) {
-    var projects = ProjectsProviderUtils.allProjects()
+    var projects = SonarLintUtils.allProjects()
       .stream()
       .sorted(Comparator.comparing(ISonarLintProject::getName))
       .collect(Collectors.toList());
@@ -59,7 +59,7 @@ public class ProjectToBindSelectionDialog extends ElementListSelectionDialog {
   }
 
   public static List<ISonarLintProject> selectProjectsToAdd(Shell parent, List<ISonarLintProject> alreadySelected) {
-    var projects = ProjectsProviderUtils.allProjects()
+    var projects = SonarLintUtils.allProjects()
       .stream()
       .filter(p -> !alreadySelected.contains(p))
       .sorted(comparing(ISonarLintProject::getName))

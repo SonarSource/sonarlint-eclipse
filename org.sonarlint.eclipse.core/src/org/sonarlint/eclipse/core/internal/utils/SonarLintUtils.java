@@ -20,11 +20,13 @@
 package org.sonarlint.eclipse.core.internal.utils;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -39,6 +41,7 @@ import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
 import org.sonarsource.sonarlint.core.rpc.client.ConfigScopeNotFoundException;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
@@ -229,5 +232,19 @@ public class SonarLintUtils {
         "[SonarLintUtils#tryResolveProject] Try adapt configScopeId '" + configScopeId + "'"))
       .filter(Objects::nonNull)
       .findFirst();
+  }
+
+  /**
+   *  This is here so it can be accessed by sub-plug-ins making use of this extension point. The contract applies that
+   *  sub-plug-ins using the {@link org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider} cannot use this
+   *  method!
+   *
+   *  @return all projects in the workspace that where adaptable to ISonarLintProject
+   */
+  public static Collection<ISonarLintProject> allProjects() {
+    return SonarLintExtensionTracker.getInstance().getProjectsProviders().stream()
+      .map(ISonarLintProjectsProvider::get)
+      .flatMap(Collection::stream)
+      .collect(Collectors.toSet());
   }
 }

@@ -33,7 +33,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintUtilsLogOutput;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.utils.GitUtils;
 
@@ -71,7 +71,7 @@ abstract class AbstractEGitVcsFacade implements VcsFacade {
     removeHeadRefsChangeListener();
     listenerHandle = Repository.getGlobalListenerList().addRefsChangedListener(event -> {
       List<ISonarLintProject> affectedProjects = new ArrayList<>();
-      ProjectsProviderUtils.allProjects().forEach(p -> getRepo(p.getResource()).ifPresent(repo -> {
+      SonarLintUtils.allProjects().forEach(p -> getRepo(p.getResource()).ifPresent(repo -> {
         var repoDir = repo.getDirectory();
         if (repoDir != null && repoDir.equals(event.getRepository().getDirectory())) {
           affectedProjects.add(p);

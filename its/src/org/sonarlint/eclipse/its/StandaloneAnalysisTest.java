@@ -386,7 +386,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   public void shouldAnalyseJavaWithDependentProject() {
     new JavaPerspective().open();
-    importExistingProjectIntoWorkspace("java/java-dependent-projects/java-dependent-project");
+    importExistingProjectIntoWorkspace("java/java-dependent-projects/java-dependent-project", false);
     var rootProject = importExistingProjectIntoWorkspace("java/java-dependent-projects/java-main-project", "java-main-project");
 
     var toBeDeleted = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-main-project").getLocation().toFile(), "libs/toBeDeleted.jar");
@@ -408,7 +408,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     Assume.assumeTrue("latest".equals(System.getProperty("target.platform", "latest")));
 
     new PydevPerspective().open();
-    importExistingProjectIntoWorkspace("python");
+    importExistingProjectIntoWorkspace("python", false);
 
     var rootProject = new PydevPackageExplorer().getProject("python");
     rootProject.getTreeItem().select();
@@ -524,7 +524,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   public void test_CaYC_Standalone_Mode() {
     new JavaPerspective().open();
-    importExistingProjectIntoWorkspace("cayc/devoxx");
+    importExistingProjectIntoWorkspace("cayc/devoxx", false);
 
     // Use package explorer to wait for module 1 since reddeer doesn't support hierarchical layout of project explorer
     // https://github.com/eclipse/reddeer/issues/2161

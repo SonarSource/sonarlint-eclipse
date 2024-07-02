@@ -24,6 +24,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public class FileUtils {
@@ -49,5 +53,24 @@ public class FileUtils {
     } catch (IOException e) {
       throw new IllegalStateException("Unable to create directory: " + path, e);
     }
+  }
+
+  /**
+   *  Eclipse is using abstractions for the projects as well as the files and no direct file system access. In case of
+   *  need this can be used to try to access the local file. Keep in mind that this might not work when resources are
+   *  no local files.
+   *
+   *  @param resource that we want to try to get the local file from
+   *  @return the actual file object if possible, null otherwise
+   */
+  @Nullable
+  public static File toLocalFile(IResource resource) {
+    try {
+      var fileStore = EFS.getStore(resource.getLocationURI());
+      return fileStore.toLocalFile(EFS.NONE, null);
+    } catch (CoreException err) {
+      SonarLintLogger.get().error("Error while trying to get local file of resource: " + resource.getName(), err);
+    }
+    return null;
   }
 }

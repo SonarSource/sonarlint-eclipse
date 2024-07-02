@@ -95,7 +95,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   @Test
   public void configureServerWithTokenAndOrganization() {
-    importExistingProjectIntoWorkspace("java/java-simple");
+    importExistingProjectIntoWorkspace("java/java-simple", false);
 
     var wizard = new ServerConnectionWizard();
     wizard.open();

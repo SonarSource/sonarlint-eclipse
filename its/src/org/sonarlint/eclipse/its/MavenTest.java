@@ -33,9 +33,9 @@ public class MavenTest extends AbstractSonarLintTest {
   @Test
   public void shouldNotAnalyzeResourcesInNestedModules() {
     new JavaPerspective().open();
-    importExistingProjectIntoWorkspace("java/maven");
-    importExistingProjectIntoWorkspace("java/maven/sample-module1");
-    importExistingProjectIntoWorkspace("java/maven/sample-module2");
+    importExistingProjectIntoWorkspace("java/maven", false);
+    importExistingProjectIntoWorkspace("java/maven/sample-module1", false);
+    importExistingProjectIntoWorkspace("java/maven/sample-module2", false);
 
     // Use package explorer to wait for module 1 since reddeer doesn't support hierarchical layout of project explorer
     // https://github.com/eclipse/reddeer/issues/2161

@@ -35,7 +35,6 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -167,7 +166,7 @@ public class ConnectionFacade {
   }
 
   private static Stream<ISonarLintProject> getOpenedProjects() {
-    return ProjectsProviderUtils.allProjects().stream()
+    return SonarLintUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen);
   }
 
@@ -189,7 +188,7 @@ public class ConnectionFacade {
   }
 
   public List<SonarProject> getBoundSonarProjects() {
-    return ProjectsProviderUtils.allProjects().stream()
+    return SonarLintUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
       .map(SonarLintCorePlugin::loadConfig)
       .map(SonarLintProjectConfiguration::getProjectBinding)
@@ -214,7 +213,7 @@ public class ConnectionFacade {
   }
 
   public List<ISonarLintProject> getBoundProjects(String projectKey) {
-    return ProjectsProviderUtils.allProjects().stream()
+    return SonarLintUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
       .filter(p -> {
         var config = SonarLintCorePlugin.loadConfig(p);
