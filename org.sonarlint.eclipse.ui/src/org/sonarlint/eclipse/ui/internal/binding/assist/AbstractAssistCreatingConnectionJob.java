@@ -55,12 +55,16 @@ public abstract class AbstractAssistCreatingConnectionJob extends UIJob {
   public IStatus runInUIThread(IProgressMonitor monitor) {
     var shell = DisplayUtils.bringToFront();
 
-    // Currently we only ask the user if they trust a SonarQube server, SonarCloud we trust of course!
+    // In order to not blindly accept incoming connection requests via the "Open in IDE" feature, we will trigger a
+    // pop-up for the user to manually allow setting up the connection and trusting it.
+    AbstractConfirmConnectionCreationDialog dialog;
     if (serverUrlOrOrganization.isLeft()) {
-      var dialog = new ConfirmConnectionCreationDialog(shell, serverUrlOrOrganization.getLeft(), automaticSetUp);
-      if (dialog.open() != 0) {
-        return Status.CANCEL_STATUS;
-      }
+      dialog = new ConfirmSonarQubeConnectionCreationDialog(shell, serverUrlOrOrganization.getLeft(), automaticSetUp);
+    } else {
+      dialog = new ConfirmSonarCloudConnectionCreationDialog(shell, serverUrlOrOrganization.getRight(), automaticSetUp);
+    }
+    if (dialog.open() != 0) {
+      return Status.CANCEL_STATUS;
     }
 
     var model = new ServerConnectionModel(fromConnectionSuggestion);

@@ -154,16 +154,24 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
 
   @Override
   public AssistCreatingConnectionResponse assistCreatingConnection(AssistCreatingConnectionParams params, SonarLintCancelChecker cancelChecker) throws CancellationException {
-    var baseUrl = params.getServerUrl();
-
     try {
       AbstractAssistCreatingConnectionJob job;
 
+      // We want to check if is a request for a SonarQube server or SonarCloud. Based on the parameter "left" is
+      // SonarQube (denoted by a URL) and "right" is SonarCloud (denoted by a Organization)
+      Either<String, String> serverUrlOrOrganization;
+      var connectionParams = params.getConnectionParams();
+      if (connectionParams.isLeft()) {
+        serverUrlOrOrganization = Either.forLeft(connectionParams.getLeft().getServerUrl());
+      } else {
+        serverUrlOrOrganization = Either.forRight(connectionParams.getRight().getOrganizationKey());
+      }
+
       SonarLintLogger.get().debug("Assist creating a new connection...");
       if (params.getTokenName() != null && params.getTokenValue() != null) {
-        job = new AssistCreatingAutomaticConnectionJob(Either.forLeft(baseUrl), params.getTokenValue());
+        job = new AssistCreatingAutomaticConnectionJob(serverUrlOrOrganization, params.getTokenValue());
       } else {
-        job = new AssistCreatingManualConnectionJob(Either.forLeft(baseUrl));
+        job = new AssistCreatingManualConnectionJob(serverUrlOrOrganization);
       }
 
       job.schedule();

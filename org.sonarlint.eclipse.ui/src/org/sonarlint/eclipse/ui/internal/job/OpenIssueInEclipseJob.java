@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.job;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -35,6 +36,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectsJob;
@@ -124,7 +126,21 @@ public class OpenIssueInEclipseJob extends Job {
   /** Branch check: Local and remote information should match (if no local branch found, at least try your best) */
   private boolean tryMatchBranches() {
     var branch = issueDetails.getBranch();
-    var localBranch = VcsService.getCachedSonarProjectBranch(project);
+
+    // In case SLCORE is not yet ready for the SonarProjectBranchService, we also check the "legacy" and Eclipse-
+    // specific integration with EGit. If no EGit is installed, this will of course will not work, but as it is only
+    // used in case of the Open in IDE with automatic Connected Mode setup.
+    Optional<String> localBranch = Optional.empty();
+    try {
+      var response = SonarLintBackendService.get().getMatchedSonarProjectBranch(project);
+      localBranch = Optional.ofNullable(response.getMatchedSonarProjectBranch());
+    } catch (InterruptedException | ExecutionException err) {
+      SonarLintLogger.get().debug("Cannot get matched branch from backend, trying local VCS service", err);
+    }
+    if (localBranch.isEmpty()) {
+      localBranch = VcsService.getCachedSonarProjectBranch(project);
+    }
+
     if (localBranch.isEmpty()) {
       // This error message may be misleading to COBOL / ABAP developers but that is okay for now :>
       MessageDialogUtils.openInIdeInformation("The local branch of the project '" + project.getName()
@@ -197,8 +213,13 @@ public class OpenIssueInEclipseJob extends Job {
       @Override
       public void done(IJobChangeEvent event) {
         if (Status.OK_STATUS == event.getResult()) {
+          // Because the analysis is now decoupled from the actual raising of the issues, we cannot rely on the
+          // analysis job shutting down to then say "oh maybe now we can open the issue in Eclipse because the markers
+          // should be there". We give it some time.
+          // This is a corner case and only happens if the file of the issue opened in the IDE was never analyzed
+          // before. Basically the waiting ("sheduling") is on-top of what it takes to end the analysis.
           new OpenIssueInEclipseJob(new OpenIssueContext(name, issueDetails, project, binding, file, true))
-            .schedule();
+            .schedule(1000);
         } else {
           MessageDialogUtils.openInIdeError("Fetching the issue to be displayed failed because the dependent "
             + "job did not finish successfully.");
