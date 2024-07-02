@@ -53,7 +53,6 @@ import org.sonarlint.eclipse.core.internal.utils.DurationUtils;
 import org.sonarlint.eclipse.core.internal.utils.JavaRuntimeUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.vcs.VcsService;
-import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.rpc.client.SloopLauncher;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintRpcClientDelegate;
@@ -63,6 +62,8 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.AnalyzeFiles
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.binding.GetSharedConnectedModeConfigFileParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.binding.GetSharedConnectedModeConfigFileResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.branch.DidVcsRepositoryChangeParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.branch.GetMatchedSonarProjectBranchParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.branch.GetMatchedSonarProjectBranchResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.config.DidChangeCredentialsParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.GetAllProjectsParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.SonarProjectDto;
@@ -284,6 +285,14 @@ public class SonarLintBackendService {
     getBackend()
       .getSonarProjectBranchService()
       .didVcsRepositoryChange(new DidVcsRepositoryChangeParams(ConfigScopeSynchronizer.getConfigScopeId(project)));
+  }
+
+  public GetMatchedSonarProjectBranchResponse getMatchedSonarProjectBranch(ISonarLintProject project)
+    throws InterruptedException, ExecutionException {
+    return getBackend()
+      .getSonarProjectBranchService()
+      .getMatchedSonarProjectBranch(new GetMatchedSonarProjectBranchParams(ConfigScopeSynchronizer.getConfigScopeId(project)))
+      .get();
   }
 
   public void credentialsChanged(ConnectionFacade connection) {

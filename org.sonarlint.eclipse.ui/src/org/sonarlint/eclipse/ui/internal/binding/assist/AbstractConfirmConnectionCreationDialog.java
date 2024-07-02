@@ -29,22 +29,22 @@ import org.sonarlint.eclipse.core.internal.telemetry.LinkTelemetry;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 
-class ConfirmConnectionCreationDialog extends MessageDialog {
-
-  public ConfirmConnectionCreationDialog(Shell parentShell, String serverUrl, boolean automaticSetUp) {
-    super(parentShell, "Do you trust this SonarQube server?", SonarLintImages.BALLOON_IMG,
-      "The server at \"" + serverUrl + "\" is attempting to set up a connection with SonarLint. Letting SonarLint "
-      + "connect to an untrusted server is potentially dangerous."
-      + (automaticSetUp ? " The following setup will be done automatically." : ""),
-      MessageDialog.WARNING, new String[] {"Connect to this SonarQube server", "I don't trust this server"}, 0);
+public abstract class AbstractConfirmConnectionCreationDialog extends MessageDialog {
+  protected AbstractConfirmConnectionCreationDialog(Shell parentShell, String dialogTitle, String dialogMessage, String connectLabel, boolean automaticSetUp) {
+    super(parentShell,
+      dialogTitle,
+      SonarLintImages.BALLOON_IMG,
+      dialogMessage + (automaticSetUp ? " The following setup will be done automatically." : ""),
+      MessageDialog.WARNING,
+      new String[] {connectLabel, "I don't trust this connection"},
+      0);
   }
 
   @Override
   protected Control createCustomArea(Composite parent) {
     var link = new Link(parent, SWT.WRAP);
-    link.setText("If you don't trust this server, we recommend canceling this action and <a>manually setting up Connected Mode</a>.");
+    link.setText("If you don't trust this connection, we recommend canceling this action and <a>manually setting up Connected Mode</a>.");
     link.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowserWithTelemetry(LinkTelemetry.CONNECTED_MODE_DOCS, e.display));
     return link;
   }
-
 }
