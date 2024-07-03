@@ -127,7 +127,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     var allProjectsReady = new CountDownLatch(1);
     Executors.newSingleThreadExecutor().submit(() -> {
       while (true) {
-        var map = new HashMap<String, Boolean>(AnalyzeProjectJob.analysisReadyByConfigurationScopeId);
+        var map = new HashMap<String, Boolean>(AnalysisReadyStatusCache.getCache());
         if (!map.isEmpty() && map.values().stream().allMatch(Boolean::booleanValue)) {
           allProjectsReady.countDown();
           break;

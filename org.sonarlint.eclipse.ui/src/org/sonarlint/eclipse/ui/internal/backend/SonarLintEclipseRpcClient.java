@@ -39,7 +39,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintEclipseHeadlessRpcClient;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
+import org.sonarlint.eclipse.core.internal.jobs.AnalysisReadyStatusCache;
 import org.sonarlint.eclipse.core.internal.jobs.TaintIssuesMarkerUpdateJob;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
@@ -327,7 +327,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
 
     // Handle expensive checks and actual logic in separate job to not block the thread
     new OpenIssueInEclipseJob(new OpenIssueContext("Open in IDE", issueDetails, project, bindingOpt.get()))
-      .schedule();
+      .schedule(500);
   }
 
   @Override
@@ -391,7 +391,8 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
         + "' changed ready status for analysis to: " + areReadyForAnalysis);
     }
 
-    AnalyzeProjectJob.changeAnalysisReadiness(configurationScopeIds, areReadyForAnalysis);
+    configurationScopeIds.stream()
+      .forEach(configurationScopeId -> AnalysisReadyStatusCache.changeAnalysisReadiness(configurationScopeId, areReadyForAnalysis));
     if (areReadyForAnalysis) {
       AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(projects, TriggerType.ANALYSIS_READY);
     }

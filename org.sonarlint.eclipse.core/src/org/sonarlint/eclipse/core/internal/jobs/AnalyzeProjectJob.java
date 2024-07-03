@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -67,10 +66,6 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.AnalyzeFiles
 import static java.text.MessageFormat.format;
 
 public class AnalyzeProjectJob extends AbstractSonarProjectJob {
-  // Because we have to await Sloop to get ready, the analysis might not be ready in the meantime
-  // -> The analysis jobs run in a different process we have to make it thread safe!
-  public static ConcurrentHashMap<String, Boolean> analysisReadyByConfigurationScopeId = new ConcurrentHashMap<>();
-
   @Nullable
   private final ISonarLintProject project;
   private final List<SonarLintProperty> extraProps;
@@ -89,11 +84,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   public static AbstractSonarProjectJob create(AnalyzeProjectRequest request) {
     return new AnalyzeProjectJob(request);
-  }
-
-  public static void changeAnalysisReadiness(Set<String> configurationScopeIds, boolean readiness) {
-    analysisReadyByConfigurationScopeId.putAll(
-      configurationScopeIds.stream().collect(Collectors.toMap(k -> k, v -> readiness)));
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
@@ -190,8 +180,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     // For a single project it is more efficient to test for the project instead for every file. Even if there is just
     // one file, we don't have to invoke the costly stream methods.
     if (project != null) {
-      return analysisReadyByConfigurationScopeId
-        .getOrDefault(ConfigScopeSynchronizer.getConfigScopeId(project), false);
+      return AnalysisReadyStatusCache.getAnalysisReadiness(ConfigScopeSynchronizer.getConfigScopeId(project));
     }
 
     var configurationScopeIds = files.stream()
@@ -199,13 +188,14 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       .map(ConfigScopeSynchronizer::getConfigScopeId)
       .collect(Collectors.toSet());
 
+    // We have to check that all the affected projects (denoted by configuration scope id) are ready!
+    // -> when even one is not ready, the whole bundle is not ready and we return false
     for (var configurationScopeId : configurationScopeIds) {
-      if (Boolean.TRUE.equals(analysisReadyByConfigurationScopeId.get(configurationScopeId))) {
-        return true;
+      if (!AnalysisReadyStatusCache.getAnalysisReadiness(configurationScopeId)) {
+        return false;
       }
     }
-
-    return false;
+    return true;
   }
 
   private static boolean isScmIgnored(ISonarLintFile file) {
