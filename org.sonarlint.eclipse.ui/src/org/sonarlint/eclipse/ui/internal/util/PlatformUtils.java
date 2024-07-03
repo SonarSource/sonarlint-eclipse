@@ -86,13 +86,16 @@ public final class PlatformUtils {
   /**
    *  Opens editor for given marker.
    */
-  public static void openEditor(IMarker marker) {
+  @Nullable
+  public static IEditorPart openEditor(IMarker marker) {
+    IEditorPart part = null;
     var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     try {
-      IDE.openEditor(page, marker);
+      part = IDE.openEditor(page, marker);
     } catch (PartInitException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
+    return part;
   }
 
   /**
