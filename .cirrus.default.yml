@@ -6,9 +6,6 @@ env:
   ARTIFACTORY_PRIVATE_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader
   ARTIFACTORY_PRIVATE_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
   ARTIFACTORY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
-  BURGR_URL: VAULT[development/kv/data/burgr data.url]
-  BURGR_USERNAME: VAULT[development/kv/data/burgr data.cirrus_username]
-  BURGR_PASSWORD: VAULT[development/kv/data/burgr data.cirrus_password]
   SONAR_HOST_URL: VAULT[development/kv/data/next data.url]
   SONAR_TOKEN: VAULT[development/kv/data/next data.token]
   SLACK_TOKEN: VAULT[development/kv/data/slack data.token]
@@ -321,7 +318,6 @@ promote_task:
   env:
     ARTIFACTORY_PROMOTE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     GITHUB_TOKEN: VAULT[development/github/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promotion token]
-    # artifacts which will have downloadable links in burgr
     ARTIFACTS: org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:zip,org.sonarsource.sonarlint.eclipse:sonarlint-eclipse-parent:json:cyclonedx
   <<: *SETUP_MAVEN_CACHE
   promote_script: |
