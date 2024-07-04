@@ -27,7 +27,6 @@ if [ -n "${GITHUB_BASE_BRANCH}" ]; then
 	git fetch origin "${GITHUB_BASE_BRANCH}"
 fi
 
-# PIPELINE_ID is used by burgr to identify stages of the pipeline
 if [ -z "$PIPELINE_ID" ]; then
   PIPELINE_ID=$BUILD_NUMBER
 fi
