@@ -7,6 +7,7 @@ env:
   ARTIFACTORY_PRIVATE_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
   ARTIFACTORY_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
   SLACK_TOKEN: VAULT[development/kv/data/slack data.token]
+  SLACK_CHANNEL: squad-ide-eclipse-bots
   CIRRUS_PIPELINE_NAME: "SLE iBuilds"
 
 # We will only run this pipeline on dedicated branches
@@ -107,7 +108,7 @@ qa_ibuilds_task:
       - "**/target/surefire-reports/TEST-*.xml"
       format: junit
     slack_notification_script: |
-      .cirrus/slack-notification.sh
+      source slack_notification_failure "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
 # Inspect orchestrator cache
 inspect_orchestrator_cache_task:
