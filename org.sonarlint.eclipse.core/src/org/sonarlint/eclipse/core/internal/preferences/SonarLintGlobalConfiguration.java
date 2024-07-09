@@ -22,14 +22,12 @@ package org.sonarlint.eclipse.core.internal.preferences;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -474,14 +472,17 @@ public class SonarLintGlobalConfiguration {
       : Boolean.parseBoolean(property);
   }
 
-  @Nullable
-  public static Date getSonarLintVersionHintDate() {
+  public static boolean isSonarLintVersionHintDateToday() {
     var date = getPreferenceString(PREF_SONARLINT_VERSION_HINT_DATE);
+    if (date.isBlank()) {
+      return false;
+    }
 
     try {
-      return date.isBlank() ? null : new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).parse(date);
-    } catch (ParseException ignored) {
-      return null;
+      var today = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).format(Calendar.getInstance().getTime());
+      return date.equals(today);
+    } catch (Exception ignored) {
+      return false;
     }
   }
 
