@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<introContent>
+  <extensionContent id="org.sonarlint.eclipse.ui"
+                    name="SonarLint Tutorials"
+                    style="../css/welcome_view.css"
+                    alt-style="../css/welcome_view.properties"
+                    path="tutorials/@">
+    <group label="SonarLint" style-id="content=group" id="content-group">
+      <!-- 1) Investigating issues, getting started with SonarLint -->
+      <link style-id="content-link"
+            label="Investigating issues"
+            url="http://org.eclipse.ui.intro/openBrowser?url=https://docs.sonarsource.com/sonarlint/eclipse/using-sonarlint/investigating-issues/"
+            id="investigatingIssues">
+        <text>Learn how to investigate issues found by SonarLint</text>
+      </link>
+      
+      <!-- 2) Learn about Connected Mode, setting it up -->
+      <link style-id="content-link"
+            label="Connected Mode"
+            url="http://org.eclipse.ui.intro/openBrowser?url=https://docs.sonarsource.com/sonarlint/eclipse/team-features/connected-mode/"
+            id="connectedMode">
+        <text>Learn how to leverage Connected Mode to bring even more benefits to your experience</text>
+      </link>
+      
+      <!-- 3) Troubleshooting and how to gather necessary information for the Sonar Community Forum -->
+      <link style-id="content-link"
+            label="Troubleshooting"
+            url="http://org.eclipse.ui.intro/openBrowser?url=https://docs.sonarsource.com/sonarlint/eclipse/troubleshooting/"
+            id="troubleshooting">
+        <text>Learn how to troubleshoot issues related to SonarLint</text>
+      </link>
+    </group>
+  </extensionContent>
+</introContent>

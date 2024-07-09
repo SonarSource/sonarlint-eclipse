@@ -42,6 +42,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.BindingsView;
 import org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView;
 import org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencePage;
+import org.sonarlint.eclipse.ui.internal.properties.ReleaseNotesPage;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
 import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
@@ -121,6 +122,7 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
     menuMgr.add(showViewSubMenu);
 
     menuMgr.add(new OpenGloblaSettingsAction());
+    menuMgr.add(new OpenReleaseNotesAction());
     menuMgr.add(new ShowConsoleAction());
   }
 
@@ -164,6 +166,19 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
     @Override
     public void run() {
       PlatformUtils.showPreferenceDialog(SonarLintPreferencePage.ID).open();
+    }
+  }
+
+  static class OpenReleaseNotesAction extends Action {
+
+    OpenReleaseNotesAction() {
+      super("Release Notes...");
+      setDescription("Open SonarLint Release Notes");
+    }
+
+    @Override
+    public void run() {
+      PlatformUtils.showPreferenceDialog(ReleaseNotesPage.ABOUT_CONFIGURATION_ID).open();
     }
   }
 

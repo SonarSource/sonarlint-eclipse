@@ -40,6 +40,27 @@
           name="Miscellaneous">
           <keywordReference id="org.sonarlint.eclipse.ui.SonarLintKeyword"/>
     </page>
+    <page
+          category="org.sonarlint.eclipse.ui.preferences.SonarLintPreferencePage"
+          class="org.sonarlint.eclipse.ui.internal.properties.ReleaseNotesPage"
+          id="org.sonarlint.eclipse.ui.properties.ReleaseNotesPage"
+          name="Release Notes">
+          <keywordReference id="org.sonarlint.eclipse.ui.SonarLintKeyword"/>
+    </page>
+  </extension>
+  
+  <extension point="org.eclipse.ui.intro.configExtension">
+    <configExtension
+      configId="org.eclipse.ui.intro.universalConfig"
+      content="/intro/whatsNewExtensionContent.xml" />
+    
+    <configExtension
+      configId="org.eclipse.ui.intro.universalConfig"
+      content="/intro/overviewExtensionContent.xml" />
+    
+    <configExtension
+      configId="org.eclipse.ui.intro.universalConfig"
+      content="/intro/tutorialsExtensionContent.xml" />
   </extension>
 
   <extension

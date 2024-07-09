@@ -48,13 +48,16 @@ import org.sonarlint.eclipse.core.internal.backend.SonarLintRpcClientSupportSync
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.ui.internal.backend.SonarLintEclipseRpcClient;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
+import org.sonarlint.eclipse.ui.internal.popup.ReleaseNotesPopup;
 import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
+import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
 
@@ -259,7 +262,21 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         for (var window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
           WindowOpenCloseListener.addListenerToAllPages(window);
         }
+
+        // Check if updated or freshly installed and then show a notification raising awareness about the release notes
+        // -> also open the "Welcome" view for users to get started
+        if (!SonarLintGlobalConfiguration.sonarLintVersionHintHidden() && BundleUtils.bundleUpdatedOrInstalled()) {
+          ReleaseNotesPopup.displayPopupIfNotAlreadyShown();
+          PlatformUtils.openWelcomePage();
+        }
+
+        // Check if newer version is available and then show a notification raising awareness about it. The
+        // notification will only be displayed once a day in order to not annoy the user!
+        // TODO: Implement ...
       }
+
+      // We want to update the locally saved SonarLint version reference once everything is done!
+      SonarLintGlobalConfiguration.setSonarLintVersion();
 
       // Display user survey pop-up (comment out if not needed, comment in again if needed and replace link)
       // Display.getDefault().syncExec(() -> SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed(""));

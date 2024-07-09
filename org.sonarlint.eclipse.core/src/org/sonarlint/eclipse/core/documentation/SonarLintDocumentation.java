@@ -50,6 +50,9 @@ public class SonarLintDocumentation {
   public static final String SONARCLOUD_SIGNUP_LINK = SONARCLOUD_PRODUCT_LINK + "/signup";
 
   public static final String COMMUNITY_FORUM = "https://community.sonarsource.com/c/sl/11";
+  public static final String COMMUNITY_FORUM_ECLIPSE_RELEASES = "https://community.sonarsource.com/tags/c/sl/sonarlint-releases/37/eclipse";
+
+  public static final String GITHUB_RELEASES = "https://github.com/SonarSource/sonarlint-eclipse/releases";
 
   private SonarLintDocumentation() {
     // utility class

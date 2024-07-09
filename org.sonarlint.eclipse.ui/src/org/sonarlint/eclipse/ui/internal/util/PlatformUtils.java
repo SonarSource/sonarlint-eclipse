@@ -61,6 +61,18 @@ public final class PlatformUtils {
   private PlatformUtils() {
   }
 
+  /** To open the "Welcome" view, which is actually an Eclipse E4 part and not a Eclipse 3.x view! */
+  public static void openWelcomePage() {
+    Display.getDefault().asyncExec(() -> {
+      try {
+        // INFO: This information cannot be accessed from any constant, can be seen via "Plug-in Selection Spy"!
+        showView("org.eclipse.ui.internal.introview");
+      } catch (PartInitException err) {
+        SonarLintLogger.get().error("Cannot open the 'Welcome' view, make sure Eclipse is properly installed!", err);
+      }
+    });
+  }
+
   /** Show a specific view (open it if not already in the workspace, otherwise bring to front) */
   public static IViewPart showView(String id) throws PartInitException {
     return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(id);
