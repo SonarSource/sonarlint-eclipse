@@ -40,11 +40,13 @@ import org.osgi.framework.BundleContext;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintRpcClientSupportSynchronizer;
+import org.sonarlint.eclipse.core.internal.http.EclipseUpdateSite;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -55,6 +57,7 @@ import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
+import org.sonarlint.eclipse.ui.internal.popup.NewerVersionAvailablePopup;
 import org.sonarlint.eclipse.ui.internal.popup.ReleaseNotesPopup;
 import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
@@ -272,11 +275,23 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
         // Check if newer version is available and then show a notification raising awareness about it. The
         // notification will only be displayed once a day in order to not annoy the user!
-        // TODO: Implement ...
+        if (!SonarLintGlobalConfiguration.sonarLintVersionHintHidden()
+          && !SonarLintGlobalConfiguration.isSonarLintVersionHintDateToday()) {
+          var newestSonarLintVersion = EclipseUpdateSite.getNewestVersion();
+          if (newestSonarLintVersion == null) {
+            SonarLintLogger.get().debug("Cannot check for newer SonarLint versions via the SonarLint for Eclipse "
+              + "Update Site. In thase case, please check the Sonar Community Forum ("
+              + SonarLintDocumentation.COMMUNITY_FORUM_ECLIPSE_RELEASES + ") or the GitHub releases page ("
+              + SonarLintDocumentation.GITHUB_RELEASES + ")!");
+          } else if (newestSonarLintVersion.isNewerThan(BundleUtils.getBundleVersion())) {
+            NewerVersionAvailablePopup.displayPopupIfNotAlreadyShown();
+          }
+        }
       }
 
       // We want to update the locally saved SonarLint version reference once everything is done!
       SonarLintGlobalConfiguration.setSonarLintVersion();
+      SonarLintGlobalConfiguration.setSonarLintVersionHintDate();
 
       // Display user survey pop-up (comment out if not needed, comment in again if needed and replace link)
       // Display.getDefault().syncExec(() -> SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed(""));

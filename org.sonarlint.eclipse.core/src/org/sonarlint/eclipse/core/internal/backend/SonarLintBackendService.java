@@ -112,6 +112,7 @@ public class SonarLintBackendService {
   private Job initJob;
 
   private SloopLauncher sloopLauncher;
+  private HttpConfigurationDto httpConfiguration;
 
   public static SonarLintBackendService get() {
     return INSTANCE;
@@ -123,8 +124,19 @@ public class SonarLintBackendService {
     }
     sloopLauncher = new SloopLauncher(client);
 
-    initJob = new Job("Backend initialization") {
+    httpConfiguration = new HttpConfigurationDto(
+      new SslConfigurationDto(getPathProperty("sonarlint.ssl.trustStorePath"),
+        System.getProperty("sonarlint.ssl.trustStorePassword"),
+        System.getProperty("sonarlint.ssl.trustStoreType"),
+        getPathProperty("sonarlint.ssl.keyStorePath"),
+        System.getProperty("sonarlint.ssl.keyStorePassword"),
+        System.getProperty("sonarlint.ssl.keyStoreType")),
+      DurationUtils.getTimeoutProperty("sonarlint.http.connectTimeout"),
+      DurationUtils.getTimeoutProperty("sonarlint.http.socketTimeout"),
+      DurationUtils.getTimeoutProperty("sonarlint.http.connectionRequestTimeout"),
+      DurationUtils.getTimeoutProperty("sonarlint.http.responseTimeout"));
 
+    initJob = new Job("Backend initialization") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
         SonarLintLogger.get().debug("Initializing SonarLint backend...");
@@ -176,7 +188,7 @@ public class SonarLintBackendService {
             new ClientConstantInfoDto(getIdeName(), "SonarLint Eclipse " + SonarLintUtils.getPluginVersion()),
             new TelemetryClientConstantAttributesDto("eclipse", "SonarLint Eclipse", SonarLintUtils.getPluginVersion(), SonarLintTelemetry.ideVersionForTelemetry(),
               Map.of()),
-            getHttpConfiguration(),
+            httpConfiguration,
             getSonarCloudAlternativeEnvironment(),
             new FeatureFlagsDto(true, true, true, true, false, true, true, true, telemetryEnabled),
             StoragePathManager.getStorageDir(),
@@ -239,20 +251,6 @@ public class SonarLintBackendService {
 
   }
 
-  private static HttpConfigurationDto getHttpConfiguration() {
-    return new HttpConfigurationDto(
-      new SslConfigurationDto(getPathProperty("sonarlint.ssl.trustStorePath"),
-        System.getProperty("sonarlint.ssl.trustStorePassword"),
-        System.getProperty("sonarlint.ssl.trustStoreType"),
-        getPathProperty("sonarlint.ssl.keyStorePath"),
-        System.getProperty("sonarlint.ssl.keyStorePassword"),
-        System.getProperty("sonarlint.ssl.keyStoreType")),
-      DurationUtils.getTimeoutProperty("sonarlint.http.connectTimeout"),
-      DurationUtils.getTimeoutProperty("sonarlint.http.socketTimeout"),
-      DurationUtils.getTimeoutProperty("sonarlint.http.connectionRequestTimeout"),
-      DurationUtils.getTimeoutProperty("sonarlint.http.responseTimeout"));
-  }
-
   @Nullable
   private static SonarCloudAlternativeEnvironmentDto getSonarCloudAlternativeEnvironment() {
     var sonarCloudUrl = System.getProperty("sonarlint.internal.sonarcloud.url");
@@ -276,6 +274,11 @@ public class SonarLintBackendService {
 
       // INFO: With SLE-812 improve this to restart the backend / offer users the possibility to to so!
     }
+  }
+
+  /** This way the HTTP configuration regarding SSL can also be used inside the plug-in and not only in SLCORE */
+  public HttpConfigurationDto getHttpConfiguration() {
+    return requireNonNull(httpConfiguration, "SonarLint backend service needs to be initialized first");
   }
 
   /**

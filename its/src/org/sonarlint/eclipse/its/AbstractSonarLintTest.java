@@ -357,7 +357,7 @@ public abstract class AbstractSonarLintTest {
       new PushButton(pythonNotConfiguredDialog, "Don't ask again").click();
     });
 
-    new WaitWhile(new WindowIsAvailable(dialog), TimePeriod.LONG);
+    new WaitWhile(new WindowIsAvailable(dialog), isGradle ? TimePeriod.VERY_LONG : TimePeriod.LONG);
     new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
 

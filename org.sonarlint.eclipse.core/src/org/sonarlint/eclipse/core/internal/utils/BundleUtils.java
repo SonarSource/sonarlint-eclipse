@@ -53,28 +53,12 @@ public class BundleUtils {
     return Optional.empty();
   }
 
-  public static boolean bundleUpdatedOrInstalled() {
-    var coreVersion = new SonarLintVersion(SonarLintCorePlugin.getInstance().getBundle().getVersion());
-    var savedVersion = new SonarLintVersion(SonarLintGlobalConfiguration.getSonarLintVersion());
-    return coreVersion.isNewerThan(savedVersion);
+  public static SonarLintVersion getBundleVersion() {
+    return new SonarLintVersion(SonarLintCorePlugin.getInstance().getBundle().getVersion());
   }
 
-  /** In SonarLint we have a qualifier (the build number) but that can be ignored */
-  private static class SonarLintVersion {
-    public final int major;
-    public final int minor;
-    public final int patch;
-
-    public SonarLintVersion(Version bundleVersion) {
-      major = bundleVersion.getMajor();
-      minor = bundleVersion.getMinor();
-      patch = bundleVersion.getMicro();
-    }
-
-    public boolean isNewerThan(SonarLintVersion other) {
-      return (major > other.major)
-        || (major == other.major && minor > other.minor)
-        || (major == other.major && minor == other.minor && patch > other.patch);
-    }
+  public static boolean bundleUpdatedOrInstalled() {
+    var savedVersion = new SonarLintVersion(SonarLintGlobalConfiguration.getSonarLintVersion());
+    return getBundleVersion().isNewerThan(savedVersion);
   }
 }

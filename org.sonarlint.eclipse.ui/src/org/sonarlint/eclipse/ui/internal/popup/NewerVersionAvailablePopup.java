@@ -20,41 +20,44 @@
 package org.sonarlint.eclipse.ui.internal.popup;
 
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.sonarlint.eclipse.ui.internal.properties.ReleaseNotesPage;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
+import org.sonarlint.eclipse.ui.internal.job.TriggerUpdateAction;
+import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.PopupUtils;
 
 /**
- *  Used to raise awareness about recent changes made in SonarLint for Eclipse. This will help users discover new
- *  features and what has changed in general.
+ *  Shown when a newer version is available. This won't take into account dogfooding versions!
  */
-public class ReleaseNotesPopup extends AbstractSonarLintVersionPopup {
-  public ReleaseNotesPopup() {
-    super("SonarLint - Release Notes",
-      "Thank you for installing / updating SonarLint. We invite you to learn about the recent changes by taking a"
-        + " look at the Release Notes. If you want to read them later, they can be found nested into the SonarLint "
-        + "preferences.");
+public class NewerVersionAvailablePopup extends AbstractSonarLintVersionPopup {
+  public NewerVersionAvailablePopup() {
+    super("SonarLint - New version available",
+      "A newer version of SonarLint for Eclipse has been released. Feel free to check it out or trigger an "
+        + "update. In case no update is available in your IDE, SonarLint might have been installed manually or is "
+        + "managed by your organization.");
   }
 
   @Override
   protected void addLinks() {
-    addLink("Show Release Notes", e -> {
-      PreferencesUtil.createPreferenceDialogOn(getParentShell(), ReleaseNotesPage.ABOUT_CONFIGURATION_ID,
-        null, null).open();
+    addLink("Check out in browser", e -> {
+      BrowserUtils.openExternalBrowser(SonarLintDocumentation.COMMUNITY_FORUM_ECLIPSE_RELEASES, getShell().getDisplay());
+      BrowserUtils.openExternalBrowser(SonarLintDocumentation.GITHUB_RELEASES, getShell().getDisplay());
+    });
+    addLink("Check for updates", e -> {
+      new TriggerUpdateAction().schedule();
       close();
     });
   }
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
   public static void displayPopupIfNotAlreadyShown() {
-    if (PopupUtils.popupCurrentlyDisplayed(ReleaseNotesPopup.class)) {
+    if (PopupUtils.popupCurrentlyDisplayed(NewerVersionAvailablePopup.class)) {
       return;
     }
 
     Display.getDefault().asyncExec(() -> {
-      PopupUtils.addCurrentlyDisplayedPopup(ReleaseNotesPopup.class);
+      PopupUtils.addCurrentlyDisplayedPopup(NewerVersionAvailablePopup.class);
 
-      var popup = new ReleaseNotesPopup();
+      var popup = new NewerVersionAvailablePopup();
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);
       popup.open();
