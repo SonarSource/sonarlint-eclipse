@@ -22,13 +22,18 @@ package org.sonarlint.eclipse.core.internal.preferences;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -43,6 +48,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jdt.annotation.Nullable;
+import org.osgi.framework.Version;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -85,6 +91,13 @@ public class SonarLintGlobalConfiguration {
   private static final String PREF_SOON_UNSUPPORTED_CONNECTIONS = "soonUnsupportedSonarQubeConnections"; //$NON-NLS-1$
   private static final String PREF_NO_AUTOMATIC_BUILD_WARNING = "noAutomaticBuildWarning"; //$NON-NLS-1$
   private static final String PREF_NO_CONNECTION_SUGGESTIONS = "NoConnectionSuggestions"; //$NON-NLS-1$
+
+  // When SonarLint is updated (or installed), we inform the user by opening the "Welcome" page and show a notification
+  // about the new Release Notes. When a new version is available, we will inform the user as well (but only once a
+  // day), this can be muted.
+  private static final String PREF_SONARLINT_VERSION = "sonarLintVersion"; //$NON-NLS-1$
+  private static final String PREF_SONARLINT_VERSION_HINT = "hideSonarLintVersionHint"; //$NON-NLS-1$
+  private static final String PREF_SONARLINT_VERSION_HINT_DATE = "hideSonarLintVersionHintDate"; //$NON-NLS-1$
 
   // notifications on missing features from standalone mode / enhanced features from connected mode
   public static final String PREF_IGNORE_MISSING_FEATURES = "ignoreNotificationsAboutMissingFeatures"; //$NON-NLS-1$
@@ -442,5 +455,38 @@ public class SonarLintGlobalConfiguration {
 
   public static void setNoConnectionSuggestions() {
     setPreferenceBoolean(getWorkspaceLevelPreferenceNode(), PREF_NO_CONNECTION_SUGGESTIONS, true);
+  }
+
+  public static Version getSonarLintVersion() {
+    return Version.valueOf(getPreferenceString(PREF_SONARLINT_VERSION));
+  }
+
+  public static void setSonarLintVersion() {
+    var version = SonarLintCorePlugin.getInstance().getBundle().getVersion();
+    setPreferenceString(getApplicationLevelPreferenceNode(), PREF_SONARLINT_VERSION, version.toString());
+  }
+
+  public static boolean sonarLintVersionHintHidden() {
+    // For integration tests we need to disable the notifications
+    var property = System.getProperty("sonarlint.internal.hideVersionHint");
+    return property == null || property.isBlank()
+      ? getPreferenceBoolean(PREF_SONARLINT_VERSION_HINT)
+      : Boolean.parseBoolean(property);
+  }
+
+  @Nullable
+  public static Date getSonarLintVersionHintDate() {
+    var date = getPreferenceString(PREF_SONARLINT_VERSION_HINT_DATE);
+
+    try {
+      return date.isBlank() ? null : new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).parse(date);
+    } catch (ParseException ignored) {
+      return null;
+    }
+  }
+
+  public static void setSonarLintVersionHintDate() {
+    var date = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).format(Calendar.getInstance().getTime());
+    setPreferenceString(getApplicationLevelPreferenceNode(), PREF_SONARLINT_VERSION_HINT_DATE, date);
   }
 }

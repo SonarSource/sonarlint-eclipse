@@ -52,7 +52,7 @@ public class SurveyPopup extends AbstractSonarLintPopup {
       BrowserUtils.openExternalBrowser(surveyURL, getShell().getDisplay());
       close();
       PreferencesUtil.createPreferenceDialogOn(getParentShell(), AboutPropertyPage.ABOUT_CONFIGURATION_ID,
-        new String[] {AboutPropertyPage.ABOUT_CONFIGURATION_ID}, null).open();
+        null, null).open();
     });
   }
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<introContent>
+  <extensionContent id="org.sonarlint.eclipse.ui"
+                    name="SonarLint Release Notes"
+                    style="../css/welcome_view.css"
+                    alt-style="../css/welcome_view.properties"
+                    path="whatsnew/@">
+    <group style-id="content=group" id="content-group">
+      <link style-id="content-link"
+            label="SonarLint Release Notes"
+            url="http://org.eclipse.ui.intro/runAction?pluginId=org.sonarlint.eclipse.ui&amp;class=org.sonarlint.eclipse.ui.internal.intro.ShowReleaseNotesAction"
+            id="releaseNotes">
+        <text>Show SonarLint for Eclipse Release Notes</text>
+      </link>
+    </group>
+  </extensionContent>
+</introContent>

@@ -170,9 +170,8 @@ public class RuleDetailsPanel extends Composite {
 
         @Override
         public void widgetSelected(SelectionEvent e) {
-          PreferencesUtil.createPreferenceDialogOn(
-            getShell(), RulesConfigurationPage.RULES_CONFIGURATION_ID,
-            new String[] {RulesConfigurationPage.RULES_CONFIGURATION_ID}, null).open();
+          PreferencesUtil.createPreferenceDialogOn(getShell(), RulesConfigurationPage.RULES_CONFIGURATION_ID,
+            null, null).open();
         }
       });
 

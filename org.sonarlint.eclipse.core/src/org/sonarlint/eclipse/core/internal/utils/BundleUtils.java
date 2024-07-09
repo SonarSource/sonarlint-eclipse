@@ -23,8 +23,13 @@ import java.util.Optional;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 
 public class BundleUtils {
+  private BundleUtils() {
+    // utility class
+  }
 
   public static boolean isBundleInstalled(String name) {
     return getInstalledBundle(name).isPresent();
@@ -48,7 +53,28 @@ public class BundleUtils {
     return Optional.empty();
   }
 
-  private BundleUtils() {
-    // utility class
+  public static boolean bundleUpdatedOrInstalled() {
+    var coreVersion = new SonarLintVersion(SonarLintCorePlugin.getInstance().getBundle().getVersion());
+    var savedVersion = new SonarLintVersion(SonarLintGlobalConfiguration.getSonarLintVersion());
+    return coreVersion.isNewerThan(savedVersion);
+  }
+
+  /** In SonarLint we have a qualifier (the build number) but that can be ignored */
+  private static class SonarLintVersion {
+    public final int major;
+    public final int minor;
+    public final int patch;
+
+    public SonarLintVersion(Version bundleVersion) {
+      major = bundleVersion.getMajor();
+      minor = bundleVersion.getMinor();
+      patch = bundleVersion.getMicro();
+    }
+
+    public boolean isNewerThan(SonarLintVersion other) {
+      return (major > other.major)
+        || (major == other.major && minor > other.minor)
+        || (major == other.major && minor == other.minor && patch > other.patch);
+    }
   }
 }
