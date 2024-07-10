@@ -69,7 +69,6 @@ import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
@@ -203,12 +202,6 @@ public abstract class AbstractSonarLintTest {
     "org.sonarlint.eclipse.projectJob",
     "org.sonarlint.eclipse.projectsJob");
 
-  @Before
-  public final void before() {
-    // File associations must be set explicitly on macOS!
-    setSpecificFileAssociationConfiguration();
-  }
-
   @BeforeClass
   public static final void beforeClass() throws BackingStoreException {
     System.out.println("Eclipse: " + platformVersion());
@@ -219,6 +212,8 @@ public abstract class AbstractSonarLintTest {
 
     ROOT_CORE.node("servers").removeNode();
     ROOT_SECURE.node("servers").removeNode();
+
+    setSpecificFileAssociationConfiguration();
 
     if (sonarlintItJobListener == null) {
       sonarlintItJobListener = new JobChangeAdapter() {
@@ -358,7 +353,7 @@ public abstract class AbstractSonarLintTest {
     });
 
     new WaitWhile(new WindowIsAvailable(dialog), isGradle ? TimePeriod.VERY_LONG : TimePeriod.LONG);
-    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
+    new WaitWhile(new JobIsRunning(), isGradle ? TimePeriod.VERY_LONG : TimePeriod.LONG);
   }
 
   /**
@@ -385,7 +380,7 @@ public abstract class AbstractSonarLintTest {
   protected static final Project importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder, String projectName, boolean isGradle) {
     importExistingProjectIntoWorkspace(relativePathFromProjectsFolder, isGradle);
     var projectExplorer = new ProjectExplorer();
-    new WaitUntil(new ProjectExists(projectName, projectExplorer));
+    new WaitUntil(new ProjectExists(projectName, projectExplorer), TimePeriod.getCustom(30));
     new WaitUntil(new AnalysisReady(projectName), TimePeriod.getCustom(30));
     return projectExplorer.getProject(projectName);
   }
