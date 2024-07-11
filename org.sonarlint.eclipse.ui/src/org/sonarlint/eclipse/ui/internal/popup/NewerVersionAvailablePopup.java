@@ -29,11 +29,11 @@ import org.sonarlint.eclipse.ui.internal.util.PopupUtils;
  *  Shown when a newer version is available. This won't take into account dogfooding versions!
  */
 public class NewerVersionAvailablePopup extends AbstractSonarLintVersionPopup {
-  public NewerVersionAvailablePopup() {
+  public NewerVersionAvailablePopup(String version) {
     super("SonarLint - New version available",
-      "A newer version of SonarLint for Eclipse has been released. Feel free to check it out or trigger an "
-        + "update. In case no update is available in your IDE, SonarLint might have been installed manually or is "
-        + "managed by your organization.");
+      "A newer version of SonarLint for Eclipse has been released: " + version + ". Feel free to check it out or "
+        + "trigger an update. In case no update is available in your IDE, SonarLint might have been installed "
+        + "manually or is managed by your organization.");
   }
 
   @Override
@@ -49,7 +49,7 @@ public class NewerVersionAvailablePopup extends AbstractSonarLintVersionPopup {
   }
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
-  public static void displayPopupIfNotAlreadyShown() {
+  public static void displayPopupIfNotAlreadyShown(String version) {
     if (PopupUtils.popupCurrentlyDisplayed(NewerVersionAvailablePopup.class)) {
       return;
     }
@@ -57,7 +57,7 @@ public class NewerVersionAvailablePopup extends AbstractSonarLintVersionPopup {
     Display.getDefault().asyncExec(() -> {
       PopupUtils.addCurrentlyDisplayedPopup(NewerVersionAvailablePopup.class);
 
-      var popup = new NewerVersionAvailablePopup();
+      var popup = new NewerVersionAvailablePopup(version);
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);
       popup.open();
