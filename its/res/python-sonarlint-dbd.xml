@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<profile>
+  <name>SonarLint IT Python DBD</name>
+  <language>py</language>
+  <rules>
+    <rule>
+      <!-- Conditionally executed code should be reachable -->
+      <repositoryKey>pythonbugs</repositoryKey>
+      <key>S2583</key>
+      <priority>MAJOR</priority>
+    </rule>
+  </rules>
+</profile>

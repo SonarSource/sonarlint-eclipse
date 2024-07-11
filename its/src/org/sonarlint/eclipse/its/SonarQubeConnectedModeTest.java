@@ -41,6 +41,7 @@ import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
@@ -83,6 +84,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   private static final String SECRET_JAVA_PROJECT_NAME = "secret-java";
   private static final String MAVEN2_PROJECT_KEY = "maven2";
   private static final String MAVEN_TAINT_PROJECT_KEY = "maven-taint";
+  private static final String DBD_PROJECT_KEY = "dbd";
   private static final String INSUFFICIENT_PERMISSION_USER = "iHaveNoRights";
   private static final MarkerDescriptionMatcher ISSUE_MATCHER = new MarkerDescriptionMatcher(
     CoreMatchers.containsString("System.out"));
@@ -504,6 +506,51 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).isEmpty());
     await().untilAsserted(() -> assertThat(taintVulnerabilitiesView.getItems()).isEmpty());
+  }
+
+  @Test
+  public void test_Java_Python_DBD() {
+    // INFO: Since 10.6 this is supported for SonarLint for Eclipse!
+    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 6));
+
+    // 1) create project on server / run first analysis
+    adminWsClient.projects()
+      .create(CreateRequest.builder()
+        .setName(DBD_PROJECT_KEY)
+        .setKey(DBD_PROJECT_KEY).build());
+    orchestrator.getServer().associateProjectToQualityProfile(DBD_PROJECT_KEY, "java", "SonarLint IT Java DBD");
+    orchestrator.getServer().associateProjectToQualityProfile(DBD_PROJECT_KEY, "py", "SonarLint IT Python DBD");
+
+    // 2) import project / check that no issues exist yet
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("dbd", DBD_PROJECT_KEY);
+
+    var onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("dbd.py"));
+    waitForNoSonarLintMarkers(onTheFlyView);
+    new DefaultEditor().close();
+    shellByName("Default Eclipse preferences for PyDev").ifPresent(DefaultShell::close);
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "dbd", "Main.java"));
+    waitForNoSonarLintMarkers(onTheFlyView);
+    new DefaultEditor().close();
+
+    // 3) bind to project on SonarQube / check issues exist now
+    createConnectionAndBindProject(orchestrator, DBD_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
+    shellByName("SonarLint Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("dbd.py"));
+    waitForSonarLintMarkers(onTheFlyView,
+      tuple("Fix this condition that always evaluates to false; some subsequent code is never executed. [+2 locations]", "dbd.py", "few seconds ago"));
+    new DefaultEditor().close();
+    shellByName("Default Eclipse preferences for PyDev").ifPresent(DefaultShell::close);
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "dbd", "Main.java"));
+    waitForSonarLintMarkers(onTheFlyView,
+      tuple("Fix this access on a collection that may trigger an 'ArrayIndexOutOfBoundsException'. [+2 locations]", "Main.java", "few seconds ago"));
+    new DefaultEditor().close();
   }
 
   private static QualityProfile getQualityProfile(String projectKey, String qualityProfileName) {
