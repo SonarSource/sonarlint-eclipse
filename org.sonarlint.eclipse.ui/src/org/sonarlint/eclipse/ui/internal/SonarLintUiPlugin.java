@@ -278,13 +278,17 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         if (!SonarLintGlobalConfiguration.sonarLintVersionHintHidden()
           && !SonarLintGlobalConfiguration.isSonarLintVersionHintDateToday()) {
           var newestSonarLintVersion = EclipseUpdateSite.getNewestVersion();
+          var currentSonarLintVersion = BundleUtils.getBundleVersion();
+          SonarLintLogger.get().debug("Current version (" + currentSonarLintVersion + "), newest version ("
+            + newestSonarLintVersion + ")");
+
           if (newestSonarLintVersion == null) {
             SonarLintLogger.get().debug("Cannot check for newer SonarLint versions via the SonarLint for Eclipse "
-              + "Update Site. In thase case, please check the Sonar Community Forum ("
+              + "Update Site. In this case, please check the Sonar Community Forum ("
               + SonarLintDocumentation.COMMUNITY_FORUM_ECLIPSE_RELEASES + ") or the GitHub releases page ("
               + SonarLintDocumentation.GITHUB_RELEASES + ")!");
-          } else if (newestSonarLintVersion.isNewerThan(BundleUtils.getBundleVersion())) {
-            NewerVersionAvailablePopup.displayPopupIfNotAlreadyShown();
+          } else if (newestSonarLintVersion.isNewerThan(currentSonarLintVersion)) {
+            NewerVersionAvailablePopup.displayPopupIfNotAlreadyShown(newestSonarLintVersion.toString());
           }
         }
       }

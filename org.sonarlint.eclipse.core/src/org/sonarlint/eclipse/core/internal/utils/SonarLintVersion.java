@@ -38,4 +38,9 @@ public class SonarLintVersion {
       || (major == other.major && minor > other.minor)
       || (major == other.major && minor == other.minor && patch > other.patch);
   }
+
+  @Override
+  public String toString() {
+    return major + "." + minor + "." + patch;
+  }
 }
