@@ -64,6 +64,13 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
         URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint.xml"), null))));
       orchestrator.getServer().restoreProfile(
         URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint-new-code.xml"), null))));
+
+      if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 6)) {
+        orchestrator.getServer().restoreProfile(
+          URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint-dbd.xml"), null))));
+        orchestrator.getServer().restoreProfile(
+          URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/python-sonarlint-dbd.xml"), null))));
+      }
     } catch (IOException e) {
       fail("Unable to load quality profile", e);
     }
