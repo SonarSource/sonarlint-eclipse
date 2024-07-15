@@ -52,7 +52,7 @@ public class DefaultSonarLintProjectsProvider implements ISonarLintProjectsProvi
   /** This should be extended with further checks from other plug-ins providing technical projects */
   private static boolean isTechnicalProject(String projectName) {
     // check for Eclipse PDE technical projects
-    var isTechnicalProject = TECHNICAL_PROJECT_PDE.equals(projectName) && Platform.getBundle("org.eclipse.pde.ui") != null;
+    var isTechnicalProject = projectName.contains(TECHNICAL_PROJECT_PDE) && Platform.getBundle("org.eclipse.pde.ui") != null;
 
     // check for Eclipse PDT technical projects
     isTechnicalProject = isTechnicalProject ||
@@ -60,9 +60,9 @@ public class DefaultSonarLintProjectsProvider implements ISonarLintProjectsProvi
 
     // check for Eclipse RSE technical projects
     isTechnicalProject = isTechnicalProject ||
-      (TECHNICAL_PROJECT_RSE_1.equals(projectName) && Platform.getBundle("org.eclipse.rse.ui") != null);
+      (projectName.contains(TECHNICAL_PROJECT_RSE_1) && Platform.getBundle("org.eclipse.rse.ui") != null);
     isTechnicalProject = isTechnicalProject ||
-      (TECHNICAL_PROJECT_RSE_2.equals(projectName) && Platform.getBundle("org.eclipse.rse.ui") != null);
+      (projectName.contains(TECHNICAL_PROJECT_RSE_2) && Platform.getBundle("org.eclipse.rse.ui") != null);
 
     return isTechnicalProject;
   }
