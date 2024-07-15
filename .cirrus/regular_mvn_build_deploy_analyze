@@ -31,24 +31,22 @@ if [ -z "$PIPELINE_ID" ]; then
   PIPELINE_ID=$BUILD_NUMBER
 fi
 
+
 if [ "${GITHUB_BRANCH}" == "master" ] && [ "$PULL_REQUEST" == "false" ]; then
   echo '======= Build, deploy and analyze master'
 
   git fetch origin "${GITHUB_BRANCH}"
 
-  # Analyze with SNAPSHOT version as long as SQ does not correctly handle
-  # purge of release data
-  CURRENT_VERSION=$(maven_expression "project.version")
-
   source .cirrus/set_maven_build_version "$BUILD_NUMBER"
+  SONAR_VERSION="${PROJECT_VERSION%.*}"
 
   export MAVEN_OPTS="-Xmx1536m -Xms128m"
   mvn deploy sonar:sonar \
       -Pcoverage,deploy-sonarsource,release,sign \
       -Dmaven.test.redirectTestOutputToFile=false \
       -Dsonar.host.url="$SONAR_HOST_URL" \
-      -Dsonar.login="$SONAR_TOKEN" \
-      -Dsonar.projectVersion="$CURRENT_VERSION" \
+      -Dsonar.token="$SONAR_TOKEN" \
+      -Dsonar.projectVersion="$SONAR_VERSION" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.pipeline="$PIPELINE_ID" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
@@ -56,54 +54,32 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$PULL_REQUEST" == "false" ]; then
       -B -e -V "$@"
 
 elif [[ "${GITHUB_BRANCH}" == "branch-"* ]] && [ "$PULL_REQUEST" == "false" ]; then
-  # analyze maintenance branches as long-living branches
-
-  # Fetch all commit history so that SonarQube has exact blame information
-  # for issue auto-assignment
-  # This command can fail with "fatal: --unshallow on a complete repository does not make sense"
-  # if there are not enough commits in the Git repository
-  # For this reason errors are ignored with "|| true"
-  git fetch --unshallow || true
+  echo '======= Build, deploy and analyze maintenance branch'
 
   git fetch origin "${GITHUB_BRANCH}"
 
+  source .cirrus/set_maven_build_version "$BUILD_NUMBER"
+  SONAR_VERSION="${PROJECT_VERSION%.*}"
+
   export MAVEN_OPTS="-Xmx1536m -Xms128m"
-
-  # get current version from pom
-  CURRENT_VERSION=$(maven_expression "project.version")
-
-  if [[ $CURRENT_VERSION =~ "-SNAPSHOT" ]]; then
-    echo "======= Found SNAPSHOT version ======="
-    # Do not deploy a SNAPSHOT version but the release version related to this build
-    source .cirrus/set_maven_build_version "$BUILD_NUMBER"
-    mvn deploy \
+  mvn deploy sonar:sonar \
       -Pcoverage,deploy-sonarsource,release,sign \
-      -B -e -V "$@"
-  else
-    echo "======= Found RELEASE version ======="
-    mvn deploy \
-      -Pcoverage,deploy-sonarsource,release,sign \
-      -B -e -V "$@"
-  fi
-
-  mvn sonar:sonar \
+      -Dmaven.test.redirectTestOutputToFile=false \
       -Dsonar.host.url="$SONAR_HOST_URL" \
-      -Dsonar.login="$SONAR_TOKEN" \
+      -Dsonar.token="$SONAR_TOKEN" \
+      -Dsonar.projectVersion="$SONAR_VERSION" \
       -Dsonar.branch.name="$GITHUB_BRANCH" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.pipeline="$PIPELINE_ID" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
-      -Dsonar.analysis.repository="$GITHUB_REPO"
-
+      -Dsonar.analysis.repository="$GITHUB_REPO" \
+      -B -e -V "$@"
 
 elif [ "$PULL_REQUEST" != "false" ]; then
   echo '======= Build and analyze pull request'
 
   # Do not deploy a SNAPSHOT version but the release version related to this build and PR
   source .cirrus/set_maven_build_version "$BUILD_NUMBER"
-
-  # No need for Maven phase "install" as the generated JAR files do not need to be installed
-  # in Maven local repository. Phase "verify" is enough.
 
   export MAVEN_OPTS="-Xmx1G -Xms128m"
   if [ "${DEPLOY_PULL_REQUEST:-}" == "true" ]; then
@@ -112,7 +88,7 @@ elif [ "$PULL_REQUEST" != "false" ]; then
       -Pcoverage,deploy-sonarsource \
       -Dmaven.test.redirectTestOutputToFile=false \
       -Dsonar.host.url="$SONAR_HOST_URL" \
-      -Dsonar.login="$SONAR_TOKEN" \
+      -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.pipeline="$PIPELINE_ID" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
@@ -128,7 +104,7 @@ elif [ "$PULL_REQUEST" != "false" ]; then
       -Pcoverage \
       -Dmaven.test.redirectTestOutputToFile=false \
       -Dsonar.host.url="$SONAR_HOST_URL" \
-      -Dsonar.login="$SONAR_TOKEN" \
+      -Dsonar.token="$SONAR_TOKEN" \
       -Dsonar.analysis.buildNumber="$BUILD_NUMBER" \
       -Dsonar.analysis.pipeline="$PIPELINE_ID" \
       -Dsonar.analysis.sha1="$GIT_SHA1"  \
@@ -140,38 +116,8 @@ elif [ "$PULL_REQUEST" != "false" ]; then
       -B -e -V "$@"
   fi
 
-elif [[ "$GITHUB_BRANCH" == "dogfood-on-"* ]] && [ "$PULL_REQUEST" == "false" ]; then
-  echo '======= Build dogfood branch'
-
-    # get current version from pom
-  CURRENT_VERSION=$(maven_expression "project.version")
-
-  source .cirrus/set_maven_build_version "$BUILD_NUMBER"
-
-  mvn deploy \
-    -Pdeploy-sonarsource,release \
-    -B -e -V "$@"
-
-elif [[ "$GITHUB_BRANCH" == "feature/long/"* ]] && [ "$PULL_REQUEST" == "false" ]; then
-  echo '======= Build and analyze long lived feature branch'
-
-  mvn verify sonar:sonar \
-    -Pcoverage \
-    -Dmaven.test.redirectTestOutputToFile=false \
-    -Dsonar.host.url="$SONAR_HOST_URL" \
-    -Dsonar.login="$SONAR_TOKEN" \
-    -Dsonar.branch.name="$GITHUB_BRANCH" \
-    -Dsonar.analysis.buildNumber="$PULL_REQUEST" \
-    -Dsonar.analysis.pipeline="$PIPELINE_ID" \
-    -Dsonar.analysis.sha1="$GIT_SHA1"  \
-    -Dsonar.analysis.repository="$GITHUB_REPO" \
-    -B -e -V "$@"
-
 else
   echo '======= Build, no analysis, no deploy'
-
-  # No need for Maven phase "install" as the generated JAR files do not need to be installed
-  # in Maven local repository. Phase "verify" is enough.
 
   mvn verify \
       -Dmaven.test.redirectTestOutputToFile=false \
