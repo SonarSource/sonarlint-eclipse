@@ -99,7 +99,7 @@ consistency_task:
     fi
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
 build_task:
   # name: "Build and stage to repox"
@@ -139,7 +139,7 @@ build_task:
   cleanup_before_cache_script: cleanup_maven_repository
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
 validate_task:
   # name: "Run unit tests on Linux"
@@ -179,7 +179,7 @@ validate_task:
       path: '**/target/surefire-reports/TEST-*.xml'
       format: junit
     slack_notification_script: |
-      source slack_notification_failure "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
 qa_task:
   #  name: "Run ITs"
@@ -255,7 +255,7 @@ qa_task:
       - "**/target/surefire-reports/TEST-*.xml"
       format: junit
     slack_notification_script: |
-      source slack_notification_failure "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
 inspect_orchestrator_cache_task:
   <<: *ONLY_IF
@@ -309,7 +309,7 @@ sonarqube_task:
     xvfb_log_artifacts:
       path: "${CIRRUS_WORKING_DIR}/Xvfb.out"
     slack_notification_script: |
-      source slack_notification_failure "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
 mend_scan_task:
   # Run Mend analysis
@@ -336,7 +336,7 @@ mend_scan_task:
       path: "whitesource/**/*"
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
 promote_task:
   depends_on:
@@ -358,7 +358,7 @@ promote_task:
   cleanup_before_cache_script: cleanup_maven_repository
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
 dogfood_task:
   #  name: "Update internal dogfooding p2"
@@ -382,4 +382,4 @@ dogfood_task:
     .cirrus/publish-dogfood-site.sh
   on_failure:
     slack_notification_script: |
-      source slack_notification_failure "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"

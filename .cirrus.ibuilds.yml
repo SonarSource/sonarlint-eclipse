@@ -108,7 +108,7 @@ qa_ibuilds_task:
       - "**/target/surefire-reports/TEST-*.xml"
       format: junit
     slack_notification_script: |
-      source slack_notification_failure "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
 # Inspect orchestrator cache
 inspect_orchestrator_cache_task:
