@@ -77,8 +77,34 @@ orchestrator_cache_qa: &SETUP_ORCHESTRATOR_CACHE
     fingerprint_script: echo ${THIS_MONTH}
     reupload_on_changes: 'true'
 
+consistency_task:
+  # name: "Consistency check of SLCORE versions between pom.xml / commons.target"
+  <<: *ONLY_IF
+  eks_container:
+    <<: *BUILDER_CONTAINER_DEFINITION
+    cpu: 1
+    memory: 2G
+  check_script: |
+    SLCORE_VERSION="$(maven_expression "sloop.version")"
+    if [[ -z "${SLCORE_VERSION}" ]]; then
+      echo "Property 'sloop.version' must be set to be re-used by the platform-specific bundles!"
+      exit 1
+    fi
+    echo "SLCORE version found in pom.xml: $SLCORE_VERSION"
+
+    DIFF="$(cat target-platforms/commons.target | grep $SLCORE_VERSION)"
+    if [[ -z "${DIFF}" ]]; then
+      echo "SLCOPRE version for Maven and Eclipse target platform (PDE) doesn't match!"
+      exit 2
+    fi
+  on_failure:
+    slack_notification_script: |
+      source slack_notification_failure "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+
 build_task:
   # name: "Build and stage to repox"
+  depends_on:
+    - consistency
   <<: *ONLY_IF
   eks_container:
     <<: *BUILDER_CONTAINER_DEFINITION
