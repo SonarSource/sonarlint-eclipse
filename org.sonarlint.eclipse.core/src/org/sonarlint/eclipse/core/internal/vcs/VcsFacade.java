@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.vcs;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -43,4 +44,10 @@ public interface VcsFacade {
 
   }
 
+  /**
+   *  We want to check if a specific resource, e.g. a file/folder/project, is inside a repository.
+   *  The {@link org.eclipse.core.resources.IResource} should be coming from the
+   *  {@link org.sonarlint.eclipse.core.resource.ISonarLintIssuable#getResource()}!
+   */
+  boolean inRepository(IResource resource);
 }

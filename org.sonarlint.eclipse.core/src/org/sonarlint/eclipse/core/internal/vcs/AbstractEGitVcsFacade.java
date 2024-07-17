@@ -90,4 +90,8 @@ abstract class AbstractEGitVcsFacade implements VcsFacade {
     }
   }
 
+  @Override
+  public boolean inRepository(IResource resource) {
+    return getRepo(resource).isPresent();
+  }
 }

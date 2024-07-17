@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.vcs;
 
 import java.util.Set;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -41,4 +42,8 @@ public class NoOpVcsFacade implements VcsFacade {
     return null;
   }
 
+  @Override
+  public boolean inRepository(IResource resource) {
+    return false;
+  }
 }

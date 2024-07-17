@@ -25,6 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -37,6 +38,12 @@ public class SonarLintPropertyTester extends PropertyTester {
       return false;
     }
 
+    if ("inRepository".equals(property)) {
+      var inRepository = VcsService.getFacade().inRepository(project.getResource());
+      return expectedValue == null
+        ? inRepository
+        : (inRepository == ((Boolean) expectedValue).booleanValue());
+    }
     if ("bound".equals(property)) {
       var isBound = SonarLintCorePlugin.loadConfig(project).isBound();
       return expectedValue == null
