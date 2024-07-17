@@ -964,6 +964,7 @@
 							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
 				  					<test property="org.sonarlint.eclipse.core.open"/>
 					  				<test property="org.sonarlint.eclipse.core.supportsFullAnalysis"/>
+					  				<test property="org.sonarlint.eclipse.core.inRepository"/>
 						  		</adapt>
 							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
 				  			</or>
