@@ -1,4 +1,4 @@
 {
-    "sonarQubeUri": "https://next.sonarqube.com",
+    "sonarQubeUri": "https://next.sonarqube.com/sonarqube",
     "projectKey": "org.sonarsource.sonarlint.eclipse:sonarlint-eclipse-parent"
 }
