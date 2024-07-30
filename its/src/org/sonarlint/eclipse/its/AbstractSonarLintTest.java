@@ -60,6 +60,7 @@ import org.eclipse.reddeer.requirements.closeeditors.CloseAllEditorsRequirement.
 import org.eclipse.reddeer.swt.api.Button;
 import org.eclipse.reddeer.swt.impl.button.FinishButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
+import org.eclipse.reddeer.swt.impl.label.DefaultLabel;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.editor.AbstractEditor;
@@ -460,5 +461,10 @@ public abstract class AbstractSonarLintTest {
     }
 
     Assume.assumeFalse(ignoreMacOS);
+  }
+
+  /** On the these notifications the "content" is always the fourth label (index 3), don't ask me why! */
+  protected static String getNotificationText(DefaultShell shell) {
+    return new DefaultLabel(shell, 3).getText();
   }
 }
