@@ -236,7 +236,10 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     waitForMarkers(new DefaultEditor(),
       tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 4));
 
-    new DefaultLink(shellByName("SonarLint - Secret(s) detected").get(), "Dismiss").click();
+    shellByName("SonarLint - Secret(s) detected").ifPresent(shell -> {
+      assertThat(getNotificationText(shell)).contains(SECRET_JAVA_PROJECT_NAME);
+      new DefaultLink(shell, "Dismiss").click();
+    });
   }
 
   @Test

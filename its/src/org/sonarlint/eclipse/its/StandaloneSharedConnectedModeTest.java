@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.its;
 
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
-import org.eclipse.reddeer.swt.impl.label.DefaultLabel;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.junit.Test;
 
@@ -50,7 +49,7 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
     try {
       assertThat(shellOpt).isNotEmpty();
 
-      assertThat(getSuggestionNotificationText(shellOpt.get()))
+      assertThat(getNotificationText(shellOpt.get()))
         .contains(LOCAL_SONARQUBE)
         .contains(GRADLE_GROUP + ":" + GRADLE_PROJECT)
         .contains("local project '" + GRADLE_PROJECT);
@@ -68,7 +67,7 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
     var firstShell = shellByName("SonarLint Connection Suggestion to SonarQube");
     try {
       assertThat(firstShell).isNotEmpty();
-      assertThat(getSuggestionNotificationText(firstShell.get()))
+      assertThat(getNotificationText(firstShell.get()))
         .contains(LOCAL_SONARQUBE)
         .contains(GRADLE_GROUP + ":" + GRADLE_ROOT_PROJECT);
 
@@ -77,8 +76,8 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
       // joining them together afterwards. The second case is too slow for the SonarLint backend and therefore flaky on
       // the CI (but can be witnessed locally as well sometimes), that's why we catch it here just in case: The
       // SonarLint integration is working correctly as expected in both situations, the Gradle integration just isn't.
-      if (!getSuggestionNotificationText(firstShell.get()).contains("multiple local projects")) {
-        assertThat(getSuggestionNotificationText(firstShell.get())).satisfiesAnyOf(
+      if (!getNotificationText(firstShell.get()).contains("multiple local projects")) {
+        assertThat(getNotificationText(firstShell.get())).satisfiesAnyOf(
           list -> assertThat(list).contains("local project '" + GRADLE_ROOT_PROJECT),
           list -> assertThat(list).contains("local project '" + GRADLE_SUB_PROJECT));
       }
@@ -86,10 +85,5 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
       firstShell.ifPresent(DefaultShell::close);
       shellByName("SonarLint Connection Suggestion to SonarQube").ifPresent(DefaultShell::close);
     }
-  }
-
-  /** On the these notifications the "content" is always the fourth label (index 3), don't ask me why! */
-  private static String getSuggestionNotificationText(DefaultShell shell) {
-    return new DefaultLabel(shell, 3).getText();
   }
 }

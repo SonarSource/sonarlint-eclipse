@@ -24,6 +24,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class SonarLintNotifications {
   private static final SonarLintNotifications instance = new SonarLintNotifications();
@@ -51,11 +52,12 @@ public class SonarLintNotifications {
     }
   }
 
-  public void showNotificationIfFirstSecretDetected() {
+  public void showNotificationIfFirstSecretDetected(ISonarLintProject project) {
     if (SonarLintGlobalConfiguration.secretsNeverDetected()) {
       SonarLintNotifications.get().showNotification(new SonarLintNotifications.Notification(
-        "Secret(s) detected", "SonarLint detected some secrets in one of the open files.",
-        "SonarLint detected some secrets in one of the open files. " +
+        "Secret(s) detected",
+        "SonarLint detected secrets in the open files of the project '" + project.getName() + "'.",
+        "SonarLint detected secrets in one of the open files of the project '" + project.getName() + "'. " +
           "We strongly advise you to review those secrets " +
           "and ensure they are not committed into repositories. " +
           "Please refer to the SonarLint On-The-Fly view for more information."));
