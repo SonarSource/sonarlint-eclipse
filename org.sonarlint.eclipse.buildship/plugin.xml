@@ -6,4 +6,10 @@
             class="org.sonarlint.eclipse.buildship.internal.GradleProjectConfigurationExtension">
       </participant>
    </extension>
+   <extension
+         point="org.sonarlint.eclipse.core.projectScopeProvider">
+      <participant
+            class="org.sonarlint.eclipse.buildship.internal.GradleProjectConfigurationExtension">
+      </participant>
+   </extension>
 </plugin>

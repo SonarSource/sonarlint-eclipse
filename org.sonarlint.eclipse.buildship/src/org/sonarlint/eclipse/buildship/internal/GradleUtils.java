@@ -22,8 +22,10 @@ package org.sonarlint.eclipse.buildship.internal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.annotation.Nullable;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
@@ -44,7 +46,7 @@ public class GradleUtils {
     // utility class
   }
 
-  private static boolean checkIfGradleProject(IProject project) {
+  public static boolean checkIfGradleProject(IProject project) {
     try {
       return project.hasNature(GRADLE_PROJECT_NATURE);
     } catch (CoreException err) {
@@ -174,5 +176,26 @@ public class GradleUtils {
     }
 
     return subProjects;
+  }
+
+  public static Set<IPath> getExclusions(IProject project) {
+    var result = new HashSet<IPath>();
+
+    var projectPath = project.getFullPath().toPath().toAbsolutePath();
+    var connection = GradleConnector.newConnector()
+      .forProjectDirectory(FileUtils.toLocalFile(project))
+      .connect();
+    var gradleEclipseProject = connection.model(HierarchicalEclipseProject.class).get();
+
+    // For every possible sub-project we check if is in the main project (by path), only add in this case!
+    var gradleEclipseChildProjects = getChildGradleProjects(gradleEclipseProject);
+    for (var child : gradleEclipseChildProjects) {
+      var childPath = child.getProjectDirectory().toPath().toAbsolutePath();
+      if (childPath.startsWith(projectPath)) {
+        result.add(IPath.fromPath(childPath));
+      }
+    }
+
+    return result;
   }
 }

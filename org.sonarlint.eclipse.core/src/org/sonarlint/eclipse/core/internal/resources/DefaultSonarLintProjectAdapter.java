@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -85,6 +86,12 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
       project.accept(new IResourceVisitor() {
         @Override
         public boolean visit(IResource resource) throws CoreException {
+          // TODO: Check if resource is excluded by default, e.g. because it is a output directory:
+          // JDT -> classpathentry output (target/bin/build)
+          // CDT -> ???
+          // JS -> node_modules
+          // Py -> pyvenv
+
           // We don't want to visit all the folders except the ".sonarlint" one due to it possibly containing shared
           // Connected Mode configuration files!
           if (resource.getType() == IResource.FOLDER
@@ -105,6 +112,12 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
       });
     } catch (CoreException e) {
       SonarLintLogger.get().error("Error collecting files in project " + project.getName(), e);
+    }
+
+    SonarLintLogger.get().error(getName() + ": " + result.size() + " files!");
+    if (result.size() < 25) {
+      var xx = result.stream().map(ISonarLintFile::getName).collect(Collectors.toList());
+      SonarLintLogger.get().error(getName() + ": " + String.join(", ", xx));
     }
     return result;
   }

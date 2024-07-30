@@ -21,14 +21,18 @@ package org.sonarlint.eclipse.buildship.internal;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectHierarchyProvider;
+import org.sonarlint.eclipse.core.resource.ISonarLintProjectScopeProvider;
 
 /**
  *  Just like Maven integration into Eclipse (m2e) there is a hierarchical project view inside the IDE.
  */
-public class GradleProjectConfigurationExtension implements ISonarLintProjectHierarchyProvider {
+public class GradleProjectConfigurationExtension implements ISonarLintProjectHierarchyProvider, ISonarLintProjectScopeProvider {
   private final boolean isToolingApiPresent;
 
   public GradleProjectConfigurationExtension() {
@@ -74,5 +78,13 @@ public class GradleProjectConfigurationExtension implements ISonarLintProjectHie
       return GradleUtils.getProjectSubProjects(project);
     }
     return Collections.emptyList();
+  }
+
+  @Override
+  public Set<IPath> getExclusions(IProject project) {
+    if (isToolingApiPresent && GradleUtils.checkIfGradleProject(project)) {
+      return GradleUtils.getExclusions(project);
+    }
+    return Collections.emptySet();
   }
 }

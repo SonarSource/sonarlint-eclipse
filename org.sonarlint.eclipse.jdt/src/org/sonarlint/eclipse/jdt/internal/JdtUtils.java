@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.eclipse.core.resources.IFile;
@@ -46,6 +47,31 @@ import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class JdtUtils {
+  public List<IPath> getExcludedPaths(IProject project) {
+    var exclusions = new ArrayList<IPath>();
+
+    var javaProject = JavaCore.create(project);
+
+    try {
+      var location = javaProject.getOutputLocation();
+      if (location != null) {
+        exclusions.add(location);
+      }
+
+      for (var entry : javaProject.getResolvedClasspath(true)) {
+        if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+          var output = entry.getOutputLocation();
+          if (output != null) {
+            exclusions.add(entry.getOutputLocation());
+          }
+        }
+      }
+    } catch (JavaModelException err) {
+      // ignore for now
+    }
+
+    return exclusions;
+  }
 
   public void configure(IPreAnalysisContext context, IProgressMonitor monitor) {
     var project = (IProject) context.getProject().getResource();
@@ -73,6 +99,7 @@ public class JdtUtils {
       // Not a Java file, don't exclude it
       return false;
     }
+
     if (!javaElt.exists()) {
       // SLE-218 Visual Cobol with JVM Development make JDT think .cbl files are Java files.
       // But still we want to analyze them, so only exclude files having the original java source content type.
