@@ -65,12 +65,12 @@ import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssueMarker;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintTaintVulnerabilitiesView;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
-import org.sonarqube.ws.QualityProfiles.SearchWsResponse.QualityProfile;
+import org.sonarqube.ws.Qualityprofiles.SearchWsResponse.QualityProfile;
 import org.sonarqube.ws.client.PostRequest;
-import org.sonarqube.ws.client.permission.AddGroupWsRequest;
-import org.sonarqube.ws.client.permission.RemoveGroupWsRequest;
-import org.sonarqube.ws.client.project.CreateRequest;
-import org.sonarqube.ws.client.qualityprofile.SearchWsRequest;
+import org.sonarqube.ws.client.permissions.AddGroupRequest;
+import org.sonarqube.ws.client.permissions.RemoveGroupRequest;
+import org.sonarqube.ws.client.projects.CreateRequest;
+import org.sonarqube.ws.client.qualityprofiles.SearchRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -85,6 +85,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   private static final String MAVEN2_PROJECT_KEY = "maven2";
   private static final String MAVEN_TAINT_PROJECT_KEY = "maven-taint";
   private static final String DBD_PROJECT_KEY = "dbd";
+  private static final String CUSTOM_SECRETS_PROJECT_KEY = "secrets-custom";
   private static final String INSUFFICIENT_PERMISSION_USER = "iHaveNoRights";
   private static final MarkerDescriptionMatcher ISSUE_MATCHER = new MarkerDescriptionMatcher(
     CoreMatchers.containsString("System.out"));
@@ -95,7 +96,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     .defaultForceAuthentication()
     .useDefaultAdminCredentialsForBuilds(true)
     .keepBundledPlugins()
-    .setEdition(Edition.DEVELOPER)
+    .setEdition(Edition.ENTERPRISE)
     .activateLicense()
     .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE"))
     // Ensure SSE are processed correctly just after SQ startup
@@ -107,9 +108,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   @BeforeClass
   public static void prepare() {
     prepare(orchestrator);
-    adminWsClient.projects().create(CreateRequest.builder()
+    adminWsClient.projects().create(new CreateRequest()
       .setName(JAVA_SIMPLE_PROJECT_KEY)
-      .setKey(JAVA_SIMPLE_PROJECT_KEY).build());
+      .setProject(JAVA_SIMPLE_PROJECT_KEY));
     orchestrator.getServer().associateProjectToQualityProfile(JAVA_SIMPLE_PROJECT_KEY, "java", "SonarLint IT Java");
   }
 
@@ -218,9 +219,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   @Test
   public void shouldFindSecretsInConnectedMode() {
     adminWsClient.projects()
-      .create(CreateRequest.builder()
+      .create(new CreateRequest()
         .setName(SECRET_JAVA_PROJECT_NAME)
-        .setKey(SECRET_JAVA_PROJECT_NAME).build());
+        .setProject(SECRET_JAVA_PROJECT_NAME));
 
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", SECRET_JAVA_PROJECT_NAME);
@@ -352,9 +353,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     // 1) Create project on SonarQube
     adminWsClient.projects()
-      .create(CreateRequest.builder()
+      .create(new CreateRequest()
         .setName(MAVEN2_PROJECT_KEY)
-        .setKey(MAVEN2_PROJECT_KEY).build());
+        .setProject(MAVEN2_PROJECT_KEY));
     orchestrator.getServer().associateProjectToQualityProfile(MAVEN2_PROJECT_KEY, "java", "SonarLint IT Java");
 
     // 2) Import project into workspace
@@ -368,14 +369,13 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     runMavenBuild(orchestrator, MAVEN2_PROJECT_KEY, "projects", "java/maven2/pom.xml", Map.of());
 
     // 4) Add new user to SonarQube
-    adminWsClient.users().create(org.sonarqube.ws.client.user.CreateRequest.builder()
+    adminWsClient.users().create(new org.sonarqube.ws.client.users.CreateRequest()
       .setLogin(INSUFFICIENT_PERMISSION_USER)
       .setPassword(INSUFFICIENT_PERMISSION_USER)
-      .setName(INSUFFICIENT_PERMISSION_USER)
-      .build());
+      .setName(INSUFFICIENT_PERMISSION_USER));
 
     // 5) Remove user rights from project
-    adminWsClient.permissions().removeGroup(new RemoveGroupWsRequest()
+    adminWsClient.permissions().removeGroup(new RemoveGroupRequest()
       .setProjectKey(MAVEN2_PROJECT_KEY)
       .setGroupName("sonar-users")
       .setPermission("issueadmin"));
@@ -408,7 +408,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
         .containsOnly("Replace this use of System.out or System.err by a logger.")));
 
     // 10) Add user rights from project
-    adminWsClient.permissions().addGroup(new AddGroupWsRequest()
+    adminWsClient.permissions().addGroup(new AddGroupRequest()
       .setProjectKey(MAVEN2_PROJECT_KEY)
       .setGroupName("sonar-users")
       .setPermission("issueadmin"));
@@ -442,9 +442,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     // 1) create project on server / run first analysis
     adminWsClient.projects()
-      .create(CreateRequest.builder()
+      .create(new CreateRequest()
         .setName(MAVEN_TAINT_PROJECT_KEY)
-        .setKey(MAVEN_TAINT_PROJECT_KEY).build());
+        .setProject(MAVEN_TAINT_PROJECT_KEY));
     orchestrator.getServer().associateProjectToQualityProfile(MAVEN_TAINT_PROJECT_KEY, "java", "SonarLint IT New Code");
 
     runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml", Map.of());
@@ -518,9 +518,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     // 1) create project on server / run first analysis
     adminWsClient.projects()
-      .create(CreateRequest.builder()
+      .create(new CreateRequest()
         .setName(DBD_PROJECT_KEY)
-        .setKey(DBD_PROJECT_KEY).build());
+        .setProject(DBD_PROJECT_KEY));
     orchestrator.getServer().associateProjectToQualityProfile(DBD_PROJECT_KEY, "java", "SonarLint IT Java DBD");
     orchestrator.getServer().associateProjectToQualityProfile(DBD_PROJECT_KEY, "py", "SonarLint IT Python DBD");
 
@@ -556,13 +556,46 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     new DefaultEditor().close();
   }
 
+  @Test
+  public void test_custom_secrets() {
+    // INFO: Since 10.4 this is supported for SonarLint for Eclipse!
+    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
+
+    // 1) create project on server / configure quality profile
+    adminWsClient.projects()
+      .create(new CreateRequest()
+        .setName(CUSTOM_SECRETS_PROJECT_KEY)
+        .setProject(CUSTOM_SECRETS_PROJECT_KEY));
+    orchestrator.getServer().associateProjectToQualityProfile(CUSTOM_SECRETS_PROJECT_KEY, "secrets", "SonarLint IT Custom Secrets");
+
+    // 2) import project / check that no issues exist yet
+    var rootProject = importExistingProjectIntoWorkspace("secrets/secrets-custom", CUSTOM_SECRETS_PROJECT_KEY);
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("Heresy.txt"));
+    waitForNoMarkers(new DefaultEditor());
+    new DefaultEditor().close();
+
+    // 3) bind to project on SonarQube / check issues exist now
+    createConnectionAndBindProject(orchestrator, CUSTOM_SECRETS_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
+    shellByName("SonarLint Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
+
+    shellByName("SonarLint - Secret(s) detected").ifPresent(shell -> {
+      assertThat(getNotificationText(shell)).contains(CUSTOM_SECRETS_PROJECT_KEY);
+      new DefaultLink(shell, "Dismiss").click();
+    });
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("Heresy.txt"));
+    waitForMarkers(new DefaultEditor(),
+      tuple("User-specified secrets should not be disclosed.", 1));
+  }
+
   private static QualityProfile getQualityProfile(String projectKey, String qualityProfileName) {
-    var searchReq = new SearchWsRequest();
+    var searchReq = new SearchRequest();
     searchReq.setQualityProfile(qualityProfileName);
-    searchReq.setProjectKey(projectKey);
-    searchReq.setDefaults(false);
-    var search = adminWsClient.qualityProfiles().search(searchReq);
-    for (QualityProfile profile : search.getProfilesList()) {
+    searchReq.setProject(projectKey);
+    searchReq.setDefaults("false");
+    var search = adminWsClient.qualityprofiles().search(searchReq);
+    for (var profile : search.getProfilesList()) {
       if (profile.getName().equals(qualityProfileName)) {
         return profile;
       }
