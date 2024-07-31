@@ -59,10 +59,11 @@ import org.sonarlint.eclipse.its.reddeer.views.RuleDescriptionView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintTaintVulnerabilitiesView;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
 import org.sonarqube.ws.Issues.Issue;
-import org.sonarqube.ws.WsBranches.Branch;
-import org.sonarqube.ws.client.issue.SearchWsRequest;
-import org.sonarqube.ws.client.project.DeleteRequest;
-import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
+import org.sonarqube.ws.ProjectBranches.Branch;
+import org.sonarqube.ws.client.issues.SearchRequest;
+import org.sonarqube.ws.client.projectbranches.ListRequest;
+import org.sonarqube.ws.client.projects.DeleteRequest;
+import org.sonarqube.ws.client.usertokens.GenerateRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -105,7 +106,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   @AfterClass
   public static void deleteSonarQubeProjects() {
     if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
-      adminWsClient.projects().delete(DeleteRequest.builder().setKey(MAVEN_TAINT_PROJECT_KEY).build());
+      adminWsClient.projects().delete(new DeleteRequest().setProject(MAVEN_TAINT_PROJECT_KEY));
     }
   }
 
@@ -204,7 +205,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     var tokenName = "tokenName1";
     var tokenValue = adminWsClient
       .userTokens()
-      .generate(new GenerateWsRequest().setName(tokenName).setLogin(Server.ADMIN_LOGIN))
+      .generate(new GenerateRequest().setName(tokenName).setLogin(Server.ADMIN_LOGIN))
       .getToken();
 
     // 2) get S1481 issue key / branch name from SonarQube
@@ -226,7 +227,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     // 5) Check that token still exists
     var userTokens = adminWsClient
       .userTokens()
-      .search(new org.sonarqube.ws.client.usertoken.SearchWsRequest().setLogin(Server.ADMIN_LOGIN))
+      .search(new org.sonarqube.ws.client.usertokens.SearchRequest().setLogin(Server.ADMIN_LOGIN))
       .getUserTokensList();
     assertThat(userTokens.stream().filter(token -> tokenName.equals(token.getName())).collect(Collectors.toList())).hasSize(1);
   }
@@ -241,7 +242,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     var tokenName = "tokenName";
     var tokenValue = adminWsClient
       .userTokens()
-      .generate(new GenerateWsRequest().setName(tokenName).setLogin(Server.ADMIN_LOGIN))
+      .generate(new GenerateRequest().setName(tokenName).setLogin(Server.ADMIN_LOGIN))
       .getToken();
 
     // 2) import project
@@ -263,14 +264,14 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     // 5) Check that token was revoked
     var userTokens = adminWsClient
       .userTokens()
-      .search(new org.sonarqube.ws.client.usertoken.SearchWsRequest().setLogin(Server.ADMIN_LOGIN))
+      .search(new org.sonarqube.ws.client.usertokens.SearchRequest().setLogin(Server.ADMIN_LOGIN))
       .getUserTokensList();
     assertThat(userTokens.stream().filter(token -> tokenName.equals(token.getName())).collect(Collectors.toList())).isEmpty();
 
     // 6) Generate second token
     tokenValue = adminWsClient
       .userTokens()
-      .generate(new GenerateWsRequest().setName(tokenName).setLogin(Server.ADMIN_LOGIN))
+      .generate(new GenerateRequest().setName(tokenName).setLogin(Server.ADMIN_LOGIN))
       .getToken();
 
     // 7) trigger "Open in IDE" feature, but accept this time
@@ -299,7 +300,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     // 8) Check that token still exists
     userTokens = adminWsClient
       .userTokens()
-      .search(new org.sonarqube.ws.client.usertoken.SearchWsRequest().setLogin(Server.ADMIN_LOGIN))
+      .search(new org.sonarqube.ws.client.usertokens.SearchRequest().setLogin(Server.ADMIN_LOGIN))
       .getUserTokensList();
     assertThat(userTokens.stream().filter(token -> tokenName.equals(token.getName())).collect(Collectors.toList())).hasSize(1);
 
@@ -453,7 +454,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
   /** Get first issue from project matching the rule key provided (does not contain branch information???) */
   private static Issue getFirstIssue(String ruleKey) {
-    var response = adminWsClient.issues().search(new SearchWsRequest()
+    var response = adminWsClient.issues().search(new SearchRequest()
       .setRules(List.of(ruleKey))
       .setProjects(List.of(MAVEN_TAINT_PROJECT_KEY)));
 
@@ -463,7 +464,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
   /** Get first branch from project */
   private static Branch getFirstBranch() {
-    var response = adminWsClient.projectBranches().list(MAVEN_TAINT_PROJECT_KEY);
+    var response = adminWsClient.projectBranches().list(new ListRequest().setProject(MAVEN_TAINT_PROJECT_KEY));
     assertThat(response.getBranchesCount()).isPositive();
 
     return response.getBranches(0);

@@ -45,8 +45,8 @@ import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
 import org.sonarqube.ws.client.WsClient;
-import org.sonarqube.ws.client.project.CreateRequest;
-import org.sonarqube.ws.client.setting.SetRequest;
+import org.sonarqube.ws.client.projects.CreateRequest;
+import org.sonarqube.ws.client.settings.SetRequest;
 
 import static org.assertj.core.api.Assertions.fail;
 
@@ -57,13 +57,18 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
   /** Should be used on @BeforeClass implementation for orchestrators to share the logic */
   public static void prepare(OrchestratorRule orchestrator) {
     adminWsClient = newAdminWsClient(orchestrator.getServer());
-    adminWsClient.settings().set(SetRequest.builder().setKey("sonar.forceAuthentication").setValue("true").build());
+    adminWsClient.settings().set(new SetRequest().setKey("sonar.forceAuthentication").setValue("true"));
 
     try {
       orchestrator.getServer().restoreProfile(
         URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint.xml"), null))));
       orchestrator.getServer().restoreProfile(
         URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint-new-code.xml"), null))));
+
+      if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 4)) {
+        orchestrator.getServer().restoreProfile(
+          URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/custom-secrets.xml"), null))));
+      }
 
       if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 6)) {
         orchestrator.getServer().restoreProfile(
@@ -86,10 +91,9 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
   /** Create a project on SonarQube via Web API with corresponding quality profile assigned */
   public static void createProjectOnSonarQube(OrchestratorRule orchestrator, String projectKey, String qualityProfile) {
     adminWsClient.projects()
-      .create(CreateRequest.builder()
+      .create(new CreateRequest()
         .setName(projectKey)
-        .setKey(projectKey)
-        .build());
+        .setProject(projectKey));
     orchestrator.getServer().associateProjectToQualityProfile(projectKey, "java", qualityProfile);
   }
 

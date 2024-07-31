@@ -35,12 +35,13 @@ import org.sonarlint.eclipse.its.reddeer.views.BindingsView.Binding;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
 import org.sonarqube.ws.client.HttpConnector;
+import org.sonarqube.ws.client.PostRequest;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
-import org.sonarqube.ws.client.project.CreateRequest;
-import org.sonarqube.ws.client.project.DeleteRequest;
-import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
-import org.sonarqube.ws.client.usertoken.RevokeWsRequest;
+import org.sonarqube.ws.client.WsResponse;
+import org.sonarqube.ws.client.projects.DeleteRequest;
+import org.sonarqube.ws.client.usertokens.GenerateRequest;
+import org.sonarqube.ws.client.usertokens.RevokeRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -74,23 +75,19 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
       .build());
 
     token = adminWsClient.userTokens()
-      .generate(new GenerateWsRequest().setName(TOKEN_NAME))
+      .generate(new GenerateRequest().setName(TOKEN_NAME))
       .getToken();
 
-    adminWsClient.projects()
-      .create(CreateRequest.builder()
-        .setName(IMPORTED_PROJECT_NAME)
-        .setKey(SONARCLOUD_PROJECT_KEY)
-        .setOrganization(SONARCLOUD_ORGANIZATION_KEY).build());
+    createSonarCloudProject(IMPORTED_PROJECT_NAME, SONARCLOUD_PROJECT_KEY, SONARCLOUD_ORGANIZATION_KEY);
   }
 
   @AfterClass
   public static void cleanupOrchestrator() {
     adminWsClient.userTokens()
-      .revoke(new RevokeWsRequest().setName(TOKEN_NAME));
+      .revoke(new RevokeRequest().setName(TOKEN_NAME));
     adminWsClient.projects()
-      .delete(DeleteRequest.builder()
-        .setKey(SONARCLOUD_PROJECT_KEY).build());
+      .delete(new DeleteRequest()
+        .setProject(SONARCLOUD_PROJECT_KEY));
   }
 
   @Test
@@ -158,4 +155,27 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
 
+  /**
+   *  Since SonarCloud / SonarQube now don't share the same web services anymore (like the artifact used before: 6.7)
+   *
+   * @param key
+   * @param name
+   */
+  private static void createSonarCloudProject(String key, String name, String organization) {
+    var request = new PostRequest("api/projects/create");
+    request.setParam("name", name);
+    request.setParam("project", key);
+    request.setParam("organization", organization);
+    try (var response = adminWsClient.wsConnector().call(request)) {
+      assertIsOk(response);
+    }
+  }
+
+  private static void assertIsOk(WsResponse response) {
+    var code = response.code();
+    assertThat(code)
+      .withFailMessage(() -> "Expected an HTTP call to have an OK code, got: " + code)
+      // This is an approximation for "non error codes" - 200, 201, 204... + possible redirects
+      .isBetween(200, 399);
+  }
 }
