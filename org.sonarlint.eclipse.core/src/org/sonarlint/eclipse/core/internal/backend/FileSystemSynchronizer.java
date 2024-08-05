@@ -198,7 +198,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     }
 
     return new ClientFileDto(slFile.uri(), Paths.get(slFile.getProjectRelativePath()), configScopeId, TestFileClassifier.get().isTest(slFile),
-      slFile.getCharset().name(), fsPath, fileContent, tryDetectLanguage(slFile));
+      slFile.getCharset().name(), fsPath, fileContent, tryDetectLanguage(slFile), true);
   }
 
   /**
@@ -215,7 +215,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     var relativePath = projectUri.relativize(currentDtoUri);
 
     return new ClientFileDto(dto.getUri(), relativePath, ConfigScopeSynchronizer.getConfigScopeId(project),
-      dto.isTest(), dto.getCharset(), dto.getFsPath(), dto.getContent(), dto.getDetectedLanguage());
+      dto.isTest(), dto.getCharset(), dto.getFsPath(), dto.getContent(), dto.getDetectedLanguage(), true);
   }
 
   /** This only gets the SonarLint configuration files for a specific project, instead of all of them! */

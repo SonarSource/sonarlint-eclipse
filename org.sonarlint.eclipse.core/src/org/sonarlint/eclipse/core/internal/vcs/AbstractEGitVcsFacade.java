@@ -35,7 +35,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintUtilsLogOutput;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.utils.GitUtils;
 
 abstract class AbstractEGitVcsFacade implements VcsFacade {
   private ListenerHandle listenerHandle;
@@ -44,8 +43,12 @@ abstract class AbstractEGitVcsFacade implements VcsFacade {
 
   @Override
   public String electBestMatchingBranch(ISonarLintProject project, Set<String> serverCandidateNames, String serverMainBranch) {
+    //return getRepo(project.getResource())
+    //  .map(repo -> GitUtils.electBestMatchingServerBranchForCurrentHead(repo, serverCandidateNames, serverMainBranch, new SonarLintUtilsLogOutput())).orElse(serverMainBranch);
+
+    // TODO: Because GitUtils was removed in SLCORE 10.4, there needs to be a change to SLCORE supporting or dropping this as a whole.
     return getRepo(project.getResource())
-      .map(repo -> GitUtils.electBestMatchingServerBranchForCurrentHead(repo, serverCandidateNames, serverMainBranch, new SonarLintUtilsLogOutput())).orElse(serverMainBranch);
+      .map(repo -> serverMainBranch).orElse(serverMainBranch);
   }
 
   abstract Optional<Repository> getRepo(IResource resource);
