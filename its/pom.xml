@@ -13,9 +13,13 @@
   <groupId>org.sonarsource.sonarlint.eclipse.its</groupId>
   <artifactId>org.sonarlint.eclipse.its</artifactId>
   <version>1.0.0-SNAPSHOT</version>
-  <packaging>eclipse-test-plugin</packaging>
+  <packaging>pom</packaging>
 
-  <name>SonarLint for Eclipse Integration Tests</name>
+  <name>SonarLint for Eclipse ITs</name>
+
+  <modules>
+    <module>org.sonarlint.eclipse.its.shared</module>
+  </modules>
 
   <properties>
     <tycho.version>4.0.6</tycho.version>
@@ -29,7 +33,6 @@
     <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext -Dsonarlint.telemetry.disabled=true</tycho.testArgLine>
     <sonar.runtimeVersion>LATEST_RELEASE</sonar.runtimeVersion>
     <jdk.min.version>11</jdk.min.version>
-    <version.jacoco.plugin>0.8.8</version.jacoco.plugin>
   </properties>
 
   <build>
@@ -40,6 +43,7 @@
           <artifactId>tycho-packaging-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
+
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-compiler-plugin</artifactId>
@@ -51,41 +55,49 @@
             <useJDK>BREE</useJDK>
           </configuration>
         </plugin>
+
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-p2-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
+
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-maven-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
+
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>target-platform-configuration</artifactId>
           <version>${tycho.version}</version>
         </plugin>
+
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-p2-publisher-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
+
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-versions-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
+
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-p2-repository-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
+
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-ds-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
+
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-bnd-plugin</artifactId>
@@ -116,7 +128,7 @@
         <artifactId>target-platform-configuration</artifactId>
         <configuration>
           <target>
-            <file>target-platforms/${target.platform}.target</file>
+            <file>../target-platforms/${target.platform}.target</file>
           </target>
           <environments>
             <environment>
@@ -167,9 +179,9 @@
           <trimStackTrace>false</trimStackTrace>
           <useUIHarness>true</useUIHarness>
           <useUIThread>false</useUIThread>
-          <appArgLine>-eclipse.keyring target/keyring -eclipse.password secure-storage-password.txt
-            -pluginCustomization
-            ${project.basedir}/plugin_customization.ini</appArgLine>
+          <appArgLine>-eclipse.keyring target/keyring
+            -eclipse.password ${project.basedir}/../secure-storage-password.txt
+            -pluginCustomization ${project.basedir}/../plugin_customization.ini</appArgLine>
 
           <!-- Kill test JVM if tests take more than 60 minutes (3600 seconds) to finish -->
           <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
@@ -186,19 +198,6 @@
           <profileName>SDKProfile</profileName>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>tycho-p2-publisher-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>publish-products-for-tests</id>
-            <goals>
-              <goal>publish-products</goal>
-            </goals>
-            <phase>pre-integration-test</phase>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
@@ -210,107 +209,44 @@
     </repository>
   </repositories>
 
-
   <profiles>
+    <!-- Profile deactivated on CI to NOT include tests for Standalone Mode -->
     <profile>
-      <id>ibuilds</id>
+      <id>standaloneMode</id>
       <activation>
-        <property>
-          <name>target.platform</name>
-          <value>ibuilds</value>
-        </property>
+        <file>
+          <exists>pom.xml</exists>
+        </file>
       </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.eclipse.tycho</groupId>
-            <artifactId>tycho-surefire-plugin</artifactId>
-            <configuration>
-              <excludedGroups>org.sonarlint.eclipse.its.RequiresExtraDependency</excludedGroups>
-              <install>
-                <iu>
-                  <id>org.sonarlint.eclipse.its.ibuilds.product</id>
-                </iu>
-              </install>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
+      <modules>
+        <module>org.sonarlint.eclipse.its.standalone</module>
+      </modules>
     </profile>
 
-    <!--
-      Due to the earliest version of Eclipse for macOS on ARM64 (aarch64) being 4.22 our tests on
-      the oldest supported version cannot be run in this environment! Therefore this profile
-      ensures the tests will only run the oldest version with every environment but the macOS on
-      ARM64 one.
-      This profile can be removed in the future, when the oldest supported Eclipse version is
-      either 4.22 or higher!
-     -->
+    <!-- Profile deactivated on CI to NOT include tests for Connected Mode with SonarQube -->
     <profile>
-      <id>macOS-arm64-fix-oldest</id>
+      <id>connectedModeSq</id>
       <activation>
-        <property>
-          <name>target.platform</name>
-          <value>oldest</value>
-        </property>
+        <file>
+          <exists>pom.xml</exists>
+        </file>
       </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.eclipse.tycho</groupId>
-            <artifactId>target-platform-configuration</artifactId>
-            <configuration>
-              <target>
-                <file>target-platforms/${target.platform}.target</file>
-              </target>
-              <environments>
-                <environment>
-                  <os>win32</os>
-                  <ws>win32</ws>
-                  <arch>x86_64</arch>
-                </environment>
-                <environment>
-                  <os>linux</os>
-                  <ws>gtk</ws>
-                  <arch>x86_64</arch>
-                </environment>
-                <environment>
-                  <os>macosx</os>
-                  <ws>cocoa</ws>
-                  <arch>x86_64</arch>
-                </environment>
-              </environments>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
+      <modules>
+        <module>org.sonarlint.eclipse.its.connected.sq</module>
+      </modules>
     </profile>
 
+    <!-- Profile deactivated on CI to NOT include tests for Connected Mode with SonarCloud -->
     <profile>
-      <id>full</id>
+      <id>connectedModeSc</id>
       <activation>
-        <property>
-          <name>target.platform</name>
-          <value>!ibuilds</value>
-        </property>
+        <file>
+          <exists>pom.xml</exists>
+        </file>
       </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.eclipse.tycho</groupId>
-            <artifactId>tycho-surefire-plugin</artifactId>
-            <configuration>
-              <!-- Don't run SonarCloud ITs on all axis, just one (ibuilds) is enough -->
-              <excludedGroups>org.sonarlint.eclipse.its.SonarCloud</excludedGroups>
-              <install>
-                <iu>
-                  <id>org.sonarlint.eclipse.its.product</id>
-                </iu>
-              </install>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
+      <modules>
+        <module>org.sonarlint.eclipse.its.connected.sc</module>
+      </modules>
     </profile>
   </profiles>
 </project>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonarsource.sonarlint.eclipse.its</groupId>
+    <artifactId>org.sonarlint.eclipse.its</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>org.sonarlint.eclipse.its.connected.sq</artifactId>
+  <packaging>eclipse-test-plugin</packaging>
+
+  <name>SonarLint for Eclipse ITs (SQ)</name>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-p2-publisher-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>publish-products-for-tests</id>
+            <goals>
+              <goal>publish-products</goal>
+            </goals>
+            <phase>pre-integration-test</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- The runtime that is used for the ITs based on "its.connected.sq.product" description -->
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-surefire-plugin</artifactId>
+        <configuration>
+          <install>
+            <iu>
+              <id>org.sonarlint.eclipse.its.connected.sq.product</id>
+            </iu>
+          </install>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
