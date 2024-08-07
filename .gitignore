@@ -24,3 +24,6 @@ org.sonarlint.eclipse.ui/lib/
 
 # Integration tests
 !/its/projects/connected/.project
+
+# Visual Studio
+.vs
