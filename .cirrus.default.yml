@@ -54,7 +54,7 @@ maven_cache: &SETUP_MAVEN_CACHE
     folder: ${CIRRUS_WORKING_DIR}/.m2/repository
     fingerprint_script:
       - /usr/bin/find . -name pom.xml -not -path './its/*' -exec cat {} \+
-      - cat target-platforms/build.target target-platforms/commons.target
+      - cat target-platforms/latest-java-11_e424.target target-platforms/commons-build.target
 
 maven_cache_qa: &SETUP_MAVEN_CACHE_QA
   maven_cache:
@@ -62,7 +62,7 @@ maven_cache_qa: &SETUP_MAVEN_CACHE_QA
     fingerprint_script:
       - echo $TARGET_PLATFORM
       - /usr/bin/find . -name pom.xml -not -path './its/*' -exec cat {} \+
-      - cat target-platforms/commons.target its/target-platforms/*.target
+      - cat target-platforms/*.target
 
 orchestrator_cache_qa: &SETUP_ORCHESTRATOR_CACHE
   set_orchestrator_home_script: |
@@ -92,7 +92,7 @@ consistency_task:
     fi
     echo "SLCORE version found in pom.xml: $SLCORE_VERSION"
 
-    DIFF="$(cat target-platforms/commons.target | grep $SLCORE_VERSION)"
+    DIFF="$(cat target-platforms/commons-build.target | grep $SLCORE_VERSION)"
     if [[ -z "${DIFF}" ]]; then
       echo "SLCOPRE version for Maven and Eclipse target platform (PDE) doesn't match!"
       exit 2

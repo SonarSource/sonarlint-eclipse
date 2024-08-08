@@ -128,7 +128,7 @@
         <artifactId>target-platform-configuration</artifactId>
         <configuration>
           <target>
-            <file>../target-platforms/${target.platform}.target</file>
+            <file>../../target-platforms/${target.platform}.target</file>
           </target>
           <environments>
             <environment>
