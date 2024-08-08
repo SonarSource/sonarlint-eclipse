@@ -2,8 +2,8 @@
 <?pde version="3.8"?>
 <target name="sonarlint-eclipse-dev" sequenceNumber="2">
   <locations>
-    <location type="Target" uri="file:${project_loc:/sonarlint-eclipse-parent}/target-platforms/commons.target" />
-    <location type="Target" uri="file:${project_loc:/org.sonarlint.eclipse.its}/target-platforms/latest.target" />
+    <location type="Target" uri="file:${project_loc:/org.sonarlint.eclipse.its}/../target-platforms/commons-build.target" />
+    <location type="Target" uri="file:${project_loc:/org.sonarlint.eclipse.its}/../target-platforms/latest-java-17_e431.target" />
   </locations>
   <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11" />
 </target>
