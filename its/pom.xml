@@ -248,5 +248,49 @@
         <module>org.sonarlint.eclipse.its.connected.sc</module>
       </modules>
     </profile>
+    
+    <!--
+      Without this the target platforms cannot be resolved as it also tries to do it for all environments no matter
+      what the users environment (OS/WS/ARCH) is. Totally stupid but hey :>
+    -->
+    <profile>
+      <id>aarch64-fix</id>
+      <activation>
+        <property>
+          <name>target.platform</name>
+          <value>oldest-java-11_e48</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>target-platform-configuration</artifactId>
+            <configuration>
+              <target>
+                <file>../../target-platforms/${target.platform}.target</file>
+              </target>
+              <environments>
+                <environment>
+                  <os>win32</os>
+                  <ws>win32</ws>
+                  <arch>x86_64</arch>
+                </environment>
+                <environment>
+                  <os>linux</os>
+                  <ws>gtk</ws>
+                  <arch>x86_64</arch>
+                </environment>
+                <environment>
+                  <os>macosx</os>
+                  <ws>cocoa</ws>
+                  <arch>x86_64</arch>
+                </environment>
+              </environments>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
