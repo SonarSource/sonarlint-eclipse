@@ -93,7 +93,6 @@ import static org.assertj.core.api.Assertions.fail;
 @CleanWorkspace
 @CloseAllEditors
 public abstract class AbstractSonarLintTest {
-
   public static final String PLUGIN_ID = "org.sonarlint.eclipse.core";
   public static final String UI_PLUGIN_ID = "org.sonarlint.eclipse.ui";
   public static final String MARKER_ON_THE_FLY_ID = PLUGIN_ID + ".sonarlintOnTheFlyProblem";
@@ -106,6 +105,8 @@ public abstract class AbstractSonarLintTest {
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
   private static final IEclipsePreferences ROOT_CORE = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
   private static final IEclipsePreferences ROOT_UI = InstanceScope.INSTANCE.getNode(UI_PLUGIN_ID);
+
+  public static File projectDirectory = new File(new File("src").getAbsoluteFile().getParentFile().getParentFile(), "projects");
 
   @ClassRule
   public static final TemporaryFolder tempFolder = new TemporaryFolder();
@@ -319,7 +320,7 @@ public abstract class AbstractSonarLintTest {
       // Because the tests themselves are in child modules of the parent project ("org.sonarlint.eclipse.its") and the
       // "projects" folder is present in the parent not per module, we have to locate it correctly:
       // -> source directory ($projectDir/src) -> parent ($projectDir) -> parent ($projectDir/..) -> "projects" ($projectDir/../projects)
-      var projectDirectory = new File(new File("src").getAbsoluteFile().getParentFile().getParentFile(), "projects");
+      // -> see definition of "projectDirectory" above
       FileUtils.copyDirectory(new File(projectDirectory, relativePathFromProjectsFolder), projectFolder);
 
       var gitFolder = new File(projectFolder, "git");

@@ -88,7 +88,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @After
   public void enableAutomaticWorkspaceBuild() {
-    if ("oldest".equals(System.getProperty("target.platform"))) {
+    if ("oldest-java-11_e48".equals(System.getProperty("target.platform"))) {
       var preferences = GeneralWorkspaceBuildPreferences.open();
       preferences.enableAutomaticBuild();
       preferences.ok();
@@ -98,7 +98,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   public void analyze_automatic_workspace_build_disabled() {
     // INFO: We only want to run it on one axis and the "oldest" ITs take the shortest!
-    Assume.assumeTrue("oldest".equals(System.getProperty("target.platform")));
+    Assume.assumeTrue("oldest-java-11_e48".equals(System.getProperty("target.platform")));
 
     System.clearProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning");
 
@@ -406,7 +406,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Category(RequiresExtraDependency.class)
   public void shouldAnalysePython() {
     // The PydevPerspective is not working correctly in older PyDev versions, therefore only run in latest
-    Assume.assumeTrue("latest".equals(System.getProperty("target.platform", "latest")));
+    Assume.assumeTrue("latest-java-21".equals(System.getProperty("target.platform", "latest")));
 
     new PydevPerspective().open();
     importExistingProjectIntoWorkspace("python", false);
@@ -467,10 +467,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     var dotProject = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-linked").getLocation().toFile(), ".project");
     var content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
-    FileUtils.write(dotProject,
-      content.replace("${PLACEHOLDER}",
-        new File("projects/java/java-linked-target/hello/HelloLinked.java").getAbsolutePath()),
-      StandardCharsets.UTF_8);
+
+    var linkedFile = new File(projectDirectory, "java/java-linked-target/hello/HelloLinked.java");
+    FileUtils.write(dotProject, content.replace("${PLACEHOLDER}", linkedFile.getAbsolutePath()), StandardCharsets.UTF_8);
 
     rootProject.refresh();
 
@@ -487,10 +486,10 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void shouldAnalyseVirtualProject() throws Exception {
     // INFO: It is flaky when running on top of the oldest Eclipse version but works fine in the other test cases,
     // therefore it should be skipped in that particular situation!
-    Assume.assumeTrue(!"oldest".equals(System.getProperty("target.platform")));
+    Assume.assumeTrue(!"oldest-java-11_e48".equals(System.getProperty("target.platform")));
 
     var remoteProjectDir = tempFolder.newFolder();
-    FileUtils.copyDirectory(new File("projects/java/java-simple"), remoteProjectDir);
+    FileUtils.copyDirectory(new File(projectDirectory, "java/java-simple"), remoteProjectDir);
 
     new JavaPerspective().open();
     var workspace = ResourcesPlugin.getWorkspace();
