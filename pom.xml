@@ -213,7 +213,7 @@
         <artifactId>target-platform-configuration</artifactId>
         <configuration>
           <target>
-            <file>../target-platforms/build.target</file>
+            <file>../target-platforms/latest-java-11_e424.target</file>
           </target>
           <environments>
             <environment>

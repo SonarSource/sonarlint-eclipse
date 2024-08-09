@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?>
+<target name="sonarlint-commons-build" sequenceNumber="4">
+  <locations>
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+      <unit id="org.slf4j.api" version="0.0.0"/>
+      <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20230531010532/repository/" />
+    </location>
+    
+    <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
+      <dependencies>
+        <dependency>
+          <groupId>org.sonarsource.sonarlint.core</groupId>
+          <artifactId>sonarlint-java-client-osgi</artifactId>
+          <version>10.3.2.78498</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>
+    </location>
+    
+    <location includeDependencyDepth="infinite" includeDependencyScopes="compile,runtime" includeSource="true" missingManifest="error" type="Maven">
+      <dependencies>
+        <dependency>
+          <groupId>org.assertj</groupId>
+          <artifactId>assertj-core</artifactId>
+          <version>3.24.2</version>
+          <type>jar</type>
+        </dependency>
+        <dependency>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-core</artifactId>
+          <version>5.1.1</version>
+          <type>jar</type>
+        </dependency>
+        <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>failureaccess</artifactId>
+          <version>1.0.2</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>
+    </location>
+  </locations>
+</target>
