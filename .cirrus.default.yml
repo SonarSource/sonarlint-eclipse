@@ -194,7 +194,6 @@ qa_connectedModeSonarQube_task:
   env:
     ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
     GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
-    SONARCLOUD_IT_PASSWORD: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.password]
     DISPLAY: :10
     MAVEN_OPTS: -Xmx3072m
   matrix:
@@ -259,71 +258,72 @@ qa_connectedModeSonarQube_task:
     slack_notification_script: |
       source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
-#qa_connectedModeSonarCloud_task:
+qa_connectedModeSonarCloud_task:
   #  name: "Run ITs for Connected Mode with SonarCloud"
-#  depends_on:
-#    - build
-#  <<: *ONLY_IF_EXCEPT_NIGHTLY
-#  eks_container:
-#    <<: *BUILDER_CONTAINER_DEFINITION
-#    cpu: 4
-#    memory: 10G
-#    type: m6a.large
-#  env:
-#    ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
-#    GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
-#    SONARCLOUD_IT_PASSWORD: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.password]
-#    DISPLAY: :10
-#    MAVEN_OPTS: -Xmx3072m
-#  <<: *SETUP_MAVEN_CACHE_QA
-#  download_staged_update_site_script: |
-#    set -euo pipefail
-#    source cirrus-env QA
-#    source .cirrus/set_maven_build_version $BUILD_NUMBER
-#    mvn -B -e -V dependency:unpack -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:${PROJECT_VERSION}:zip -DoutputDirectory=${CIRRUS_WORKING_DIR}/staged-repository
-#  prepare_background_script: |
-#    set -euo pipefail
-#    /etc/init.d/xvfb start
-#    metacity --sm-disable --replace &
-#    sleep 10 # give metacity some time to start
-#    echo 'Recording tests on video'
-#    ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording.mp4
-#  run_its_script: |
-#    echo "Run Maven ITs for Connected Mode with SonarCloud on Eclipse (latest Java 21)"
-#    cd its/
-#    mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
-#      -P coverage,\!standaloneMode,\!connectedModeSq \
-#      -Dtarget.platform=latest-java-21 \
-#      -Dtycho.localArtifacts=ignore \
-#      -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/staged-repository" \
-#      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
-#    mv ${CIRRUS_WORKING_DIR}/it-coverage.exec ${CIRRUS_WORKING_DIR}/it-coverage-sc.exec
-#  cleanup_before_cache_script: cleanup_maven_repository
-#  always:
-#    stop_recording_script: |
-#      pkill -SIGINT -f ffmpeg
-#      while pgrep ffmpeg >/dev/null; do sleep 1; done
-#      /etc/init.d/xvfb stop
-#    test_recording_artifacts:
-#      path: "${CIRRUS_WORKING_DIR}/recording.mp4"
-#    jacoco_it_sc_artifacts:
-#      path: "${CIRRUS_WORKING_DIR}/it-coverage*.exec"
-#    mvn_startTestLog_artifacts:
-#      path: "${CIRRUS_WORKING_DIR}/its/**/target/work/configuration/*.log"
-#    mvn_runTestLog_artifacts:
-#      path: "${CIRRUS_WORKING_DIR}/its/**/target/work/data/.metadata/.log"
-#  on_failure:
-#    xvfb_log_artifacts:
-#      path: "${CIRRUS_WORKING_DIR}/Xvfb.out"
-#    reports_artifacts:
-#      path: "**/reports/**/*"
-#    junit_artifacts:
-#      paths:
-#      - "**/test-results/**/*.xml"
-#      - "**/target/surefire-reports/TEST-*.xml"
-#      format: junit
-#    slack_notification_script: |
-#      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+  depends_on:
+    - build
+  <<: *ONLY_IF_EXCEPT_NIGHTLY
+  eks_container:
+    <<: *BUILDER_CONTAINER_DEFINITION
+    cpu: 4
+    memory: 10G
+    type: m6a.large
+  env:
+    ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
+    GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
+    SONARCLOUD_IT_PASSWORD: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.password]
+    DISPLAY: :10
+    MAVEN_OPTS: -Xmx3072m
+  <<: *SETUP_MAVEN_CACHE_QA
+  download_staged_update_site_script: |
+    set -euo pipefail
+    source cirrus-env QA
+    source .cirrus/set_maven_build_version $BUILD_NUMBER
+    mvn -B -e -V dependency:unpack -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:${PROJECT_VERSION}:zip -DoutputDirectory=${CIRRUS_WORKING_DIR}/staged-repository
+  prepare_background_script: |
+    set -euo pipefail
+    /etc/init.d/xvfb start
+    metacity --sm-disable --replace &
+    sleep 10 # give metacity some time to start
+    echo 'Recording tests on video'
+    ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording.mp4
+  run_its_script: |
+    echo "Run Maven ITs for Connected Mode with SonarCloud on Eclipse (latest Java 21)"
+    cd its/
+    env SONARCLOUD_IT_PASSWORD=$SONARCLOUD_IT_PASSWORD \
+      mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+      -P coverage,\!standaloneMode,\!connectedModeSq \
+      -Dtarget.platform=latest-java-21 \
+      -Dtycho.localArtifacts=ignore \
+      -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/staged-repository" \
+      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
+    mv ${CIRRUS_WORKING_DIR}/it-coverage.exec ${CIRRUS_WORKING_DIR}/it-coverage-sc.exec
+  cleanup_before_cache_script: cleanup_maven_repository
+  always:
+    stop_recording_script: |
+      pkill -SIGINT -f ffmpeg
+      while pgrep ffmpeg >/dev/null; do sleep 1; done
+      /etc/init.d/xvfb stop
+    test_recording_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/recording.mp4"
+    jacoco_it_sc_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/it-coverage*.exec"
+    mvn_startTestLog_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/its/**/target/work/configuration/*.log"
+    mvn_runTestLog_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/its/**/target/work/data/.metadata/.log"
+  on_failure:
+    xvfb_log_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/Xvfb.out"
+    reports_artifacts:
+      path: "**/reports/**/*"
+    junit_artifacts:
+      paths:
+      - "**/test-results/**/*.xml"
+      - "**/target/surefire-reports/TEST-*.xml"
+      format: junit
+    slack_notification_script: |
+      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
 qa_standaloneMode_task:
   #  name: "Run ITs for Standalone Mode"
@@ -338,7 +338,6 @@ qa_standaloneMode_task:
   env:
     ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
     GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
-    SONARCLOUD_IT_PASSWORD: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.password]
     DISPLAY: :10
     MAVEN_OPTS: -Xmx3072m
   matrix:
@@ -404,7 +403,7 @@ inspect_orchestrator_cache_task:
   eks_container:
     <<: *CONTAINER_DEFINITION
     cpu: 2
-    memory: 2G
+    memory: 8G
   <<: *SETUP_ORCHESTRATOR_CACHE
   inspect_cache_script: |
     echo "Inspecting cache ${ORCHESTRATOR_HOME}..."
@@ -418,6 +417,7 @@ sonarqube_task:
   depends_on:
     - validate
     - qa_connectedModeSonarQube
+    - qa_connectedModeSonarCloud
     - qa_standaloneMode
   <<: *ONLY_IF_EXCEPT_NIGHTLY
   eks_container:
@@ -440,9 +440,11 @@ sonarqube_task:
     curl --no-progress-meter https://api.cirrus-ci.com/v1/artifact/build/$CIRRUS_BUILD_ID/jacoco_ut.zip -o jacoco_ut.zip
     curl --no-progress-meter https://api.cirrus-ci.com/v1/artifact/build/$CIRRUS_BUILD_ID/jacoco_it.zip -o jacoco_it.zip
     curl --no-progress-meter https://api.cirrus-ci.com/v1/artifact/build/$CIRRUS_BUILD_ID/jacoco_it_sq.zip -o jacoco_it_sq.zip
+    curl --no-progress-meter https://api.cirrus-ci.com/v1/artifact/build/$CIRRUS_BUILD_ID/jacoco_it_sc.zip -o jacoco_it_sc.zip
     unzip jacoco_ut.zip -d ${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/
     unzip jacoco_it.zip -d ${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/
     unzip jacoco_it_sq.zip -d ${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/
+    unzip jacoco_it_sc.zip -d ${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/
     source cirrus-env QA
     .cirrus/regular_mvn_build_deploy_analyze \
       -P-deploy-sonarsource,-release,-sign -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true \

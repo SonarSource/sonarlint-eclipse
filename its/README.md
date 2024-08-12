@@ -76,6 +76,9 @@ for Eclipse project directory. Compared to the integration tests for the Connect
 dependency on the Java version and the CI/CD pipeline will run against the latest one linked to the Eclipse IDE that is
 shipped with Java 21 (the current Java runtime used for upcoming releases as well).
 
+Due to us requiring the password for the SonarCloud staging environment, we have to pass it directly to the command as
+the Eclipse IDE runtime won't pick it up otherwise via `System.getenv("SONARCLOUD_IT_PASSWORD")`!
+
 ```
-mvn clean verify -Dtarget.platform=latest-java-21 -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://{path to repo}/org.sonarlint.eclipse.site/target/repository" -P \!standaloneMode,\!connectedModeSq
+env SONARCLOUD_IT_PASSWORD=$SONARCLOUD_IT_PASSWORD mvn clean verify -Dtarget.platform=latest-java-21 -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://{path to repo}/org.sonarlint.eclipse.site/target/repository" -P \!standaloneMode,\!connectedModeSq
 ```

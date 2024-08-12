@@ -22,40 +22,28 @@ package org.sonarlint.eclipse.its.connected.sc;
 import java.time.Instant;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.DialogMessageIsExpected;
-import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ProjectSelectionDialog;
-import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView;
-import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView.Binding;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectBindingWizardIsOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ServerConnectionWizard;
 import org.sonarqube.ws.client.HttpConnector;
-import org.sonarqube.ws.client.PostRequest;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
-import org.sonarqube.ws.client.WsResponse;
-import org.sonarqube.ws.client.projects.DeleteRequest;
 import org.sonarqube.ws.client.usertokens.GenerateRequest;
 import org.sonarqube.ws.client.usertokens.RevokeRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
-  private static final String IMPORTED_PROJECT_NAME = "java-simple";
   private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
-
   private static final String SONARCLOUD_STAGING_URL = "https://sc-staging.io";
-  private static final String SONARCLOUD_STAGING_WEBSOCKETS_URL = "wss://events-api.sc-staging.io/";
   private static final String SONARCLOUD_ORGANIZATION_KEY = "sonarlint-it";
-  // private static final String SONARCLOUD_ORGANIZATION_NAME = "SonarLint IT Tests";
   private static final String SONARCLOUD_USER = "sonarlint-it";
   private static final String SONARCLOUD_PASSWORD = System.getenv("SONARCLOUD_IT_PASSWORD");
-  private static final String SONARCLOUD_PROJECT_KEY = IMPORTED_PROJECT_NAME + '-' + TIMESTAMP;
 
   private static final String TOKEN_NAME = "SLE-IT-" + TIMESTAMP;
 
@@ -66,8 +54,6 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   @BeforeClass
   public static void prepare() {
-    System.setProperty("sonarlint.internal.sonarcloud.url", SONARCLOUD_STAGING_URL);
-    System.setProperty("sonarlint.internal.sonarcloud.websocket.url", SONARCLOUD_STAGING_WEBSOCKETS_URL);
     adminWsClient = WsClientFactories.getDefault().newClient(HttpConnector.newBuilder()
       .url(SONARCLOUD_STAGING_URL)
       .credentials(SONARCLOUD_USER, SONARCLOUD_PASSWORD)
@@ -76,23 +62,16 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     token = adminWsClient.userTokens()
       .generate(new GenerateRequest().setName(TOKEN_NAME))
       .getToken();
-
-    createSonarCloudProject(IMPORTED_PROJECT_NAME, SONARCLOUD_PROJECT_KEY, SONARCLOUD_ORGANIZATION_KEY);
   }
 
   @AfterClass
   public static void cleanupOrchestrator() {
     adminWsClient.userTokens()
       .revoke(new RevokeRequest().setName(TOKEN_NAME));
-    adminWsClient.projects()
-      .delete(new DeleteRequest()
-        .setProject(SONARCLOUD_PROJECT_KEY));
   }
 
   @Test
-  public void configureServerWithTokenAndOrganization() {
-    importExistingProjectIntoWorkspace("java/java-simple", false);
-
+  public void configureServerWithTokenAndOrganization() throws InterruptedException {
     var wizard = new ServerConnectionWizard();
     wizard.open();
     new ServerConnectionWizard.ServerTypePage(wizard).selectSonarCloud();
@@ -106,6 +85,10 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     wizard.next();
     new WaitUntil(new DialogMessageIsExpected(wizard, "Authentication failed"));
 
+    authenticationPage.setToken("");
+    assertThat(wizard.isNextEnabled()).isFalse();
+    new WaitUntil(new DialogMessageIsExpected(wizard, "You must provide an authentication token"));
+
     authenticationPage.setToken(token);
     wizard.next();
 
@@ -114,15 +97,20 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     assertThat(organizationsPage.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
 
-    // organizationsPage.typeOrganizationAndSelectFirst(SONARCLOUD_ORGANIZATION_NAME);
-    // assertThat(organizationsPage.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
     organizationsPage.setOrganization(SONARCLOUD_ORGANIZATION_KEY);
     assertThat(wizard.isNextEnabled()).isTrue();
     wizard.next();
 
     var connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
-    assertThat(connectionNamePage.getConnectionName()).isEqualTo("SonarCloud/" + SONARCLOUD_ORGANIZATION_KEY);
+    assertThat(connectionNamePage.getConnectionName()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
     connectionNamePage.setConnectionName(CONNECTION_NAME);
+    assertThat(wizard.isNextEnabled()).isTrue();
+
+    // Sadly we have to invoke sleep here as in the background there is SL communicating with SC regarding the
+    // availability of notifications "on the server". As this is not done in a job we could listen to, we wait the
+    // 5 seconds. Once we change it in SonarLint to not ask for notifications (for all supported SQ versions and SC
+    // they are supported by now), we can somehow circumvent this.
+    Thread.sleep(5000);
     wizard.next();
 
     var notificationsPage = new ServerConnectionWizard.NotificationsPage(wizard);
@@ -131,50 +119,15 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     wizard.next();
 
     assertThat(wizard.isNextEnabled()).isFalse();
-    // This will trigger an update of the binding background job
+    // Because of the binding background job that is triggered we have to wait here for the project binding wizard to
+    // appear. It might happen that the new wizards opens over the old one before it closes, but this is okay as the
+    // old one will close itself lazily.
     wizard.finish(TimePeriod.VERY_LONG);
+    new WaitUntil(new ProjectBindingWizardIsOpened());
 
+    // Close project binding wizard as we don't have a project opened
     var projectBindingWizard = new ProjectBindingWizard();
-    var projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
-    projectsToBindPage.clickAdd();
-
-    var projectSelectionDialog = new ProjectSelectionDialog();
-    projectSelectionDialog.filterProjectName(IMPORTED_PROJECT_NAME);
-    projectSelectionDialog.ok();
-
-    projectBindingWizard.next();
-    var serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
-    serverProjectSelectionPage.waitForProjectsToBeFetched();
-    serverProjectSelectionPage.setProjectKey(SONARCLOUD_PROJECT_KEY);
-    projectBindingWizard.finish();
-
-    var bindingsView = new BindingsView();
-    bindingsView.open();
-    assertThat(bindingsView.getBindings()).extracting(Binding::getLabel).contains(CONNECTION_NAME);
-    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
-  }
-
-  /**
-   *  Since SonarCloud / SonarQube now don't share the same web services anymore (like the artifact used before: 6.7)
-   *
-   * @param key
-   * @param name
-   */
-  private static void createSonarCloudProject(String key, String name, String organization) {
-    var request = new PostRequest("api/projects/create");
-    request.setParam("name", name);
-    request.setParam("project", key);
-    request.setParam("organization", organization);
-    try (var response = adminWsClient.wsConnector().call(request)) {
-      assertIsOk(response);
-    }
-  }
-
-  private static void assertIsOk(WsResponse response) {
-    var code = response.code();
-    assertThat(code)
-      .withFailMessage(() -> "Expected an HTTP call to have an OK code, got: " + code)
-      // This is an approximation for "non error codes" - 200, 201, 204... + possible redirects
-      .isBetween(200, 399);
+    new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
+    projectBindingWizard.cancel();
   }
 }

@@ -42,6 +42,10 @@ public class ProjectBindingWizard extends WizardDialog {
     public void clickAdd() {
       new PushButton("Add...").click();
     }
+
+    public void cancel() {
+      new PushButton("Cancel").click();
+    }
   }
 
   public static class ServerProjectSelectionPage extends WizardPage {
