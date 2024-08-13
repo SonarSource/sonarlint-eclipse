@@ -20,14 +20,18 @@
     <sonar.sources></sonar.sources>
     <sonar.tests>src</sonar.tests>
     <tycho.testArgLine>"-Djava.io.tmpdir=${project.build.directory}/work"</tycho.testArgLine>
+    <maven.build.timestamp.format>yyyy-MM-dd_HH-mm</maven.build.timestamp.format>
   </properties>
 
   <build>
-    <plugins>
+    <plugins>      
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-surefire-plugin</artifactId>
         <configuration>
+          <!-- We cannot have it in target/work as well due to Git ignored files not being analyzed! -->
+          <osgiDataDirectory>${java.io.tmpdir}/SLE-${maven.build.timestamp}</osgiDataDirectory>
+          
           <trimStackTrace>false</trimStackTrace>
           <appArgLine>-eclipse.keyring target/keyring 
             -eclipse.password src/test/resources/secure-storage-password.txt

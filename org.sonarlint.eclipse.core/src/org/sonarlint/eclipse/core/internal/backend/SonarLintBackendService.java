@@ -190,7 +190,7 @@ public class SonarLintBackendService {
               Map.of()),
             httpConfiguration,
             getSonarCloudAlternativeEnvironment(),
-            new FeatureFlagsDto(true, true, true, true, false, true, true, true, telemetryEnabled),
+            new FeatureFlagsDto(true, true, true, true, false, true, true, true, telemetryEnabled, false),
             StoragePathManager.getStorageDir(),
             StoragePathManager.getDefaultWorkDir(),
             Set.copyOf(embeddedPluginPaths),
@@ -203,7 +203,9 @@ public class SonarLintBackendService {
             null,
             SonarLintGlobalConfiguration.buildStandaloneRulesConfigDto(),
             SonarLintGlobalConfiguration.issuesOnlyNewCode(),
-            new LanguageSpecificRequirements(SonarLintGlobalConfiguration.getNodejsPath(), null))).join();
+            new LanguageSpecificRequirements(SonarLintGlobalConfiguration.getNodejsPath(), null),
+            false,
+            null)).join();
         } catch (IOException e) {
           throw new IllegalStateException("Unable to initialize the SonarLint Backend", e);
         }

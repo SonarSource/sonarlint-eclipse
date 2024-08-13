@@ -179,9 +179,15 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     assertThat(status.isOK()).isTrue();
     assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
-    var markers = List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE))
-      .contains(tuple("/SimpleJdtProject/src/main/sample.js", 1, "Rename this 'hello' function to match the regular expression '^[0-9]+$'."));
+    awaitAssertions(() -> {
+      try {
+        assertThat(List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
+          .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE))
+          .contains(tuple("/SimpleJdtProject/src/main/sample.js", 1, "Rename this 'hello' function to match the regular expression '^[0-9]+$'."));
+      } catch (CoreException ignored) {
+        throw new RuntimeException("Dummy exception to circumvent CoreException");
+      }
+    });
   }
 
   @Test
@@ -203,7 +209,13 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
       // INFO: There should be one event coming in as the files just got new markers
-      verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
+      awaitAssertions(() -> {
+        try {
+          verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
+        } catch (CoreException ignored) {
+          throw new RuntimeException("Dummy exception to circumvent CoreException");
+        }
+      });
       awaitAssertions(() -> assertThat(mcl.getEventCount()).isEqualTo(1));
 
       // Run the same analysis a second time to ensure the behavior is the same when markers are already present
@@ -246,7 +258,13 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
       // INFO: There should be one event coming in as the files just got new markers
-      verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);
+      awaitAssertions(() -> {
+        try {
+          verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);
+        } catch (CoreException ignored) {
+          throw new RuntimeException("Dummy exception to circumvent CoreException");
+        }
+      });
       awaitAssertions(() -> assertThat(mcl.getEventCount()).isEqualTo(1));
 
       // Run the same analysis a second time to ensure the behavior is the same when markers are already present
@@ -285,10 +303,16 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     assertThat(status.isOK()).isTrue();
     assertThat(markerUpdateListener.waitForMarkers()).isTrue();
 
-    assertThat(List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
-      .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR))
-      .contains(tuple("/SimpleJdtProject/src/main/java/com/quickfix/FileWithQuickFixes.java", 8,
-        "Replace the type specification in this constructor call with the diamond operator (\"<>\").", "java:S2293"));
+    awaitAssertions(() -> {
+      try {
+        assertThat(List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
+          .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR))
+          .contains(tuple("/SimpleJdtProject/src/main/java/com/quickfix/FileWithQuickFixes.java", 8,
+            "Replace the type specification in this constructor call with the diamond operator (\"<>\").", "java:S2293"));
+      } catch (CoreException ignored) {
+        throw new RuntimeException("Dummy exception to circumvent CoreException");
+      }
+    });
 
     var markers = List.of(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     var markerWithQuickFix = markers.stream().filter(m -> m.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "").equals("java:S2293")).findFirst().get();
