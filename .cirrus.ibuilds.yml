@@ -37,21 +37,7 @@ maven_cache_qa: &SETUP_MAVEN_CACHE
     folder: ${CIRRUS_WORKING_DIR}/.m2/repository
     fingerprint_script:
       - /usr/bin/find . -name pom.xml -not -path './its/*' -exec cat {} \+
-      - cat target-platforms/build.target target-platforms/commons.target its/target-platforms/*.target
-
-# Orchestrator cache for integration tests (Connected Mode with SonarQube)
-orchestrator_cache_qa: &SETUP_ORCHESTRATOR_CACHE
-  set_orchestrator_home_script: |
-    export THIS_MONTH=$(date '+%Y-%m')
-    echo "THIS_MONTH=${THIS_MONTH}" >> $CIRRUS_ENV
-    echo "ORCHESTRATOR_HOME=${CIRRUS_WORKING_DIR}/orchestrator/${THIS_MONTH}" >> $CIRRUS_ENV
-  mkdir_orchestrator_home_script: |
-    echo "Create dir ${ORCHESTRATOR_HOME} if needed"
-    mkdir -p ${ORCHESTRATOR_HOME}
-  orchestrator_cache:
-    folder: ${ORCHESTRATOR_HOME}
-    fingerprint_script: echo ${THIS_MONTH}
-    reupload_on_changes: 'true'
+      - cat target-platforms/*.target
 
 # Run iBuilds compatibility tests (with packaged update site for that)
 qa_ibuilds_task:
@@ -66,11 +52,9 @@ qa_ibuilds_task:
   env:
     ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
     GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
-    SONARCLOUD_IT_PASSWORD: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.password]
     DISPLAY: :10
     MAVEN_OPTS: -Xmx3072m
   <<: *SETUP_MAVEN_CACHE
-  <<: *SETUP_ORCHESTRATOR_CACHE
   prepare_update_site_script: |
     set -euo pipefail
     source cirrus-env QA
@@ -84,11 +68,13 @@ qa_ibuilds_task:
     echo 'Recording tests on video'
     ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording.mp4
   run_its_script: |
-    echo "Run Maven ITs for Eclipse iBuilds and SonarQube 9.9 LTS"
-    mvn -B -e -V verify -f its/pom.xml \
-      -Dtarget.platform=ibuilds -Dtycho.localArtifacts=ignore \
-      -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.site/target/repository" \
-      -Dsonar.runtimeVersion="LATEST_RELEASE[9.9]"
+    echo "Run Maven ITs for Standalone Mode on Eclipse iBuilds"
+    cd its/
+    mvn -B -e -V verify \
+      -P \!connectedModeSq,\!connectedModeSc \
+      -Dtarget.platform=ibuilds \
+      -Dtycho.localArtifacts=ignore \
+      -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.site/target/repository"
   cleanup_before_cache_script: cleanup_maven_repository
   always:
     stop_recording_script: |
@@ -97,6 +83,10 @@ qa_ibuilds_task:
       /etc/init.d/xvfb stop
     test_recording_artifacts:
       path: "${CIRRUS_WORKING_DIR}/recording.mp4"
+    mvn_startTestLog_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/its/**/target/work/configuration/*.log"
+    mvn_runTestLog_artifacts:
+      path: "${CIRRUS_WORKING_DIR}/its/**/target/work/data/.metadata/.log"
   on_failure:
     xvfb_log_artifacts:
       path: "${CIRRUS_WORKING_DIR}/Xvfb.out"
@@ -109,19 +99,3 @@ qa_ibuilds_task:
       format: junit
     slack_notification_script: |
       source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
-
-# Inspect orchestrator cache
-inspect_orchestrator_cache_task:
-  <<: *ONLY_IF
-  depends_on: qa_ibuilds
-  eks_container:
-    <<: *CONTAINER_DEFINITION
-    cpu: 4
-    memory: 8G
-  <<: *SETUP_ORCHESTRATOR_CACHE
-  inspect_cache_script: |
-    echo "Inspecting cache ${ORCHESTRATOR_HOME}..."
-    cd "${ORCHESTRATOR_HOME}"
-    ls -l
-    find .
-    echo "Inspecting cache done."

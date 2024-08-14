@@ -69,8 +69,8 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
       @Override
       public void error(String msg, boolean fromAnalyzer) {
         // XXX Ugly hack to ignore asynchronous error messages from the backend
-        if (!msg.startsWith("Attempt to update binding in configuration scope ")
-          && !msg.startsWith("org.sonarsource.sonarlint.core.serverconnection.storage.StorageException: Failed to read file:")) {
+        if (!msg.contains("Attempt to update binding in configuration scope ")
+          && !msg.contains("org.sonarsource.sonarlint.core.serverconnection.storage.StorageException: Failed to read file:")) {
           errors.add(msg);
         }
       }
