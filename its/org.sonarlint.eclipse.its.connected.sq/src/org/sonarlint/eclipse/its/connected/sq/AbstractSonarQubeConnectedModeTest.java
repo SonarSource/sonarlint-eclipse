@@ -41,6 +41,7 @@ import org.junit.Before;
 import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.AnalysisReadyAfterUnready;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectBindingWizardIsOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ProjectBindingWizard;
@@ -51,6 +52,7 @@ import org.sonarqube.ws.client.WsClientFactories;
 import org.sonarqube.ws.client.projects.CreateRequest;
 import org.sonarqube.ws.client.settings.SetRequest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 /** Every test class targeting SonarQube derives from here */
@@ -153,12 +155,32 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     var connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
 
     connectionNamePage.setConnectionName("test");
-    wizard.next();
-    wizard.next();
-    wizard.finish();
+    assertThat(wizard.isNextEnabled()).isTrue();
 
+    // Sadly we have to invoke sleep here as in the background there is SL communicating with SC regarding the
+    // availability of notifications "on the server". As this is not done in a job we could listen to, we wait the
+    // 5 seconds. Once we change it in SonarLint to not ask for notifications (for all supported SQ versions and SC
+    // they are supported by now), we can somehow circumvent this.
+    try {
+      Thread.sleep(5000);
+    } catch (InterruptedException ignored) {
+    }
+    wizard.next();
+
+    var notificationsPage = new ServerConnectionWizard.NotificationsPage(wizard);
+    assertThat(notificationsPage.areNotificationsEnabled()).isTrue();
+    assertThat(wizard.isNextEnabled()).isTrue();
+    wizard.next();
+
+    assertThat(wizard.isNextEnabled()).isFalse();
+    // Because of the binding background job that is triggered we have to wait here for the project binding wizard to
+    // appear. It might happen that the new wizards opens over the old one before it closes, but this is okay as the
+    // old one will close itself lazily.
+    wizard.finish(TimePeriod.VERY_LONG);
     new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
+    new WaitUntil(new ProjectBindingWizardIsOpened());
 
+    // Close project binding wizard as we don't have a project opened
     var projectBindingWizard = new ProjectBindingWizard();
     var projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
     projectsToBindPage.clickAdd();

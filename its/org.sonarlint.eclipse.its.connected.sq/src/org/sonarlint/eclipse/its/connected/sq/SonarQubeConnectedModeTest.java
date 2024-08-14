@@ -55,12 +55,14 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.DialogMessageIsExpected;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectBindingWizardIsOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.RuleDescriptionViewIsLoaded;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.MarkIssueAsDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView.Binding;
 import org.sonarlint.eclipse.its.shared.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.RuleDescriptionView;
+import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintIssueMarker;
 import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintTaintVulnerabilitiesView;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ProjectBindingWizard;
@@ -186,9 +188,16 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     wizard.next();
 
     assertThat(wizard.isNextEnabled()).isFalse();
-    wizard.finish();
+    // Because of the binding background job that is triggered we have to wait here for the project binding wizard to
+    // appear. It might happen that the new wizards opens over the old one before it closes, but this is okay as the
+    // old one will close itself lazily.
+    wizard.finish(TimePeriod.VERY_LONG);
+    new WaitUntil(new ProjectBindingWizardIsOpened());
 
-    new ProjectBindingWizard().cancel();
+    // Close project binding wizard as we don't have a project opened
+    var projectBindingWizard = new ProjectBindingWizard();
+    new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
+    projectBindingWizard.cancel();
 
     var bindingsView = new BindingsView();
     assertThat(bindingsView.getBindings()).extracting(Binding::getLabel).contains("test");
@@ -246,12 +255,18 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   @Test
   public void shouldAutomaticallyUpdateRuleSetWhenChangedOnServer() throws Exception {
     new JavaPerspective().open();
+
+    // In order to not confuse the "waitForAnalysisReady" with older entries!
+    var console = new SonarLintConsole();
+    console.clear();
+
     var rootProject = importExistingProjectIntoWorkspace("java/java-simple", JAVA_SIMPLE_PROJECT_KEY);
 
     createConnectionAndBindProject(orchestrator, JAVA_SIMPLE_PROJECT_KEY);
 
     // Remove binding suggestion notification
-    new DefaultLink(shellByName("SonarLint Binding Suggestion").get(), "Don't ask again").click();
+    shellByName("SonarLint Binding Suggestion")
+      .ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
 
     waitForAnalysisReady(JAVA_SIMPLE_PROJECT_KEY);
 
