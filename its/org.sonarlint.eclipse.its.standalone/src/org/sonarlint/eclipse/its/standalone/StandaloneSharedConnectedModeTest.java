@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.its.standalone;
 
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
@@ -39,6 +40,7 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
   private static final String GRADLE_PROJECT = "gradle-project";
   private static final String GRADLE_ROOT_PROJECT = "gradle-root-project";
   private static final String GRADLE_SUB_PROJECT = "gradle-sub-project";
+  private static final String GRADLE_MAVEN_MIXED_PROJECT = "MixedProjectMavenSide";
 
   @Test
   public void single_project_Gradle() {
@@ -85,6 +87,39 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
     } finally {
       firstShell.ifPresent(DefaultShell::close);
       shellByName("SonarLint Connection Suggestion to SonarQube").ifPresent(DefaultShell::close);
+    }
+  }
+
+  // Mixed Gradle/Maven project containing two different shared Connected Mode configurations
+  @Test
+  public void mixed_Gradle_Maven_project() {
+    new JavaPerspective().open();
+
+    importExistingProjectIntoWorkspace("java/gradle-maven-mixed", GRADLE_MAVEN_MIXED_PROJECT);
+
+    var shellOpt = shellByName("SonarLint Multiple Connection Suggestions found");
+    try {
+      assertThat(shellOpt).isNotEmpty();
+
+      assertThat(getNotificationText(shellOpt.get()))
+        .contains("different suggestions")
+        .contains("local project '" + GRADLE_MAVEN_MIXED_PROJECT);
+
+      // Informational dialog for users
+      new DefaultLink(shellOpt.get(), "More information").click();
+      shellByName("Connection suggestions for Eclipse project '" + GRADLE_MAVEN_MIXED_PROJECT + "'")
+        .ifPresent(DefaultShell::close);
+
+      // Actual choosing dialog for users
+      new DefaultLink(shellOpt.get(), "Choose suggestion").click();
+      shellByName("Choose suggestion for Eclipse project '" + GRADLE_MAVEN_MIXED_PROJECT + "'")
+        .ifPresent(DefaultShell::close);
+    } finally {
+      shellOpt.ifPresent(shell -> {
+        if (!shell.getControl().isDisposed()) {
+          shell.close();
+        }
+      });
     }
   }
 }
