@@ -40,6 +40,7 @@ import org.eclipse.reddeer.eclipse.ui.markers.matcher.MarkerDescriptionMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
+import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
@@ -57,7 +58,9 @@ import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectBindingWizardIsOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.RuleDescriptionViewIsLoaded;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.ShareConnectedModeConfigurationDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.MarkIssueAsDialog;
+import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ShareConnectedModeConfigurationDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView.Binding;
 import org.sonarlint.eclipse.its.shared.reddeer.views.OnTheFlyView;
@@ -250,6 +253,31 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
       assertThat(getNotificationText(shell)).contains(SECRET_JAVA_PROJECT_NAME);
       new DefaultLink(shell, "Dismiss").click();
     });
+  }
+
+  @Test
+  public void shareConnectedModeConfiguration() {
+    new JavaPerspective().open();
+
+    var project = importExistingProjectIntoWorkspace("java/java-simple", JAVA_SIMPLE_PROJECT_KEY);
+
+    // In order to not confuse the "waitForAnalysisReady" with older entries!
+    new SonarLintConsole().clear();
+
+    createConnectionAndBindProject(orchestrator, JAVA_SIMPLE_PROJECT_KEY);
+
+    // Remove binding suggestion notification
+    shellByName("SonarLint Binding Suggestion")
+      .ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
+
+    waitForAnalysisReady(JAVA_SIMPLE_PROJECT_KEY);
+
+    // Share Connected Mode configuration
+    new ContextMenu(project.getTreeItem()).getItem("SonarLint", "Share Binding...").select();
+    new WaitUntil(new ShareConnectedModeConfigurationDialogOpened());
+
+    var dialog = new ShareConnectedModeConfigurationDialog();
+    dialog.saveToProject();
   }
 
   @Test
