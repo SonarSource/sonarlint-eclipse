@@ -74,13 +74,16 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     var rootProject = importExistingProjectIntoWorkspace("java/java-exclude-rules", "java-exclude-rules");
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
-
     checkIssueIsDefault();
-    doAndWaitForSonarLintAnalysisJob(() -> lowerCognitiveComplexityRuleParameter());
+    new DefaultEditor().close();
+
+    lowerCognitiveComplexityRuleParameter();
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
     checkIssueChanged();
+    new DefaultEditor().close();
 
-    doAndWaitForSonarLintAnalysisJob(() -> restoreDefaultRulesConfiguration());
-
+    restoreDefaultRulesConfiguration();
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
     checkIssueIsDefault();
   }
 
