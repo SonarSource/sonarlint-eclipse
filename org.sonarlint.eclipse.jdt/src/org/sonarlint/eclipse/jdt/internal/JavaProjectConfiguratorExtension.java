@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
+import org.eclipse.compare.CompareConfiguration;
+import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -30,6 +32,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
@@ -127,5 +130,14 @@ public class JavaProjectConfiguratorExtension
       return Optional.of(JdtUiUtils.documentPartitioner());
     }
     return Optional.empty();
+  }
+
+  @Nullable
+  @Override
+  public TextMergeViewer getTextMergeViewer(String ruleLanguage, Composite parent, CompareConfiguration mp) {
+    if (jdtUiPresent && ruleLanguage.equals(JAVA_LANGUAGE_KEY)) {
+      return JdtUiUtils.getTextMergeViewer(parent, mp);
+    }
+    return null;
   }
 }

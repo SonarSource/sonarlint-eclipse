@@ -19,14 +19,18 @@
  */
 package org.sonarlint.eclipse.jdt.internal;
 
+import org.eclipse.compare.CompareConfiguration;
+import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jdt.internal.ui.compare.JavaMergeViewer;
 import org.eclipse.jdt.internal.ui.text.FastJavaPartitionScanner;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
 import org.eclipse.jdt.ui.text.JavaSourceViewerConfiguration;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
 import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 
@@ -51,5 +55,9 @@ public class JdtUiUtils {
       IJavaPartitions.JAVA_SINGLE_LINE_COMMENT, IJavaPartitions.JAVA_MULTI_LINE_COMMENT, IJavaPartitions.JAVA_DOC,
       IJavaPartitions.JAVA_STRING, IJavaPartitions.JAVA_CHARACTER, IJavaPartitions.JAVA_MULTI_LINE_STRING
     });
+  }
+
+  public static TextMergeViewer getTextMergeViewer(Composite parent, CompareConfiguration mp) {
+    return new JavaMergeViewer(parent, 0, mp);
   }
 }

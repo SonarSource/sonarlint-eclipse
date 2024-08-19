@@ -39,11 +39,13 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.net,
  org.eclipse.core.filesystem,
  org.eclipse.team.core,
+ org.eclipse.compare,
  org.eclipse.jdt.annotation;resolution:=optional,
  org.eclipse.jgit;resolution:=optional,
  org.eclipse.egit.core;resolution:=optional,
  org.eclipse.egit.ui;resolution:=optional,
  org.eclipse.text,
+ org.eclipse.swt,
  org.sonarsource.sonarlint.core.sonarlint-java-client-osgi;bundle-version="[10.4.0,10.5.0)"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11

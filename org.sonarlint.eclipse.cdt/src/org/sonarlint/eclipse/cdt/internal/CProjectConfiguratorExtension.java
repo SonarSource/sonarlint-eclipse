@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.Set;
 import org.eclipse.cdt.core.CCProjectNature;
 import org.eclipse.cdt.core.CProjectNature;
+import org.eclipse.compare.CompareConfiguration;
+import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -32,6 +34,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
@@ -58,6 +61,15 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
   private static boolean isCdtPresent() {
     try {
       Class.forName("org.eclipse.cdt.core.CCorePlugin");
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
+  }
+
+  private static boolean isCdtUiPresent() {
+    try {
+      Class.forName("org.eclipse.cdt.ui.CUIPlugin");
       return true;
     } catch (ClassNotFoundException e) {
       return false;
@@ -103,7 +115,7 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
 
   @Override
   public Optional<SourceViewerConfiguration> sourceViewerConfiguration(String ruleLanguage) {
-    if (isCdtPresent() && (ruleLanguage.equals(C_LANGUAGE_KEY) || ruleLanguage.equals(CPP_LANGUAGE_KEY))) {
+    if (isCdtUiPresent() && (ruleLanguage.equals(C_LANGUAGE_KEY) || ruleLanguage.equals(CPP_LANGUAGE_KEY))) {
       return Optional.of(CdtUiUtils.sourceViewerConfiguration());
     }
     return Optional.empty();
@@ -111,9 +123,18 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
 
   @Override
   public Optional<IDocumentPartitioner> documentPartitioner(String ruleLanguage) {
-    if (isCdtPresent() && (ruleLanguage.equals(C_LANGUAGE_KEY) || ruleLanguage.equals(CPP_LANGUAGE_KEY))) {
+    if (isCdtUiPresent() && (ruleLanguage.equals(C_LANGUAGE_KEY) || ruleLanguage.equals(CPP_LANGUAGE_KEY))) {
       return Optional.of(CdtUiUtils.documentPartitioner());
     }
     return Optional.empty();
+  }
+
+  @Nullable
+  @Override
+  public TextMergeViewer getTextMergeViewer(String ruleLanguage, Composite parent, CompareConfiguration mp) {
+    if (isCdtUiPresent() && (ruleLanguage.equals(C_LANGUAGE_KEY) || ruleLanguage.equals(CPP_LANGUAGE_KEY))) {
+      return CdtUiUtils.getTextMergeViewer(parent, mp);
+    }
+    return null;
   }
 }
