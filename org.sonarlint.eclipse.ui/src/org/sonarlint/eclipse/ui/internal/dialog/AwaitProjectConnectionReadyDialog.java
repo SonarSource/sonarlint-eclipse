@@ -44,8 +44,8 @@ public class AwaitProjectConnectionReadyDialog extends MessageDialog {
       "In order to proceed we have to wait for the Connected Mode to get ready. Depending on your network connection "
         + "it can take some time, at most SonarLint will wait for " + AwaitProjectConnectionReadyJob.maxWaitTime()
         + " minute(s). When everything is finished this dialog will be closed automatically and SonarLint will "
-        + "proceed. If you click 'Cancel', the Connected Mode will still be established but the requested issue will "
-        + "not be displayed.",
+        + "proceed. If you click 'Cancel', the Connected Mode will still be established but the requested action will "
+        + "be cancelled.",
       INFORMATION,
       new String[] {"Cancel"},
       0);

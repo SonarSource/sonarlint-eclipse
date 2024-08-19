@@ -53,6 +53,7 @@ import org.sonarlint.eclipse.ui.internal.binding.assist.AssistCreatingAutomaticC
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistCreatingManualConnectionJob;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
 import org.sonarlint.eclipse.ui.internal.job.BackendProgressJobScheduler;
+import org.sonarlint.eclipse.ui.internal.job.OpenFixSuggestionInEclipseJob;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueContext;
 import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
@@ -74,6 +75,7 @@ import org.sonarsource.sonarlint.core.rpc.protocol.client.binding.AssistBindingR
 import org.sonarsource.sonarlint.core.rpc.protocol.client.connection.AssistCreatingConnectionParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.connection.AssistCreatingConnectionResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.connection.ConnectionSuggestionDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.fix.FixSuggestionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.hotspot.HotspotDetailsDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.IssueDetailsDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.log.LogParams;
@@ -306,10 +308,12 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
    *  SonarQube, it will automatically launch the "Connect to SonarQube or SonarCloud" wizard. Some magic will also ask
    *  the user to find the correct project if there is currently no binding to the SonarQube project.
    *  -> both cases must not be tested afterwards
+   *
+   *  Both cases to get the project and binding should not be failing as this was just set up if not already done
+   *  beforehand! Therefore we just log it ^^
    */
   @Override
   public void showIssue(String configScopeId, IssueDetailsDto issueDetails) {
-    // We were just asked to find the correct project, this cannot happen -> Only log the information
     var projectOpt = SonarLintUtils.tryResolveProject(configScopeId);
     if (projectOpt.isEmpty()) {
       SonarLintLogger.get().error("Open in IDE: The project '" + configScopeId + "' is not found in the workspace");
@@ -317,7 +321,6 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
     }
     var project = projectOpt.get();
 
-    // We were just asked to connect and create a binding, this cannot happen -> Only log the information
     var bindingOpt = SonarLintCorePlugin.getConnectionManager().resolveBinding(project);
     if (bindingOpt.isEmpty()) {
       SonarLintLogger.get().error("Open in IDE: The project '" + configScopeId
@@ -327,6 +330,25 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
 
     // Handle expensive checks and actual logic in separate job to not block the thread
     new OpenIssueInEclipseJob(new OpenIssueContext("Open in IDE", issueDetails, project, bindingOpt.get()))
+      .schedule(500);
+  }
+
+  /**
+   *  The behavior before this is invoked regarding setting up the Connected Mode (including binding) or finding the
+   *  correct project in the workspace is exactly the same as for the "showIssue(...)" method!
+   */
+  @Override
+  public void showFixSuggestion(String configScopeId, String issueKey, FixSuggestionDto fixSuggestion) {
+    var projectOpt = SonarLintUtils.tryResolveProject(configScopeId);
+    if (projectOpt.isEmpty()) {
+      SonarLintLogger.get().error("Open fix suggestion in the IDE: The project '" + configScopeId
+        + "' is not found in the workspace");
+      return;
+    }
+    var project = projectOpt.get();
+
+    // Handle expensive checks and actual logic in separate job to not block the thread
+    new OpenFixSuggestionInEclipseJob(fixSuggestion, project)
       .schedule(500);
   }
 
