@@ -28,8 +28,7 @@ Export-Package: org.sonarlint.eclipse.core,
  org.sonarlint.eclipse.core.internal.utils;x-friends:="org.sonarlint.eclipse.cdt,org.sonarlint.eclipse.core.tests,org.sonarlint.eclipse.jdt,org.sonarlint.eclipse.m2e,org.sonarlint.eclipse.buildship,org.sonarlint.eclipse.ui",
  org.sonarlint.eclipse.core.internal.vcs;x-friends:="org.sonarlint.eclipse.ui",
  org.sonarlint.eclipse.core.listener,
- org.sonarlint.eclipse.core.resource,
- org.sonarlint.eclipse.core.rule
+ org.sonarlint.eclipse.core.resource
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime;bundle-version="3.14.0",
  org.eclipse.core.resources,
@@ -39,13 +38,11 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.net,
  org.eclipse.core.filesystem,
  org.eclipse.team.core,
- org.eclipse.compare,
  org.eclipse.jdt.annotation;resolution:=optional,
  org.eclipse.jgit;resolution:=optional,
  org.eclipse.egit.core;resolution:=optional,
  org.eclipse.egit.ui;resolution:=optional,
  org.eclipse.text,
- org.eclipse.swt,
  org.sonarsource.sonarlint.core.sonarlint-java-client-osgi;bundle-version="[10.4.0,10.5.0)"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11

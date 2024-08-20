@@ -2,6 +2,9 @@
 <?eclipse version="3.0"?>
 <plugin>
   <extension-point id="markerResolutionEnhancer" name="SonarLint Marker Resolution Enhancer" schema="schema/markerResolutionEnhancer.exsd"/>
+  <extension-point id="syntaxHighlightingProvider"
+   					name="SonarLint Syntax Highlighting Provider"
+   					schema="schema/syntaxHighlightingProvider.exsd"/>
 
 <!-- Extensions -->
 

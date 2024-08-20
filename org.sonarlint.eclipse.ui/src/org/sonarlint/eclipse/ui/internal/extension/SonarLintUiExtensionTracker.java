@@ -23,14 +23,17 @@ import java.util.Collection;
 import java.util.List;
 import org.sonarlint.eclipse.core.internal.extension.AbstractSonarLintExtensionTracker;
 import org.sonarlint.eclipse.ui.quickfixes.IMarkerResolutionEnhancer;
+import org.sonarlint.eclipse.ui.rule.ISyntaxHighlightingProvider;
 
 public class SonarLintUiExtensionTracker extends AbstractSonarLintExtensionTracker {
 
   private static SonarLintUiExtensionTracker singleInstance = null;
 
   private final SonarLintEP<IMarkerResolutionEnhancer> markerResolutionEnhancerEp = new SonarLintEP<>("org.sonarlint.eclipse.ui.markerResolutionEnhancer"); //$NON-NLS-1$
+  private final SonarLintEP<ISyntaxHighlightingProvider> syntaxHighlightingProviderEP = new SonarLintEP<>(
+    "org.sonarlint.eclipse.ui.syntaxHighlightingProvider"); //$NON-NLS-1$
 
-  private final Collection<SonarLintEP<?>> allEps = List.of(markerResolutionEnhancerEp);
+  private final Collection<SonarLintEP<?>> allEps = List.of(markerResolutionEnhancerEp, syntaxHighlightingProviderEP);
 
   private SonarLintUiExtensionTracker() {
     init(allEps);
@@ -53,4 +56,7 @@ public class SonarLintUiExtensionTracker extends AbstractSonarLintExtensionTrack
     return markerResolutionEnhancerEp.getInstances();
   }
 
+  public Collection<ISyntaxHighlightingProvider> getSyntaxHighlightingProvider() {
+    return syntaxHighlightingProviderEP.getInstances();
+  }
 }
