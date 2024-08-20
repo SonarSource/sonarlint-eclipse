@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.sonarlint.eclipse.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.sonarlint.eclipse.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.sonarlint.eclipse.core" id="syntaxHighlightingProvider" name="SonarLint Syntax Highlighting Provider"/>
+         <meta.schema plugin="org.sonarlint.eclipse.ui" id="syntaxHighlightingProvider" name="SonarLint Syntax Highlighting Provider"/>
       </appInfo>
       <documentation>
          Help rule descriptions to find the correct syntax highlighting configuration for code snippets based on the external plugin implementation
@@ -55,7 +55,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.sonarlint.eclipse.core.internal.rule.ISyntaxHighlightingProvider"/>
+                  <meta.attribute kind="java" basedOn=":org.sonarlint.eclipse.ui.internal.rule.ISyntaxHighlightingProvider"/>
                </appInfo>
             </annotation>
          </attribute>

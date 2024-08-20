@@ -22,7 +22,7 @@ package org.sonarlint.eclipse.pydev.internal;
 import java.util.Optional;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.sonarlint.eclipse.core.rule.ISyntaxHighlightingProvider;
+import org.sonarlint.eclipse.ui.rule.ISyntaxHighlightingProvider;
 
 public class PythonProjectConfiguratorExtension implements ISyntaxHighlightingProvider {
   private static final String PYTHON_LANGUAGE_KEY = "py";

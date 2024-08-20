@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.rule;
+package org.sonarlint.eclipse.ui.rule;
 
 import java.util.Optional;
 import org.eclipse.compare.CompareConfiguration;
@@ -57,7 +57,7 @@ public interface ISyntaxHighlightingProvider {
    *  @param ruleLanguage to be used to check whether this plug-in can contribute a viewer for this language
    *  @param parent the UI parent element which will embed the viewer
    *  @param used for configuring the viewer by providing information on the left and right side, e.g. label
-   *  @return
+   *  @return the language/plug-in specific diff viewer or null if not applicable
    */
   @Nullable
   default TextMergeViewer getTextMergeViewer(String ruleLanguage, Composite parent, CompareConfiguration mp) {

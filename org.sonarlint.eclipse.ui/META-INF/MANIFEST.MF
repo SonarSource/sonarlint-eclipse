@@ -26,6 +26,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.team.core,
  org.eclipse.jdt.annotation;resolution:=optional,
  org.eclipse.text,
+ org.eclipse.compare,
  org.eclipse.core.expressions,
  org.sonarsource.sonarlint.core.sonarlint-java-client-osgi;bundle-version="[10.4.0,10.5.0)"
 Export-Package: org.sonarlint.eclipse.ui.internal;x-friends:="org.sonarlint.eclipse.core.tests",
@@ -35,7 +36,8 @@ Export-Package: org.sonarlint.eclipse.ui.internal;x-friends:="org.sonarlint.ecli
  org.sonarlint.eclipse.ui.internal.properties;x-friends:="org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.ui.internal.util;x-friends:="org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.ui.internal.views.issues;x-friends:="org.sonarlint.eclipse.its",
- org.sonarlint.eclipse.ui.quickfixes;x-internal:=true
+ org.sonarlint.eclipse.ui.quickfixes;x-internal:=true,
+ org.sonarlint.eclipse.ui.rule
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle

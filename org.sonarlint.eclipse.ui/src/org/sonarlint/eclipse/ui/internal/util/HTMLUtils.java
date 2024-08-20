@@ -27,8 +27,8 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 
 /** Utility class used for parsing the HTML rule description into native elements */
 public final class HTMLUtils {
@@ -90,7 +90,7 @@ public final class HTMLUtils {
     // is provided by any plug-in via the extension mechanism.
     // INFO: Configuration must extend of org.eclipse.jface.text.source.SourceViewerConfiguration
     // INFO: Document partitioner must implement org.eclipse.jface.text.IDocumentPartitioner
-    var configurationProviders = SonarLintExtensionTracker.getInstance().getSyntaxHighlightingProvider();
+    var configurationProviders = SonarLintUiExtensionTracker.getInstance().getSyntaxHighlightingProvider();
     SourceViewerConfiguration sourceViewerConfigurationNullable = null;
     for (var configurationProvider : configurationProviders) {
       var sourceViewerConfigurationOptional = configurationProvider.sourceViewerConfiguration(languageKey);

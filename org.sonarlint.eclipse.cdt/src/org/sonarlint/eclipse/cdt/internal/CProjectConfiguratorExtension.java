@@ -42,7 +42,7 @@ import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.core.rule.ISyntaxHighlightingProvider;
+import org.sonarlint.eclipse.ui.rule.ISyntaxHighlightingProvider;
 
 /**
  * Responsible for checking at runtime if CDT plugin is installed.
@@ -113,28 +113,34 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
     return null;
   }
 
+  /**
+   *  We can only provide UI elements if the language matches C/C++ and the CDT UI plug-in is available as in some
+   *  cases there might only be the core bundles present. This might be the case for thrid-party plug-ins that make
+   *  use of the CDT core in order to work with C/C++ but provide their own "frontend".
+   */
+  private static boolean canProvideUiElements(String ruleLanguage) {
+    return isCdtUiPresent() && (ruleLanguage.equals(C_LANGUAGE_KEY) || ruleLanguage.equals(CPP_LANGUAGE_KEY));
+  }
+
   @Override
   public Optional<SourceViewerConfiguration> sourceViewerConfiguration(String ruleLanguage) {
-    if (isCdtUiPresent() && (ruleLanguage.equals(C_LANGUAGE_KEY) || ruleLanguage.equals(CPP_LANGUAGE_KEY))) {
-      return Optional.of(CdtUiUtils.sourceViewerConfiguration());
-    }
-    return Optional.empty();
+    return canProvideUiElements(ruleLanguage)
+      ? Optional.of(CdtUiUtils.sourceViewerConfiguration())
+      : Optional.empty();
   }
 
   @Override
   public Optional<IDocumentPartitioner> documentPartitioner(String ruleLanguage) {
-    if (isCdtUiPresent() && (ruleLanguage.equals(C_LANGUAGE_KEY) || ruleLanguage.equals(CPP_LANGUAGE_KEY))) {
-      return Optional.of(CdtUiUtils.documentPartitioner());
-    }
-    return Optional.empty();
+    return canProvideUiElements(ruleLanguage)
+      ? Optional.of(CdtUiUtils.documentPartitioner())
+      : Optional.empty();
   }
 
   @Nullable
   @Override
   public TextMergeViewer getTextMergeViewer(String ruleLanguage, Composite parent, CompareConfiguration mp) {
-    if (isCdtUiPresent() && (ruleLanguage.equals(C_LANGUAGE_KEY) || ruleLanguage.equals(CPP_LANGUAGE_KEY))) {
-      return CdtUiUtils.getTextMergeViewer(parent, mp);
-    }
-    return null;
+    return canProvideUiElements(ruleLanguage)
+      ? CdtUiUtils.getTextMergeViewer(parent, mp)
+      : null;
   }
 }
