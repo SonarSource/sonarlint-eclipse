@@ -45,26 +45,32 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     onTheFlyView.open();
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
-
     checkIssueIsDefault();
+    new DefaultEditor().close();
 
     var cognitiveComplexityMarkerMatcher = new MarkerDescriptionMatcher(
       CoreMatchers.containsString("Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed."));
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
     doAndWaitForSonarLintAnalysisJob(() -> onTheFlyView.getIssues(cognitiveComplexityMarkerMatcher).get(0).deactivateRule());
-
     var defaultEditor = new DefaultEditor();
     await().untilAsserted(() -> assertThat(defaultEditor.getMarkers())
       .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsExactly(tuple("Replace this use of System.out by a logger.", 9)));
+    new DefaultEditor().close();
 
-    doAndWaitForSonarLintAnalysisJob(this::restoreDefaultRulesConfiguration);
-
+    restoreDefaultRulesConfiguration();
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
     checkIssueIsDefault();
-    doAndWaitForSonarLintAnalysisJob(RulesConfigurationTest::lowerCognitiveComplexityRuleParameter);
-    checkIssueChanged();
+    new DefaultEditor().close();
 
-    doAndWaitForSonarLintAnalysisJob(() -> restoreDefaultRulesConfiguration());
+    lowerCognitiveComplexityRuleParameter();
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
+    checkIssueChanged();
+    new DefaultEditor().close();
+
+    restoreDefaultRulesConfiguration();
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
     checkIssueIsDefault();
   }
 
