@@ -35,6 +35,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
@@ -134,6 +135,14 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
     return canProvideUiElements(ruleLanguage)
       ? Optional.of(CdtUiUtils.documentPartitioner())
       : Optional.empty();
+  }
+
+  @Nullable
+  @Override
+  public SonarLintLanguage getEditorLanguage(IEditorPart editor) {
+    return isCdtUiPresent() && CdtUiUtils.isCEditor(editor)
+      ? SonarLintLanguage.C
+      : null;
   }
 
   @Nullable

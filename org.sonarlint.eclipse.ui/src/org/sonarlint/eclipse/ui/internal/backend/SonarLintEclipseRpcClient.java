@@ -348,8 +348,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
     var project = projectOpt.get();
 
     // Handle expensive checks and actual logic in separate job to not block the thread
-    new OpenFixSuggestionInEclipseJob(fixSuggestion, project)
-      .schedule(500);
+    new OpenFixSuggestionInEclipseJob(fixSuggestion, project).schedule();
   }
 
   @Override

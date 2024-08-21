@@ -26,6 +26,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorPart;
+import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 
 /**
  *  The rule descriptions containing code snippet require the correct syntax highlighting of the language to display
@@ -44,6 +46,21 @@ public interface ISyntaxHighlightingProvider {
    *  @return the SourceViewer and its document requiring a partitioner that is based on the plug-in implementing it
    */
   Optional<IDocumentPartitioner> documentPartitioner(String ruleLanguage);
+
+  /**
+   *  This is used to check whether a editor is provided by a specific plug-in (e.g. by JDT) and therefore linked to a
+   *  specific programming language (e.g. Java). As to the Eclipse platform itself this is all the same shared
+   *  interface this check must be done by the sub-plugins directly.
+   *
+   *  @since 10.6
+   *
+   *  @param editor used to determine the programming language based on the plug-in specific implementation
+   *  @return the language or null if not applicable
+   */
+  @Nullable
+  default SonarLintLanguage getEditorLanguage(IEditorPart editor) {
+    return null;
+  }
 
   /**
    *  This is used for displaying language (and therefore implementing plug-in) -specific difference viewers. The

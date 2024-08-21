@@ -33,6 +33,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorPart;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
@@ -130,6 +131,14 @@ public class JavaProjectConfiguratorExtension
       return Optional.of(JdtUiUtils.documentPartitioner());
     }
     return Optional.empty();
+  }
+
+  @Nullable
+  @Override
+  public SonarLintLanguage getEditorLanguage(IEditorPart editor) {
+    return jdtUiPresent && JdtUiUtils.isJavaEditor(editor)
+      ? SonarLintLanguage.JAVA
+      : null;
   }
 
   @Nullable

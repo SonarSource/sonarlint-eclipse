@@ -16,6 +16,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.filesystem,
  org.eclipse.jdt.annotation;resolution:=optional,
  org.eclipse.text,
+ org.eclipse.ui,
  org.eclipse.compare,
  org.eclipse.swt
 Import-Package:  org.eclipse.ui.texteditor,
