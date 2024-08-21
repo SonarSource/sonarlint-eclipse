@@ -101,9 +101,13 @@ public class SonarLintTelemetry {
     getTelemetryService().addedAutomaticBindings();
   }
 
-  public static void handledFixSuggestion(String id, int changeIndex, boolean accepted) {
-    getTelemetryService().fixSuggestionResolved(new FixSuggestionResolvedParams(id,
-      accepted ? FixSuggestionStatus.ACCEPTED : FixSuggestionStatus.DECLINED,
-      changeIndex));
+  public static void acceptFixSuggestion(String id, int changeIndex) {
+    getTelemetryService().fixSuggestionResolved(
+      new FixSuggestionResolvedParams(id, FixSuggestionStatus.ACCEPTED, changeIndex));
+  }
+
+  public static void declineFixSuggestion(String id, int changeIndex) {
+    getTelemetryService().fixSuggestionResolved(
+      new FixSuggestionResolvedParams(id, FixSuggestionStatus.DECLINED, changeIndex));
   }
 }

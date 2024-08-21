@@ -54,12 +54,15 @@ public abstract class AbstractOpenInEclipseJob extends Job {
   protected ISonarLintFile file;
 
   protected final ISonarLintProject project;
+  private final boolean skipAnalysisReadyCheck;
   private final boolean skipBranchCheck;
 
-  protected AbstractOpenInEclipseJob(String name, ISonarLintProject project, boolean skipBranchCheck) {
+  protected AbstractOpenInEclipseJob(String name, ISonarLintProject project, boolean skipAnalysisReadyCheck,
+    boolean skipBranchCheck) {
     super(name);
 
     this.project = project;
+    this.skipAnalysisReadyCheck = skipAnalysisReadyCheck;
     this.skipBranchCheck = skipBranchCheck;
   }
 
@@ -68,7 +71,9 @@ public abstract class AbstractOpenInEclipseJob extends Job {
     // 1) We have to await the analysis getting ready for this project. When also setting up the connection / binding
     // with this Open in IDE request it isn't the case. We want to display a nice dialog informing the user that they
     // have to wait for a few more moments.
-    if (!AnalysisReadyStatusCache.getAnalysisReadiness(ConfigScopeSynchronizer.getConfigScopeId(project))) {
+    // -> When the check is not needed, the whole stuff gets skipped!
+    if (!skipAnalysisReadyCheck
+      && !AnalysisReadyStatusCache.getAnalysisReadiness(ConfigScopeSynchronizer.getConfigScopeId(project))) {
       // Show the console so the user will see the progress!
       SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
 

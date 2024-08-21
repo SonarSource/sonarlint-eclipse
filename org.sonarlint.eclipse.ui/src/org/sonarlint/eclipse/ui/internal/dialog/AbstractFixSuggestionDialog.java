@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.dialog;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Locale;
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.IEncodedStreamContentAccessor;
 import org.eclipse.compare.ITypedElement;
@@ -42,33 +43,50 @@ import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 
-public class FixSuggestionDialog extends Dialog {
+public abstract class AbstractFixSuggestionDialog extends Dialog {
   @Nullable
   private final SonarLintLanguage language;
   private final String explanation;
-  private final String textLeft;
-  private final String textRight;
+  private final String beforeText;
+  private final String afterText;
+  private final int changeIndex;
+  private final int absoluteNumberOfChanges;
   private final CompareConfiguration mp;
 
-  public FixSuggestionDialog(Shell parentShell, @Nullable SonarLintLanguage language, String explanation,
-    String textLeft, String textRight) {
+  /**
+   *  @param parentShell used for the dialog
+   *  @param language used for determining the correct diff viewer for the language
+   *  @param explanation shown about the suggestion to explain the diff
+   *  @param beforeText what will be replaced
+   *  @param afterText with what it will be replaced
+   *  @param changeIndex the number of the index (-1)
+   *  @param absoluteNumberOfChanges all number of changes
+   */
+  protected AbstractFixSuggestionDialog(Shell parentShell, @Nullable SonarLintLanguage language, String explanation,
+    String beforeText, String afterText, int changeIndex, int absoluteNumberOfChanges) {
     super(parentShell);
 
     this.language = language;
     this.explanation = explanation;
-    this.textLeft = textLeft;
-    this.textRight = textRight;
+    this.beforeText = beforeText;
+    this.afterText = afterText;
+    this.changeIndex = changeIndex;
+    this.absoluteNumberOfChanges = absoluteNumberOfChanges;
     this.mp = new CompareConfiguration();
+    mp.setProperty(CompareConfiguration.MIRRORED, true);
     mp.setLeftEditable(false);
-    mp.setLeftLabel("Current code");
+    mp.setLeftLabel("Suggested code");
     mp.setRightEditable(false);
-    mp.setRightLabel("Suggested code");
+    mp.setRightLabel("Current code on the server");
   }
 
   @Override
   protected Control createDialogArea(Composite parent) {
     var container = (Composite) super.createDialogArea(parent);
     container.setLayout(new GridLayout(1, true));
+
+    // So the sub-classes can add a specific label with situational information!
+    addLabel(container);
 
     var label = new Label(container, SWT.WRAP);
     label.setText(explanation);
@@ -80,22 +98,15 @@ public class FixSuggestionDialog extends Dialog {
     } else {
       diffViewer = getDiffViewer(container);
     }
-    diffViewer.setInput(new DiffNode(new CodeNode(textLeft), new CodeNode(textRight)));
-    var gridData = new GridData();
-    gridData.horizontalAlignment = SWT.FILL;
-    gridData.verticalAlignment = SWT.FILL;
-    gridData.grabExcessHorizontalSpace = true;
-    gridData.grabExcessVerticalSpace = true;
+    // INFO: Because we mirrored the diff viewer the right becomes left and the left becomes right
+    diffViewer.setInput(new DiffNode(new CodeNode(afterText), new CodeNode(beforeText)));
     diffViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
     return container;
   }
 
-  @Override
-  protected void createButtonsForButtonBar(Composite parent) {
-    createButton(parent, IDialogConstants.OK_ID, "Apply Changes", true);
-    createButton(parent, IDialogConstants.CANCEL_ID, "Cancel", false);
-    createButton(parent, IDialogConstants.SKIP_ID, "Decline Changes", false);
+  protected void addLabel(Composite container) {
+    // Should be overwritten by sub-classes that provide situational information!
   }
 
   /** Because the "skip" button is not implemented by default, we have to do it on our own! */
@@ -112,8 +123,8 @@ public class FixSuggestionDialog extends Dialog {
   protected void configureShell(Shell newShell) {
     super.configureShell(newShell);
 
-    newShell.setText("SonarLint Fix Suggestion");
-    newShell.setSize(800, 400);
+    newShell.setText(String.format("SonarLint Fix Suggestion (%d/%d)", changeIndex + 1, absoluteNumberOfChanges));
+    newShell.setSize(1000, 400);
   }
 
   @Override
@@ -122,7 +133,7 @@ public class FixSuggestionDialog extends Dialog {
   }
 
   private TextMergeViewer getDiffViewer(Composite parent) {
-    var fileLanguage = language.name().toLowerCase();
+    var fileLanguage = language.name().toLowerCase(Locale.getDefault());
 
     var configurationProviders = SonarLintUiExtensionTracker.getInstance().getSyntaxHighlightingProvider();
     for (var configurationProvider : configurationProviders) {
@@ -137,6 +148,10 @@ public class FixSuggestionDialog extends Dialog {
     return new TextMergeViewer(parent, mp);
   }
 
+  /**
+   *  The TextMergeViewer works with distinct nodes for each side, we have to implement it ourself as there is no
+   *  common implementation that can be reused. It is basically fancy wrapper for a string -.-
+   */
   private static class CodeNode implements ITypedElement, IEncodedStreamContentAccessor {
     private final String content;
 
