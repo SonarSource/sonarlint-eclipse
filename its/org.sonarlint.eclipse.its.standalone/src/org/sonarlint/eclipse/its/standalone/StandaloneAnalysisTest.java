@@ -62,7 +62,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.ConfirmManualAnalysisDialogOpened;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.EnhancedWithConnectedModeInformationDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.OnTheFlyViewIsEmpty;
+import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmManualAnalysisDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.EnhancedWithConnectedModeInformationDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.perspectives.PhpPerspective;
 import org.sonarlint.eclipse.its.shared.reddeer.perspectives.PydevPerspective;
@@ -116,8 +119,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(helloJavaFile);
     new DefaultEditor().close();
 
-    var popUp = new DefaultShell("Automatic build of workspace disabled");
-    new DefaultLink(popUp, "Enable automatic build of workspace").click();
+    shellByName("Automatic build of workspace disabled")
+      .ifPresent(shell -> new DefaultLink(shell, "Enable automatic build of workspace").click());
     preferences = GeneralWorkspaceBuildPreferences.open();
     preferences.ok();
 
@@ -126,8 +129,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(helloJavaFile);
     new DefaultEditor().close();
 
-    popUp = new DefaultShell("Automatic build of workspace disabled");
-    new DefaultLink(popUp, "Don't show again").click();
+    shellByName("Automatic build of workspace disabled")
+      .ifPresent(shell -> new DefaultLink(shell, "Don't show again").click());
 
     // 5) Reset preferences
     preferences = GeneralWorkspaceBuildPreferences.open();
@@ -171,6 +174,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     System.clearProperty("sonarlint.internal.ignoreEnhancedFeature");
     System.clearProperty("sonarlint.internal.ignoreMissingFeature");
 
+    // Title of the enhanced with Connected Mode dialog
+    var dialogTitle = "Are you working with a CI/CD pipeline?";
+
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("connected", "connected");
 
@@ -180,21 +186,25 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var notAnalyzedOpt = shellByName("SonarLint - Language could not be analyzed");
     notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Learn more").click());
     notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Try SonarCloud for free").click());
-    notAnalyzedOpt.ifPresent(shell -> shell.close());
+    notAnalyzedOpt.ifPresent(DefaultShell::close);
 
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
-    var dialog = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
+    new WaitUntil(new EnhancedWithConnectedModeInformationDialogOpened(dialogTitle));
+    var dialog = new EnhancedWithConnectedModeInformationDialog(dialogTitle);
     doAndWaitForSonarLintAnalysisJob(dialog::learnMore);
 
-    notAnalyzedOpt = shellByName("SonarLint - Language could not be analyzed");
+    // THe project contains multiple languages, therefore the shell name slightly differs
+    notAnalyzedOpt = shellByName("SonarLint - Languages could not be analyzed");
     notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Don't show again").click());
 
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
-    var dialog2 = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
+    new WaitUntil(new EnhancedWithConnectedModeInformationDialogOpened(dialogTitle));
+    var dialog2 = new EnhancedWithConnectedModeInformationDialog(dialogTitle);
     doAndWaitForSonarLintAnalysisJob(dialog2::trySonarCloudForFree);
 
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
-    var dialog3 = new EnhancedWithConnectedModeInformationDialog("Are you working with a CI/CD pipeline?");
+    new WaitUntil(new EnhancedWithConnectedModeInformationDialogOpened(dialogTitle));
+    var dialog3 = new EnhancedWithConnectedModeInformationDialog(dialogTitle);
     doAndWaitForSonarLintAnalysisJob(dialog3::dontAskAgain);
 
     doAndWaitForSonarLintAnalysisJob(
@@ -266,7 +276,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     // Trigger manual analysis of all files
     rootProject.select();
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
-    doAndWaitForSonarLintAnalysisJob(() -> new OkButton(new DefaultShell("Confirmation")).click());
+    new WaitUntil(new ConfirmManualAnalysisDialogOpened());
+    doAndWaitForSonarLintAnalysisJob(() -> new ConfirmManualAnalysisDialog().ok());
     waitForNoMarkers(textEditor);
 
     Awaitility.await()
