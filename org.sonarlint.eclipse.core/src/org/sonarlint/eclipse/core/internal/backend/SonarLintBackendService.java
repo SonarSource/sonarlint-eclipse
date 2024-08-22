@@ -190,7 +190,7 @@ public class SonarLintBackendService {
               Map.of()),
             httpConfiguration,
             getSonarCloudAlternativeEnvironment(),
-            new FeatureFlagsDto(true, true, true, true, false, true, true, true, telemetryEnabled, false),
+            new FeatureFlagsDto(true, true, true, true, false, true, true, true, telemetryEnabled, true),
             StoragePathManager.getStorageDir(),
             StoragePathManager.getDefaultWorkDir(),
             Set.copyOf(embeddedPluginPaths),

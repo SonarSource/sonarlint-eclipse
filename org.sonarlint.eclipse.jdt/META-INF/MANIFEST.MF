@@ -15,6 +15,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.ui;resolution:=optional,
  org.sonarlint.eclipse.ui,
  org.eclipse.ui.ide,
+ org.eclipse.ui,
  org.eclipse.compare,
  org.eclipse.swt
 Import-Package: org.eclipse.ui.texteditor,

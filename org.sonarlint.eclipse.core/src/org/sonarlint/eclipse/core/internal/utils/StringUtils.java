@@ -31,7 +31,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import static java.util.stream.Collectors.joining;
 
 public class StringUtils {
-
+  private static String lineSeperator = System.lineSeparator();
   public static final String EMPTY = "";
   public static final int INDEX_NOT_FOUND = -1;
   private static final String COMMA_SEPARATOR = ",";
@@ -188,5 +188,32 @@ public class StringUtils {
 
   public static String xmlDecode(String toDecode) {
     return toDecode.replace("&quot;", "\"").replace("&apos;", "\'").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
+  }
+
+  /**
+   *  When having a (possible multi-line) string and a (possible multi-line) substring, and the starting line of the
+   *  substring is required, this can be used to calculate it.
+   *
+   *  @param str that can contain subString
+   *  @param subString that is searched for
+   *  @return the line of the subString inside the main string
+   */
+  public static int getLineOfSubstring(final String str, final String subString) {
+    var subStringIndex = str.indexOf(subString);
+    if (subStringIndex == -1) {
+      return subStringIndex;
+    }
+
+    // In order to not have an ArithmeticException down below if there is no new line in the whole text!
+    if (!str.contains(lineSeperator)) {
+      return 0;
+    }
+
+    var preSubString = str.substring(0, subStringIndex);
+    return getNumberOfLines(preSubString);
+  }
+
+  public static int getNumberOfLines(final String str) {
+    return str.split(lineSeperator).length;
   }
 }

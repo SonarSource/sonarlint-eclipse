@@ -61,7 +61,7 @@ public class OpenIssueInEclipseJob extends AbstractOpenInEclipseJob {
   private final boolean askedForPreferenceChangeAlready;
 
   public OpenIssueInEclipseJob(OpenIssueContext context) {
-    super(context.getName(), context.getProject(), false);
+    super(context.getName(), context.getProject(), false, false);
 
     this.name = context.getName();
     this.issueDetails = context.getIssueDetails();

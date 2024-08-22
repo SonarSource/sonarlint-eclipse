@@ -20,8 +20,11 @@
 package org.sonarlint.eclipse.pydev.internal;
 
 import java.util.Optional;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.ui.IEditorPart;
+import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.ui.rule.ISyntaxHighlightingProvider;
 
 public class PythonProjectConfiguratorExtension implements ISyntaxHighlightingProvider {
@@ -52,6 +55,14 @@ public class PythonProjectConfiguratorExtension implements ISyntaxHighlightingPr
       return Optional.of(PyDevUtils.sourceViewerConfiguration());
     }
     return Optional.empty();
+  }
+
+  @Nullable
+  @Override
+  public SonarLintLanguage getEditorLanguage(IEditorPart editor) {
+    return pyDevPresent && PyDevUtils.isPythonEditor(editor)
+      ? SonarLintLanguage.PYTHON
+      : null;
   }
 
   @Override

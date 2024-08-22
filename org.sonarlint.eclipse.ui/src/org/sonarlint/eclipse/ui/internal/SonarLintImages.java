@@ -85,6 +85,7 @@ public final class SonarLintImages {
   public static final Image IMG_SONARCLOUD_LOGO = createImage("logo/sonarcloud-black-256px.png"); //$NON-NLS-1$
 
   public static final Image IMG_OPEN_EXTERNAL = createImage("external-link-16.png"); //$NON-NLS-1$
+  public static final Image IMG_WARNING = createImage("warn.png"); //$NON-NLS-1$
 
   public static final Image NOTIFICATION_CLOSE = createImage("notifications/eview16/notification-close.png"); //$NON-NLS-1$
   public static final Image NOTIFICATION_CLOSE_HOVER = createImage("notifications/eview16/notification-close-active.png"); //$NON-NLS-1$

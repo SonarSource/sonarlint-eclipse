@@ -86,13 +86,16 @@ public final class PlatformUtils {
   /**
    * Opens editor for given file.
    */
-  public static void openEditor(IFile file) {
+  @Nullable
+  public static IEditorPart openEditor(IFile file) {
+    IEditorPart part = null;
     var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     try {
-      IDE.openEditor(page, file);
+      part = IDE.openEditor(page, file);
     } catch (PartInitException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
+    return part;
   }
 
   /**

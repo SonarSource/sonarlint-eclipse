@@ -27,6 +27,8 @@ import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.telemetry.TelemetryRpcService;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.AddQuickFixAppliedForRuleParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.DevNotificationsClickedParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.FixSuggestionResolvedParams;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.telemetry.FixSuggestionStatus;
 
 public class SonarLintTelemetry {
 
@@ -97,5 +99,15 @@ public class SonarLintTelemetry {
 
   public static void addedAutomaticBindings() {
     getTelemetryService().addedAutomaticBindings();
+  }
+
+  public static void acceptFixSuggestion(String id, int changeIndex) {
+    getTelemetryService().fixSuggestionResolved(
+      new FixSuggestionResolvedParams(id, FixSuggestionStatus.ACCEPTED, changeIndex));
+  }
+
+  public static void declineFixSuggestion(String id, int changeIndex) {
+    getTelemetryService().fixSuggestionResolved(
+      new FixSuggestionResolvedParams(id, FixSuggestionStatus.DECLINED, changeIndex));
   }
 }

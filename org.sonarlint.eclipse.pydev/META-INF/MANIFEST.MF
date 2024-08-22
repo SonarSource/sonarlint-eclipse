@@ -14,6 +14,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.sonarlint.eclipse.core,
  org.eclipse.jdt.annotation;resolution:=optional,
  org.sonarlint.eclipse.ui,
+ org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.swt
 Import-Package: org.eclipse.jface.preference,
