@@ -94,7 +94,7 @@ public class OpenFixSuggestionInEclipseJob extends AbstractOpenInEclipseJob {
       for (var change : changes) {
         var documentContent = document.get();
         var startLine = change.beforeLineRange().getStartLine();
-        var changeIndex = changes.indexOf(change);
+        var snippetIndex = changes.indexOf(change);
 
         // i) Try to find the suggestion in the file for the user
         var suggestionAvailable = true;
@@ -108,11 +108,11 @@ public class OpenFixSuggestionInEclipseJob extends AbstractOpenInEclipseJob {
         AbstractFixSuggestionDialog dialog;
         if (suggestionAvailable) {
           dialog = new FixSuggestionAvailableDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-            language, explanation, change.before(), change.after(), changeIndex, numberOfChanges);
+            language, explanation, change.before(), change.after(), snippetIndex, numberOfChanges);
           PlatformUtils.openEditor(iFile, lineOfChange + 1);
         } else {
           dialog = new FixSuggestionUnavailableDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-            language, explanation, change.before(), change.after(), changeIndex, numberOfChanges);
+            language, explanation, change.before(), change.after(), snippetIndex, numberOfChanges);
         }
         var result = dialog.open();
 
@@ -121,7 +121,7 @@ public class OpenFixSuggestionInEclipseJob extends AbstractOpenInEclipseJob {
           break;
         } else if (result == IDialogConstants.SKIP_ID) {
           // Send telemetry about it being declined
-          SonarLintTelemetry.declineFixSuggestion(suggestionId, changeIndex);
+          SonarLintTelemetry.declineFixSuggestion(suggestionId, snippetIndex);
         }
 
         // In case there was no suggestion available or the user decided to decline (skip), we continue!
@@ -136,7 +136,7 @@ public class OpenFixSuggestionInEclipseJob extends AbstractOpenInEclipseJob {
         document.set(documentContent.replace(change.before(), change.after()));
 
         // Send telemetry about it being accepted
-        SonarLintTelemetry.acceptFixSuggestion(suggestionId, changeIndex);
+        SonarLintTelemetry.acceptFixSuggestion(suggestionId, snippetIndex);
       }
     });
 

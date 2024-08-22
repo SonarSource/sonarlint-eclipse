@@ -28,8 +28,8 @@ import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 /** Version of the dialog where the fix suggestion is available! */
 public class FixSuggestionAvailableDialog extends AbstractFixSuggestionDialog {
   public FixSuggestionAvailableDialog(Shell parentShell, @Nullable SonarLintLanguage language, String explanation,
-    String textLeft, String textRight, int changeIndex, int absoluteNumberOfChanges) {
-    super(parentShell, language, explanation, textLeft, textRight, changeIndex, absoluteNumberOfChanges);
+    String textLeft, String textRight, int snippetIndex, int absoluteNumberOfChanges) {
+    super(parentShell, language, explanation, textLeft, textRight, snippetIndex, absoluteNumberOfChanges);
   }
 
   /**

@@ -214,6 +214,6 @@ public class StringUtils {
   }
 
   public static int getNumberOfLines(final String str) {
-    return (str.length() - str.replace(lineSeperator, "").length()) / lineSeperator.length();
+    return str.split(lineSeperator).length;
   }
 }

@@ -49,7 +49,7 @@ public abstract class AbstractFixSuggestionDialog extends Dialog {
   private final String explanation;
   private final String beforeText;
   private final String afterText;
-  private final int changeIndex;
+  private final int snippetIndex;
   private final int absoluteNumberOfChanges;
   private final CompareConfiguration mp;
 
@@ -59,18 +59,18 @@ public abstract class AbstractFixSuggestionDialog extends Dialog {
    *  @param explanation shown about the suggestion to explain the diff
    *  @param beforeText what will be replaced
    *  @param afterText with what it will be replaced
-   *  @param changeIndex the number of the index (-1)
+   *  @param snippetIndex the number of the index (-1)
    *  @param absoluteNumberOfChanges all number of changes
    */
   protected AbstractFixSuggestionDialog(Shell parentShell, @Nullable SonarLintLanguage language, String explanation,
-    String beforeText, String afterText, int changeIndex, int absoluteNumberOfChanges) {
+    String beforeText, String afterText, int snippetIndex, int absoluteNumberOfChanges) {
     super(parentShell);
 
     this.language = language;
     this.explanation = explanation;
     this.beforeText = beforeText;
     this.afterText = afterText;
-    this.changeIndex = changeIndex;
+    this.snippetIndex = snippetIndex;
     this.absoluteNumberOfChanges = absoluteNumberOfChanges;
     this.mp = new CompareConfiguration();
     mp.setProperty(CompareConfiguration.MIRRORED, true);
@@ -123,7 +123,7 @@ public abstract class AbstractFixSuggestionDialog extends Dialog {
   protected void configureShell(Shell newShell) {
     super.configureShell(newShell);
 
-    newShell.setText(String.format("SonarLint Fix Suggestion (%d/%d)", changeIndex + 1, absoluteNumberOfChanges));
+    newShell.setText(String.format("SonarLint Fix Suggestion (%d/%d)", snippetIndex + 1, absoluteNumberOfChanges));
     newShell.setSize(1000, 400);
   }
 

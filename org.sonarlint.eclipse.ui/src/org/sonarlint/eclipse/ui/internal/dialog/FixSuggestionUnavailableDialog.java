@@ -32,8 +32,8 @@ import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 /** Version of the dialog where the fix suggestion is not available due to it not being found! */
 public class FixSuggestionUnavailableDialog extends AbstractFixSuggestionDialog {
   public FixSuggestionUnavailableDialog(Shell parentShell, @Nullable SonarLintLanguage language, String explanation,
-    String textLeft, String textRight, int changeIndex, int absoluteNumberOfChanges) {
-    super(parentShell, language, explanation, textLeft, textRight, changeIndex, absoluteNumberOfChanges);
+    String textLeft, String textRight, int snippetIndex, int absoluteNumberOfChanges) {
+    super(parentShell, language, explanation, textLeft, textRight, snippetIndex, absoluteNumberOfChanges);
   }
 
   /**
@@ -52,7 +52,8 @@ public class FixSuggestionUnavailableDialog extends AbstractFixSuggestionDialog 
   @Override
   protected void addLabel(Composite container) {
     var label = new CLabel(container, SWT.WRAP);
-    label.setText("This change suggestion is not applicable as the current code cannot be found in the file.");
+    label.setText("This change suggestion is not applicable as the current code on the server cannot be found in the "
+      + "file.");
     // INFO: When resized to be too small, this icon won't be shown anymore!
     label.setImage(SonarLintImages.IMG_WARNING);
     label.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
