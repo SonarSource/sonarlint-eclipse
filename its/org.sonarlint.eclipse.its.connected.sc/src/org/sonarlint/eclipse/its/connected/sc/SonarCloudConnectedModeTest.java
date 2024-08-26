@@ -73,7 +73,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String SONARCLOUD_PASSWORD = System.getenv("SONARCLOUD_IT_PASSWORD");
   private static final String TOKEN_NAME = "SLE-IT-" + TIMESTAMP;
   private static final String CONNECTION_NAME = "connection";
-  private static final String SAMPLE_JAVA_ISSUES_KEY = "sonarlint-its-sample-java-issues";
+  private static final String SAMPLE_JAVA_ISSUES_PROJECT_KEY = "sonarlint-its-sample-java-issues";
 
   private static WsClient adminWsClient;
   private static String token;
@@ -180,7 +180,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   @Test
   public void fixSuggestion_with_ConnectionSetup_noProject() throws InterruptedException, IOException {
-    triggerOpenFixSuggestion(firstSonarCloudProjectKey,
+    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey,
       firstSonarCloudIssueKey,
       "NotExisting.txt",
       "fixSuggestion_with_ConnectionSetup_noProject",
@@ -199,9 +199,9 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   @Test
   public void fixSuggestion_with_ConnectionSetup_fileNotFound() throws InterruptedException, IOException {
-    importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_KEY, SAMPLE_JAVA_ISSUES_KEY);
+    importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
-    triggerOpenFixSuggestion(firstSonarCloudProjectKey,
+    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey,
       firstSonarCloudIssueKey,
       "NotExisting.txt",
       "fixSuggestion_with_ConnectionSetup_fileNotFound",
@@ -220,7 +220,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void fixSuggestion_with_fixes() throws InterruptedException, IOException {
+  public void fixSuggestion_with_fix() throws InterruptedException, IOException {
     final var file = "FileExists.txt";
     final var explanation = "This is common knowledge!";
     final var before = "Eclipse IDE is the best!";
@@ -228,10 +228,10 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     final var startLine = 0;
     final var endLine = 1;
 
-    importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_KEY, SAMPLE_JAVA_ISSUES_KEY);
+    importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
     // 1) Cancel the suggestion (available)
-    triggerOpenFixSuggestion(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new ConfirmConnectionCreationDialogOpened(true));
     new ConfirmConnectionCreationDialog(true).trust();
@@ -243,28 +243,65 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new FixSuggestionAvailableDialog(0, 1).cancel();
 
     // 2) Decline the suggestion
-    triggerOpenFixSuggestion(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1));
     new FixSuggestionAvailableDialog(0, 1).declineTheChange();
 
     // 3) Apply the suggestion
-    triggerOpenFixSuggestion(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1));
     new FixSuggestionAvailableDialog(0, 1).applyTheChange();
 
     // 4) Cancel the suggestion (unavailable)
-    triggerOpenFixSuggestion(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionUnavailableDialogOpened(0, 1));
     new FixSuggestionUnavailableDialog(0, 1).cancel();
 
     // 5) Suggestion not found
-    triggerOpenFixSuggestion(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionUnavailableDialogOpened(0, 1));
     new FixSuggestionUnavailableDialog(0, 1).proceed();
+  }
+
+  @Test
+  public void fixSuggestion_with_multipleFixes() throws InterruptedException, IOException {
+    final var file = "FileExists.txt";
+    final var explanation = "We need to change this!";
+    final var before = "Eclipse IDE is the best!";
+    final var firstAfter = "IntelliJ IDEA is not the best!";
+    final var secondAfter = "PyCharm CE is also quite okey!";
+    final var firstStartLine = 0;
+    final var firstEndLine = 1;
+    final var secondStartLine = 1107;
+    final var secondEndLine = 1108;
+
+    importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
+
+    triggerOpenFixSuggestionWithTwoChanges(
+      firstSonarCloudProjectKey,
+      firstSonarCloudIssueKey,
+      file,
+      explanation,
+      before, firstAfter, firstStartLine, firstEndLine,
+      firstAfter, secondAfter, secondStartLine, secondEndLine);
+
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(true));
+    new ConfirmConnectionCreationDialog(true).trust();
+
+    new WaitUntil(new ProjectSelectionDialogOpened());
+    new ProjectSelectionDialog().ok();
+
+    // 1) Accept first suggestion
+    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 2));
+    new FixSuggestionAvailableDialog(0, 2).applyTheChange();
+
+    // 2) Proceed with second suggestion (way out of range of the file)
+    new WaitUntil(new FixSuggestionUnavailableDialogOpened(1, 2));
+    new FixSuggestionUnavailableDialog(1, 2).proceed();
   }
 
   private static List<String> getProjectKeys() throws InterruptedException, IOException {
@@ -286,7 +323,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     var projectsList = jsonObject.get("components").getAsJsonArray();
     for (var project : projectsList) {
       var key = project.getAsJsonObject().get("key").getAsString();
-      if (key.contains(SAMPLE_JAVA_ISSUES_KEY)) {
+      if (key.contains(SAMPLE_JAVA_ISSUES_PROJECT_KEY)) {
         projectKeys.add(key);
       }
     }
@@ -320,8 +357,9 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     return response.getBranches(0);
   }
 
-  private void triggerOpenFixSuggestion(String projectKey, String issueKey, String relativePath, String explanation,
-    String before, String after, int startLine, int endLine) throws InterruptedException, IOException {
+  private void triggerOpenFixSuggestionWithOneChange(String projectKey, String issueKey, String relativePath,
+    String explanation, String before, String after, int startLine, int endLine)
+    throws InterruptedException, IOException {
     assertThat(hotspotServerPort).isNotEqualTo(-1);
 
     var body = "{"
@@ -341,6 +379,48 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
       + "]"
       + "}"
       + "}";
+
+    triggerOpenFixSuggestion(projectKey, issueKey, body);
+  }
+
+  private void triggerOpenFixSuggestionWithTwoChanges(String projectKey, String issueKey, String relativePath,
+    String explanation, String firstBefore, String firstAfter, int firstStartLine, int firstEndLine,
+    String secondBefore, String secondAfter, int secondStartLine, int secondEndLine)
+    throws InterruptedException, IOException {
+    assertThat(hotspotServerPort).isNotEqualTo(-1);
+
+    var body = "{"
+      + "\"suggestionId\":\"9689b623-708e-4128-ae90-8432206c61fe\","
+      + "\"explanation\":\"" + explanation + "\","
+      + "\"fileEdit\":{"
+      + "\"path\":\"" + relativePath + "\","
+      + "\"changes\":["
+      + "{"
+      + "\"before\":\"" + firstBefore + "\","
+      + "\"after\":\"" + firstAfter + "\","
+      + "\"beforeLineRange\":{"
+      + "\"startLine\":" + firstStartLine + ","
+      + "\"endLine\":" + firstEndLine
+      + "}"
+      + "},"
+      + "{"
+      + "\"before\":\"" + secondBefore + "\","
+      + "\"after\":\"" + secondAfter + "\","
+      + "\"beforeLineRange\":{"
+      + "\"startLine\":" + secondStartLine + ","
+      + "\"endLine\":" + secondEndLine
+      + "}"
+      + "}"
+      + "]"
+      + "}"
+      + "}";
+
+    triggerOpenFixSuggestion(projectKey, issueKey, body);
+  }
+
+  private void triggerOpenFixSuggestion(String projectKey, String issueKey, String body)
+    throws InterruptedException, IOException {
+    assertThat(hotspotServerPort).isNotEqualTo(-1);
 
     var request = HttpRequest.newBuilder()
       .uri(URI.create("http://localhost:" + hotspotServerPort

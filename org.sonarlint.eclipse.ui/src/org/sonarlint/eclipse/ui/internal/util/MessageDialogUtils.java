@@ -46,7 +46,7 @@ public class MessageDialogUtils {
   }
 
   public static void branchMismatch(String message) {
-    showError("Branch not matching", message);
+    showError("Branch does not match", message);
   }
 
   public static void openInEclipseFailed(String message) {
