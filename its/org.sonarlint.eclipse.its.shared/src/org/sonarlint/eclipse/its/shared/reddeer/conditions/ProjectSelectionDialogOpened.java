@@ -20,19 +20,13 @@
 package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
 import org.eclipse.reddeer.common.condition.WaitCondition;
-import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmConnectionCreationDialog;
+import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ProjectSelectionDialog;
 
-public class ConfirmConnectionCreationDialogOpened implements WaitCondition {
-  private final boolean isSonarCloud;
-
-  public ConfirmConnectionCreationDialogOpened(boolean isSonarCloud) {
-    this.isSonarCloud = isSonarCloud;
-  }
-
+public class ProjectSelectionDialogOpened implements WaitCondition {
   @Override
   public boolean test() {
     try {
-      new ConfirmConnectionCreationDialog(isSonarCloud).isEnabled();
+      new ProjectSelectionDialog().isEnabled();
       return true;
     } catch (Exception ignored) {
       return false;
@@ -40,22 +34,22 @@ public class ConfirmConnectionCreationDialogOpened implements WaitCondition {
   }
 
   @Override
-  public ConfirmConnectionCreationDialog getResult() {
-    return new ConfirmConnectionCreationDialog(isSonarCloud);
+  public ProjectSelectionDialog getResult() {
+    return new ProjectSelectionDialog();
   }
 
   @Override
   public String description() {
-    return "'Confirm Connection Creation' dialog is opened";
+    return "'Project selection for binding' dialog is opened";
   }
 
   @Override
   public String errorMessageWhile() {
-    return "'Confirm Connection Creation' dialog is still opened";
+    return "'Project selection for binding' dialog is still opened";
   }
 
   @Override
   public String errorMessageUntil() {
-    return "'Confirm Connection Creation' dialog is not yet opened";
+    return "'Project selection for binding' dialog is not yet opened";
   }
 }

@@ -20,19 +20,21 @@
 package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
 import org.eclipse.reddeer.common.condition.WaitCondition;
-import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmConnectionCreationDialog;
+import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionAvailableDialog;
 
-public class ConfirmConnectionCreationDialogOpened implements WaitCondition {
-  private final boolean isSonarCloud;
+public class FixSuggestionAvailableDialogOpened implements WaitCondition {
+  private final int index;
+  private final int all;
 
-  public ConfirmConnectionCreationDialogOpened(boolean isSonarCloud) {
-    this.isSonarCloud = isSonarCloud;
+  public FixSuggestionAvailableDialogOpened(int index, int all) {
+    this.index = index;
+    this.all = all;
   }
 
   @Override
   public boolean test() {
     try {
-      new ConfirmConnectionCreationDialog(isSonarCloud).isEnabled();
+      new FixSuggestionAvailableDialog(index, all).isEnabled();
       return true;
     } catch (Exception ignored) {
       return false;
@@ -40,22 +42,22 @@ public class ConfirmConnectionCreationDialogOpened implements WaitCondition {
   }
 
   @Override
-  public ConfirmConnectionCreationDialog getResult() {
-    return new ConfirmConnectionCreationDialog(isSonarCloud);
+  public FixSuggestionAvailableDialog getResult() {
+    return new FixSuggestionAvailableDialog(index, all);
   }
 
   @Override
   public String description() {
-    return "'Confirm Connection Creation' dialog is opened";
+    return "'Fix Suggestion (available)' dialog is opened";
   }
 
   @Override
   public String errorMessageWhile() {
-    return "'Confirm Connection Creation' dialog is still opened";
+    return "'Fix Suggestion (available)' dialog is still opened";
   }
 
   @Override
   public String errorMessageUntil() {
-    return "'Confirm Connection Creation' dialog is not yet opened";
+    return "'Fix Suggestion (available)' dialog is not yet opened";
   }
 }

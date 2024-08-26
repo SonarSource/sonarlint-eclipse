@@ -19,24 +19,51 @@
  */
 package org.sonarlint.eclipse.its.connected.sc;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import org.assertj.core.groups.Tuple;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.ConfirmConnectionCreationDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.DialogMessageIsExpected;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.FileNotFoundDialogOpened;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.FixSuggestionAvailableDialogOpened;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.FixSuggestionUnavailableDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectBindingWizardIsOpened;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectSelectionDialogOpened;
+import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmConnectionCreationDialog;
+import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FileNotFoundDialog;
+import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionAvailableDialog;
+import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionUnavailableDialog;
+import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ProjectSelectionDialog;
+import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ServerConnectionWizard;
+import org.sonarqube.ws.ProjectBranches.Branch;
 import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
+import org.sonarqube.ws.client.projectbranches.ListRequest;
 import org.sonarqube.ws.client.usertokens.GenerateRequest;
 import org.sonarqube.ws.client.usertokens.RevokeRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
@@ -44,13 +71,15 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String SONARCLOUD_ORGANIZATION_KEY = "sonarlint-it";
   private static final String SONARCLOUD_USER = "sonarlint-it";
   private static final String SONARCLOUD_PASSWORD = System.getenv("SONARCLOUD_IT_PASSWORD");
-
   private static final String TOKEN_NAME = "SLE-IT-" + TIMESTAMP;
-
   private static final String CONNECTION_NAME = "connection";
+  private static final String SAMPLE_JAVA_ISSUES_KEY = "sonarlint-its-sample-java-issues";
 
   private static WsClient adminWsClient;
   private static String token;
+  private static String firstSonarCloudProjectKey;
+  private static String firstSonarCloudIssueKey;
+  private static String firstSonarCloudBranch;
 
   @BeforeClass
   public static void prepare() {
@@ -62,12 +91,30 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     token = adminWsClient.userTokens()
       .generate(new GenerateRequest().setName(TOKEN_NAME))
       .getToken();
+
+    try {
+      var sonarCloudProjectKeys = getProjectKeys();
+      var keyAndProject = getFirstProjectAndIssueKey(sonarCloudProjectKeys);
+      firstSonarCloudIssueKey = (String) keyAndProject.toList().get(0);
+      firstSonarCloudProjectKey = (String) keyAndProject.toList().get(1);
+    } catch (InterruptedException | IOException err) {
+      fail("Cannot query the project keys and / or first issue and project key from SonarCloud!", err);
+    }
+
+    firstSonarCloudBranch = getFirstBranch(firstSonarCloudProjectKey).getName();
   }
 
   @AfterClass
   public static void cleanupOrchestrator() {
     adminWsClient.userTokens()
       .revoke(new RevokeRequest().setName(TOKEN_NAME));
+  }
+
+  @Before
+  public void cleanBindings() {
+    var bindingsView = new BindingsView();
+    bindingsView.open();
+    bindingsView.removeAllBindings();
   }
 
   @Test
@@ -129,5 +176,187 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     var projectBindingWizard = new ProjectBindingWizard();
     new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
     projectBindingWizard.cancel();
+  }
+
+  @Test
+  public void fixSuggestion_with_ConnectionSetup_noProject() throws InterruptedException, IOException {
+    triggerOpenFixSuggestion(firstSonarCloudProjectKey,
+      firstSonarCloudIssueKey,
+      "NotExisting.txt",
+      "fixSuggestion_with_ConnectionSetup_noProject",
+      "before",
+      "after",
+      0, 1);
+
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(true));
+    new ConfirmConnectionCreationDialog(true).trust();
+
+    shellByName("SonarLint - No mathing open project found")
+      .ifPresent(shell -> {
+        new DefaultLink(shell, "Open Troubleshooting documentation").click();
+      });
+  }
+
+  @Test
+  public void fixSuggestion_with_ConnectionSetup_fileNotFound() throws InterruptedException, IOException {
+    importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_KEY, SAMPLE_JAVA_ISSUES_KEY);
+
+    triggerOpenFixSuggestion(firstSonarCloudProjectKey,
+      firstSonarCloudIssueKey,
+      "NotExisting.txt",
+      "fixSuggestion_with_ConnectionSetup_fileNotFound",
+      "before",
+      "after",
+      0, 1);
+
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(true));
+    new ConfirmConnectionCreationDialog(true).trust();
+
+    new WaitUntil(new ProjectSelectionDialogOpened());
+    new ProjectSelectionDialog().ok();
+
+    new WaitUntil(new FileNotFoundDialogOpened());
+    new FileNotFoundDialog().ok();
+  }
+
+  @Test
+  public void fixSuggestion_with_fixes() throws InterruptedException, IOException {
+    final var file = "FileExists.txt";
+    final var explanation = "This is common knowledge!";
+    final var before = "Eclipse IDE is the best!";
+    final var after = "IntelliJ IDEA is not the best!";
+    final var startLine = 0;
+    final var endLine = 1;
+
+    importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_KEY, SAMPLE_JAVA_ISSUES_KEY);
+
+    // 1) Cancel the suggestion (available)
+    triggerOpenFixSuggestion(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(true));
+    new ConfirmConnectionCreationDialog(true).trust();
+
+    new WaitUntil(new ProjectSelectionDialogOpened());
+    new ProjectSelectionDialog().ok();
+
+    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1));
+    new FixSuggestionAvailableDialog(0, 1).cancel();
+
+    // 2) Decline the suggestion
+    triggerOpenFixSuggestion(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+
+    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1));
+    new FixSuggestionAvailableDialog(0, 1).declineTheChange();
+
+    // 3) Apply the suggestion
+    triggerOpenFixSuggestion(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+
+    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1));
+    new FixSuggestionAvailableDialog(0, 1).applyTheChange();
+
+    // 4) Cancel the suggestion (unavailable)
+    triggerOpenFixSuggestion(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+
+    new WaitUntil(new FixSuggestionUnavailableDialogOpened(0, 1));
+    new FixSuggestionUnavailableDialog(0, 1).cancel();
+
+    // 5) Suggestion not found
+    triggerOpenFixSuggestion(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+
+    new WaitUntil(new FixSuggestionUnavailableDialogOpened(0, 1));
+    new FixSuggestionUnavailableDialog(0, 1).proceed();
+  }
+
+  private static List<String> getProjectKeys() throws InterruptedException, IOException {
+    assertThat(hotspotServerPort).isNotEqualTo(-1);
+
+    var request = HttpRequest.newBuilder()
+      .uri(URI.create(SONARCLOUD_STAGING_URL + "/api/projects/search?organization=" + SONARCLOUD_ORGANIZATION_KEY
+        + "&analyzedBefore=" + LocalDate.now()))
+      .header("Authorization", "Bearer " + token)
+      .GET()
+      .build();
+
+    var response = HttpClient.newHttpClient().send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+    assertThat(response.statusCode()).isEqualTo(200);
+
+    var jsonObject = (JsonObject) JsonParser.parseString(response.body());
+
+    var projectKeys = new ArrayList<String>();
+    var projectsList = jsonObject.get("components").getAsJsonArray();
+    for (var project : projectsList) {
+      var key = project.getAsJsonObject().get("key").getAsString();
+      if (key.contains(SAMPLE_JAVA_ISSUES_KEY)) {
+        projectKeys.add(key);
+      }
+    }
+    return projectKeys;
+  }
+
+  private static Tuple getFirstProjectAndIssueKey(List<String> projectKeys) throws IOException, InterruptedException {
+    assertThat(hotspotServerPort).isNotEqualTo(-1);
+
+    var request = HttpRequest.newBuilder()
+      .uri(URI.create(SONARCLOUD_STAGING_URL + "/api/issues/search?organization=" + SONARCLOUD_ORGANIZATION_KEY
+        + "&componentKeys=" + String.join(",", projectKeys)))
+      .header("Authorization", "Bearer " + token)
+      .GET()
+      .build();
+
+    var response = HttpClient.newHttpClient().send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+    assertThat(response.statusCode()).isEqualTo(200);
+
+    var jsonObject = (JsonObject) JsonParser.parseString(response.body());
+    var firstIssueKey = jsonObject.get("issues").getAsJsonArray().get(0).getAsJsonObject().get("key").getAsString();
+    var firstProjectKey = jsonObject.get("issues").getAsJsonArray().get(0).getAsJsonObject().get("project").getAsString();
+    return new Tuple(firstIssueKey, firstProjectKey);
+  }
+
+  private static Branch getFirstBranch(String projectKey) {
+    var response = adminWsClient.projectBranches()
+      .list(new ListRequest().setProject(projectKey));
+    assertThat(response.getBranchesCount()).isPositive();
+
+    return response.getBranches(0);
+  }
+
+  private void triggerOpenFixSuggestion(String projectKey, String issueKey, String relativePath, String explanation,
+    String before, String after, int startLine, int endLine) throws InterruptedException, IOException {
+    assertThat(hotspotServerPort).isNotEqualTo(-1);
+
+    var body = "{"
+      + "\"suggestionId\":\"9689b623-708e-4128-ae90-8432206c61fe\","
+      + "\"explanation\":\"" + explanation + "\","
+      + "\"fileEdit\":{"
+      + "\"path\":\"" + relativePath + "\","
+      + "\"changes\":["
+      + "{"
+      + "\"before\":\"" + before + "\","
+      + "\"after\":\"" + after + "\","
+      + "\"beforeLineRange\":{"
+      + "\"startLine\":" + startLine + ","
+      + "\"endLine\":" + endLine
+      + "}"
+      + "}"
+      + "]"
+      + "}"
+      + "}";
+
+    var request = HttpRequest.newBuilder()
+      .uri(URI.create("http://localhost:" + hotspotServerPort
+        + "/sonarlint/api/fix/show"
+        + "?project=" + projectKey
+        + "&issue=" + issueKey
+        + "&organizationKey=" + SONARCLOUD_ORGANIZATION_KEY
+        + "&tokenName=" + TOKEN_NAME
+        + "&tokenValue=" + token
+        + "&branch=" + firstSonarCloudBranch))
+      .header("Content-Type", "application/json")
+      .header("Origin", SONARCLOUD_STAGING_URL)
+      .POST(BodyPublishers.ofString(body))
+      .build();
+
+    var response = HttpClient.newHttpClient().send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+    assertThat(response.statusCode()).isEqualTo(200);
   }
 }

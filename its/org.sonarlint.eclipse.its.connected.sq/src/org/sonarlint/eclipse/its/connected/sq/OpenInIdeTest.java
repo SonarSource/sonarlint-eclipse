@@ -134,13 +134,13 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     // 3) trigger "Open in IDE" feature, but cancel
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey());
-    new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
-    new ConfirmConnectionCreationDialog().donottrust();
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(false), TimePeriod.DEFAULT);
+    new ConfirmConnectionCreationDialog(false).donottrust();
 
     // 4) trigger "Open in IDE" feature, but accept this time
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey());
-    new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
-    new ConfirmConnectionCreationDialog().trust();
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(false), TimePeriod.DEFAULT);
+    new ConfirmConnectionCreationDialog(false).trust();
 
     var wizard = new ServerConnectionWizard();
     assertThat(new ServerConnectionWizard.ServerTypePage(wizard).isSonarQubeSelected()).isTrue();
@@ -217,8 +217,8 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     // 3) trigger "Open in IDE" feature and accept
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey(), tokenName, tokenValue);
-    new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
-    new ConfirmConnectionCreationDialog().trust();
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(false), TimePeriod.DEFAULT);
+    new ConfirmConnectionCreationDialog(false).trust();
 
     // 4) await pop-up saying that automatic binding is not possible
     var popUp = new DefaultShell("SonarLint - No mathing open project found");
@@ -258,8 +258,8 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     // 4) trigger "Open in IDE" feature, but cancel
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey(), tokenName, tokenValue);
-    new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
-    new ConfirmConnectionCreationDialog().donottrust();
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(false), TimePeriod.DEFAULT);
+    new ConfirmConnectionCreationDialog(false).donottrust();
 
     // 5) Check that token was revoked
     var userTokens = adminWsClient
@@ -276,8 +276,8 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     // 7) trigger "Open in IDE" feature, but accept this time
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey(), tokenName, tokenValue);
-    new WaitUntil(new ConfirmConnectionCreationDialogOpened(), TimePeriod.DEFAULT);
-    new ConfirmConnectionCreationDialog().trust();
+    new WaitUntil(new ConfirmConnectionCreationDialogOpened(false), TimePeriod.DEFAULT);
+    new ConfirmConnectionCreationDialog(false).trust();
 
     try {
       var projectSelectionDialog = new ProjectSelectionDialog();

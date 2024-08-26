@@ -22,12 +22,17 @@ package org.sonarlint.eclipse.its.shared.reddeer.dialogs;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 
 public class ConfirmConnectionCreationDialog extends DefaultShell {
-  public ConfirmConnectionCreationDialog() {
-    super("Do you trust this SonarQube server?");
+  private final boolean isSonarCloud;
+
+  public ConfirmConnectionCreationDialog(boolean isSonarCloud) {
+    super(isSonarCloud
+      ? "Do you trust SonarCloud?"
+      : "Do you trust this SonarQube server?");
+    this.isSonarCloud = isSonarCloud;
   }
 
   public void trust() {
-    new TrustButton(this).click();
+    new TrustButton(this, isSonarCloud).click();
   }
 
   public void donottrust() {
