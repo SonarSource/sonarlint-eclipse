@@ -150,7 +150,7 @@ public class OpenIssueInEclipseJob extends AbstractOpenInEclipseJob {
           new OpenIssueInEclipseJob(new OpenIssueContext(name, issueDetails, project, binding, file, true))
             .schedule(1000);
         } else {
-          MessageDialogUtils.openInIdeError("Fetching the issue to be displayed failed because the dependent "
+          MessageDialogUtils.openInEclipseFailed("Fetching the issue to be displayed failed because the dependent "
             + "job did not finish successfully.");
         }
       }
@@ -162,7 +162,7 @@ public class OpenIssueInEclipseJob extends AbstractOpenInEclipseJob {
     // When we already asked the user to change his workspace preferences, he agreed but did not change anything we
     // don't want to end up in a loop asking the user if could please change his preferences ^^
     if (askedForPreferenceChangeAlready) {
-      MessageDialogUtils.openInIdeError("The issue was not found locally. Maybe the issue was already "
+      MessageDialogUtils.openInEclipseFailed("The issue was not found locally. Maybe the issue was already "
         + "resolved or the resources has moved / was deleted.");
       return Status.CANCEL_STATUS;
     }
