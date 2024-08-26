@@ -101,8 +101,8 @@ public abstract class AbstractOpenInEclipseJob extends Job {
       var status = statusRef.get();
       if (Status.CANCEL_STATUS == status) {
         if (cancelledByJob.get()) {
-          MessageDialogUtils.openInIdeError("The previous dialog was closed either manually by you or the connection was not ready in "
-            + "time. The reason for the latter could be a slow network connection.");
+          MessageDialogUtils.dialogCancelled("The previous dialog was closed either manually by you or the connection "
+            + "was not ready in time. The reason for the latter could be a slow network connection.");
         }
         return status;
       }
@@ -132,7 +132,7 @@ public abstract class AbstractOpenInEclipseJob extends Job {
       actualRun();
     } catch (CoreException e) {
       var message = "An error occured while trying to run the requested action.";
-      MessageDialogUtils.openInIdeError(message + " Please see the console for the full error log!");
+      MessageDialogUtils.openInEclipseFailed(message + " Please see the console for the full error log!");
       SonarLintLogger.get().error(message, e);
     }
 
@@ -150,7 +150,7 @@ public abstract class AbstractOpenInEclipseJob extends Job {
     // Check if file exists in project based on the server to IDE path matching
     var fileOpt = project.find(getIdeFilePath());
     if (fileOpt.isEmpty()) {
-      MessageDialogUtils.openInIdeError("The required file cannot be found in the project '"
+      MessageDialogUtils.fileNotFound("The required file cannot be found in the project '"
         + project.getName() + "'. Maybe it was already changed locally!");
       return Optional.empty();
     }
@@ -186,10 +186,10 @@ public abstract class AbstractOpenInEclipseJob extends Job {
 
     if (localBranch.isEmpty()) {
       // This error message may be misleading to COBOL / ABAP developers but that is okay for now :>
-      MessageDialogUtils.openInIdeInformation("The local branch of the project '" + project.getName()
+      MessageDialogUtils.branchNotAvailable("The local branch of the project '" + project.getName()
         + "' could not be determined. SonarLint now can only try to find the matching local issue!");
     } else if (!branch.equals(localBranch.get())) {
-      MessageDialogUtils.openInIdeError("The local branch '" + localBranch.get() + "' of the project '"
+      MessageDialogUtils.branchMismatch("The local branch '" + localBranch.get() + "' of the project '"
         + project.getName() + "' does not match the remote branch '" + branch + "'. "
         + "Please checkout the correct branch and invoke the requested action once again!");
       BrowserUtils.openExternalBrowser(SonarLintDocumentation.BRANCH_AWARENESS, Display.getDefault());

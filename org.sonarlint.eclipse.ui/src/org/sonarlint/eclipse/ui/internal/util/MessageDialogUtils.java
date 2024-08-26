@@ -28,29 +28,41 @@ import org.sonarlint.eclipse.core.internal.telemetry.LinkTelemetry;
 
 /** When we want to display simple dialogs we can use the JFace MessageDialog */
 public class MessageDialogUtils {
-  private static final String OPEN_IN_IDE_TITLE = "Open in IDE";
-
   private MessageDialogUtils() {
     // utility class
   }
 
-  /** For the "Open in IDE" feature we want to display an information */
-  public static void openInIdeInformation(String message) {
-    Display.getDefault().syncExec(() -> MessageDialog.openInformation(
-      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), OPEN_IN_IDE_TITLE, message));
+  private static void showError(String title, String message) {
+    Display.getDefault().syncExec(() -> MessageDialog.openError(
+      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title, message));
   }
 
-  /** For the "Open in IDE" feature we want to display an error message */
-  public static void openInIdeError(String message) {
-    Display.getDefault().syncExec(() -> MessageDialog.openError(
-      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), OPEN_IN_IDE_TITLE, message));
+  public static void fileNotFound(String message) {
+    showError("File not found", message);
+  }
+
+  public static void dialogCancelled(String message) {
+    showError("Dialog cancelled", message);
+  }
+
+  public static void branchMismatch(String message) {
+    showError("Branch not matching", message);
+  }
+
+  public static void openInEclipseFailed(String message) {
+    showError("Open in Eclipse failed", message);
+  }
+
+  public static void branchNotAvailable(String message) {
+    Display.getDefault().syncExec(() -> MessageDialog.openInformation(
+      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Branch not matchable", message));
   }
 
   /** For the "Open in IDE" feature we want to display a yes/no question for the user to answer */
   public static void openInIdeQuestion(String message, Runnable yesHandler) {
     Display.getDefault().asyncExec(() -> {
       var result = MessageDialog.openQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-        OPEN_IN_IDE_TITLE, message);
+        "Open in IDE", message);
       if (result) {
         yesHandler.run();
       }
