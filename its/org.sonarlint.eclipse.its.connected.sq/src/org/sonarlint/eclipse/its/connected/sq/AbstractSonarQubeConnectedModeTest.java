@@ -40,7 +40,6 @@ import org.eclipse.swt.widgets.Label;
 import org.junit.Before;
 import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
-import org.sonarlint.eclipse.its.shared.reddeer.conditions.AnalysisReadyAfterUnready;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectBindingWizardIsOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView;
@@ -206,10 +205,5 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     serverProjectSelectionPage.waitForProjectsToBeFetched();
     serverProjectSelectionPage.setProjectKey(projectKey);
     projectBindingWizard.finish();
-  }
-
-  /** When binding project it will move to unready state before going to ready state again */
-  protected static void waitForAnalysisReady(String projectName) {
-    new WaitUntil(new AnalysisReadyAfterUnready(projectName), TimePeriod.getCustom(60));
   }
 }

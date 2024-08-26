@@ -19,21 +19,15 @@
  */
 package org.sonarlint.eclipse.its.shared.reddeer.dialogs;
 
-import org.eclipse.reddeer.core.reference.ReferencedComposite;
-import org.eclipse.reddeer.swt.impl.button.PredefinedButton;
-import org.eclipse.swt.SWT;
+import org.eclipse.reddeer.swt.impl.button.OkButton;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 
-public class TrustButton extends PredefinedButton {
-  public TrustButton(ReferencedComposite referencedComposite, boolean isSonarCloud) {
-    this(referencedComposite, 0, isSonarCloud);
+public class FileNotFoundDialog extends DefaultShell {
+  public FileNotFoundDialog() {
+    super("File not found");
   }
 
-  public TrustButton(ReferencedComposite referencedComposite, int index, boolean isSonarCloud) {
-    super(referencedComposite,
-      index,
-      isSonarCloud
-        ? "Connect to SonarCloud"
-        : "Connect to this SonarQube server",
-      SWT.PUSH);
+  public void ok() {
+    new OkButton(this).click();
   }
 }

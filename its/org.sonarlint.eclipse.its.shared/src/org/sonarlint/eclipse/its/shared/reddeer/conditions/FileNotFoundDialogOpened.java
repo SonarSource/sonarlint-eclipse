@@ -17,23 +17,39 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.its.shared.reddeer.dialogs;
+package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
-import org.eclipse.reddeer.core.reference.ReferencedComposite;
-import org.eclipse.reddeer.swt.impl.button.PredefinedButton;
-import org.eclipse.swt.SWT;
+import org.eclipse.reddeer.common.condition.WaitCondition;
+import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FileNotFoundDialog;
 
-public class TrustButton extends PredefinedButton {
-  public TrustButton(ReferencedComposite referencedComposite, boolean isSonarCloud) {
-    this(referencedComposite, 0, isSonarCloud);
+public class FileNotFoundDialogOpened implements WaitCondition {
+  @Override
+  public boolean test() {
+    try {
+      new FileNotFoundDialog().isEnabled();
+      return true;
+    } catch (Exception ignored) {
+      return false;
+    }
   }
 
-  public TrustButton(ReferencedComposite referencedComposite, int index, boolean isSonarCloud) {
-    super(referencedComposite,
-      index,
-      isSonarCloud
-        ? "Connect to SonarCloud"
-        : "Connect to this SonarQube server",
-      SWT.PUSH);
+  @Override
+  public FileNotFoundDialog getResult() {
+    return new FileNotFoundDialog();
+  }
+
+  @Override
+  public String description() {
+    return "'File not found' dialog is opened";
+  }
+
+  @Override
+  public String errorMessageWhile() {
+    return "'File not found' dialog is still opened";
+  }
+
+  @Override
+  public String errorMessageUntil() {
+    return "'File not found' dialog is not yet opened";
   }
 }

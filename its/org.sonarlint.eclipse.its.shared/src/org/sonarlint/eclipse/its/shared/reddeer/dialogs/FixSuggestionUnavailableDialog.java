@@ -21,19 +21,31 @@ package org.sonarlint.eclipse.its.shared.reddeer.dialogs;
 
 import org.eclipse.reddeer.core.reference.ReferencedComposite;
 import org.eclipse.reddeer.swt.impl.button.PredefinedButton;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.swt.SWT;
 
-public class TrustButton extends PredefinedButton {
-  public TrustButton(ReferencedComposite referencedComposite, boolean isSonarCloud) {
-    this(referencedComposite, 0, isSonarCloud);
+public class FixSuggestionUnavailableDialog extends DefaultShell {
+  public FixSuggestionUnavailableDialog(int index, int all) {
+    super(String.format("SonarLint Fix Suggestion (%d/%d)", index + 1, all));
   }
 
-  public TrustButton(ReferencedComposite referencedComposite, int index, boolean isSonarCloud) {
-    super(referencedComposite,
-      index,
-      isSonarCloud
-        ? "Connect to SonarCloud"
-        : "Connect to this SonarQube server",
-      SWT.PUSH);
+  public void proceed() {
+    new ProceedButton(this).click();
+  }
+
+  public void cancel() {
+    new CancelButton(this).click();
+  }
+
+  private static class ProceedButton extends PredefinedButton {
+    public ProceedButton(ReferencedComposite referencedComposite) {
+      super(referencedComposite, 0, "Proceed", SWT.PUSH);
+    }
+  }
+
+  private static class CancelButton extends PredefinedButton {
+    public CancelButton(ReferencedComposite referencedComposite) {
+      super(referencedComposite, 0, "Cancel", SWT.PUSH);
+    }
   }
 }

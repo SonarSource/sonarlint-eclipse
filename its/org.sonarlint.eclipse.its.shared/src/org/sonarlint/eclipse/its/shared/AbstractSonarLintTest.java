@@ -76,6 +76,7 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.AnalysisReady;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.AnalysisReadyAfterUnready;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.FileAssociationsPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.RuleConfigurationPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.SonarLintPreferences;
@@ -461,5 +462,10 @@ public abstract class AbstractSonarLintTest {
   /** On the these notifications the "content" is always the fourth label (index 3), don't ask me why! */
   protected static String getNotificationText(DefaultShell shell) {
     return new DefaultLabel(shell, 3).getText();
+  }
+
+  /** When binding project it will move to unready state before going to ready state again */
+  protected static void waitForAnalysisReady(String projectName) {
+    new WaitUntil(new AnalysisReadyAfterUnready(projectName), TimePeriod.getCustom(60));
   }
 }
