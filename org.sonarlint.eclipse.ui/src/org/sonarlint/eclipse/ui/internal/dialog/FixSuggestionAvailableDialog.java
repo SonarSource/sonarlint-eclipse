@@ -33,17 +33,17 @@ public class FixSuggestionAvailableDialog extends AbstractFixSuggestionDialog {
   }
 
   /**
-   *  "Apply Changes"   -> applies the change and moves on to the next one
-   *  "Decline Changes" -> does not apply the change, but moves on to the next one
-   *  "Cancel"          -> cancels the whole process, nothing will be further applied
+   *  "Apply the change"   -> applies the change and moves on to the next one
+   *  "Decline the change" -> does not apply the change, but moves on to the next one
+   *  "Cancel"             -> cancels the whole process, nothing will be further applied
    *
    *  The order is based on how it will be displayed in dialog. The first one is always the most right one (because of
    *  the "true") and the others are aligned to its left from left to right!
    */
   @Override
   protected void createButtonsForButtonBar(Composite parent) {
-    createButton(parent, IDialogConstants.OK_ID, "Apply Changes", true);
+    createButton(parent, IDialogConstants.OK_ID, "Apply the change", true);
     createButton(parent, IDialogConstants.CANCEL_ID, "Cancel", false);
-    createButton(parent, IDialogConstants.SKIP_ID, "Decline Changes", false);
+    createButton(parent, IDialogConstants.SKIP_ID, "Decline the change", false);
   }
 }
