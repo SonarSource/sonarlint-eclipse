@@ -26,7 +26,7 @@ public class ConfirmConnectionCreationDialog extends DefaultShell {
 
   public ConfirmConnectionCreationDialog(boolean isSonarCloud) {
     super(isSonarCloud
-      ? "Do you trust SonarCloud?"
+      ? "Do you trust this SonarCloud organization?"
       : "Do you trust this SonarQube server?");
     this.isSonarCloud = isSonarCloud;
   }
