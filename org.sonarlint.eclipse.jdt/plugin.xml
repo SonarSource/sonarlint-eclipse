@@ -19,6 +19,12 @@
       </provider>
    </extension>
    <extension
+         point="org.sonarlint.eclipse.core.projectScopeProvider">
+      <provider
+            class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
+      </provider>
+   </extension>
+   <extension
          point="org.sonarlint.eclipse.ui.markerResolutionEnhancer">
       <enhancer
             class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
