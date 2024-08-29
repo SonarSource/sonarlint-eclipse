@@ -6,4 +6,10 @@
             class="org.sonarlint.eclipse.pydev.internal.PythonProjectConfiguratorExtension">
       </enhancer>
    </extension>
+   <extension
+         point="org.sonarlint.eclipse.core.projectScopeProvider">
+      <enhancer
+            class="org.sonarlint.eclipse.pydev.internal.PythonProjectConfiguratorExtension">
+      </enhancer>
+   </extension>
 </plugin>
