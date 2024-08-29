@@ -28,6 +28,7 @@ import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocumentPartitioner;
@@ -38,6 +39,7 @@ import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
+import org.sonarlint.eclipse.core.resource.IProjectScopeProvider;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -46,7 +48,8 @@ import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 import org.sonarlint.eclipse.ui.rule.ISyntaxHighlightingProvider;
 
 public class JavaProjectConfiguratorExtension
-  implements IAnalysisConfigurator, ISonarLintFileAdapterParticipant, IFileTypeProvider, IMarkerResolutionEnhancer, ISyntaxHighlightingProvider {
+  implements IAnalysisConfigurator, ISonarLintFileAdapterParticipant, IFileTypeProvider, IMarkerResolutionEnhancer,
+  IProjectScopeProvider, ISyntaxHighlightingProvider {
 
   private static final String JAVA_LANGUAGE_KEY = "java";
   @Nullable
@@ -148,5 +151,12 @@ public class JavaProjectConfiguratorExtension
       return JdtUiUtils.getTextMergeViewer(parent, mp);
     }
     return null;
+  }
+
+  @Override
+  public Set<IPath> getExclusions(IProject project) {
+    return jdtPresent && JdtUtils.hasJavaNature(project)
+      ? JdtUtils.getExcludedPaths(project)
+      : Collections.emptySet();
   }
 }
