@@ -22,11 +22,15 @@ package org.sonarlint.eclipse.buildship.internal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.annotation.Nullable;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
+import org.gradle.tooling.model.eclipse.EclipseProject;
 import org.gradle.tooling.model.eclipse.HierarchicalEclipseProject;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.utils.FileUtils;
@@ -44,7 +48,7 @@ public class GradleUtils {
     // utility class
   }
 
-  private static boolean checkIfGradleProject(IProject project) {
+  public static boolean checkIfGradleProject(IProject project) {
     try {
       return project.hasNature(GRADLE_PROJECT_NATURE);
     } catch (CoreException err) {
@@ -53,6 +57,7 @@ public class GradleUtils {
     return false;
   }
 
+  // Move it to "model(GradleBuild.class).get().getRootProject()" at some point!
   private static HierarchicalEclipseProject getRootGradleProject(HierarchicalEclipseProject project) {
     var currentProject = project;
     while (currentProject.getParent() != null) {
@@ -174,5 +179,62 @@ public class GradleUtils {
     }
 
     return subProjects;
+  }
+
+  /**
+   *  All the exclusions that are coming from Gradle (via the Tooling API) and not from the JDT integration itself that
+   *  is created when the project is imported.
+   *
+   *  - buildSrc/build as the output directory
+   *  - .gradle + buildSrc/.gradle as the wrapper cache
+   *  - output directory in Eclipse, maybe a fallback
+   *  - build directory of Gradle
+   *  - every child projects folder relative to this project
+   *
+   *  Why the trailing space for the paths? E.g. "sonar-orchestrator-junit4" starts with "sonar-orchestrator", this is
+   *  just in case of sub-projects are named very similar to root projects.
+   */
+  public static Set<IPath> getExclusions(IProject project) {
+    var exclusions = new HashSet<IPath>();
+
+    // 1) The Gradle Tooling API has no access to `buildSrc`, therefore add it manually, even if not present
+    exclusions.add(Path.fromOSString("/" + project.getName() + "/buildSrc/build"));
+    exclusions.add(Path.fromOSString("/" + project.getName() + "/buildSrc/.gradle"));
+
+    // 2) The Gradle Tooling API has no access to the wrapper, therefore add it manually, even if not present
+    exclusions.add(Path.fromOSString("/" + project.getName() + "/.gradle"));
+
+    try {
+      var connection = GradleConnector.newConnector()
+        .forProjectDirectory(FileUtils.toLocalFile(project))
+        .connect();
+
+      var gradleEclipseProject = connection.model(EclipseProject.class).get();
+      var projectPath = gradleEclipseProject.getProjectDirectory().toPath().toAbsolutePath().toString() + "/";
+
+      // 3) Add the output directory (this is relative to the Eclipse project, no one knows why it is inconsistent)
+      exclusions.add(Path.fromOSString("/" + project.getName() + "/"
+        + gradleEclipseProject.getOutputLocation().getPath()));
+
+      // 4) Add the build directory (this is the absolute path on disk)
+      var relativeBuildDirectoryPath = gradleEclipseProject.getGradleProject()
+        .getBuildDirectory().getAbsolutePath()
+        .replace(projectPath, "/" + project.getName() + "/");
+      exclusions.add(Path.fromOSString(relativeBuildDirectoryPath));
+
+      // 5) For every sub-project add its project directory (these are the absolute paths on disk)
+      for (var child : getChildGradleProjects(gradleEclipseProject)) {
+        var childPath = child.getProjectDirectory().toPath().toAbsolutePath().toString();
+        if (childPath.startsWith(projectPath)) {
+          var relativePath = childPath.replace(projectPath, "/" + project.getName() + "/");
+          exclusions.add(Path.fromOSString(relativePath));
+        }
+      }
+    } catch (Exception err) {
+      SonarLintLogger.get().traceIdeMessage("Cannot rely on Gradle Tooling API for exclusions of project '"
+        + project.getName() + "' based on Buildship!", err);
+    }
+
+    return exclusions;
   }
 }
