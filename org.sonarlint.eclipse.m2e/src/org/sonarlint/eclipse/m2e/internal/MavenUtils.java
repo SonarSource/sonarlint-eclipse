@@ -21,9 +21,13 @@ package org.sonarlint.eclipse.m2e.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -162,10 +166,65 @@ public class MavenUtils {
           }
         }
       }
-    } catch (CoreException ex) {
+    } catch (Exception ex) {
       SonarLintLogger.get().error(ex.getMessage(), ex);
     }
 
     return modules;
+  }
+
+  /**
+   *  All exclusions that are coming from Maven (via m2e) and not from the JDT integration itself that is created when
+   *  the project is imported.
+   *
+   *  - output directory of Maven, including the one for production and test sources
+   *  - every child modules folder relative to this project
+   *
+   *  Why the trailing space for the paths? E.g. "sonar-orchestrator-junit4" starts with "sonar-orchestrator", this is
+   *  just in case of sub-projects are named very similar to root projects.
+   */
+  public static Set<IPath> getExclusions(IProject project) {
+    var exclusions = new HashSet<IPath>();
+
+    var projectManager = MavenPlugin.getMavenProjectRegistry();
+    var facade = projectManager.create(project, null);
+    if (facade == null) {
+      return exclusions;
+    }
+
+    // 1) Add the target directory
+    // This is due us not being able to access "IMavenProjectFacade#getBuildOutputLocation" as it is not available in
+    // all versions of m2e for the Eclipse IDE versions we support!
+    exclusions.add(Path.fromOSString("/" + project.getName() + "/target"));
+
+    // 2) Add the output directory for the production sources (can differ from default output directory)
+    var outputLocation = facade.getOutputLocation();
+    if (outputLocation != null) {
+      exclusions.add(outputLocation);
+    }
+
+    // 3) Add the output directory for the test sources (can differ from default output directory)
+    var testOutputLocation = facade.getTestOutputLocation();
+    if (testOutputLocation != null) {
+      exclusions.add(testOutputLocation);
+    }
+
+    // 4) For every module and its project directory
+    // Compared to "getProjectSubProjects" this will find every Maven module / project even the ones that are not
+    // direct children of the parent. But this is no problem in this case!
+    var parentPath = project.getLocationURI().getPath() + "/";
+    try {
+      for (var projectFacade : projectManager.getProjects()) {
+        var projectPath = projectFacade.getProject().getLocationURI().getPath();
+        if (!projectPath.equals(parentPath) && projectPath.startsWith(parentPath)) {
+          var relativePath = projectPath.replace(parentPath, "/" + project.getName() + "/");
+          exclusions.add(Path.fromOSString(relativePath));
+        }
+      }
+    } catch (Exception ex) {
+      SonarLintLogger.get().error(ex.getMessage(), ex);
+    }
+
+    return exclusions;
   }
 }
