@@ -12,4 +12,10 @@
             class="org.sonarlint.eclipse.m2e.internal.MavenModuleFilter">
       </participant>
    </extension>
+   <extension
+         point="org.sonarlint.eclipse.core.projectScopeProvider">
+      <participant
+            class="org.sonarlint.eclipse.m2e.internal.MavenModuleFilter">
+      </participant>
+   </extension>
 </plugin>

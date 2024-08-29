@@ -21,13 +21,18 @@ package org.sonarlint.eclipse.m2e.internal;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.annotation.Nullable;
+import org.sonarlint.eclipse.core.resource.IProjectScopeProvider;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectHierarchyProvider;
 
-public class MavenModuleFilter implements ISonarLintFileAdapterParticipant, ISonarLintProjectHierarchyProvider {
+public class MavenModuleFilter implements ISonarLintFileAdapterParticipant, ISonarLintProjectHierarchyProvider,
+  IProjectScopeProvider {
   private final boolean isM2ePresent;
   private final boolean isMavenPresent;
 
@@ -54,9 +59,14 @@ public class MavenModuleFilter implements ISonarLintFileAdapterParticipant, ISon
     }
   }
 
+  /**
+   *  Since implementing the "IProjectScopeProvider" extension point this might look useless as we exclude files from
+   *  sub-modules anyway when a parent project is indexed. But due to the FileSystemSynchronizer is working on deltas
+   *  and tries to check every file, we still have to keep it but only run it when working with a Maven project!
+   */
   @Override
   public boolean exclude(IFile file) {
-    if (isM2ePresent) {
+    if (isM2ePresent && M2eUtils.checkIfMavenProject(file.getProject())) {
       return M2eUtils.isInNestedModule(file);
     }
     return false;
@@ -90,5 +100,13 @@ public class MavenModuleFilter implements ISonarLintFileAdapterParticipant, ISon
       return MavenUtils.getProjectSubProjects(project);
     }
     return Collections.emptyList();
+  }
+
+  @Override
+  public Set<IPath> getExclusions(IProject project) {
+    if (isM2ePresent && isMavenPresent && M2eUtils.checkIfMavenProject(project)) {
+      return MavenUtils.getExclusions(project);
+    }
+    return Collections.emptySet();
   }
 }
