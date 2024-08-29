@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Adapters;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
@@ -246,5 +247,40 @@ public class SonarLintUtils {
       .map(ISonarLintProjectsProvider::get)
       .flatMap(Collection::stream)
       .collect(Collectors.toSet());
+  }
+
+  /**
+   *  Checks whether one relative path inside the Eclipse workspace is a child of another path. This doesn't have to be
+   *  a child denoted by a separator like in a file system (with slashes for example).
+   */
+  public static boolean isChild(IPath possibleChild, IPath possibleParent) {
+    var possibleChildPath = possibleChild.makeAbsolute().toOSString();
+    var possibleParentPath = possibleParent.makeAbsolute().toOSString();
+    return possibleChildPath.startsWith(possibleParentPath);
+  }
+
+  /**
+   *  This was not moved to a sub-plugin implementing the "IProjectScopeProvider" as it would be a bit too costly and
+   *  also might have blown up the list of exclusions. It also wouldn't have made sense to rely (optionally) on Eclipse
+   *  plug-ins providing VCS support just to read the name of their "specific" directory.
+   *
+   *  Here we catch Git, Mercurial, and Apache Subversion as they're the most common ones.
+   */
+  public static boolean insideVCSFolder(IPath path) {
+    var satisfiesCheck = path.makeAbsolute().toOSString().contains(".git");
+    satisfiesCheck = satisfiesCheck || path.makeAbsolute().toOSString().contains(".hg");
+    satisfiesCheck = satisfiesCheck || path.makeAbsolute().toOSString().contains(".svn");
+    return satisfiesCheck;
+  }
+
+  /**
+   *  This was not moved to a sub-plugin implementing the "IProjectScopeProvider" as it would be a bit too costly and
+   *  also might have blown up the list of exclusions. It also wouldn't have made sense as there is no direct Eclipse
+   *  plug-in to rely on for getting these values.
+   */
+  public static boolean isNodeJsRelated(IPath path) {
+    var satisfiesCheck = path.makeAbsolute().toOSString().contains("node_modules");
+    satisfiesCheck = satisfiesCheck || path.makeAbsolute().toOSString().contains("package-lock.json");
+    return satisfiesCheck;
   }
 }

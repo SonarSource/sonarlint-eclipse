@@ -83,6 +83,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private static final SonarLintFlowLocationsService SONARLINT_FLOW_LOCATION_SERVICE = new SonarLintFlowLocationsService();
   private static final SonarLintNoAutomaticBuildWarningService SONARLINT_AUTOMATIC_BUILD_SERVICE = new SonarLintNoAutomaticBuildWarningService();
   private static final SonarLintRpcClientSupportService SONARLINT_RPC_CLIENT_SUPPORT_SERVICE = new SonarLintRpcClientSupportService();
+  private static final ConfigScopeIdCacheCleaner CONFIG_SCOPE_ID_CACHE_CLEANER = new ConfigScopeIdCacheCleaner();
 
   public SonarLintUiPlugin() {
     plugin = this;
@@ -160,6 +161,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     addPostBuildListener();
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_VCS_CACHE_CLEANER);
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(CONFIG_SCOPE_ID_CACHE_CLEANER);
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_FLOW_LOCATION_SERVICE);
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_AUTOMATIC_BUILD_SERVICE);
     SonarLintRpcClientSupportSynchronizer.addListener(SONARLINT_RPC_CLIENT_SUPPORT_SERVICE);
@@ -196,6 +198,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public void stop(final BundleContext context) throws Exception {
     removePostBuildListener();
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_VCS_CACHE_CLEANER);
+    ResourcesPlugin.getWorkspace().removeResourceChangeListener(CONFIG_SCOPE_ID_CACHE_CLEANER);
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_FLOW_LOCATION_SERVICE);
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_AUTOMATIC_BUILD_SERVICE);
     SonarLintRpcClientSupportSynchronizer.removeListener(SONARLINT_RPC_CLIENT_SUPPORT_SERVICE);

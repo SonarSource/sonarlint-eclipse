@@ -22,14 +22,17 @@ package org.sonarlint.eclipse.core.internal.resources;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.team.core.RepositoryProvider;
 import org.eclipse.team.core.TeamException;
@@ -38,12 +41,14 @@ import org.eclipse.team.core.synchronize.SyncInfo;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.FileSystemSynchronizer;
+import org.sonarlint.eclipse.core.internal.cache.DefaultSonarLintProjectAdapterCache;
+import org.sonarlint.eclipse.core.internal.cache.IProjectScopeProviderCache;
+import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
-
   private static final String UNABLE_TO_ANALYZE_CHANGED_FILES = "Unable to collect changed files";
 
   private final IProject project;
@@ -80,11 +85,39 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
 
   @Override
   public Collection<ISonarLintFile> files() {
+    var configScopeId = getConfigScopeId();
+
+    var cachedFiles = DefaultSonarLintProjectAdapterCache.INSTANCE.getEntry(configScopeId);
+    if (cachedFiles != null) {
+      return cachedFiles;
+    }
+
+    var cachedExclusions = IProjectScopeProviderCache.INSTANCE.getEntry(configScopeId);
+    if (cachedExclusions == null) {
+      cachedExclusions = getExclusions();
+      IProjectScopeProviderCache.INSTANCE.putEntry(configScopeId, cachedExclusions);
+    }
+    final var exclusions = cachedExclusions;
+
     var result = new ArrayList<ISonarLintFile>();
     try {
       project.accept(new IResourceVisitor() {
         @Override
         public boolean visit(IResource resource) throws CoreException {
+          var fullPath = resource.getFullPath();
+
+          // Immediately rule out files in the VCS and files related to Node.js "metadata" / storage. These can change
+          // very often and are nowhere nearly related to SonarLint!
+          if (SonarLintUtils.insideVCSFolder(fullPath) || SonarLintUtils.isNodeJsRelated(fullPath)) {
+            return false;
+          }
+
+          // Compared to "FileSystemSynchronizer#visitDeltaPostChange" this is on all files and folders and not only
+          // the delta. Therefore we can check for a folder whether its "whole" path is in there!
+          if (exclusions.contains(fullPath)) {
+            return false;
+          }
+
           // We don't want to visit all the folders except the ".sonarlint" one due to it possibly containing shared
           // Connected Mode configuration files!
           if (resource.getType() == IResource.FOLDER
@@ -106,7 +139,17 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
     } catch (CoreException e) {
       SonarLintLogger.get().error("Error collecting files in project " + project.getName(), e);
     }
+
+    DefaultSonarLintProjectAdapterCache.INSTANCE.putEntry(getConfigScopeId(), result);
     return result;
+  }
+
+  private Set<IPath> getExclusions() {
+    var exclusions = new HashSet<IPath>();
+    for (var projectScopeProvider : SonarLintExtensionTracker.getInstance().getProjectScopeProviders()) {
+      exclusions.addAll(projectScopeProvider.getExclusions(project));
+    }
+    return exclusions;
   }
 
   public Collection<ISonarLintFile> getScmChangedFiles(IProgressMonitor monitor) {
@@ -182,4 +225,8 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
     return Objects.equals(project, other.project);
   }
 
+  // Because we are "inside" of our implementation of ISonarLintProject, we don't access ConfigScopeSynchronizer!
+  private String getConfigScopeId() {
+    return getResource().getLocationURI().toString();
+  }
 }
