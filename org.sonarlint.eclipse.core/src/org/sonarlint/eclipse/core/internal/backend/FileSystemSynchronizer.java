@@ -27,12 +27,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -40,6 +43,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
+import org.sonarlint.eclipse.core.internal.cache.IProjectScopeProviderCache;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.TestFileClassifier;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -74,6 +78,11 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       event.getDelta().accept(delta -> visitDeltaPostChange(delta, changedOrAddedFiles, removedFiles));
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
+    }
+
+    // When there was no valuable resource changed, then we don't have to do anything else!
+    if (changedOrAddedFiles.isEmpty() && removedFiles.isEmpty()) {
+      return;
     }
 
     var job = new Job("SonarLint - Propagate FileSystem changes") {
@@ -124,52 +133,73 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
 
   private static boolean visitDeltaPostChange(IResourceDelta delta, List<ISonarLintFile> changedOrAddedFiles, List<URI> removedFiles) {
     var res = delta.getResource();
-    switch (delta.getKind()) {
-      case IResourceDelta.ADDED:
-        var slFile = SonarLintUtils.adapt(res, ISonarLintFile.class,
-          "[FileSystemSynchronizer#visitDeltaPostChange] Try get file from event '" + res + "' (added)");
+    var fullPath = res.getFullPath();
 
-        // INFO: When importing projects all files are considered to be "added", so don't suggest connections twice by
-        // providing SLCORE with the "added" SonarLint configuration files besides the
-        // SonarLintEclipseRpcClient.listFiles(...)!
-        if (slFile != null && !matchesSonarLintConfigurationFiles(slFile)) {
-          SonarLintLogger.get().debug("File added: " + slFile.getName());
-          changedOrAddedFiles.add(slFile);
-        }
-        break;
-      case IResourceDelta.REMOVED:
-        var fileUri = res.getLocationURI();
-        if (fileUri != null) {
-          removedFiles.add(fileUri);
-          SonarLintLogger.get().debug("File removed: " + fileUri);
-        }
-        break;
-      case IResourceDelta.CHANGED:
-        var changedSlFile = SonarLintUtils.adapt(res, ISonarLintFile.class,
-          "[FileSystemSynchronizer#visitDeltaPostChange] Try get file from event '" + res + "' (changed)");
-        if (changedSlFile != null) {
-          var interestingChangeForSlBackend = false;
-          var flags = delta.getFlags();
-          if ((flags & IResourceDelta.CONTENT) != 0) {
-            interestingChangeForSlBackend = true;
-            SonarLintLogger.get().debug("File content changed: " + changedSlFile.getName());
-          }
-          if ((flags & IResourceDelta.REPLACED) != 0) {
-            interestingChangeForSlBackend = true;
-            SonarLintLogger.get().debug("File content replaced: " + changedSlFile.getName());
-          }
-          if ((flags & IResourceDelta.ENCODING) != 0) {
-            interestingChangeForSlBackend = true;
-            SonarLintLogger.get().debug("File encoding changed: " + changedSlFile.getName());
-          }
-          if (interestingChangeForSlBackend) {
-            changedOrAddedFiles.add(changedSlFile);
-          }
-        }
-        break;
-      default:
-        break;
+    // Immediately rule out files in the VCS and files related to Node.js "metadata" / storage. We don't care for these
+    // ones no matter if removed, changed, or added!
+    if (SonarLintUtils.insideVCSFolder(fullPath) || SonarLintUtils.isNodeJsRelated(fullPath)) {
+      return false;
     }
+
+    if (delta.getKind() == IResourceDelta.REMOVED) {
+      // When something got removed, we don't care for exclusions and the adaption to ISonarLintFile. This happens not
+      // as often as adding or changing files to we will just let SLCORE handle it and don't "care" anymore about it.
+      var fileUri = res.getLocationURI();
+      if (fileUri != null) {
+        removedFiles.add(fileUri);
+        SonarLintLogger.get().debug("File removed: " + fileUri);
+      }
+      return true;
+    }
+
+    var slFile = SonarLintUtils.adapt(res, ISonarLintFile.class,
+      "[FileSystemSynchronizer#visitDeltaPostChange] Try get file from event '" + res + "' (added/changed)");
+    if (slFile == null) {
+      // Whatever happened here, try to dig deeper. If nothing is there, then okey - if there is, we can check anyway
+      // and care in the next iteration of this method with the child element.
+      return false;
+    }
+
+    var project = slFile.getProject();
+    var configScopeId = ConfigScopeSynchronizer.getConfigScopeId(project);
+    var exclusions = IProjectScopeProviderCache.INSTANCE.getEntry(configScopeId);
+    if (exclusions == null) {
+      exclusions = getExclusions((IProject) project.getResource());
+      IProjectScopeProviderCache.INSTANCE.putEntry(configScopeId, exclusions);
+    }
+
+    // Compared to "DefaultSonarLintProjectAdapter#files" this is only on a resource delta, therefore we won't visit
+    // the folders containing the files that were added / changed. And therefore we have to iterate over the exclusions
+    // instead of just checking whether the "whole" path is in there (as it would be the case for a folder).
+    for (var exclusion : exclusions) {
+      if (SonarLintUtils.isChild(fullPath, exclusion)) {
+        return false;
+      }
+    }
+
+    if (delta.getKind() == IResourceDelta.ADDED) {
+      SonarLintLogger.get().debug("File added: " + slFile.getName());
+      changedOrAddedFiles.add(slFile);
+    } else if (delta.getKind() == IResourceDelta.CHANGED) {
+      var interestingChangeForSlBackend = false;
+      var flags = delta.getFlags();
+      if ((flags & IResourceDelta.CONTENT) != 0) {
+        interestingChangeForSlBackend = true;
+        SonarLintLogger.get().debug("File content changed: " + slFile.getName());
+      }
+      if ((flags & IResourceDelta.REPLACED) != 0) {
+        interestingChangeForSlBackend = true;
+        SonarLintLogger.get().debug("File content replaced: " + slFile.getName());
+      }
+      if ((flags & IResourceDelta.ENCODING) != 0) {
+        interestingChangeForSlBackend = true;
+        SonarLintLogger.get().debug("File encoding changed: " + slFile.getName());
+      }
+      if (interestingChangeForSlBackend) {
+        changedOrAddedFiles.add(slFile);
+      }
+    }
+
     return true;
   }
 
@@ -255,5 +285,13 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       }
     }
     return language != null ? Language.valueOf(language.name()) : null;
+  }
+
+  private static Set<IPath> getExclusions(IProject project) {
+    var exclusions = new HashSet<IPath>();
+    for (var projectScopeProvider : SonarLintExtensionTracker.getInstance().getProjectScopeProviders()) {
+      exclusions.addAll(projectScopeProvider.getExclusions(project));
+    }
+    return exclusions;
   }
 }

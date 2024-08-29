@@ -25,6 +25,7 @@ import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
+import org.sonarlint.eclipse.core.resource.IProjectScopeProvider;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectHierarchyProvider;
@@ -44,9 +45,12 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
   private final SonarLintEP<IFileTypeProvider> typeEp = new SonarLintEP<>("org.sonarlint.eclipse.core.typeProvider"); //$NON-NLS-1$
   private final SonarLintEP<ISonarLintProjectHierarchyProvider> projectHierarchyProviderEP = new SonarLintEP<>(
     "org.sonarlint.eclipse.core.projectHierarchyProvider"); //$NON-NLS-1$
+  private final SonarLintEP<IProjectScopeProvider> projectScopeProviderEP = new SonarLintEP<>(
+    "org.sonarlint.eclipse.core.projectScopeProvider"); //$NON-NLS-1$
 
-  private final Collection<SonarLintEP<?>> allEps = List.of(configuratorEp, analysisEp, projectsProviderEp, fileAdapterParticipantEp, projectAdapterParticipantEp,
-    languageEp, typeEp, projectHierarchyProviderEP);
+  private final Collection<SonarLintEP<?>> allEps = List.of(configuratorEp, analysisEp, projectsProviderEp,
+    fileAdapterParticipantEp, projectAdapterParticipantEp, languageEp, typeEp, projectHierarchyProviderEP,
+    projectScopeProviderEP);
 
   private SonarLintExtensionTracker() {
     init(allEps);
@@ -95,5 +99,9 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
 
   public Collection<ISonarLintProjectHierarchyProvider> getProjectHierarchyProviders() {
     return projectHierarchyProviderEP.getInstances();
+  }
+
+  public Collection<IProjectScopeProvider> getProjectScopeProviders() {
+    return projectScopeProviderEP.getInstances();
   }
 }

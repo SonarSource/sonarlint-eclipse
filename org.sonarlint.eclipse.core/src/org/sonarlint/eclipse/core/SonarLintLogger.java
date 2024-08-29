@@ -105,4 +105,13 @@ public class SonarLintLogger {
       listener.traceIdeMessage(msg);
     }
   }
+
+  public void traceIdeMessage(String msg, Throwable t) {
+    for (var listener : logListeners) {
+      listener.traceIdeMessage(msg);
+      var stack = new StringWriter();
+      t.printStackTrace(new PrintWriter(stack));
+      listener.traceIdeMessage(stack.toString());
+    }
+  }
 }

@@ -11,6 +11,9 @@
    <extension-point id="projectHierarchyProvider"
    					name="SonarLint Project Hierarchy Provider"
    					schema="schema/projectHierarchyProvider.exsd" />
+   <extension-point id="projectScopeProvider"
+   					name="SonarLint Project Scope Provider"
+   					schema="schema/projectScopeProvider.exsd" />
 
 
    <extension
