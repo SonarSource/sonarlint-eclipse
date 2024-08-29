@@ -19,15 +19,21 @@
  */
 package org.sonarlint.eclipse.pydev.internal;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.ui.IEditorPart;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
+import org.sonarlint.eclipse.core.resource.IProjectScopeProvider;
 import org.sonarlint.eclipse.ui.rule.ISyntaxHighlightingProvider;
 
-public class PythonProjectConfiguratorExtension implements ISyntaxHighlightingProvider {
+public class PythonProjectConfiguratorExtension implements ISyntaxHighlightingProvider, IProjectScopeProvider {
   private static final String PYTHON_LANGUAGE_KEY = "py";
   private final boolean pyDevPresent;
 
@@ -71,5 +77,25 @@ public class PythonProjectConfiguratorExtension implements ISyntaxHighlightingPr
       return Optional.of(PyDevUtils.documentPartitioner());
     }
     return Optional.empty();
+  }
+
+  /**
+   *  This is independent from PyDev itself but linked here as it is for Python itself! Currently there is no direct
+   *  way to read about virtual environments from
+   */
+  @Override
+  public Set<IPath> getExclusions(IProject project) {
+    var exclusions = new HashSet<IPath>();
+
+    // Python virtual environments can be named optionally, therefore we only can "guess" the default names based on
+    // different libraries / tools that create virtual environments. We will never catch all probably, but for users
+    // naming their virtual environments differently that is their own "fault".
+    // INFO: These is not the Java standard library PATH class, but the one from Eclipse that is called the same!
+    exclusions.add(Path.fromOSString("/" + project.getName() + "/venv"));
+    exclusions.add(Path.fromOSString("/" + project.getName() + "/pyenv"));
+    exclusions.add(Path.fromOSString("/" + project.getName() + "/pyvenv"));
+    exclusions.add(Path.fromOSString("/" + project.getName() + "/virtualenv"));
+
+    return exclusions;
   }
 }
