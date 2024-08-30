@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.its.standalone;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
+import org.junit.After;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 
@@ -41,6 +42,18 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
   private static final String GRADLE_ROOT_PROJECT = "gradle-root-project";
   private static final String GRADLE_SUB_PROJECT = "gradle-sub-project";
   private static final String GRADLE_MAVEN_MIXED_PROJECT = "MixedProjectMavenSide";
+
+  private static final String SHELL_NAME_SONARQUBE = "SonarLint Connection Suggestion to SonarQube";
+  private static final String SHELL_NAME_SONARCLOUD = "SonarLint Connection Suggestion to SonarCloud";
+  private static final String SHELL_NAME_MULTIPLE = "SonarLint Multiple Connection Suggestions found";
+
+  // When one test fails it shouldn't let following tests fail due to the pop-ups staying.
+  @After
+  public void closeLeftoverShells() {
+    shellByName(SHELL_NAME_SONARQUBE).ifPresent(DefaultShell::close);
+    shellByName(SHELL_NAME_SONARCLOUD).ifPresent(DefaultShell::close);
+    shellByName(SHELL_NAME_MULTIPLE).ifPresent(DefaultShell::close);
+  }
 
   @Test
   public void single_project_Gradle() {
