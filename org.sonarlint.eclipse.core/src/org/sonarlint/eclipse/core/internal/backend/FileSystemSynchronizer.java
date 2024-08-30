@@ -43,6 +43,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
+import org.sonarlint.eclipse.core.internal.cache.DefaultSonarLintProjectAdapterCache;
 import org.sonarlint.eclipse.core.internal.cache.IProjectScopeProviderCache;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.TestFileClassifier;
@@ -85,6 +86,13 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       return;
     }
 
+    var project = changedOrAddedFiles.get(0).getProject();
+
+    // Invalidate cache if files were removed, added, or changed as otherwise importing another related hierarchical
+    // project as well as manually selecting multiple projects for analysis would be affected and could potentially
+    // lead to incorrect results!
+    DefaultSonarLintProjectAdapterCache.INSTANCE.removeEntry(ConfigScopeSynchronizer.getConfigScopeId(project));
+
     var job = new Job("SonarLint - Propagate FileSystem changes") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
@@ -105,15 +113,6 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
         // Only if there were actual changes to SonarLint configuration files we want to do the hussle and check for
         // sub-projects and inform them as well!
         if (!changedOrAddedSonarLintDto.isEmpty()) {
-          var projectOpt = SonarLintUtils.tryResolveProject(allChangedOrAddedDtos.get(0).getConfigScopeId());
-          if (projectOpt.isEmpty()) {
-            // If we cannot get the project anymore of the initial changes (e.g. project deleted), then we don't have
-            // to send anything to SLCORE anymore as well, it would be either discarded on SLOCRE anyway or cause some
-            // exceptions that are silently discarded (maybe a log).
-            return Status.OK_STATUS;
-          }
-          var project = projectOpt.get();
-
           for (var subProject : getSubProjects(project)) {
             var changedOrAddedSubProjectDto = changedOrAddedSonarLintDto.stream()
               .map(dto -> toSubProjectFileDto(subProject, dto))
@@ -157,7 +156,10 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     if (slFile == null) {
       // Whatever happened here, try to dig deeper. If nothing is there, then okey - if there is, we can check anyway
       // and care in the next iteration of this method with the child element.
-      return false;
+      // This must be kept as "true" as for projects imported (not when already present in the workspace and workspace
+      // then opened) it would stop otherwise at "/" which is the first resource listed for a file -> the root from
+      // which all resources, including the project "directory" itself, are derived!
+      return true;
     }
 
     var project = slFile.getProject();
