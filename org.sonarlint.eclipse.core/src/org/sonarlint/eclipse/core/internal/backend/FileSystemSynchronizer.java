@@ -86,13 +86,6 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       return;
     }
 
-    var project = changedOrAddedFiles.get(0).getProject();
-
-    // Invalidate cache if files were removed, added, or changed as otherwise importing another related hierarchical
-    // project as well as manually selecting multiple projects for analysis would be affected and could potentially
-    // lead to incorrect results!
-    DefaultSonarLintProjectAdapterCache.INSTANCE.removeEntry(ConfigScopeSynchronizer.getConfigScopeId(project));
-
     var job = new Job("SonarLint - Propagate FileSystem changes") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
@@ -113,6 +106,13 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
         // Only if there were actual changes to SonarLint configuration files we want to do the hussle and check for
         // sub-projects and inform them as well!
         if (!changedOrAddedSonarLintDto.isEmpty()) {
+          var project = changedOrAddedFiles.get(0).getProject();
+
+          // Invalidate cache if files were removed, added, or changed as otherwise importing another related hierarchical
+          // project as well as manually selecting multiple projects for analysis would be affected and could potentially
+          // lead to incorrect results!
+          DefaultSonarLintProjectAdapterCache.INSTANCE.removeEntry(ConfigScopeSynchronizer.getConfigScopeId(project));
+
           for (var subProject : getSubProjects(project)) {
             var changedOrAddedSubProjectDto = changedOrAddedSonarLintDto.stream()
               .map(dto -> toSubProjectFileDto(subProject, dto))
