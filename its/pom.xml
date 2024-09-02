@@ -292,5 +292,26 @@
         </plugins>
       </build>
     </profile>
+
+    <!-- Used on macOS in order to be able to run ITs when Maven invoked from terminal -->
+    <profile>
+      <id>macOS-its</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>tycho-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>-XstartOnFirstThread</argLine>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>

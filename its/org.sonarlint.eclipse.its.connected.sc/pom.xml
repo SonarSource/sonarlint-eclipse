@@ -36,26 +36,19 @@
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-surefire-plugin</artifactId>
         <configuration>
+          <!--
+            Since we use product files for the runtime configuration we have to configure SonarCloud URLs before the
+            IDE starts in order to hand it over to the RPC server of SLCORE.
+          -->
+          <systemProperties>
+            <sonarlint.internal.sonarcloud.url>https://sc-staging.io</sonarlint.internal.sonarcloud.url>
+          	<sonarlint.internal.sonarcloud.websocket.url>wss://events-api.sc-staging.io/</sonarlint.internal.sonarcloud.websocket.url>
+          </systemProperties>
           <install>
             <iu>
               <id>org.sonarlint.eclipse.its.connected.sc.product</id>
             </iu>
           </install>
-        </configuration>
-      </plugin>
-      
-      <!--
-        Since we use product files for the runtime configuration we have to configure SonarCloud URLs before the IDE
-        starts in order to hand it over to the RPC server of SLCORE.
-      -->
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>tycho-surefire-plugin</artifactId>
-        <configuration>
-          <systemProperties>
-            <sonarlint.internal.sonarcloud.url>https://sc-staging.io</sonarlint.internal.sonarcloud.url>
-          	<sonarlint.internal.sonarcloud.websocket.url>wss://events-api.sc-staging.io/</sonarlint.internal.sonarcloud.websocket.url>
-          </systemProperties>
         </configuration>
       </plugin>
     </plugins>
