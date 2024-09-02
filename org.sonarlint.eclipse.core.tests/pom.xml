@@ -105,6 +105,26 @@
         </plugins>
       </build>
     </profile>
-  </profiles>
 
+    <!-- Used on macOS in order to be able to run UTs when Maven invoked from terminal -->
+    <profile>
+      <id>macOS-uts</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>tycho-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>-XstartOnFirstThread</argLine>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
