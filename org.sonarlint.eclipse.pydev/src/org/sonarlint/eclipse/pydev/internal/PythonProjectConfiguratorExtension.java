@@ -88,9 +88,10 @@ public class PythonProjectConfiguratorExtension implements ISyntaxHighlightingPr
     var exclusions = new HashSet<IPath>();
 
     // Python virtual environments can be named optionally, therefore we only can "guess" the default names based on
-    // different libraries / tools that create virtual environments. We will never catch all probably, but for users
-    // naming their virtual environments differently that is their own "fault".
-    // INFO: These is not the Java standard library PATH class, but the one from Eclipse that is called the same!
+    // different libraries / tools that create virtual environments. We will never catch all probably, but this is a
+    // good guess. For users naming it differently we could add an option per project in the future to allow users to
+    // narrow down the focus on their own!
+    // INFO: This is not the Java standard library PATH class, but the one from Eclipse that is called the same!
     exclusions.add(Path.fromOSString("/" + project.getName() + "/venv"));
     exclusions.add(Path.fromOSString("/" + project.getName() + "/pyenv"));
     exclusions.add(Path.fromOSString("/" + project.getName() + "/pyvenv"));
