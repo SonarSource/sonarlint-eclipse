@@ -86,6 +86,25 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       return;
     }
 
+    // In order to not intervene with the DefaultSonarLintProjectAdapter we have to invalidate the cache as early as
+    // possible! Otherwise "importing a project", then "analyzing whole project" wouldn't work because the initial
+    // "DefaultSonarLintProjectAdapter#files()" call will always include no files after an import, they have to be
+    // "added" first and that is done the first time this is called!
+    final ISonarLintProject project;
+    if (!changedOrAddedFiles.isEmpty()) {
+      project = changedOrAddedFiles.get(0).getProject();
+
+      // Invalidate cache if files were added, or changed as otherwise importing another related hierarchical project
+      // as well as manually selecting multiple projects for analysis would be affected and could potentially lead to
+      // incorrect results!
+      DefaultSonarLintProjectAdapterCache.INSTANCE.removeEntry(
+        ConfigScopeSynchronizer.getConfigScopeId(project));
+    } else {
+      // The variable has to be "final" to be usable in the thread spawned by the job, therefore we set it here
+      // to null in order to not have it in a "unitialized" state as it doesn't default to "null"!
+      project = null;
+    }
+
     var job = new Job("SonarLint - Propagate FileSystem changes") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
@@ -106,13 +125,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
         // Only if there were actual changes to SonarLint configuration files we want to do the hussle and check for
         // sub-projects and inform them as well!
         if (!changedOrAddedSonarLintDto.isEmpty()) {
-          var project = changedOrAddedFiles.get(0).getProject();
-
-          // Invalidate cache if files were removed, added, or changed as otherwise importing another related hierarchical
-          // project as well as manually selecting multiple projects for analysis would be affected and could potentially
-          // lead to incorrect results!
-          DefaultSonarLintProjectAdapterCache.INSTANCE.removeEntry(ConfigScopeSynchronizer.getConfigScopeId(project));
-
+          // INFO: "project" cannot be null in this case!
           for (var subProject : getSubProjects(project)) {
             var changedOrAddedSubProjectDto = changedOrAddedSonarLintDto.stream()
               .map(dto -> toSubProjectFileDto(subProject, dto))
