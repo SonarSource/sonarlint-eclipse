@@ -210,7 +210,7 @@ public class GradleUtils {
         .connect();
 
       var gradleEclipseProject = connection.model(EclipseProject.class).get();
-      var projectPath = gradleEclipseProject.getProjectDirectory().toPath().toAbsolutePath().toString() + "/";
+      var projectPath = gradleEclipseProject.getProjectDirectory().toPath().toRealPath().toString() + "/";
 
       // 3) Add the output directory (this is relative to the Eclipse project, no one knows why it is inconsistent)
       exclusions.add(Path.fromOSString("/" + project.getName() + "/"
@@ -224,7 +224,7 @@ public class GradleUtils {
 
       // 5) For every sub-project add its project directory (these are the absolute paths on disk)
       for (var child : getChildGradleProjects(gradleEclipseProject)) {
-        var childPath = child.getProjectDirectory().toPath().toAbsolutePath().toString();
+        var childPath = child.getProjectDirectory().toPath().toRealPath().toString();
         if (childPath.startsWith(projectPath)) {
           var relativePath = childPath.replace(projectPath, "/" + project.getName() + "/");
           exclusions.add(Path.fromOSString(relativePath));
