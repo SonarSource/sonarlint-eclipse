@@ -226,7 +226,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       var fileStore = EFS.getStore(slFile.getResource().getLocationURI());
       localFile = fileStore.toLocalFile(EFS.NONE, monitor);
       if (localFile != null) {
-        fsPath = localFile.toPath().toAbsolutePath();
+        fsPath = localFile.toPath().toRealPath();
       } else {
         fsPath = null;
       }

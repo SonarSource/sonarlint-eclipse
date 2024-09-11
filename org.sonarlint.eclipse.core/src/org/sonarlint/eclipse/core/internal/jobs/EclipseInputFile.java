@@ -71,7 +71,7 @@ class EclipseInputFile {
         Files.createDirectories(localFile.getParentFile().toPath());
         fileStore.copy(EFS.getStore(localFile.toURI()), EFS.OVERWRITE, null);
       }
-      filePath = localFile.toPath().toAbsolutePath();
+      filePath = localFile.toPath().toRealPath();
     } catch (Exception e) {
       throw new IllegalStateException("Unable to find path for file " + file, e);
     }

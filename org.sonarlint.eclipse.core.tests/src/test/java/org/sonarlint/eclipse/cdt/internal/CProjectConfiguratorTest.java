@@ -95,7 +95,7 @@ public class CProjectConfiguratorTest {
     configurator.configure(context, monitor);
 
     // json created
-    verify(jsonFactory).create(anyCollection(), eq(projectBaseDir.toAbsolutePath().toString()));
+    verify(jsonFactory).create(anyCollection(), eq(projectBaseDir.toRealPath().toString()));
 
     // json written
     assertThat(temp.getRoot().toPath().resolve("build-wrapper-dump.json")).hasContent("json");
