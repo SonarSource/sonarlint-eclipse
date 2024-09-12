@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.awaitility.Awaitility;
@@ -476,19 +475,15 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/java-linked", "java-linked");
 
-    var dotProject = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-linked").getLocation().toFile(), ".project");
-    var content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
-
-    var linkedFile = new File(projectDirectory, "java/java-linked-target/hello/HelloLinked.java");
-    FileUtils.write(dotProject, content.replace("${PLACEHOLDER}", linkedFile.getAbsolutePath()), StandardCharsets.UTF_8);
-
-    rootProject.refresh();
-
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "HelloLinked.java"));
 
+    // We wait for the two markers where one is complaining that the file is not actually in the package but linked
     var defaultEditor = new DefaultEditor("HelloLinked.java");
-    waitForMarkers(defaultEditor,
-      tuple("Replace this use of System.out by a logger.", 13));
+    Awaitility.await()
+      .atMost(20, TimeUnit.SECONDS)
+      .untilAsserted(() -> assertThat(defaultEditor.getMarkers())
+        .filteredOn(marker -> marker.getType().equals("org.sonarlint.eclipse.onTheFlyIssueAnnotationType"))
+        .hasSize(2));
   }
 
   // Need RSE
