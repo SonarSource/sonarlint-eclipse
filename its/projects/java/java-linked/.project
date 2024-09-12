@@ -18,7 +18,7 @@
 		<link>
 			<name>src/hello/HelloLinked.java</name>
 			<type>1</type>
-			<location>${PLACEHOLDER}</location>
+			<locationURI>$%7BPROJECT_LOC%7D/HelloLinked.java</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
