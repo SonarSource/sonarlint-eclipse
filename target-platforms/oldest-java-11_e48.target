@@ -24,6 +24,7 @@
       <repository location="https://download.eclipse.org/reddeer/releases/4.2.0/" />
     </location>
     
+    <!-- INFO: When updating this, also update the script at ".cirrus/pydev_update_sites"! -->
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.python.pydev.feature.feature.group" version="0.0.0" />
       <repository location="https://www.pydev.org/update_sites/6.0.0/" />

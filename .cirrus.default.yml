@@ -128,6 +128,8 @@ build_task:
   codesigning_file:
     path: ${SM_CLIENT_CERT_FILE}.b64
     variable_name: SM_CLIENT_CERT_FILE_BASE64
+  pydev_update_sites_script: |
+    source .cirrus/pydev_update_sites
   <<: *SETUP_MAVEN_CACHE
   build_script: |
     base64 --decode "${SM_CLIENT_CERT_FILE}.b64" > "${SM_CLIENT_CERT_FILE}"
@@ -154,6 +156,8 @@ validate_task:
   env:
     DEPLOY_PULL_REQUEST: false
     DISPLAY: :10
+  pydev_update_sites_script: |
+    source .cirrus/pydev_update_sites
   <<: *SETUP_MAVEN_CACHE
   xvfb_background_script: |
     /etc/init.d/xvfb start
@@ -206,6 +210,8 @@ qa_connectedModeSonarQube_task:
     - env:
         SQ_VERSION: 'DEV'
         QA_CATEGORY: 'DEV'
+  pydev_update_sites_script: |
+    source .cirrus/pydev_update_sites
   <<: *SETUP_MAVEN_CACHE_QA
   <<: *SETUP_ORCHESTRATOR_CACHE
   download_staged_update_site_script: |
@@ -274,6 +280,8 @@ qa_connectedModeSonarCloud_task:
     SONARCLOUD_IT_PASSWORD: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.password]
     DISPLAY: :10
     MAVEN_OPTS: -Xmx3072m
+  pydev_update_sites_script: |
+    source .cirrus/pydev_update_sites
   <<: *SETUP_MAVEN_CACHE_QA
   download_staged_update_site_script: |
     set -euo pipefail
@@ -347,6 +355,8 @@ qa_standaloneMode_task:
         TARGET_PLATFORM: 'latest-java-17_e431'
     - env:
         TARGET_PLATFORM: 'latest-java-21'
+  pydev_update_sites_script: |
+    source .cirrus/pydev_update_sites
   <<: *SETUP_MAVEN_CACHE_QA
   download_staged_update_site_script: |
     set -euo pipefail
@@ -428,6 +438,8 @@ sonarqube_task:
   env:
     DEPLOY_PULL_REQUEST: false
     DISPLAY: :10
+  pydev_update_sites_script: |
+    source .cirrus/pydev_update_sites
   <<: *SETUP_MAVEN_CACHE
   prepare_background_script: |
     set -euo pipefail
@@ -469,6 +481,8 @@ mend_scan_task:
     type: m6a.large
   env:
     WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
+  pydev_update_sites_script: |
+    source .cirrus/pydev_update_sites
   <<: *SETUP_MAVEN_CACHE
   whitesource_script:
     - source cirrus-env QA
@@ -497,6 +511,8 @@ promote_task:
   env:
     ARTIFACTORY_PROMOTE_ACCESS_TOKEN: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promoter access_token]
     GITHUB_TOKEN: VAULT[development/github/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-promotion token]
+  pydev_update_sites_script: |
+    source .cirrus/pydev_update_sites
   <<: *SETUP_MAVEN_CACHE
   promote_script: |
     .cirrus/cirrus_promote_maven

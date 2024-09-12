@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Script to change the PyDev Eclipse Sites to our internal mirrors in order to not fail on these
+# ones as they are super flaky on Cirrus CI from time to time!
+# INFO: When updating this, also update the actual target platforms!
+
+sed -i 's#https://www.pydev.org/update_sites/6.0.0/#https://repox.jfrog.io/artifactory/pydev-p2-6_0_0/#g' \
+  target-platforms/oldest-java-11_e48.target
+
+sed -i 's#https://www.pydev.org/update_sites/10.2.1/#https://repox.jfrog.io/artifactory/pydev-p2-10_2_1/#g' \
+  target-platforms/latest-java-11_e424.target
+
+sed -i 's#https://www.pydev.org/update_sites/12.0.0/#https://repox.jfrog.io/artifactory/pydev-p2-12_0_0/#g' \
+  target-platforms/latest-java-17_e431.target
+
+sed -i 's#https://www.pydev.org/update_sites/12.1.0/#https://repox.jfrog.io/artifactory/pydev-p2-12_1_0/#g' \
+  target-platforms/latest-java-21.target

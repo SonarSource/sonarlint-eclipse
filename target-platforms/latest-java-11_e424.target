@@ -23,9 +23,10 @@
     <!-- INFO: Here we don't reference "org.sonarlint.eclipse.its" project as Maven won't find it! -->
     <location type="Target" uri="file:${project_loc:/sonarlint-eclipse-parent}/target-platforms/commons-build.target"/>
     
+    <!-- INFO: When updating this, also update the script at ".cirrus/pydev_update_sites"! -->
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.python.pydev.feature.feature.group" version="0.0.0" />
-      <repository location="https://www.pydev.org/update_sites/10.2.1" />
+      <repository location="https://www.pydev.org/update_sites/10.2.1/" />
     </location>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">

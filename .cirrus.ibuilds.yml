@@ -54,6 +54,8 @@ qa_ibuilds_task:
     GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
     DISPLAY: :10
     MAVEN_OPTS: -Xmx3072m
+  pydev_update_sites_script: |
+    source .cirrus/pydev_update_sites
   <<: *SETUP_MAVEN_CACHE
   prepare_update_site_script: |
     set -euo pipefail
