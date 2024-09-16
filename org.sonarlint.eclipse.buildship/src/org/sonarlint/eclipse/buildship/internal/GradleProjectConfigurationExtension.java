@@ -43,8 +43,8 @@ public class GradleProjectConfigurationExtension implements ISonarLintProjectHie
     try {
       Class.forName("org.gradle.tooling.GradleConnector");
       Class.forName("org.gradle.tooling.ProjectConnection");
-      Class.forName("org.gradle.tooling.model.eclipse.EclipseProject");
-      Class.forName("org.gradle.tooling.model.eclipse.HierarchicalEclipseProject");
+      Class.forName("org.gradle.tooling.model.gradle.BasicGradleProject");
+      Class.forName("org.gradle.tooling.model.gradle.GradleBuild");
       return true;
     } catch (ClassNotFoundException e) {
       return false;
@@ -58,10 +58,8 @@ public class GradleProjectConfigurationExtension implements ISonarLintProjectHie
 
   @Override
   public boolean partOfHierarchy(ISonarLintProject project) {
-    if (isToolingApiPresent) {
-      return GradleUtils.isPartOfHierarchy(project);
-    }
-    return false;
+    return isToolingApiPresent
+      && GradleUtils.checkIfGradleProject((IProject) project.getResource());
   }
 
   @Override

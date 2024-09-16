@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.eclipse.core.filesystem.EFS;
@@ -43,6 +44,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.cache.DefaultSonarLintProjectAdapterCache;
 import org.sonarlint.eclipse.core.internal.cache.IProjectScopeProviderCache;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
@@ -113,6 +115,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
         // either inside or outside the IDE, the files will be included.
         var changedOrAddedDto = changedOrAddedFiles.stream()
           .map(f -> FileSystemSynchronizer.toFileDto(f, monitor))
+          .filter(Objects::nonNull)
           .collect(toList());
 
         // In order to add additional "changes" for informing the sub-projects we have to make the list modifiable!
@@ -218,8 +221,26 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     return true;
   }
 
+  /**
+   *  The Eclipse Buildship plug-in for Gradle will create "fake" projects first when importing, therefore they are
+   *  more or less "virtual" and don't have a location URI that is used to determine the configuration scope id!
+   *
+   *  By default, the "fake" projects should already be gone once SonarLint starts to run but in case it is not, don't
+   *  fail on the files of this project as they will be added "again" anyway.
+   */
+  @Nullable
   static ClientFileDto toFileDto(ISonarLintFile slFile, IProgressMonitor monitor) {
-    var configScopeId = ConfigScopeSynchronizer.getConfigScopeId(slFile.getProject());
+    String configScopeId = null;
+    try {
+      configScopeId = ConfigScopeSynchronizer.getConfigScopeId(slFile.getProject());
+    } catch (NullPointerException err) {
+      SonarLintLogger.get().error("Cannot get the configuration scope id for the project '"
+        + slFile.getProject().getName() + "' of file '" + slFile.getProjectRelativePath() + "'. This can happen when "
+        + "importing a Gradle project due to the internal logic of the Eclipse Buildship plug-in. If this does not "
+        + "happen on Gradle projects, then please reach out to us at: " + SonarLintDocumentation.COMMUNITY_FORUM);
+      return null;
+    }
+
     Path fsPath;
     File localFile;
     try {
