@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Adapters;
@@ -282,5 +283,10 @@ public class SonarLintUtils {
     var satisfiesCheck = path.makeAbsolute().toOSString().contains("node_modules");
     satisfiesCheck = satisfiesCheck || path.makeAbsolute().toOSString().contains("package-lock.json");
     return satisfiesCheck;
+  }
+
+  // This can also be used in sub-plug-ins!
+  public static String getConfigScopeId(IProject project) {
+    return project.getLocationURI().toString();
   }
 }

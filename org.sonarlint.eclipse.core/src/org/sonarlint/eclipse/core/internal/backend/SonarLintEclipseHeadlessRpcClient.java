@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -85,7 +86,9 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
     var project = SonarLintUtils.resolveProject(configScopeId);
 
     var files = new ArrayList<>(project.files().stream()
-      .map(slFile -> FileSystemSynchronizer.toFileDto(slFile, new NullProgressMonitor())).collect(Collectors.toList()));
+      .map(slFile -> FileSystemSynchronizer.toFileDto(slFile, new NullProgressMonitor()))
+      .filter(Objects::nonNull)
+      .collect(Collectors.toList()));
 
     // If the project is in a hierarchy, also provide the ".sonarlint/*.json" files from the root project if possible.
     // If there are different hierarchical systems in place (e.g. Maven / Gradle) we provide all of them!
@@ -102,7 +105,12 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
     // For root project in root projects add the files to "files"
     for (var rootProject : rootProjects) {
       FileSystemSynchronizer.getSonarLintJsonFiles(rootProject).stream()
-        .forEach(slFile -> files.add(FileSystemSynchronizer.toSubProjectFileDto(project, FileSystemSynchronizer.toFileDto(slFile, null))));
+        .forEach(slFile -> {
+          var dto = FileSystemSynchronizer.toFileDto(slFile, null);
+          if (dto != null) {
+            files.add(FileSystemSynchronizer.toSubProjectFileDto(project, dto));
+          }
+        });
     }
 
     return files;
