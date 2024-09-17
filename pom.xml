@@ -64,20 +64,27 @@
     <license.title>SonarLint for Eclipse</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>4.0.6</tycho.version>
+
+    <!-- We build everything with Java 11 in order to support more targets -->
     <jdk.min.version>11</jdk.min.version>
-    <jacoco.version>0.8.8</jacoco.version>
+
+    <!-- Maven plug-ins -->
     <jarsigner.version>3.0.0</jarsigner.version>
+    <toolchains.version>3.2.0</toolchains.version>
+    <os.version>1.7.1</os.version>
+
+    <!-- Tycho plug-ins -->
+    <tycho.version>4.0.8</tycho.version>
 
     <!-- Sloop embedded CLI version for fragment projects -->
     <sloop.version>10.5.0.78949</sloop.version>
-
-    <!-- ================== -->
-    <!-- For SonarQube analysis -->
-    <!-- ================== -->
+    
+    <!-- SonarQube analysis -->
     <sonar.java.source>11</sonar.java.source>
     <sonar.java.target>11</sonar.java.target>
     <sonar.exclusions>**/.tycho-consumer-pom.xml</sonar.exclusions>
+
+    <!-- Global properties -->
     <jarsigner.skip>true</jarsigner.skip>
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
@@ -175,11 +182,6 @@
           <configuration>
             <source>8</source>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.jacoco</groupId>
-          <artifactId>jacoco-maven-plugin</artifactId>
-          <version>${jacoco.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -288,7 +290,6 @@
       <plugin>
         <groupId>org.cyclonedx</groupId>
         <artifactId>cyclonedx-maven-plugin</artifactId>
-        <version>2.7.9</version>
         <executions>
           <execution>
             <phase>package</phase>
