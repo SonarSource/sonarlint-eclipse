@@ -22,17 +22,22 @@
   </modules>
 
   <properties>
-    <tycho.version>4.0.6</tycho.version>
     <license.title>SonarLint for Eclipse ITs</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- We build everything with Java 11 in order to support more targets -->
+    <jdk.min.version>11</jdk.min.version>
+
+    <!-- Tycho plug-ins -->
+    <tycho.version>4.0.8</tycho.version>
+
+    <!-- Global properties -->
     <target.platform>latest</target.platform>
     <tycho.localArtifacts>ignore</tycho.localArtifacts>
-    <!--
-    http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime -->
+    <!-- http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime -->
     <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext -Dsonarlint.telemetry.disabled=true</tycho.testArgLine>
     <sonar.runtimeVersion>LATEST_RELEASE</sonar.runtimeVersion>
-    <jdk.min.version>11</jdk.min.version>
   </properties>
 
   <build>
