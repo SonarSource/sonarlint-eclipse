@@ -19,37 +19,10 @@
  */
 package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
-import org.eclipse.reddeer.common.condition.WaitCondition;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmManualAnalysisDialog;
 
-public class ConfirmManualAnalysisDialogOpened implements WaitCondition {
-  @Override
-  public boolean test() {
-    try {
-      new ConfirmManualAnalysisDialog().isEnabled();
-      return true;
-    } catch (Exception ignored) {
-      return false;
-    }
-  }
-
-  @Override
-  public ConfirmManualAnalysisDialog getResult() {
-    return new ConfirmManualAnalysisDialog();
-  }
-
-  @Override
-  public String description() {
-    return "Confirm manual analysis dialog is opened";
-  }
-
-  @Override
-  public String errorMessageWhile() {
-    return "Confirm manual analysis dialog is still opened";
-  }
-
-  @Override
-  public String errorMessageUntil() {
-    return "Confirm manual analysis dialog is not yet opened";
+public class ConfirmManualAnalysisDialogOpened extends AbstractDialogOpened<ConfirmManualAnalysisDialog> {
+  public ConfirmManualAnalysisDialogOpened() {
+    super(ConfirmManualAnalysisDialog.class);
   }
 }

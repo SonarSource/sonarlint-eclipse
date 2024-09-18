@@ -19,37 +19,10 @@
  */
 package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
-import org.eclipse.reddeer.common.condition.WaitCondition;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FileNotFoundDialog;
 
-public class FileNotFoundDialogOpened implements WaitCondition {
-  @Override
-  public boolean test() {
-    try {
-      new FileNotFoundDialog().isEnabled();
-      return true;
-    } catch (Exception ignored) {
-      return false;
-    }
-  }
-
-  @Override
-  public FileNotFoundDialog getResult() {
-    return new FileNotFoundDialog();
-  }
-
-  @Override
-  public String description() {
-    return "'File not found' dialog is opened";
-  }
-
-  @Override
-  public String errorMessageWhile() {
-    return "'File not found' dialog is still opened";
-  }
-
-  @Override
-  public String errorMessageUntil() {
-    return "'File not found' dialog is not yet opened";
+public class FileNotFoundDialogOpened extends AbstractDialogOpened<FileNotFoundDialog> {
+  public FileNotFoundDialogOpened() {
+    super(FileNotFoundDialog.class);
   }
 }

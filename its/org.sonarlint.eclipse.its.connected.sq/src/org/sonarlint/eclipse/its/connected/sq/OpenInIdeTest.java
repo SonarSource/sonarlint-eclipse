@@ -397,10 +397,8 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     // 11) trigger "Open in IDE" feature: taint vulnerability opens correctly including Taint Vulnerabilities view
     triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s2083.getKey());
-    var sonarLintTaintVulnerabilitiesView = new SonarLintTaintVulnerabilitiesView();
-    new WaitUntil(new SonarLintTaintVulnerabilitiesViewOpened(sonarLintTaintVulnerabilitiesView), TimePeriod.DEFAULT);
-    sonarLintTaintVulnerabilitiesView.open();
-    assertThat(sonarLintTaintVulnerabilitiesView.getItems()).isNotEmpty();
+    new WaitUntil(new SonarLintTaintVulnerabilitiesViewOpened(), TimePeriod.DEFAULT);
+    assertThat(new SonarLintTaintVulnerabilitiesView().getItems()).isNotEmpty();
 
     closeTaintPopupIfAny();
   }

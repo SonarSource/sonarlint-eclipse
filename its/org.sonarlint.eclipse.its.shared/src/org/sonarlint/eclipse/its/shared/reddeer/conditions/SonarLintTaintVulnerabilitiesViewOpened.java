@@ -19,38 +19,10 @@
  */
 package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
-import org.eclipse.reddeer.common.condition.WaitCondition;
 import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintTaintVulnerabilitiesView;
 
-public class SonarLintTaintVulnerabilitiesViewOpened implements WaitCondition {
-private final SonarLintTaintVulnerabilitiesView sonarLintTaintVulnerabilitiesView;
-
-  public SonarLintTaintVulnerabilitiesViewOpened(SonarLintTaintVulnerabilitiesView sonarLintTaintVulnerabilitiesView) {
-    this.sonarLintTaintVulnerabilitiesView = sonarLintTaintVulnerabilitiesView;
-  }
-
-  @Override
-  public boolean test() {
-    return sonarLintTaintVulnerabilitiesView.isOpen();
-  }
-
-  @Override
-  public SonarLintTaintVulnerabilitiesView getResult() {
-    return sonarLintTaintVulnerabilitiesView;
-  }
-
-  @Override
-  public String description() {
-    return "Taint Vulnerabilities view is opened";
-  }
-
-  @Override
-  public String errorMessageWhile() {
-    return "Taint Vulnerabilities view is still opened";
-  }
-
-  @Override
-  public String errorMessageUntil() {
-    return "Taint Vulnerabilities view is not yet opened";
+public class SonarLintTaintVulnerabilitiesViewOpened extends AbstractViewOpened<SonarLintTaintVulnerabilitiesView> {
+  public SonarLintTaintVulnerabilitiesViewOpened() {
+    super(SonarLintTaintVulnerabilitiesView.class);
   }
 }

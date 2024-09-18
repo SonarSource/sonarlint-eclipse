@@ -19,38 +19,11 @@
  */
 package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
-import org.eclipse.reddeer.common.condition.WaitCondition;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.OpenInIdeDialog;
 
 /** Await the "Open in IDE" dialog is opened (no matter what the content is) */
-public class OpenInIdeDialogOpened implements WaitCondition {
-  @Override
-  public boolean test() {
-    try {
-      new OpenInIdeDialog().isEnabled();
-      return true;
-    } catch (Exception ignored) {
-      return false;
-    }
-  }
-
-  @Override
-  public OpenInIdeDialog getResult() {
-    return new OpenInIdeDialog();
-  }
-
-  @Override
-  public String description() {
-    return "'Open in IDE' dialog is opened";
-  }
-
-  @Override
-  public String errorMessageWhile() {
-    return "'Open in IDE' dialog is still opened";
-  }
-
-  @Override
-  public String errorMessageUntil() {
-    return "'Open in IDE' dialog is not yet opened";
+public class OpenInIdeDialogOpened extends AbstractDialogOpened<OpenInIdeDialog> {
+  public OpenInIdeDialogOpened() {
+    super(OpenInIdeDialog.class);
   }
 }

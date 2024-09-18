@@ -19,43 +19,11 @@
  */
 package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
-import org.eclipse.reddeer.common.condition.WaitCondition;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmConnectionCreationDialog;
 
-public class ConfirmConnectionCreationDialogOpened implements WaitCondition {
-  private final boolean isSonarCloud;
-
+public class ConfirmConnectionCreationDialogOpened
+  extends AbstractDialogWithParameterOpened<ConfirmConnectionCreationDialog, Boolean> {
   public ConfirmConnectionCreationDialogOpened(boolean isSonarCloud) {
-    this.isSonarCloud = isSonarCloud;
-  }
-
-  @Override
-  public boolean test() {
-    try {
-      new ConfirmConnectionCreationDialog(isSonarCloud).isEnabled();
-      return true;
-    } catch (Exception ignored) {
-      return false;
-    }
-  }
-
-  @Override
-  public ConfirmConnectionCreationDialog getResult() {
-    return new ConfirmConnectionCreationDialog(isSonarCloud);
-  }
-
-  @Override
-  public String description() {
-    return "'Confirm Connection Creation' dialog is opened";
-  }
-
-  @Override
-  public String errorMessageWhile() {
-    return "'Confirm Connection Creation' dialog is still opened";
-  }
-
-  @Override
-  public String errorMessageUntil() {
-    return "'Confirm Connection Creation' dialog is not yet opened";
+    super(ConfirmConnectionCreationDialog.class, Boolean.class, isSonarCloud);
   }
 }
