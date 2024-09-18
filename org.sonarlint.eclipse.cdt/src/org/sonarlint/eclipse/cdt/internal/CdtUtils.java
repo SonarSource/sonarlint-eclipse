@@ -26,14 +26,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.eclipse.cdt.core.CCProjectNature;
 import org.eclipse.cdt.core.CCorePlugin;
+import org.eclipse.cdt.core.CProjectNature;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jdt.annotation.Nullable;
@@ -67,6 +73,15 @@ public class CdtUtils {
     this.fileValidator = fileValidator;
     this.logger = logger;
     this.contentTypeResolver = contentTypeResolver;
+  }
+
+  public boolean hasCOrCppNature(IProject project) {
+    try {
+      return project.hasNature(CProjectNature.C_NATURE_ID) || project.hasNature(CCProjectNature.CC_NATURE_ID);
+    } catch (CoreException e) {
+      SonarLintLogger.get().error(e.getMessage(), e);
+      return false;
+    }
   }
 
   public void configure(IPreAnalysisContext context, IProgressMonitor monitor) {
@@ -157,4 +172,47 @@ public class CdtUtils {
     return getFileLanguage(iFile.getProject(), iFile);
   }
 
+  public Set<IPath> getExcludedPaths(IProject project) {
+    var exclusions = new HashSet<IPath>();
+
+    try {
+      // 1) Check whether this is a CDT project
+      var cProject = CoreModel.getDefault().getProjectDescription(project, false);
+      if (cProject == null) {
+        return exclusions;
+      }
+      var projectPath = project.getFullPath().makeAbsolute().toOSString();
+
+      // 2) Iterate over all the different configurations, e.g. Debug or Release
+      for (var config : cProject.getConfigurations()) {
+        var configData = config.getConfigurationData();
+        if (configData == null) {
+          continue;
+        }
+
+        var buildData = configData.getBuildData();
+        if (buildData == null) {
+          continue;
+        }
+
+        // 3) Iterate over all the output directories as there can be multiple ones per configuration
+        for (var outputDirectory : buildData.getOutputDirectories()) {
+          var outputDirectoryPath = outputDirectory.getFullPath().makeAbsolute().toOSString();
+          if (!projectPath.equals(outputDirectoryPath)) {
+            // Only when the output directory is not the project directory we keep it. For example CMake projects can
+            // generate CDT projects where the output is the project directory, this case should not be taken into
+            // account and is up to the user. By default we will exclude compilation output when it is somewhere in a
+            // sub-directory, e.g. "Debug" or "Release"!
+            exclusions.add(org.eclipse.core.runtime.Path.fromOSString(
+              "/" + project.getName() + "/" + outputDirectory.getFullPath()));
+          }
+        }
+      }
+    } catch (Exception err) {
+      SonarLintLogger.get().error("Error while getting the exclusions of project '" + project.getName()
+        + "' based on CDT!", err);
+    }
+
+    return exclusions;
+  }
 }

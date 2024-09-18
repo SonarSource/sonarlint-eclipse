@@ -13,6 +13,12 @@
         </provider>
      </extension>
      <extension
+         point="org.sonarlint.eclipse.core.projectScopeProvider">
+      <provider
+            class="org.sonarlint.eclipse.cdt.internal.CProjectConfiguratorExtension">
+      </provider>
+   </extension>
+     <extension
          point="org.sonarlint.eclipse.ui.syntaxHighlightingProvider">
       <enhancer
             class="org.sonarlint.eclipse.cdt.internal.CProjectConfiguratorExtension">
