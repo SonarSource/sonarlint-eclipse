@@ -33,26 +33,30 @@ import org.sonarlint.eclipse.ui.internal.util.PopupUtils;
  */
 public class NoBindingSuggestionFoundPopup extends AbstractSonarLintPopup {
   private final String configurationScopeId;
-  
-  public NoBindingSuggestionFoundPopup(String configurationScopeId) {
+  private final boolean isSonarCloud;
+
+  public NoBindingSuggestionFoundPopup(String configurationScopeId, boolean isSonarCloud) {
     this.configurationScopeId = configurationScopeId;
+    this.isSonarCloud = isSonarCloud;
   }
 
   @Override
   protected String getMessage() {
-    return "The SonarQube project '" + configurationScopeId + "' cannot be matched to any project in the workspace. "
+    return "The "
+      + (isSonarCloud ? "SonarCloud" : "SonarQube")
+      + " project '" + configurationScopeId + "' cannot be matched to any project in the workspace. "
       + "Please open your project, or bind it manually, and try again.";
   }
 
   @Override
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
-    
+
     addLink("Open Troubleshooting documentation", e -> {
       BrowserUtils.openExternalBrowser(SonarLintDocumentation.TROUBLESHOOTING_LINK, getShell().getDisplay());
       close();
     });
-    
+
     composite.getShell().addDisposeListener(e -> PopupUtils.removeCurrentlyDisplayedPopup(getClass()));
   }
 
@@ -63,19 +67,21 @@ public class NoBindingSuggestionFoundPopup extends AbstractSonarLintPopup {
 
   @Override
   protected Image getPopupShellImage(int maximumHeight) {
-    return SonarLintImages.SONARQUBE_SERVER_ICON_IMG;
+    return isSonarCloud
+      ? SonarLintImages.SONARCLOUD_SERVER_ICON_IMG
+      : SonarLintImages.SONARQUBE_SERVER_ICON_IMG;
   }
-  
+
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
-  public static void displayPopupIfNotIgnored(String configurationScopeId) {
+  public static void displayPopupIfNotIgnored(String configurationScopeId, boolean isSonarCloud) {
     if (PopupUtils.popupCurrentlyDisplayed(NoBindingSuggestionFoundPopup.class)) {
       return;
     }
-    
+
     Display.getDefault().asyncExec(() -> {
       PopupUtils.addCurrentlyDisplayedPopup(NoBindingSuggestionFoundPopup.class);
-      
-      var popup = new NoBindingSuggestionFoundPopup(configurationScopeId);
+
+      var popup = new NoBindingSuggestionFoundPopup(configurationScopeId, isSonarCloud);
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);
       popup.open();

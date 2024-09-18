@@ -72,6 +72,7 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.binding.Bindin
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TaintVulnerabilityDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.binding.AssistBindingParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.binding.AssistBindingResponse;
+import org.sonarsource.sonarlint.core.rpc.protocol.client.binding.NoBindingSuggestionFoundParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.connection.AssistCreatingConnectionParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.connection.AssistCreatingConnectionResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.connection.ConnectionSuggestionDto;
@@ -192,8 +193,8 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
   }
 
   @Override
-  public void noBindingSuggestionFound(String projectKey) {
-    NoBindingSuggestionFoundPopup.displayPopupIfNotIgnored(projectKey);
+  public void noBindingSuggestionFound(NoBindingSuggestionFoundParams params) {
+    NoBindingSuggestionFoundPopup.displayPopupIfNotIgnored(params.getProjectKey(), params.isSonarCloud());
   }
 
   @Override
