@@ -19,45 +19,11 @@
  */
 package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
-import org.eclipse.reddeer.common.condition.WaitCondition;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionAvailableDialog;
 
-public class FixSuggestionAvailableDialogOpened implements WaitCondition {
-  private final int index;
-  private final int all;
-
+public class FixSuggestionAvailableDialogOpened
+  extends AbstractDialogWithTwoParametersOpened<FixSuggestionAvailableDialog, Integer, Integer> {
   public FixSuggestionAvailableDialogOpened(int index, int all) {
-    this.index = index;
-    this.all = all;
-  }
-
-  @Override
-  public boolean test() {
-    try {
-      new FixSuggestionAvailableDialog(index, all).isEnabled();
-      return true;
-    } catch (Exception ignored) {
-      return false;
-    }
-  }
-
-  @Override
-  public FixSuggestionAvailableDialog getResult() {
-    return new FixSuggestionAvailableDialog(index, all);
-  }
-
-  @Override
-  public String description() {
-    return "'Fix Suggestion (available)' dialog is opened";
-  }
-
-  @Override
-  public String errorMessageWhile() {
-    return "'Fix Suggestion (available)' dialog is still opened";
-  }
-
-  @Override
-  public String errorMessageUntil() {
-    return "'Fix Suggestion (available)' dialog is not yet opened";
+    super(FixSuggestionAvailableDialog.class, Integer.class, index, Integer.class, all);
   }
 }

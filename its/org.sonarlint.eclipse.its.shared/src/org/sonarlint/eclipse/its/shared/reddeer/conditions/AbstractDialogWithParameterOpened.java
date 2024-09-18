@@ -17,35 +17,38 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.its.shared.reddeer.dialogs;
+package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
-import org.eclipse.reddeer.core.reference.ReferencedComposite;
-import org.eclipse.reddeer.swt.impl.button.PredefinedButton;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
-import org.eclipse.swt.SWT;
 
-public class FixSuggestionUnavailableDialog extends DefaultShell {
-  public FixSuggestionUnavailableDialog(Integer index, Integer all) {
-    super(String.format("SonarLint Fix Suggestion (%d/%d)", index + 1, all));
+public abstract class AbstractDialogWithParameterOpened<T extends DefaultShell, P>
+  extends AbstractDialogOpened<T> {
+  protected final Class<P> parameterType;
+  protected final Object parameterValue;
+
+  protected AbstractDialogWithParameterOpened(Class<T> clazz, Class<P> parameterType, Object parameterValue) {
+    super(clazz);
+    this.parameterType = parameterType;
+    this.parameterValue = parameterValue;
   }
 
-  public void proceed() {
-    new ProceedButton(this).click();
-  }
-
-  public void cancel() {
-    new CancelButton(this).click();
-  }
-
-  private static class ProceedButton extends PredefinedButton {
-    public ProceedButton(ReferencedComposite referencedComposite) {
-      super(referencedComposite, 0, "Proceed", SWT.PUSH);
+  @Override
+  public boolean test() {
+    try {
+      clazz.getDeclaredConstructor(parameterType).newInstance(parameterValue).isEnabled();
+      return true;
+    } catch (Exception ignored) {
+      System.out.println("Error: " + ignored);
+      return false;
     }
   }
 
-  private static class CancelButton extends PredefinedButton {
-    public CancelButton(ReferencedComposite referencedComposite) {
-      super(referencedComposite, 0, "Cancel", SWT.PUSH);
+  @Override
+  public T getResult() {
+    try {
+      return clazz.getDeclaredConstructor(parameterType).newInstance(parameterValue);
+    } catch (Exception ignored) {
+      return null;
     }
   }
 }

@@ -19,37 +19,10 @@
  */
 package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
-import org.eclipse.reddeer.common.condition.WaitCondition;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ShareConnectedModeConfigurationDialog;
 
-public class ShareConnectedModeConfigurationDialogOpened implements WaitCondition {
-  @Override
-  public boolean test() {
-    try {
-      new ShareConnectedModeConfigurationDialog().isEnabled();
-      return true;
-    } catch (Exception ignored) {
-      return false;
-    }
-  }
-
-  @Override
-  public ShareConnectedModeConfigurationDialog getResult() {
-    return new ShareConnectedModeConfigurationDialog();
-  }
-
-  @Override
-  public String description() {
-    return "'Share Connected Mode configuration' dialog is opened";
-  }
-
-  @Override
-  public String errorMessageWhile() {
-    return "'Share Connected Mode configuration' dialog is still opened";
-  }
-
-  @Override
-  public String errorMessageUntil() {
-    return "'Share Connected Mode configuration' dialog is not yet opened";
+public class ShareConnectedModeConfigurationDialogOpened extends AbstractDialogOpened<ShareConnectedModeConfigurationDialog> {
+  public ShareConnectedModeConfigurationDialogOpened() {
+    super(ShareConnectedModeConfigurationDialog.class);
   }
 }

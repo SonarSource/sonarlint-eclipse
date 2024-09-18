@@ -24,7 +24,7 @@ import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 public class ConfirmConnectionCreationDialog extends DefaultShell {
   private final boolean isSonarCloud;
 
-  public ConfirmConnectionCreationDialog(boolean isSonarCloud) {
+  public ConfirmConnectionCreationDialog(Boolean isSonarCloud) {
     super(isSonarCloud
       ? "Do you trust this SonarCloud organization?"
       : "Do you trust this SonarQube server?");

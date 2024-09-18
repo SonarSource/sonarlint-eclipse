@@ -25,7 +25,7 @@ import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.swt.SWT;
 
 public class FixSuggestionAvailableDialog extends DefaultShell {
-  public FixSuggestionAvailableDialog(int index, int all) {
+  public FixSuggestionAvailableDialog(Integer index, Integer all) {
     super(String.format("SonarLint Fix Suggestion (%d/%d)", index + 1, all));
   }
 

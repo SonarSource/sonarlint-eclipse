@@ -19,37 +19,10 @@
  */
 package org.sonarlint.eclipse.its.shared.reddeer.conditions;
 
-import org.eclipse.reddeer.common.condition.WaitCondition;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ProjectSelectionDialog;
 
-public class ProjectSelectionDialogOpened implements WaitCondition {
-  @Override
-  public boolean test() {
-    try {
-      new ProjectSelectionDialog().isEnabled();
-      return true;
-    } catch (Exception ignored) {
-      return false;
-    }
-  }
-
-  @Override
-  public ProjectSelectionDialog getResult() {
-    return new ProjectSelectionDialog();
-  }
-
-  @Override
-  public String description() {
-    return "'Project selection for binding' dialog is opened";
-  }
-
-  @Override
-  public String errorMessageWhile() {
-    return "'Project selection for binding' dialog is still opened";
-  }
-
-  @Override
-  public String errorMessageUntil() {
-    return "'Project selection for binding' dialog is not yet opened";
+public class ProjectSelectionDialogOpened extends AbstractDialogOpened<ProjectSelectionDialog> {
+  public ProjectSelectionDialogOpened() {
+    super(ProjectSelectionDialog.class);
   }
 }
