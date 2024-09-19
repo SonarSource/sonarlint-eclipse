@@ -58,6 +58,7 @@ qa_ibuilds_task:
   prepare_update_site_script: |
     set -euo pipefail
     source cirrus-env QA
+    .cirrus/mirrored_update_sites
     source .cirrus/set_maven_build_version "$BUILD_NUMBER"
     mvn -B -e -V package
   prepare_background_script: |

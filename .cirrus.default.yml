@@ -132,6 +132,7 @@ build_task:
   build_script: |
     base64 --decode "${SM_CLIENT_CERT_FILE}.b64" > "${SM_CLIENT_CERT_FILE}"
     source cirrus-env BUILD-PRIVATE
+    .cirrus/mirrored_update_sites
     .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
   site_artifacts:
     paths: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
@@ -161,6 +162,7 @@ validate_task:
     metacity --sm-disable --replace &
     sleep 10 # give metacity some time to start
     source cirrus-env QA
+    .cirrus/mirrored_update_sites
     mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify -Pcoverage \
       -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/ut-coverage.exec
     /etc/init.d/xvfb stop
@@ -222,6 +224,7 @@ qa_connectedModeSonarQube_task:
     ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording_${QA_CATEGORY}.mp4
   run_its_script: |
     echo "Run Maven ITs for Connected Mode with SonarQube on Eclipse 2024-03 / 4.31 (latest Java 17) and Server ${SQ_VERSION}"
+    .cirrus/mirrored_update_sites
     cd its/
     mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
       -P coverage,\!standaloneMode,\!connectedModeSc \
@@ -289,6 +292,7 @@ qa_connectedModeSonarCloud_task:
     ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording.mp4
   run_its_script: |
     echo "Run Maven ITs for Connected Mode with SonarCloud on Eclipse (latest Java 21)"
+    .cirrus/mirrored_update_sites
     cd its/
     env SONARCLOUD_IT_PASSWORD=$SONARCLOUD_IT_PASSWORD \
       mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
@@ -362,6 +366,7 @@ qa_standaloneMode_task:
     ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording_${TARGET_PLATFORM}.mp4
   run_its_script: |
     echo "Run Maven ITs for Standalone Mode on Eclipse '${TARGET_PLATFORM}'"
+    .cirrus/mirrored_update_sites
     cd its/
     mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
       -P coverage,\!connectedModeSq,\!connectedModeSc \
@@ -446,6 +451,7 @@ sonarqube_task:
     unzip jacoco_it_sq.zip -d ${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/
     unzip jacoco_it_sc.zip -d ${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/
     source cirrus-env QA
+    .cirrus/mirrored_update_sites
     .cirrus/regular_mvn_build_deploy_analyze \
       -P-deploy-sonarsource,-release,-sign -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true \
       -Pcoverage -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
@@ -472,6 +478,7 @@ mend_scan_task:
   <<: *SETUP_MAVEN_CACHE
   whitesource_script:
     - source cirrus-env QA
+    - .cirrus/mirrored_update_sites
     - source .cirrus/set_maven_build_version $BUILD_NUMBER
     - mvn -B -e -V clean install -DskipTests -Dcyclonedx.skip=false
     - source ws_scan.sh

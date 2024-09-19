@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# =================================================================================================
+#     mirrored_update_sites: Replace external Eclipse Update sites with mirrored ones on Repox
+# =================================================================================================
+
+# PyDev Eclipse Update site always lookd like this
+#   https://www.pydev.org/update_sites/{Major}.{Minor}.{Patch}
+# Mirrored link always looks like this
+#   https://repox.jfrog.io/ui/repos/tree/General/pydev-p2-{Major}_{Minor}_{Patch}
+PYDEV_REGEX_VERSION="[0-9]+\.[0-9]+\.[0-9]+"
+PYDEV_REGEX_LINK="http[s]*:\/\/www\.pydev\.org\/update_sites\/$PYDEV_REGEX_VERSION"
+PYDEV_TEMPLATE_LINK="https://repox.jfrog.io/artifactory/pydev-p2-VERSION/"
+
+
+# =================================================================================================
+#   1) Check all target platforms that are provided for both Maven and Eclipse PDE
+# =================================================================================================
+
+TARGET_PLATFORMS=(target-platforms/*.target)
+
+
+# =================================================================================================
+#   2) Check for PyDev in file and replace with mirrored link on Repox
+# =================================================================================================
+
+for target_platform in "${TARGET_PLATFORMS[@]}"; do
+    PYDEV_LINK="$(grep -oP "$PYDEV_REGEX_LINK" $target_platform)"
+    if [[ -z ${PYDEV_LINK} ]]; then
+        echo "'$target_platform': No PyDev reference found"
+        continue
+    fi
+    PYDEV_VERSION="$(grep -oP "$PYDEV_REGEX_VERSION" <<< "$PYDEV_LINK")"
+
+    PYDEV_ADJUSTED_VERSION="${PYDEV_VERSION//./_}"
+    PYDEV_ADJUSTED_LINK="${PYDEV_TEMPLATE_LINK//VERSION/$PYDEV_ADJUSTED_VERSION}"
+
+    sed -i "s#$PYDEV_LINK#$PYDEV_ADJUSTED_LINK#" $target_platform
+    echo "'$target_platform': replaced '$PYDEV_LINK' with '$PYDEV_ADJUSTED_LINK'"
+done
