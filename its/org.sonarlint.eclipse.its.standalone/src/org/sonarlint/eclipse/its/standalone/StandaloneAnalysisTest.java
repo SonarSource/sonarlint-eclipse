@@ -488,7 +488,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   // Need RSE
   @Test
-  @Ignore("09/2024: SLCORE checks on Symlinks are not working with RSE")
   @Category(RequiresExtraDependency.class)
   public void shouldAnalyseVirtualProject() throws Exception {
     // INFO: It is flaky when running on top of the oldest Eclipse version but works fine in the other test cases,
