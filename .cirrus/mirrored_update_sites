@@ -10,7 +10,7 @@
 #   https://repox.jfrog.io/ui/repos/tree/General/pydev-p2-{Major}_{Minor}_{Patch}
 PYDEV_REGEX_VERSION="[0-9]+\.[0-9]+\.[0-9]+"
 PYDEV_REGEX_LINK="http[s]*:\/\/www\.pydev\.org\/update_sites\/$PYDEV_REGEX_VERSION"
-PYDEV_TEMPLATE_LINK="https://repox.jfrog.io/artifactory/pydev-p2-VERSION/"
+PYDEV_TEMPLATE_LINK="https://repox.jfrog.io/artifactory/pydev-p2-VERSION"
 
 
 # =================================================================================================
