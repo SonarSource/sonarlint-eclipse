@@ -131,7 +131,7 @@ build_task:
   <<: *SETUP_MAVEN_CACHE
   build_script: |
     base64 --decode "${SM_CLIENT_CERT_FILE}.b64" > "${SM_CLIENT_CERT_FILE}"
-    source cirrus-env BUILD-BUILD
+    source cirrus-env BUILD
     .cirrus/mirrored_update_sites
     .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
   site_artifacts:
