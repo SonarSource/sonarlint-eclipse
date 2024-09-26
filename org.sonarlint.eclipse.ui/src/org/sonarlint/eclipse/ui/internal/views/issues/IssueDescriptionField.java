@@ -30,7 +30,6 @@ import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarsource.sonarlint.core.rpc.protocol.common.ImpactSeverity;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.IssueSeverity;
 
 /**
@@ -134,11 +133,9 @@ public class IssueDescriptionField extends MarkerField {
         .trim();
 
       // As we offer multiple different grouping options (severity / impacts), we have to display
-      // the correct grouping icon!
-      if (ImpactSeverity.HIGH.name().equals(groupByTitle)
-        || ImpactSeverity.MEDIUM.name().equals(groupByTitle)
-        || ImpactSeverity.LOW.name().equals(groupByTitle)) {
-        return SonarLintImages.getIssueImage(null, groupByTitle, false);
+      // the correct grouping icon. 
+      if (groupByTitle.endsWith(" IMPACT")) {
+        return SonarLintImages.getIssueImage(null, groupByTitle.replace(" IMPACT", ""), false);
       } else if (IssueSeverity.BLOCKER.name().equals(groupByTitle)
         || IssueSeverity.CRITICAL.name().equals(groupByTitle)
         || IssueSeverity.MAJOR.name().equals(groupByTitle)

@@ -313,20 +313,32 @@
             id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
             label="Impact">
          <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.blocker"
+               label="Blocker Impact"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="6">
+         </markerGroupingEntry>
+         <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
-               label="High"
+               label="High Impact"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="5">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
+               label="Medium Impact"
                markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
                priority="4">
          </markerGroupingEntry>
          <markerGroupingEntry
-               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
-               label="Medium"
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
+               label="Low Impact"
                markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
                priority="3">
          </markerGroupingEntry>
          <markerGroupingEntry
-               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
-               label="Low"
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.info"
+               label="Info Impact"
                markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
                priority="2">
          </markerGroupingEntry>
@@ -341,6 +353,10 @@
                markerType="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem"
                defaultGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.noImpactAvailable">
             <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.blocker"
+                  value="BLOCKER">
+            </markerAttributeMapping>
+            <markerAttributeMapping
                   markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
                   value="HIGH">
             </markerAttributeMapping>
@@ -351,6 +367,10 @@
             <markerAttributeMapping
                   markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
                   value="LOW">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.info"
+                  value="INFO">
             </markerAttributeMapping>
          </markerAttributeGrouping>
       </markerGrouping>
@@ -456,20 +476,32 @@
             id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
             label="Impact">
          <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.blocker"
+               label="Blocker Impact"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="6">
+         </markerGroupingEntry>
+         <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
-               label="High"
+               label="High Impact"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="5">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
+               label="Medium Impact"
                markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
                priority="4">
          </markerGroupingEntry>
          <markerGroupingEntry
-               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
-               label="Medium"
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
+               label="Low Impact"
                markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
                priority="3">
          </markerGroupingEntry>
          <markerGroupingEntry
-               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
-               label="Low"
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.info"
+               label="Info Impact"
                markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
                priority="2">
          </markerGroupingEntry>
@@ -484,6 +516,10 @@
                markerType="org.sonarlint.eclipse.core.sonarlintReportProblem"
                defaultGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.noImpactAvailable">
             <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.blocker"
+                  value="BLOCKER">
+            </markerAttributeMapping>
+            <markerAttributeMapping
                   markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
                   value="HIGH">
             </markerAttributeMapping>
@@ -494,6 +530,10 @@
             <markerAttributeMapping
                   markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
                   value="LOW">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.info"
+                  value="INFO">
             </markerAttributeMapping>
          </markerAttributeGrouping>
       </markerGrouping>
@@ -599,20 +639,32 @@
             id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
             label="Impact">
          <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.blocker"
+               label="Blocker Impact"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="6">
+         </markerGroupingEntry>
+         <markerGroupingEntry
                id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
-               label="High"
+               label="High Impact"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
+               priority="5">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
+               label="Medium Impact"
                markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
                priority="4">
          </markerGroupingEntry>
          <markerGroupingEntry
-               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.medium"
-               label="Medium"
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
+               label="Low Impact"
                markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
                priority="3">
          </markerGroupingEntry>
          <markerGroupingEntry
-               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
-               label="Low"
+               id="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.info"
+               label="Info Impact"
                markerGrouping="org.sonarlint.eclipse.ui.issues.highestImpactGrouping"
                priority="2">
          </markerGroupingEntry>
@@ -627,6 +679,10 @@
                markerType="org.sonarlint.eclipse.core.sonarlintTaintVulnerability"
                defaultGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.noImpactAvailable">
             <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.blocker"
+                  value="BLOCKER">
+            </markerAttributeMapping>
+            <markerAttributeMapping
                   markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.high"
                   value="HIGH">
             </markerAttributeMapping>
@@ -637,6 +693,10 @@
             <markerAttributeMapping
                   markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.low"
                   value="LOW">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.highestImpactGrouping.info"
+                  value="INFO">
             </markerAttributeMapping>
          </markerAttributeGrouping>
       </markerGrouping>
