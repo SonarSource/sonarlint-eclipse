@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -133,14 +134,9 @@ public final class MarkerUtils {
       return null;
     }
 
-    var severities = impacts.stream().map(ImpactDto::getImpactSeverity).collect(Collectors.toSet());
-    if (severities.contains(ImpactSeverity.HIGH)) {
-      return ImpactSeverity.HIGH.name();
-    }
-
-    return severities.contains(ImpactSeverity.MEDIUM)
-      ? ImpactSeverity.MEDIUM.name()
-      : ImpactSeverity.LOW.name();
+    var allImpactSeverities = impacts.stream().map(ImpactDto::getImpactSeverity).collect(Collectors.toSet());
+    // Enum values are sorted by their ordinal, so last value is the highest
+    return new TreeSet<>(allImpactSeverities).last().name();
   }
 
   @Nullable
