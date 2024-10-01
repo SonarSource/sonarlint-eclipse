@@ -146,9 +146,6 @@ public abstract class AbstractSonarLintTest {
     // this prevents trying to clear the console in the middle of a job
     waitSonarLintAnalysisJobs();
 
-    // remove PyDev default preferences window if shown
-    shellByName("Default Eclipse preferences for PyDev").ifPresent(DefaultShell::close);
-
     var consoleView = new SonarLintConsole();
     System.out.println(consoleView.getConsoleView().getConsoleText());
     consoleView.clear();
@@ -348,7 +345,6 @@ public abstract class AbstractSonarLintTest {
       assertThat(projects).hasSize(1);
     }
 
-    // Don't use dialog.finish() as in PyDev there is an extra step before waiting for the windows to be closed
     Button button = new FinishButton(dialog);
     button.click();
 

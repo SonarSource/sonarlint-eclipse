@@ -33,7 +33,6 @@
     <module>org.sonarlint.eclipse.buildship</module>
     <module>org.sonarlint.eclipse.jdt</module>
     <module>org.sonarlint.eclipse.cdt</module>
-    <module>org.sonarlint.eclipse.pydev</module>
 
     <module>org.sonarlint.eclipse.sloop.linux.aarch64</module>
     <module>org.sonarlint.eclipse.sloop.linux.x64</module>

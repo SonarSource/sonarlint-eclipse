@@ -577,7 +577,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("dbd.py"));
     waitForNoSonarLintMarkers(onTheFlyView);
     new DefaultEditor().close();
-    shellByName("Default Eclipse preferences for PyDev").ifPresent(DefaultShell::close);
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "dbd", "Main.java"));
     waitForNoSonarLintMarkers(onTheFlyView);
@@ -591,7 +590,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     waitForSonarLintMarkers(onTheFlyView,
       tuple("Fix this condition that always evaluates to false; some subsequent code is never executed. [+2 locations]", "dbd.py", "few seconds ago"));
     new DefaultEditor().close();
-    shellByName("Default Eclipse preferences for PyDev").ifPresent(DefaultShell::close);
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "dbd", "Main.java"));
     waitForSonarLintMarkers(onTheFlyView,

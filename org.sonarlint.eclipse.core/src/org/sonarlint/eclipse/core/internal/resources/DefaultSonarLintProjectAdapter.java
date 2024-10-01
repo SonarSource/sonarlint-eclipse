@@ -106,9 +106,11 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
         public boolean visit(IResource resource) throws CoreException {
           var fullPath = resource.getFullPath();
 
-          // Immediately rule out files in the VCS and files related to Node.js "metadata" / storage. These can change
-          // very often and are nowhere nearly related to SonarLint!
-          if (SonarLintUtils.insideVCSFolder(fullPath) || SonarLintUtils.isNodeJsRelated(fullPath)) {
+          // Immediately rule out files in the VCS and files related to Node.js "metadata" / storage or Python virtual
+          // environments. We don't care for these ones no matter if removed, changed, or added!
+          if (SonarLintUtils.insideVCSFolder(fullPath)
+            || SonarLintUtils.isNodeJsRelated(fullPath)
+            || SonarLintUtils.isPythonRelated(fullPath)) {
             return false;
           }
 

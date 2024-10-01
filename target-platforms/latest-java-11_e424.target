@@ -24,11 +24,6 @@
     <location type="Target" uri="file:${project_loc:/sonarlint-eclipse-parent}/target-platforms/commons-build.target"/>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.python.pydev.feature.feature.group" version="0.0.0" />
-      <repository location="https://www.pydev.org/update_sites/10.2.1" />
-    </location>
-    
-    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.eclipse.buildship.feature.group" version="0.0.0" />
       <repository location="https://download.eclipse.org/buildship/updates/e424/releases/3.x" />
     </location>
