@@ -64,10 +64,6 @@
    <plugin
          id="org.sonarlint.eclipse.buildship"
          version="0.0.0"/>
-   
-   <plugin
-         id="org.sonarlint.eclipse.pydev"
-         version="0.0.0"/>
 
    <plugin
          id="org.sonarlint.eclipse.sloop.macosx.aarch64"

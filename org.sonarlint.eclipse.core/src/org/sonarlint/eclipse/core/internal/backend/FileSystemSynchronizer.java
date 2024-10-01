@@ -150,9 +150,11 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     var res = delta.getResource();
     var fullPath = res.getFullPath();
 
-    // Immediately rule out files in the VCS and files related to Node.js "metadata" / storage. We don't care for these
-    // ones no matter if removed, changed, or added!
-    if (SonarLintUtils.insideVCSFolder(fullPath) || SonarLintUtils.isNodeJsRelated(fullPath)) {
+    // Immediately rule out files in the VCS and files related to Node.js "metadata" / storage or Python virtual
+    // environments. We don't care for these ones no matter if removed, changed, or added!
+    if (SonarLintUtils.insideVCSFolder(fullPath)
+      || SonarLintUtils.isNodeJsRelated(fullPath)
+      || SonarLintUtils.isPythonRelated(fullPath)) {
       return false;
     }
 

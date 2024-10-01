@@ -67,12 +67,10 @@ import org.sonarlint.eclipse.its.shared.reddeer.conditions.OnTheFlyViewIsEmpty;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmManualAnalysisDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.EnhancedWithConnectedModeInformationDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.perspectives.PhpPerspective;
-import org.sonarlint.eclipse.its.shared.reddeer.perspectives.PydevPerspective;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.GeneralWorkspaceBuildPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.SonarLintPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.SonarLintProperties;
 import org.sonarlint.eclipse.its.shared.reddeer.views.OnTheFlyView;
-import org.sonarlint.eclipse.its.shared.reddeer.views.PydevPackageExplorer;
 import org.sonarlint.eclipse.its.shared.reddeer.views.ReportView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintConsole;
 
@@ -410,33 +408,17 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       tuple("Remove this unnecessary cast to \"int\".", 9)); // Test that sonar.java.libraries is set on dependent project
   }
 
-  // Need PyDev
   @Test
-  @Ignore("12/2023: Removal of iBuilds axis, PyDev has to be updated in latest.target to work")
-  @Category(RequiresExtraDependency.class)
   public void shouldAnalysePython() {
-    // The PydevPerspective is not working correctly in older PyDev versions, therefore only run in latest
-    Assume.assumeTrue("latest-java-21".equals(System.getProperty("target.platform", "latest")));
-
-    new PydevPerspective().open();
-    importExistingProjectIntoWorkspace("python", false);
-
-    var rootProject = new PydevPackageExplorer().getProject("python");
+    var rootProject = importExistingProjectIntoWorkspace("python", "python");
     rootProject.getTreeItem().select();
-    doAndWaitForSonarLintAnalysisJob(() -> {
-      open(rootProject.getResource("src", "root", "nested", "example.py"));
-
-      new WaitUntil(new ShellIsAvailable("Default Eclipse preferences for PyDev"));
-      new OkButton(new DefaultShell("Default Eclipse preferences for PyDev")).click();
-    });
+    doAndWaitForSonarLintAnalysisJob(() -> open(rootProject.getResource("src", "root", "nested", "example.py")));
 
     var defaultEditor = new DefaultEditor();
-    assertThat(defaultEditor.getMarkers())
-      .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
-      .extracting(Marker::getText, Marker::getLineNumber)
-      .containsOnly(tuple("Merge this if statement with the enclosing one.", 9),
-        tuple("Replace print statement by built-in function.", 10),
-        tuple("Replace \"<>\" by \"!=\".", 9));
+    waitForMarkers(defaultEditor,
+      tuple("Merge this if statement with the enclosing one.", 9),
+      tuple("Replace print statement by built-in function.", 10),
+      tuple("Replace \"<>\" by \"!=\".", 9));
   }
 
   // Need PDT
