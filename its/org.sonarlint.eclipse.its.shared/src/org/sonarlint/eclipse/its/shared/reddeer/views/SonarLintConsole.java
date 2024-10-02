@@ -33,7 +33,7 @@ public class SonarLintConsole {
 
   public SonarLintConsole() {
     consoleView = new ConsoleView();
-    // Console name starts with a sequence number that we can't forsee
+    // Console name starts with a sequence number that we can't foresee
     openConsole(StringEndsWith.endsWith("SonarLint Console"));
   }
 
