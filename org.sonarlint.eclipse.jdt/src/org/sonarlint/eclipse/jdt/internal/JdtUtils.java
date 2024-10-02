@@ -68,7 +68,7 @@ public class JdtUtils {
   }
 
   /**
-   * SLE-34 Remove Java files that are not compiled.This should automatically exclude files that are excluded / unparseable.
+   * SLE-34 Remove Java files that are not compiled. This should automatically exclude files that are excluded / unparsable.
    */
   public static boolean shouldExclude(IFile file) {
     var javaElt = JavaCore.create(file);
