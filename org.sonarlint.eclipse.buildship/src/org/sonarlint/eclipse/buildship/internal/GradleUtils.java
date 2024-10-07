@@ -63,7 +63,7 @@ public class GradleUtils {
   /**
    *  Because the Gradle Tooling API is completely autonomous from Eclipse bundles/plug-ins, we cannot simply adapt a
    *  Gradle project to a ISonarLintProject. We have to actually match the project directories as there cannot be two
-   *  Gradle proejcts in the same directory.
+   *  Gradle projects in the same directory.
    *
    *  @param projects all the available projects we can try to match against
    *  @param gradleProject the Gradle project that should be found in the workspace

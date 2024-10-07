@@ -332,7 +332,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       } else if (element instanceof String) {
         return (String) element;
       }
-      throw new IllegalArgumentException("Unknow node type: " + element);
+      throw new IllegalArgumentException("Unknown node type: " + element);
     }
 
     private static @Nullable Image getImage(Object element) {

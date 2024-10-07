@@ -149,7 +149,7 @@ public class ShareProjectBindingJob extends AbstractSonarJob {
    *
    *  @param project used for saving the configuration
    *  @param monitor for progress
-   *  @return status that should be transfered to the job to report back
+   *  @return status that should be transferred to the job to report back
    */
   private static IStatus saveConnectedModeConfig(ISonarLintProject project, IProgressMonitor monitor) {
     try {

@@ -37,7 +37,7 @@ public class SonarLintRpcClientSupportPopup extends AbstractSonarLintPopup {
     return "As this should not happen, please provide us with a thread dump of the IDE process as well as a thread "
       + "dump of the SonarLint process (can be identified by 'sloop') if available. To do that, please raise an issue "
       + "on the Community Forum. \nWith that we can work on preventing such an issue in the future and make SonarLint "
-      + "more resiliant by recovering from this on its own! \nFor now the only possiblity is to restart the IDE :(";
+      + "more resilient by recovering from this on its own! \nFor now the only possibility is to restart the IDE :(";
   }
 
   @Override
