@@ -177,7 +177,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     } catch (Exception err) {
       // ================================================================================================================
       // INFO: Because of SLE-797 we currently have to bind it manually and trigger it again
-      var popUp = new DefaultShell("SonarLint - No mathing open project found");
+      var popUp = new DefaultShell("SonarLint - No matching open project found");
       new DefaultLink(popUp, "Open Troubleshooting documentation").click();
       bindProjectFromContextMenu(rootProject, MAVEN_TAINT_PROJECT_KEY);
       triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey());
@@ -221,7 +221,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     new ConfirmConnectionCreationDialog(false).trust();
 
     // 4) await pop-up saying that automatic binding is not possible
-    var popUp = new DefaultShell("SonarLint - No mathing open project found");
+    var popUp = new DefaultShell("SonarLint - No matching open project found");
     new DefaultLink(popUp, "Open Troubleshooting documentation").click();
 
     // 5) Check that token still exists
@@ -287,7 +287,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     } catch (Exception err) {
       // ================================================================================================================
       // INFO: Because of SLE-797 we currently have to bind it manually and trigger it again
-      var popUp = new DefaultShell("SonarLint - No mathing open project found");
+      var popUp = new DefaultShell("SonarLint - No matching open project found");
       new DefaultLink(popUp, "Open Troubleshooting documentation").click();
       bindProjectFromContextMenu(rootProject, MAVEN_TAINT_PROJECT_KEY);
       triggerOpenInIDE(orchestrator.getServer().getUrl(), branch.getName(), s101.getKey());

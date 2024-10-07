@@ -103,7 +103,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
         ConfigScopeSynchronizer.getConfigScopeId(project));
     } else {
       // The variable has to be "final" to be usable in the thread spawned by the job, therefore we set it here
-      // to null in order to not have it in a "unitialized" state as it doesn't default to "null"!
+      // to null in order to not have it in a "uninitialized" state as it doesn't default to "null"!
       project = null;
     }
 
