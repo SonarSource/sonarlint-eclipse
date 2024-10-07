@@ -191,6 +191,13 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
   }
 
   @Override
+  public boolean matchProjectBranch(String configurationScopeId, String branchNameToMatch, SonarLintCancelChecker cancelChecker)
+    throws ConfigScopeNotFoundException {
+    var project = SonarLintUtils.resolveProject(configurationScopeId);
+    return VcsService.matchSonarProjectBranch(project, branchNameToMatch, Set.of(branchNameToMatch)) == branchNameToMatch;
+  }
+
+  @Override
   public String matchSonarProjectBranch(String configurationScopeId, String mainBranchName, Set<String> allBranchesNames, SonarLintCancelChecker cancelChecker)
     throws ConfigScopeNotFoundException {
     var project = SonarLintUtils.resolveProject(configurationScopeId);
