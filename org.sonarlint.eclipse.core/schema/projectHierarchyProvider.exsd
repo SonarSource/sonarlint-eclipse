@@ -6,7 +6,7 @@
          <meta.schema plugin="org.sonarlint.eclipse.core" id="projectHierarchyProvider" name="SonarLint Project Hierarchy Provider"/>
       </appInfo>
       <documentation>
-         Used for projects that are hierachical outside of Eclipse but more or less flat (e.g. Maven multi-module projects) once imported
+         Used for projects that are hierarchical outside of Eclipse but more or less flat (e.g. Maven multi-module projects) once imported
       </documentation>
    </annotation>
 

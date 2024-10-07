@@ -56,7 +56,7 @@ public class DefaultPreAnalysisContext implements IPreAnalysisContext {
   @Override
   public void setAnalysisProperty(String key, String value) {
     if (analysisProperties.containsKey(key)) {
-      SonarLintLogger.get().debug("Property '" + key + "' was already set to value '" + analysisProperties.get(key) + "' and will be overriden by '" + value + "'");
+      SonarLintLogger.get().debug("Property '" + key + "' was already set to value '" + analysisProperties.get(key) + "' and will be overridden by '" + value + "'");
     }
     analysisProperties.put(key, value);
   }

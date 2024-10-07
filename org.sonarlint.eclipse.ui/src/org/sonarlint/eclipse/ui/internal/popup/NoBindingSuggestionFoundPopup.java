@@ -62,7 +62,7 @@ public class NoBindingSuggestionFoundPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint - No mathing open project found";
+    return "SonarLint - No matching open project found";
   }
 
   @Override

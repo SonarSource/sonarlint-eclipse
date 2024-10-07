@@ -78,7 +78,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     waitForNoSonarLintMarkers(issuesView);
 
     // Trigger manual analysis of the project
-    // Clear the preference when running tests locally in developper env
+    // Clear the preference when running tests locally in developer env
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES);
     rootProject.select();
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();

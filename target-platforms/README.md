@@ -1,2 +1,2 @@
 * build.target is used during the command line build, to ensure minimal dependencies
-* dev.target should be the active target plartform used when developping SonarLint inside Eclipse, to be able to run ITs as well
+* dev.target should be the active target plartform used when developing SonarLint inside Eclipse, to be able to run ITs as well
