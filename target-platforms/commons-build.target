@@ -12,7 +12,7 @@
         <dependency>
           <groupId>org.sonarsource.sonarlint.core</groupId>
           <artifactId>sonarlint-java-client-osgi</artifactId>
-          <version>10.6.0.79033</version>
+          <version>10.7.1.79146</version>
           <type>jar</type>
         </dependency>
       </dependencies>

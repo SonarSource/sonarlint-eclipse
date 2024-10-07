@@ -28,7 +28,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.text,
  org.eclipse.compare,
  org.eclipse.core.expressions,
- org.sonarsource.sonarlint.core.sonarlint-java-client-osgi;bundle-version="[10.6.0,10.7.0)"
+ org.sonarsource.sonarlint.core.sonarlint-java-client-osgi;bundle-version="[10.7.0,10.8.0)"
 Export-Package: org.sonarlint.eclipse.ui.internal;x-friends:="org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.ui.internal.backend;x-friends:="org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.ui.internal.notifications;x-friends:="org.sonarlint.eclipse.core.tests",
