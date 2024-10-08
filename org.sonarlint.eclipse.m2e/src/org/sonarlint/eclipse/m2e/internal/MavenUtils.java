@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -188,6 +189,7 @@ public class MavenUtils {
    */
   public static Set<IPath> getExclusions(IProject project) {
     var exclusions = new HashSet<IPath>();
+    var projectPath = project.getFullPath().makeAbsolute().toOSString();
 
     // 1) Add the target directory
     // This is due us not being able to access "IMavenProjectFacade#getBuildOutputLocation" as it is not available in
@@ -197,6 +199,7 @@ public class MavenUtils {
     var projectManager = MavenPlugin.getMavenProjectRegistry();
     var facade = projectManager.create(project, null);
     if (facade == null) {
+      traceExclusions(exclusions, projectPath);
       return exclusions;
     }
 
@@ -218,9 +221,9 @@ public class MavenUtils {
     var parentPath = project.getLocationURI().getPath() + "/";
     try {
       for (var projectFacade : getProjects(projectManager)) {
-        var projectPath = projectFacade.getProject().getLocationURI().getPath();
-        if (!projectPath.equals(parentPath) && projectPath.startsWith(parentPath)) {
-          var relativePath = projectPath.replace(parentPath, "/" + project.getName() + "/");
+        var projectFacadePath = projectFacade.getProject().getLocationURI().getPath();
+        if (!projectFacadePath.equals(parentPath) && projectFacadePath.startsWith(parentPath)) {
+          var relativePath = projectFacadePath.replace(parentPath, "/" + project.getName() + "/");
           exclusions.add(Path.fromOSString(relativePath));
         }
       }
@@ -228,7 +231,14 @@ public class MavenUtils {
       SonarLintLogger.get().error(ex.getMessage(), ex);
     }
 
+    traceExclusions(exclusions, projectPath);
     return exclusions;
+  }
+
+  private static void traceExclusions(Set<IPath> exclusions, String projectPath) {
+    SonarLintLogger.get().traceIdeMessage("[MavenUtils#getExclusions] The following paths have been excluded from "
+      + "indexing for the project at '" + projectPath + "': "
+      + String.join(", ", exclusions.stream().map(Object::toString).collect(Collectors.toList())));
   }
 
   /**
@@ -240,7 +250,7 @@ public class MavenUtils {
    *  While newer versions changed it to be:
    *
    *  java.util.List<org.eclipse.m2e.core.project.IMavenProjectFacade> org.eclipse.m2e.core.project.IMavenProjectRegistry#getProjects()
-   * 
+   *
    *  @see https://github.com/eclipse-m2e/m2e-core/issues/1820
    */
   private static List<IMavenProjectFacade> getProjects(IMavenProjectRegistry registry) {

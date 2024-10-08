@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -388,6 +389,10 @@ public class JdtUtils {
       SonarLintLogger.get().traceIdeMessage("Cannot get outputs for exclusions of project '"
         + project.getName() + "' based on JDT!", err);
     }
+
+    SonarLintLogger.get().traceIdeMessage("[JdtUtils#getExcludedPaths] The following paths have been excluded from "
+      + "indexing for the project at '" + project.getFullPath().makeAbsolute().toOSString() + "': "
+      + String.join(", ", exclusions.stream().map(Object::toString).collect(Collectors.toList())));
 
     return exclusions;
   }

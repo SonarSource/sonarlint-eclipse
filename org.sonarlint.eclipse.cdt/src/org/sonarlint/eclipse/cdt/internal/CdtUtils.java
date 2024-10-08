@@ -174,6 +174,7 @@ public class CdtUtils {
 
   public Set<IPath> getExcludedPaths(IProject project) {
     var exclusions = new HashSet<IPath>();
+    var projectPath = project.getFullPath().makeAbsolute().toOSString();
 
     try {
       // 1) Check whether this is a CDT project
@@ -181,7 +182,6 @@ public class CdtUtils {
       if (cProject == null) {
         return exclusions;
       }
-      var projectPath = project.getFullPath().makeAbsolute().toOSString();
 
       // 2) Iterate over all the different configurations, e.g. Debug or Release
       for (var config : cProject.getConfigurations()) {
@@ -198,13 +198,20 @@ public class CdtUtils {
         // 3) Iterate over all the output directories as there can be multiple ones per configuration
         for (var outputDirectory : buildData.getOutputDirectories()) {
           var outputDirectoryPath = outputDirectory.getFullPath().makeAbsolute().toOSString();
-          if (!projectPath.equals(outputDirectoryPath)) {
+          if (!projectPath.equals(outputDirectoryPath) && !"/".equals(outputDirectoryPath)) {
             // Only when the output directory is not the project directory we keep it. For example CMake projects can
             // generate CDT projects where the output is the project directory, this case should not be taken into
             // account and is up to the user. By default we will exclude compilation output when it is somewhere in a
             // sub-directory, e.g. "Debug" or "Release"!
+            SonarLintLogger.get().traceIdeMessage("[CdtUtils#getExcludedPaths] Build output directory '"
+              + outputDirectoryPath + "' does not match the project directory reference or the base directory for '"
+              + project.getName() + "'. We exclude this from indexing!");
             exclusions.add(org.eclipse.core.runtime.Path.fromOSString(
               "/" + project.getName() + "/" + outputDirectory.getFullPath()));
+          } else {
+            SonarLintLogger.get().traceIdeMessage("[CdtUtils#getExcludedPaths] Build output directory '"
+              + outputDirectoryPath + "' matches the project directory reference '" + projectPath
+              + "' or the base directory at '/'. We therefore cannot exclude this from indexing!");
           }
         }
       }
@@ -212,6 +219,10 @@ public class CdtUtils {
       SonarLintLogger.get().error("Error while getting the exclusions of project '" + project.getName()
         + "' based on CDT!", err);
     }
+
+    SonarLintLogger.get().traceIdeMessage("[CdtUtils#getExcludedPaths] The following paths have been excluded from "
+      + "indexing for the project at '" + projectPath + "': "
+      + String.join(", ", exclusions.stream().map(Object::toString).collect(Collectors.toList())));
 
     return exclusions;
   }
