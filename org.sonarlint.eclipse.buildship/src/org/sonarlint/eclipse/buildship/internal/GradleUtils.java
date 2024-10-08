@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -162,6 +163,7 @@ public class GradleUtils {
    */
   public static Set<IPath> getExclusions(IProject project) {
     var exclusions = new HashSet<IPath>();
+    var projectPath = project.getFullPath().makeAbsolute().toOSString();
 
     // 1) The Gradle Tooling API has no access to `buildSrc`, therefore add it manually, even if not present
     exclusions.add(Path.fromOSString("/" + project.getName() + "/buildSrc/build"));
@@ -176,6 +178,7 @@ public class GradleUtils {
     // 4) Try to get cached project connection as it is way faster!
     var connection = getProjectConnection(project);
     if (connection == null) {
+      traceExclusions(exclusions, projectPath);
       return exclusions;
     }
 
@@ -184,13 +187,13 @@ public class GradleUtils {
       if (localFile == null) {
         return exclusions;
       }
-      var projectPath = localFile.toPath().toRealPath().toString() + "/";
+      var localPath = localFile.toPath().toRealPath().toString() + "/";
 
       // 5) Iterate over all the projects of the build and try to find the child-projects
       for (var child : connection.model(GradleBuild.class).get().getProjects()) {
         var childPath = child.getProjectDirectory().toPath().toRealPath().toString();
-        if (childPath.startsWith(projectPath) && !childPath.equals(projectPath)) {
-          var relativePath = childPath.replace(projectPath, "/" + project.getName() + "/");
+        if (childPath.startsWith(localPath) && !childPath.equals(localPath)) {
+          var relativePath = childPath.replace(localPath, "/" + project.getName() + "/");
           exclusions.add(Path.fromOSString(relativePath));
         }
       }
@@ -199,7 +202,14 @@ public class GradleUtils {
         + project.getName() + "' based on Buildship!", err);
     }
 
+    traceExclusions(exclusions, projectPath);
     return exclusions;
+  }
+
+  private static void traceExclusions(Set<IPath> exclusions, String projectPath) {
+    SonarLintLogger.get().traceIdeMessage("[GradleUtils#getExclusions] The following paths have been excluded from "
+      + "indexing for the project at '" + projectPath + "': "
+      + String.join(", ", exclusions.stream().map(Object::toString).collect(Collectors.toList())));
   }
 
   @Nullable
