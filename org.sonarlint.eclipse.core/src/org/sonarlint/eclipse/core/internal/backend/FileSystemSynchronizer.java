@@ -45,6 +45,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.cache.DefaultSonarLintProjectAdapterCache;
 import org.sonarlint.eclipse.core.internal.cache.IProjectScopeProviderCache;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
@@ -181,11 +182,18 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     }
 
     var project = slFile.getProject();
-    var configScopeId = ConfigScopeSynchronizer.getConfigScopeId(project);
-    var exclusions = IProjectScopeProviderCache.INSTANCE.getEntry(configScopeId);
-    if (exclusions == null) {
-      exclusions = getExclusions((IProject) project.getResource());
-      IProjectScopeProviderCache.INSTANCE.putEntry(configScopeId, exclusions);
+    Set<IPath> exclusions;
+    if (SonarLintCorePlugin.loadConfig(project).isIndexingBasedOnEclipsePlugIns()) {
+      var configScopeId = ConfigScopeSynchronizer.getConfigScopeId(project);
+      exclusions = IProjectScopeProviderCache.INSTANCE.getEntry(configScopeId);
+      if (exclusions == null) {
+        exclusions = getExclusions((IProject) project.getResource());
+        IProjectScopeProviderCache.INSTANCE.putEntry(configScopeId, exclusions);
+      }
+    } else {
+      SonarLintLogger.get().traceIdeMessage("[FileSystemSynchronizer#visitDeltaPostChange] No exclusions calculated "
+        + "as '" + project.getName() + "' opted out of indexing based on other Eclipse plug-ins!");
+      exclusions = new HashSet<>();
     }
 
     // Compared to "DefaultSonarLintProjectAdapter#files" this is only on a resource delta, therefore we won't visit

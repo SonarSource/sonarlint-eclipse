@@ -92,12 +92,21 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
       return cachedFiles;
     }
 
-    var cachedExclusions = IProjectScopeProviderCache.INSTANCE.getEntry(configScopeId);
-    if (cachedExclusions == null) {
-      cachedExclusions = getExclusions();
-      IProjectScopeProviderCache.INSTANCE.putEntry(configScopeId, cachedExclusions);
+    // When the user has opted out of using Eclipse plug-ins for the indexing and exclusions, we don't call the
+    // extension points and skip this.
+    Set<IPath> loadedExclusions;
+    if (SonarLintCorePlugin.loadConfig(this).isIndexingBasedOnEclipsePlugIns()) {
+      loadedExclusions = IProjectScopeProviderCache.INSTANCE.getEntry(configScopeId);
+      if (loadedExclusions == null) {
+        loadedExclusions = getExclusions();
+        IProjectScopeProviderCache.INSTANCE.putEntry(configScopeId, loadedExclusions);
+      }
+    } else {
+      SonarLintLogger.get().traceIdeMessage("[DefaultSonarLintProjectAdapter#files] No exclusions calculated as '"
+        + this.getName() + "' opted out of indexing based on other Eclipse plug-ins!");
+      loadedExclusions = new HashSet<>();
     }
-    final var exclusions = cachedExclusions;
+    final var exclusions = loadedExclusions;
 
     var result = new ArrayList<ISonarLintFile>();
     try {
