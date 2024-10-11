@@ -65,6 +65,9 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
   private Link newCodeInformation;
   private Link newCodeProjectStatus;
 
+  // Information displayed regarding index exclusions coming from sub-plug-ins (e.g. JDT/CDT/M2e/Buildship)
+  private Button indexExclusionEnabledBtn;
+
   public SonarLintProjectPropertyPage() {
     setTitle(Messages.SonarProjectPropertyPage_title);
   }
@@ -149,6 +152,49 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
       }
     });
 
+    // Indexing opt-out
+    var indexExclusionsHeader = new Label(container, SWT.NONE);
+    indexExclusionsHeader.setLayoutData(gd);
+    indexExclusionsHeader.setFont(font);
+    indexExclusionsHeader.setText("Project indexing based on other Eclipse plug-ins");
+
+    var indexExclusionsInformation = new Link(container, SWT.NONE);
+    indexExclusionsInformation.setLayoutData(new GridData(SWT.LEFT, SWT.DOWN, true, false, 2, 1));
+    indexExclusionsInformation.setText("SonarLint makes use of other Eclipse plug-ins when it comes to indexing a "
+      + "project. Dependending on the project we\nrely on Eclipse <a>JDT</a>, <a>CDT</a>, <a>M2E</a> (Maven), or "
+      + "<a>Buildship</a> (Gradle) to exclude certain files (like compilation or build output\ndirectories) as well "
+      + "as from the analysis with the effect of improving the overall performance and lowering the\nmemory "
+      + "footprint.\nOpting out might negate these positive effects but can be benefitial in certain cases - this "
+      + "should be assessed individually.");
+    indexExclusionsInformation.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        switch (e.text) {
+          case "JDT":
+            BrowserUtils.openExternalBrowser(SonarLintDocumentation.ECLIPSE_JDT, container.getDisplay());
+            break;
+          case "CDT":
+            BrowserUtils.openExternalBrowser(SonarLintDocumentation.ECLIPSE_CDT, container.getDisplay());
+            break;
+          case "M2E":
+            BrowserUtils.openExternalBrowser(SonarLintDocumentation.ECLIPSE_M2E, container.getDisplay());
+            break;
+          case "Buildship":
+            BrowserUtils.openExternalBrowser(SonarLintDocumentation.ECLIPSE_BUILDSHIP, container.getDisplay());
+            break;
+          default:
+            break;
+        }
+      }
+    });
+
+    // Binding information and settings
+    indexExclusionEnabledBtn = new Button(container, SWT.CHECK);
+    indexExclusionEnabledBtn.setText("Rely on Eclipse plug-ins for indexing and exclusions (changing requires a "
+      + "restart of the IDE)");
+    indexExclusionEnabledBtn.setSelection(getProjectConfig().isIndexingBasedOnEclipsePlugIns());
+    enabledBtn.setLayoutData(layoutData);
+
     updateConnectionState();
     updateNewCodeState();
     container.requestLayout();
@@ -224,6 +270,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
   @Override
   protected void performDefaults() {
     enabledBtn.setEnabled(true);
+    indexExclusionEnabledBtn.setEnabled(true);
     super.performDefaults();
   }
 
@@ -231,6 +278,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
   public boolean performOk() {
     var projectConfig = getProjectConfig();
     projectConfig.setAutoEnabled(enabledBtn.getSelection());
+    projectConfig.setIndexingBasedOnEclipsePlugIns(indexExclusionEnabledBtn.getSelection());
     SonarLintCorePlugin.saveConfig(getProject(), projectConfig);
     return super.performOk();
   }

@@ -35,6 +35,7 @@ public class SonarLintProjectConfiguration {
   private EclipseProjectBinding projectBinding;
   private boolean autoEnabled = true;
   private boolean bindingSuggestionsDisabled = false;
+  private boolean indexingBasedOnEclipsePlugIns = true;
 
   public List<ExclusionItem> getFileExclusions() {
     return fileExclusions;
@@ -109,4 +110,11 @@ public class SonarLintProjectConfiguration {
     this.bindingSuggestionsDisabled = bindingSuggestionsDisabled;
   }
 
+  public boolean isIndexingBasedOnEclipsePlugIns() {
+    return this.indexingBasedOnEclipsePlugIns;
+  }
+
+  public void setIndexingBasedOnEclipsePlugIns(boolean indexingBasedOnEclipsePlugIns) {
+    this.indexingBasedOnEclipsePlugIns = indexingBasedOnEclipsePlugIns;
+  }
 }

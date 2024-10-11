@@ -56,6 +56,7 @@ public class SonarLintProjectConfigurationManager {
   private static final String P_MODULE_KEY = "moduleKey";
   private static final String P_AUTO_ENABLED_KEY = "autoEnabled";
   public static final String P_BINDING_SUGGESTIONS_DISABLED_KEY = "bindingSuggestionsDisabled";
+  public static final String P_INDEXING_BASED_ON_ECLIPSE_PLUGINS = "indexingBasedOnEclipsePlugIns";
 
   private static final Set<String> BINDING_RELATED_PROPERTIES = Set.of(P_PROJECT_KEY, P_CONNECTION_ID, P_BINDING_SUGGESTIONS_DISABLED_KEY);
 
@@ -96,6 +97,16 @@ public class SonarLintProjectConfigurationManager {
     }
     projectConfig.setAutoEnabled(projectNode.getBoolean(P_AUTO_ENABLED_KEY, true));
     projectConfig.setBindingSuggestionsDisabled(projectNode.getBoolean(P_BINDING_SUGGESTIONS_DISABLED_KEY, false));
+
+    // When importing a project (but not when (re-)starting the workspace), and the project preferences are accessed
+    // for the first time, they cannot be loaded and will fallback to the default values (in this case here "true").
+    // This seems to be coming from Eclipse itself as the preferences are loaded lazily. This is no problem as when a
+    // project is imported, right after importing, all files will be shown as changed (added) and then the preferences
+    // will be read again (in FileSystemSynchronizer) and then they are fully available!
+    // When starting a workspace and the project was already imported earlier, the preferences are not loaded lazily
+    // anymore but fetched from cache and are not falling back to the default values - they are available at all times.
+    projectConfig.setIndexingBasedOnEclipsePlugIns(projectNode.getBoolean(P_INDEXING_BASED_ON_ECLIPSE_PLUGINS, true));
+
     return projectConfig;
   }
 
@@ -133,6 +144,7 @@ public class SonarLintProjectConfigurationManager {
 
     projectNode.putBoolean(P_AUTO_ENABLED_KEY, configuration.isAutoEnabled());
     projectNode.putBoolean(P_BINDING_SUGGESTIONS_DISABLED_KEY, configuration.isBindingSuggestionsDisabled());
+    projectNode.putBoolean(P_INDEXING_BASED_ON_ECLIPSE_PLUGINS, configuration.isIndexingBasedOnEclipsePlugIns());
     try {
       projectNode.flush();
     } catch (BackingStoreException e) {

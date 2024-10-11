@@ -54,6 +54,12 @@ public class SonarLintDocumentation {
 
   public static final String GITHUB_RELEASES = "https://github.com/SonarSource/sonarlint-eclipse/releases";
 
+  // Links to Eclipse plug-ins that are used and have sub-plug-ins
+  public static final String ECLIPSE_JDT = "https://projects.eclipse.org/projects/eclipse.jdt";
+  public static final String ECLIPSE_CDT = "https://projects.eclipse.org/projects/tools.cdt";
+  public static final String ECLIPSE_M2E = "https://projects.eclipse.org/projects/technology.m2e";
+  public static final String ECLIPSE_BUILDSHIP = "https://projects.eclipse.org/projects/tools.buildship";
+
   private SonarLintDocumentation() {
     // utility class
   }

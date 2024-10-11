@@ -41,20 +41,18 @@ import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyDialog;
 import org.eclipse.reddeer.eclipse.ui.markers.matcher.MarkerDescriptionMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
-import org.eclipse.reddeer.swt.condition.ShellIsAvailable;
-import org.eclipse.reddeer.swt.impl.button.OkButton;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
-import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.core.StringContains;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -93,6 +91,11 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       preferences.enableAutomaticBuild();
       preferences.ok();
     }
+  }
+
+  @AfterClass
+  public static void disableIdeSpecificTraces() {
+    new SonarLintConsole().enableIdeSpecificLogs(false);
   }
 
   @Test
@@ -210,11 +213,19 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseJava() {
+    var console = new SonarLintConsole();
+    console.enableIdeSpecificLogs(true);
+    console.clear();
+
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
 
     var onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
+
+    await().untilAsserted(
+      () -> assertThat(new SonarLintConsole().getConsoleView().getConsoleText())
+        .contains("[JdtUtils#getExcludedPaths] The following paths have been excluded from indexing for the project"));
 
     var helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
     openFileAndWaitForAnalysisCompletion(helloJavaFile);
@@ -295,6 +306,30 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
             tuple("Hello10.java", "Replace this use of System.out by a logger."),
             tuple("Hello11.java", "Replace this use of System.out by a logger."));
       });
+  }
+
+  @Test
+  public void shouldAnalyseJavaNoJdtExclusions() {
+    var console = new SonarLintConsole();
+    console.enableIdeSpecificLogs(true);
+    console.clear();
+
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("java/NoIndexSupport", "NoIndexSupport");
+
+    var onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+
+    var helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
+    openFileAndWaitForAnalysisCompletion(helloJavaFile);
+
+    var defaultEditor = new DefaultEditor();
+    waitForMarkers(defaultEditor,
+      tuple("Replace this use of System.out by a logger.", 5));
+
+    assertThat(new SonarLintConsole().getConsoleView().getConsoleText())
+      .contains("[FileSystemSynchronizer#visitDeltaPostChange] No exclusions calculated "
+        + "as 'NoIndexSupport' opted out of indexing based on other Eclipse plug-ins!");
   }
 
   @Test
