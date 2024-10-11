@@ -165,7 +165,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
       + "<a>Buildship</a> (Gradle) to exclude certain files (like compilation or build output\ndirectories) as well "
       + "as from the analysis with the effect of improving the overall performance and lowering the\nmemory "
       + "footprint.\nOpting out might negate these positive effects but can be benefitial in certain cases - this "
-      + "should be assessed individually!");
+      + "should be assessed individually.");
     indexExclusionsInformation.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {

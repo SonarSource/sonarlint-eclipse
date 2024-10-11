@@ -98,13 +98,13 @@ public class SonarLintProjectConfigurationManager {
     projectConfig.setAutoEnabled(projectNode.getBoolean(P_AUTO_ENABLED_KEY, true));
     projectConfig.setBindingSuggestionsDisabled(projectNode.getBoolean(P_BINDING_SUGGESTIONS_DISABLED_KEY, false));
 
-    // When importing a project (but not when restarting the workspace), the when accessing the project preferences for
-    // the first time, they cannot be loaded and will fallback to the default value (in this case here "true"). This
-    // seems to be coming from Eclipse itself as the preferences are loaded lazily. THis is no problem as when a
-    // project is imported right after importing all files will be shown as changed (added) and then the preference
-    // will be read again and then it is available!
-    // When importing a project, the preferences are not loaded lazily anymore but fetched from cache and are not
-    // falling back to the default values!
+    // When importing a project (but not when (re-)starting the workspace), and the project preferences are accessed
+    // for the first time, they cannot be loaded and will fallback to the default values (in this case here "true").
+    // This seems to be coming from Eclipse itself as the preferences are loaded lazily. This is no problem as when a
+    // project is imported, right after importing, all files will be shown as changed (added) and then the preferences
+    // will be read again (in FileSystemSynchronizer) and then they are fully available!
+    // When starting a workspace and the project was already imported earlier, the preferences are not loaded lazily
+    // anymore but fetched from cache and are not falling back to the default values - they are available at all times.
     projectConfig.setIndexingBasedOnEclipsePlugIns(projectNode.getBoolean(P_INDEXING_BASED_ON_ECLIPSE_PLUGINS, true));
 
     return projectConfig;

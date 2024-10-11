@@ -92,22 +92,7 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
       return cachedFiles;
     }
 
-    // When the user has opted out of using Eclipse plug-ins for the indexing and exclusions, we don't call the
-    // extension points and skip this.
-    Set<IPath> loadedExclusions;
-    if (SonarLintCorePlugin.loadConfig(this).isIndexingBasedOnEclipsePlugIns()) {
-      loadedExclusions = IProjectScopeProviderCache.INSTANCE.getEntry(configScopeId);
-      if (loadedExclusions == null) {
-        loadedExclusions = getExclusions();
-        IProjectScopeProviderCache.INSTANCE.putEntry(configScopeId, loadedExclusions);
-      }
-    } else {
-      SonarLintLogger.get().traceIdeMessage("[DefaultSonarLintProjectAdapter#files] No exclusions calculated as '"
-        + this.getName() + "' opted out of indexing based on other Eclipse plug-ins!");
-      loadedExclusions = new HashSet<>();
-    }
-    final var exclusions = loadedExclusions;
-
+    var exclusions = getExclusions(configScopeId);
     var result = new ArrayList<ISonarLintFile>();
     try {
       project.accept(new IResourceVisitor() {
@@ -155,10 +140,30 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
     return result;
   }
 
-  private Set<IPath> getExclusions() {
-    var exclusions = new HashSet<IPath>();
-    for (var projectScopeProvider : SonarLintExtensionTracker.getInstance().getProjectScopeProviders()) {
-      exclusions.addAll(projectScopeProvider.getExclusions(project));
+  /**
+   *  When the user has opted out of using Eclipse plug-ins for the indexing and exclusions, we don't call the
+   *  extension points to get them and skip the whole process.
+   *
+   *  Otherwise, we try to load it from the cache first and if that is not possible, we access the extension points!
+   *
+   *  @param configScopeId used in the cache as a key
+   *  @return based on the user decision to opt out or not, no exclusions or the ones coming from the extension points
+   */
+  private Set<IPath> getExclusions(String configScopeId) {
+    Set<IPath> exclusions;
+    if (SonarLintCorePlugin.loadConfig(this).isIndexingBasedOnEclipsePlugIns()) {
+      exclusions = IProjectScopeProviderCache.INSTANCE.getEntry(configScopeId);
+      if (exclusions == null) {
+        exclusions = new HashSet<>();
+        for (var projectScopeProvider : SonarLintExtensionTracker.getInstance().getProjectScopeProviders()) {
+          exclusions.addAll(projectScopeProvider.getExclusions(project));
+        }
+        IProjectScopeProviderCache.INSTANCE.putEntry(configScopeId, exclusions);
+      }
+    } else {
+      SonarLintLogger.get().traceIdeMessage("[DefaultSonarLintProjectAdapter#files] No exclusions calculated as '"
+        + this.getName() + "' opted out of indexing based on other Eclipse plug-ins!");
+      exclusions = new HashSet<>();
     }
     return exclusions;
   }
