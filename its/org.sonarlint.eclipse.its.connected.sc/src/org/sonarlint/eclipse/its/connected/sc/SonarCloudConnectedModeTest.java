@@ -191,7 +191,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new WaitUntil(new ConfirmConnectionCreationDialogOpened(true));
     new ConfirmConnectionCreationDialog(true).trust();
 
-    shellByName("SonarLint - No mathing open project found")
+    shellByName("SonarLint - No matching open project found")
       .ifPresent(shell -> {
         new DefaultLink(shell, "Open Troubleshooting documentation").click();
       });

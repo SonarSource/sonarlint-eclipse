@@ -239,7 +239,7 @@ public class BindingsView extends CommonNavigator {
   }
 
   protected void addListener() {
-    // To enable the UI updating of connections and its childrens
+    // To enable the UI updating of connections and its children
     connectionResourceListener = new IConnectionManagerListener() {
       @Override
       public void connectionAdded(ConnectionFacade facade) {

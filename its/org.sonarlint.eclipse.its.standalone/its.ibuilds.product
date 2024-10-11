@@ -31,8 +31,8 @@
 
    <!--
      Testing for compatibility against the latest in-development version of Eclipse (plug-ins). This does not include
-     in-development versions of third-party plug-ins as their development process is asynchronous and indepent of the
-     development interations of the Eclipse IDE.
+     in-development versions of third-party plug-ins as their development process is asynchronous and independent of the
+     development iterations of the Eclipse IDE.
    -->
    <features>
       <feature id="org.eclipse.platform"/>

@@ -1,6 +1,6 @@
 # SonarLint for Eclipse: Integration tests
 
-This project including its modules containts the integration tests (including compatibility against
+This project including its modules contains the integration tests (including compatibility against
 [iBuilds](https://download.eclipse.org/eclipse/downloads/), the in-development version of the Eclipse IDE) for
 SonarLint that are relying on [Eclipse RedDeer](https://github.com/eclipse/reddeer) as the test framework connected
 to [Eclipse Tycho](https://github.com/eclipse-tycho/tycho).
@@ -31,10 +31,10 @@ background (not for the main SonarLint for Eclipse project tho if not also impor
 
 When imported inside Eclipse, the tests can be run simply via the RedDeer context menu options, but only tests of one
 module should be run at most, or only one test class or one specific test. This is due to the different modules using
-different "runtime definitons" (the `.product` files) for the Tycho/Surefire test runtime for starting an Eclipse IDE
+different "runtime definitions" (the `.product` files) for the Tycho/Surefire test runtime for starting an Eclipse IDE
 instance.
 
-### Standalone Mode / iBuilds compatiblity
+### Standalone Mode / iBuilds compatibility
 
 To run all the tests, or a specific one with the additionally command line option `-Dtest={TestClassName}`, for the
 Standalone Mode, the following command has to be run that excludes the tests for the Connected Mode with SonarQube and

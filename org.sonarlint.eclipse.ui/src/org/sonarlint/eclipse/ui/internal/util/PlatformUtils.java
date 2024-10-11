@@ -267,7 +267,7 @@ public final class PlatformUtils {
   }
 
   /**
-   * This is a copy of {@link org.eclipse.debug.internal.ui.SWTFactory} in order to crate a separator
+   * This is a copy of {@link org.eclipse.debug.internal.ui.SWTFactory} in order to create a separator
    * between two UI elements, mostly to be used in preference pages.
    */
   public static void createHorizontalSpacer(Composite comp, int numlines) {
