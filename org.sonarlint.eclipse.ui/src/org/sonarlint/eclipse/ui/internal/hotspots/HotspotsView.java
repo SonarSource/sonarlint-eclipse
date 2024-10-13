@@ -129,7 +129,7 @@ public class HotspotsView extends ViewPart {
 
     var riskDescriptionTab = new TabItem(tabFolder, SWT.NONE);
     riskDescriptionTab.setText("What's the risk?");
-    riskDescriptionTab.setToolTipText("Risk decription");
+    riskDescriptionTab.setToolTipText("Risk description");
     riskDescriptionScrolledComposite = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
     riskDescriptionScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     riskDescriptionScrolledComposite.setExpandHorizontal(true);
@@ -141,7 +141,7 @@ public class HotspotsView extends ViewPart {
 
     var vulnerabilityDescriptionTab = new TabItem(tabFolder, SWT.NONE);
     vulnerabilityDescriptionTab.setText("Are you at risk?");
-    vulnerabilityDescriptionTab.setToolTipText("Vulnerability decription");
+    vulnerabilityDescriptionTab.setToolTipText("Vulnerability description");
     vulnerabilityDescriptionScrolledComposite = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
     vulnerabilityDescriptionScrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     vulnerabilityDescriptionScrolledComposite.setExpandHorizontal(true);
@@ -251,7 +251,7 @@ public class HotspotsView extends ViewPart {
           case "LOW":
             return SonarLintImages.IMG_HOTSPOT_LOW;
           default:
-            throw new IllegalStateException("Unexpected probablility");
+            throw new IllegalStateException("Unexpected probability");
         }
       }
 
