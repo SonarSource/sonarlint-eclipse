@@ -33,7 +33,7 @@ only_main_branches: &ONLY_MAIN_BRANCHES
   skip: "changesIncludeOnly('docs/*', '**/README.md')"
   only_if: $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_TAG == "" && ($CIRRUS_BRANCH == $CIRRUS_DEFAULT_BRANCH || $CIRRUS_BRANCH =~ "branch-.*")
 
-eks_container: &CONTAINER_DEFINITION
+container_definition: &CONTAINER_DEFINITION
   image: ${CIRRUS_AWS_ACCOUNT}.dkr.ecr.eu-central-1.amazonaws.com/base:j17-m3.9-latest
   region: eu-central-1
   cluster_name: ${CIRRUS_CLUSTER_NAME}
@@ -47,7 +47,6 @@ eks_builder_container: &BUILDER_CONTAINER_DEFINITION
   builder_role: cirrus-builder
   builder_image: docker-builder-v*
   builder_instance_type: m6a.large
-  builder_subnet_id: ${CIRRUS_AWS_SUBNET}
 
 maven_cache: &SETUP_MAVEN_CACHE
   maven_cache:
