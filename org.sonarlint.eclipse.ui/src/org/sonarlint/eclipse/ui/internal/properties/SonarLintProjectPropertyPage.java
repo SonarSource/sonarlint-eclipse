@@ -160,12 +160,12 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
 
     var indexExclusionsInformation = new Link(container, SWT.NONE);
     indexExclusionsInformation.setLayoutData(new GridData(SWT.LEFT, SWT.DOWN, true, false, 2, 1));
-    indexExclusionsInformation.setText("SonarLint makes use of other Eclipse plug-ins when it comes to indexing a "
-      + "project. Dependending on the project we\nrely on Eclipse <a>JDT</a>, <a>CDT</a>, <a>M2E</a> (Maven), or "
-      + "<a>Buildship</a> (Gradle) to exclude certain files (like compilation or build output\ndirectories) as well "
-      + "as from the analysis with the effect of improving the overall performance and lowering the\nmemory "
-      + "footprint.\nOpting out might negate these positive effects but can be benefitial in certain cases - this "
-      + "should be assessed individually.");
+    indexExclusionsInformation.setText("SonarLint uses some Eclipse plugins to index your project. Depending on the "
+      + "configuration, SonarLint relies on\nthe Eclipse <a>JDT</a>, <a>CDT</a>, <a>M2E</a> (Maven), or "
+      + "<a>Buildship</a> (Gradle) plugins to exclude certain files and folders in your\ncompilation or build output "
+      + "directories. This improves overall performance and lowers the memory footprint.\n\nOpting out of these "
+      + "exclusions may impact performance but can be beneficial in certain cases. Each project\nshould be assessed "
+      + "individually.");
     indexExclusionsInformation.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
@@ -190,7 +190,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
 
     // Binding information and settings
     indexExclusionEnabledBtn = new Button(container, SWT.CHECK);
-    indexExclusionEnabledBtn.setText("Rely on Eclipse plug-ins for indexing and exclusions (changing requires a "
+    indexExclusionEnabledBtn.setText("Rely on Eclipse plugins for indexing and exclusions (changing requires a "
       + "restart of the IDE)");
     indexExclusionEnabledBtn.setSelection(getProjectConfig().isIndexingBasedOnEclipsePlugIns());
     enabledBtn.setLayoutData(layoutData);
