@@ -29,7 +29,6 @@
    <features>
       <feature id="org.eclipse.platform"/>
       <feature id="org.eclipse.jdt"/>
-      <feature id="org.eclipse.egit"/>
       <feature id="org.eclipse.m2e.feature"/>
       <feature id="org.eclipse.cdt"/>
       <feature id="org.eclipse.wst.jsdt.feature"/>

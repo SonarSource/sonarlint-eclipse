@@ -94,7 +94,7 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
 
   @Override
   public boolean isScmIgnored() {
-    return VcsService.getFacade().isIgnored(this);
+    return VcsService.isIgnored(this);
   }
 
   @Override

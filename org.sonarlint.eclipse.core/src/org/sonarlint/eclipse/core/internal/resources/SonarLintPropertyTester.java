@@ -39,7 +39,7 @@ public class SonarLintPropertyTester extends PropertyTester {
     }
 
     if ("inRepository".equals(property)) {
-      var inRepository = VcsService.getFacade().inRepository(project.getResource());
+      var inRepository = VcsService.inRepository(project.getResource());
       return expectedValue == null
         ? inRepository
         : (inRepository == ((Boolean) expectedValue).booleanValue());

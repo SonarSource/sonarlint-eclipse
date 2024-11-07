@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -32,17 +33,14 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
-import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 import static java.util.stream.Collectors.joining;
 
 public class VcsService {
-
   private static final SonarLintLogger LOG = SonarLintLogger.get();
-
-  public static final boolean IS_EGIT_5_12_BUNDLE_AVAILABLE = BundleUtils.isBundleInstalledWithMinVersion("org.eclipse.egit.core", 5, 12);
-  public static final boolean IS_EGIT_UI_BUNDLE_AVAILABLE = BundleUtils.isBundleInstalled("org.eclipse.egit.ui");
+  private static final JGitFacade FACADE = new JGitFacade();
 
   private static final Map<ISonarLintProject, Object> previousCommitRefCache = new ConcurrentHashMap<>();
   private static final Map<ISonarLintProject, String> matchedSonarProjectBranchCache = new ConcurrentHashMap<>();
@@ -50,20 +48,24 @@ public class VcsService {
   private VcsService() {
   }
 
-  public static VcsFacade getFacade() {
-    return new JGitVcsFacade();
+  public static boolean isIgnored(ISonarLintFile file) {
+    return FACADE.isIgnored(file);
+  }
+
+  public static boolean inRepository(IResource resource) {
+    return FACADE.inRepository(resource);
   }
 
   @Nullable
-  private static String electBestMatchingBranch(VcsFacade facade, ISonarLintProject project, String mainBranchName, Set<String> allBranchesNames) {
+  private static String electBestMatchingBranch(ISonarLintProject project, String mainBranchName, Set<String> allBranchesNames) {
     LOG.debug("Elect best matching branch for project '" + project.getName() + "' among: " + allBranchesNames.stream().collect(joining(",")));
-    var matched = facade.electBestMatchingBranch(project, allBranchesNames, mainBranchName);
+    var matched = FACADE.electBestMatchingBranch(project, allBranchesNames, mainBranchName);
     LOG.debug("Best matching branch is: " + matched);
     return matched;
   }
 
-  private static void saveCurrentCommitRef(ISonarLintProject project, VcsFacade facade) {
-    Object newCommitRef = facade.getCurrentCommitRef(project);
+  private static void saveCurrentCommitRef(ISonarLintProject project) {
+    Object newCommitRef = FACADE.getCurrentCommitRef(project);
     if (newCommitRef == null) {
       previousCommitRefCache.remove(project);
     } else {
@@ -82,21 +84,19 @@ public class VcsService {
 
   @Nullable
   public static String matchSonarProjectBranch(ISonarLintProject p, String mainBranchName, Set<String> allBranchesNames) {
-    var facade = getFacade();
-    saveCurrentCommitRef(p, facade);
-    return electBestMatchingBranch(facade, p, mainBranchName, allBranchesNames);
+    saveCurrentCommitRef(p);
+    return electBestMatchingBranch(p, mainBranchName, allBranchesNames);
   }
 
   public static void installBranchChangeListener() {
-    getFacade().addHeadRefsChangeListener(projects -> new BranchChangeJob(projects).schedule());
+    FACADE.addHeadRefsChangeListener(projects -> new BranchChangeJob(projects).schedule());
   }
 
   public static void removeBranchChangeListener() {
-    getFacade().removeHeadRefsChangeListener();
+    FACADE.removeHeadRefsChangeListener();
   }
 
   private static class BranchChangeJob extends Job {
-
     private final List<ISonarLintProject> affectedProjects;
 
     public BranchChangeJob(List<ISonarLintProject> affectedProjects) {
@@ -108,11 +108,10 @@ public class VcsService {
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
-      var facade = getFacade();
       affectedProjects.forEach(project -> {
-        Object newCommitRef = facade.getCurrentCommitRef(project);
+        Object newCommitRef = FACADE.getCurrentCommitRef(project);
         if (shouldRecomputeMatchingBranch(project, newCommitRef)) {
-          saveCurrentCommitRef(project, facade);
+          saveCurrentCommitRef(project);
           SonarLintBackendService.get().didVcsRepositoryChange(project);
         }
       });
@@ -127,11 +126,9 @@ public class VcsService {
       }
       return false;
     }
-
   }
 
   public static void updateCachedMatchedSonarProjectBranch(ISonarLintProject project, String newMatchedBranchName) {
     matchedSonarProjectBranchCache.put(project, newMatchedBranchName);
   }
-
 }

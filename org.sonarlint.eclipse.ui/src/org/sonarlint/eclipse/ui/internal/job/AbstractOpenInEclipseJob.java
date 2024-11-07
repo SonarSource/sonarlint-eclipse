@@ -170,9 +170,10 @@ public abstract class AbstractOpenInEclipseJob extends Job {
       return false;
     }
 
-    // In case SLCORE is not yet ready for the SonarProjectBranchService, we also check the "legacy" and Eclipse-
-    // specific integration with EGit. If no EGit is installed, this will of course will not work, but as it is only
-    // used in case of the Open in IDE with automatic Connected Mode setup.
+    // In case SLCORE is not yet ready for the SonarProjectBranchService, we also check via this plug-ins VcsService
+    // using the JGit dependency coming bundled from SLCORE. This should yield a result when actually in a Git
+    // repository but if not, it is no problem as it is only used in case of the Open in IDE with automatic Connected
+    // Mode setup.
     Optional<String> localBranch = Optional.empty();
     try {
       var response = SonarLintBackendService.get().getMatchedSonarProjectBranch(project);
