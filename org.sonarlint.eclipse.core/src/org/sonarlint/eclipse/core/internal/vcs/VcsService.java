@@ -51,14 +51,7 @@ public class VcsService {
   }
 
   public static VcsFacade getFacade() {
-    // For now we only support eGit
-    if (IS_EGIT_5_12_BUNDLE_AVAILABLE) {
-      return new EGit5dot12VcsFacade();
-    }
-    if (IS_EGIT_UI_BUNDLE_AVAILABLE) {
-      return new OldEGitVcsFacade();
-    }
-    return new NoOpVcsFacade();
+    return new JGitVcsFacade();
   }
 
   @Nullable

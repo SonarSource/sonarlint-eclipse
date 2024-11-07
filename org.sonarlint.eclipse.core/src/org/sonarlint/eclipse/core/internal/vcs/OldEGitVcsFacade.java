@@ -22,9 +22,9 @@ package org.sonarlint.eclipse.core.internal.vcs;
 import java.util.Optional;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.egit.core.project.RepositoryMapping;
-import org.eclipse.jgit.lib.Repository;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarsource.sonarlint.shaded.org.eclipse.jgit.lib.Repository;
 
 /**
  * Uses internal EGit
@@ -55,7 +55,8 @@ public class OldEGitVcsFacade extends AbstractEGitVcsFacade {
   @Override
   Optional<Repository> getRepo(IResource resource) {
     var mapping = RepositoryMapping.getMapping(resource);
-    return Optional.ofNullable(mapping).map(RepositoryMapping::getRepository);
+    return Optional.empty();
+    // return Optional.ofNullable(mapping).map(RepositoryMapping::getRepository);
   }
 
 }
