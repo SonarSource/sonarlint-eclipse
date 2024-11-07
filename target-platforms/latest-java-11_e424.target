@@ -13,7 +13,6 @@
       <unit id="org.eclipse.jdt.feature.group" version="0.0.0" />
       <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0" />
       <unit id="org.eclipse.platform.ide" version="0.0.0" />
-      <unit id="org.eclipse.egit.feature.group" version="0.0.0" />
       <unit id="org.eclipse.equinox.core.sdk.feature.group" version="0.0.0" />
       <!-- Needed to build the test environment -->
       <unit id="org.eclipse.equinox.executable.feature.group" version="0.0.0" />

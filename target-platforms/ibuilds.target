@@ -28,11 +28,6 @@
       <repository location="https://download.eclipse.org/tools/gef/updates/legacy/releases/" />
     </location>
     
-    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.eclipse.egit.feature.group" version="0.0.0" />
-      <repository location="https://download.eclipse.org/egit/updates-nightly" />
-    </location>
-    
     <!-- https://github.com/eclipse/reddeer/issues/2154 -->
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="com.fasterxml.jackson.core.jackson-core" version="0.0.0" />
