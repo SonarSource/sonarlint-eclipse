@@ -27,15 +27,15 @@ import java.util.Set;
 import java.util.function.Consumer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jgit.events.ListenerHandle;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintUtilsLogOutput;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.utils.GitUtils;
+import org.sonarsource.sonarlint.shaded.org.eclipse.jgit.events.ListenerHandle;
+import org.sonarsource.sonarlint.shaded.org.eclipse.jgit.lib.Constants;
+import org.sonarsource.sonarlint.shaded.org.eclipse.jgit.lib.Ref;
+import org.sonarsource.sonarlint.shaded.org.eclipse.jgit.lib.Repository;
 
 abstract class AbstractEGitVcsFacade implements VcsFacade {
   private ListenerHandle listenerHandle;
