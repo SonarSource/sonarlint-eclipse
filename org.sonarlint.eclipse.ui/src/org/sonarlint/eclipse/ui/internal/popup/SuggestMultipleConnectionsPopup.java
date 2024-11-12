@@ -62,7 +62,7 @@ public class SuggestMultipleConnectionsPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint Multiple Connection Suggestions found";
+    return "SonarQube - Multiple Connection Suggestions found";
   }
 
   @Override

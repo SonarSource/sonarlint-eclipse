@@ -183,32 +183,32 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var abapFile = rootProject.getResource("Test.abap");
     openFileAndWaitForAnalysisCompletion(abapFile);
 
-    var notAnalyzedOpt = shellByName("SonarLint - Language could not be analyzed");
+    var notAnalyzedOpt = shellByName("SonarQube - Language could not be analyzed");
     notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Learn more").click());
-    notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Try SonarCloud for free").click());
+    notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Try SonarQube Cloud for free").click());
     notAnalyzedOpt.ifPresent(DefaultShell::close);
 
-    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarQube", "Analyze").select();
     new WaitUntil(new EnhancedWithConnectedModeInformationDialogOpened(dialogTitle));
     var dialog = new EnhancedWithConnectedModeInformationDialog(dialogTitle);
     doAndWaitForSonarLintAnalysisJob(dialog::learnMore);
 
     // THe project contains multiple languages, therefore the shell name slightly differs
-    notAnalyzedOpt = shellByName("SonarLint - Languages could not be analyzed");
+    notAnalyzedOpt = shellByName("SonarQube - Languages could not be analyzed");
     notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Don't show again").click());
 
-    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarQube", "Analyze").select();
     new WaitUntil(new EnhancedWithConnectedModeInformationDialogOpened(dialogTitle));
     var dialog2 = new EnhancedWithConnectedModeInformationDialog(dialogTitle);
     doAndWaitForSonarLintAnalysisJob(dialog2::trySonarCloudForFree);
 
-    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarQube", "Analyze").select();
     new WaitUntil(new EnhancedWithConnectedModeInformationDialogOpened(dialogTitle));
     var dialog3 = new EnhancedWithConnectedModeInformationDialog(dialogTitle);
     doAndWaitForSonarLintAnalysisJob(dialog3::dontAskAgain);
 
     doAndWaitForSonarLintAnalysisJob(
-      () -> new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select());
+      () -> new ContextMenu(rootProject.getTreeItem()).getItem("SonarQube", "Analyze").select());
   }
 
   @Test
@@ -268,7 +268,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var reportView = new ReportView();
 
     // Trigger manual analysis of a single file (should only add markers to the report view)
-    doAndWaitForSonarLintAnalysisJob(() -> new ContextMenu(helloJavaFile.getTreeItem()).getItem("SonarLint", "Analyze").select());
+    doAndWaitForSonarLintAnalysisJob(() -> new ContextMenu(helloJavaFile.getTreeItem()).getItem("SonarQube", "Analyze").select());
     waitForNoMarkers(textEditor);
 
     // TODO: Implement for ReportView
@@ -283,7 +283,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     // Trigger manual analysis of all files
     rootProject.select();
-    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarQube", "Analyze").select();
     new WaitUntil(new ConfirmManualAnalysisDialogOpened());
     doAndWaitForSonarLintAnalysisJob(() -> new ConfirmManualAnalysisDialog().ok());
     waitForNoMarkers(textEditor);

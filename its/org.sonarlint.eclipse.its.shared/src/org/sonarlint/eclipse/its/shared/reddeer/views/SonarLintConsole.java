@@ -34,7 +34,7 @@ public class SonarLintConsole {
   public SonarLintConsole() {
     consoleView = new ConsoleView();
     // Console name starts with a sequence number that we can't forsee
-    openConsole(StringEndsWith.endsWith("SonarLint Console"));
+    openConsole(StringEndsWith.endsWith("SonarQube Console"));
   }
 
   public ConsoleView getConsoleView() {

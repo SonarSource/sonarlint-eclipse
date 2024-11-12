@@ -81,9 +81,9 @@ public class SuggestConnectionDialog extends Dialog {
     super.configureShell(newShell);
 
     if (serverUrlOrOrganization.isLeft()) {
-      newShell.setText("Connection suggestions for SonarQube at '" + serverUrlOrOrganization.getLeft() + "'");
+      newShell.setText("Connection suggestions for SonarQube Server at '" + serverUrlOrOrganization.getLeft() + "'");
     } else {
-      newShell.setText("Connection suggestions for SonarCloud organization '" + serverUrlOrOrganization.getRight() + "'");
+      newShell.setText("Connection suggestions for SonarQube Cloud organization '" + serverUrlOrOrganization.getRight() + "'");
     }
     newShell.setMinimumSize(600, 300);
   }

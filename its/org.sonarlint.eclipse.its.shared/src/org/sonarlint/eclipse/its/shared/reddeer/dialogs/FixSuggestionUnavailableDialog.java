@@ -26,7 +26,7 @@ import org.eclipse.swt.SWT;
 
 public class FixSuggestionUnavailableDialog extends DefaultShell {
   public FixSuggestionUnavailableDialog(Integer index, Integer all) {
-    super(String.format("SonarLint Fix Suggestion (%d/%d)", index + 1, all));
+    super(String.format("SonarQube Fix Suggestion (%d/%d)", index + 1, all));
   }
 
   public void proceed() {

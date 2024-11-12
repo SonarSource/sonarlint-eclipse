@@ -79,7 +79,7 @@ public class AnalyzeCommand extends AbstractHandler {
 
     if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
       MessageDialogUtils.enhancedWithConnectedModeInformation(shell, "Are you working with a CI/CD pipeline?",
-        "Running an analysis with SonarQube / SonarCloud in your pipeline might be better suited for analyzing "
+        "Running an analysis with SonarQube (Server, Cloud) in your pipeline might be better suited for analyzing "
           + "multiple files or a whole project!");
     } else if (totalFileCount > 10 && !askConfirmation(shell)) {
       // Asking for a few files (e.g. analyzing a package) is annoying, increasing the threshold in order to not spam
@@ -117,8 +117,8 @@ public class AnalyzeCommand extends AbstractHandler {
     var dialog = MessageDialogWithToggle.open(
       MessageDialog.CONFIRM, shell, "Confirmation",
       "Analyzing multiple files may take a long time to complete. "
-        + "To get the best from SonarLint, you should preferably use the on-the-fly analysis for the files you're working on."
-        + "\n\nWould you like to proceed?",
+        + "To get the best from SonarQube for Eclipse, you should preferably use the on-the-fly analysis for the "
+        + "files you're working on.\n\nWould you like to proceed?",
       "Always proceed without asking", false, null, null, SWT.NONE);
 
     var proceed = dialog.getReturnCode() == 0;

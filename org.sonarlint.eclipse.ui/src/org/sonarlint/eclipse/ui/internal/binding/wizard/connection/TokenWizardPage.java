@@ -65,10 +65,10 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 
       var organization = model.getOrganization();
       if (organization == null) {
-        connectionLabel.setText("The token is used for setting up the connection to the SonarQube server URL '"
+        connectionLabel.setText("The token is used for setting up the connection to the SonarQube Server URL '"
           + model.getServerUrl() + "'.");
       } else {
-        connectionLabel.setText("The token is used for setting up the connection with SonarCloud to the organization '"
+        connectionLabel.setText("The token is used for setting up the connection to the SonarQube Cloud organization '"
           + organization + "'.");
       }
 
@@ -168,7 +168,9 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
   public void setVisible(boolean visible) {
     super.setVisible(visible);
     if (visible) {
-      setTitle(model.getConnectionType() == ConnectionType.SONARCLOUD ? "SonarCloud User Authentication Token" : "SonarQube User Authentication Token");
+      setTitle(model.getConnectionType() == ConnectionType.SONARCLOUD
+        ? "SonarQube Cloud User Authentication Token"
+        : "SonarQube Server User Authentication Token");
       tokenTextBinding.validateTargetToModel();
     }
   }

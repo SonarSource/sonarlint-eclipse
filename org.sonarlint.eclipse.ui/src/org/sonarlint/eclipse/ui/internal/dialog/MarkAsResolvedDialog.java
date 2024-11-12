@@ -119,7 +119,7 @@ public class MarkAsResolvedDialog extends Dialog {
   protected void configureShell(Shell newShell) {
     super.configureShell(newShell);
 
-    newShell.setText("Mark Issue as Resolved on " + (isSonarCloud ? "SonarCloud" : "SonarQube"));
+    newShell.setText("Mark Issue as Resolved on SonarQube " + (isSonarCloud ? "Cloud" : "Server"));
     newShell.setMinimumSize(500, 300);
   }
 

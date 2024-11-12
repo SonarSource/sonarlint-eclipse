@@ -42,7 +42,6 @@ import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
-import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
@@ -172,7 +171,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     wizard.next();
 
     // as login can take time, wait for the next page to appear
-    new WaitUntil(new WidgetIsFound(Label.class, new WithTextMatcher("SonarQube Connection Identifier")));
+    new WaitUntil(new WidgetIsFound(Label.class, new WithTextMatcher("SonarQube Server Connection Identifier")));
     var connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
 
     assertThat(connectionNamePage.getConnectionName()).isEqualTo("127.0.0.1");
@@ -241,7 +240,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     createConnectionAndBindProject(orchestrator, SECRET_JAVA_PROJECT_NAME);
 
     // Remove binding suggestion notification
-    new DefaultLink(shellByName("SonarLint Binding Suggestion").get(), "Don't ask again").click();
+    new DefaultLink(shellByName("SonarQube - Binding Suggestion").get(), "Don't ask again").click();
 
     waitForAnalysisReady(SECRET_JAVA_PROJECT_NAME);
 
@@ -249,7 +248,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     waitForMarkers(new DefaultEditor(),
       tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 4));
 
-    shellByName("SonarLint - Secret(s) detected").ifPresent(shell -> {
+    shellByName("SonarQube - Secret(s) detected").ifPresent(shell -> {
       assertThat(getNotificationText(shell)).contains(SECRET_JAVA_PROJECT_NAME);
       new DefaultLink(shell, "Dismiss").click();
     });
@@ -267,13 +266,13 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     createConnectionAndBindProject(orchestrator, JAVA_SIMPLE_PROJECT_KEY);
 
     // Remove binding suggestion notification
-    shellByName("SonarLint Binding Suggestion")
+    shellByName("SonarQube - Binding Suggestion")
       .ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
 
     waitForAnalysisReady(JAVA_SIMPLE_PROJECT_KEY);
 
     // Share Connected Mode configuration
-    new ContextMenu(project.getTreeItem()).getItem("SonarLint", "Share Binding...").select();
+    new ContextMenu(project.getTreeItem()).getItem("SonarQube", "Share Binding...").select();
     new WaitUntil(new ShareConnectedModeConfigurationDialogOpened());
 
     var dialog = new ShareConnectedModeConfigurationDialog();
@@ -293,7 +292,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     createConnectionAndBindProject(orchestrator, JAVA_SIMPLE_PROJECT_KEY);
 
     // Remove binding suggestion notification
-    shellByName("SonarLint Binding Suggestion")
+    shellByName("SonarQube - Binding Suggestion")
       .ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
 
     waitForAnalysisReady(JAVA_SIMPLE_PROJECT_KEY);
@@ -352,7 +351,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     createConnectionAndBindProject(orchestrator, JAVA_SIMPLE_PROJECT_KEY);
 
     // Remove binding suggestion notification
-    new DefaultLink(shellByName("SonarLint Binding Suggestion").get(), "Don't ask again").click();
+    new DefaultLink(shellByName("SonarQube - Binding Suggestion").get(), "Don't ask again").click();
 
     waitForAnalysisReady(JAVA_SIMPLE_PROJECT_KEY);
 
@@ -428,7 +427,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
       INSUFFICIENT_PERMISSION_USER);
 
     // 7) Remove binding suggestion notification
-    new DefaultLink(shellByName("SonarLint Binding Suggestion").get(), "Don't ask again").click();
+    new DefaultLink(shellByName("SonarQube Binding Suggestion").get(), "Don't ask again").click();
 
     waitForAnalysisReady(MAVEN2_PROJECT_KEY);
 
@@ -471,7 +470,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     doAndWaitForSonarLintAnalysisJob(dialog::ok);
 
     // 12) Remove marked as resolved notification
-    new DefaultLink(shellByName("SonarLint - Issue marked as resolved").get(), "Dismiss").click();
+    new DefaultLink(shellByName("SonarQube - Issue marked as resolved").get(), "Dismiss").click();
 
     // 13) Assert marker is gone
     await().until(() -> onTheFlyView.getIssues(ISSUE_MATCHER), List<SonarLintIssueMarker>::isEmpty);
@@ -516,14 +515,14 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     // 3) bind to project on SonarQube / check issues and taint vulnerabilities exist
     createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
 
-    new DefaultLink(shellByName("SonarLint Binding Suggestion").get(), "Don't ask again").click();
+    new DefaultLink(shellByName("SonarLint - Binding Suggestion").get(), "Don't ask again").click();
 
     waitForAnalysisReady(MAVEN_TAINT_PROJECT_KEY);
 
     await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(2));
     await().untilAsserted(() -> assertThat(taintVulnerabilitiesView.getItems()).hasSize(1));
 
-    new DefaultLink(shellByName("SonarLint - Taint vulnerability found").get(), "Show in view").click();
+    new DefaultLink(shellByName("SonarQube - Taint vulnerability found").get(), "Show in view").click();
 
     // 4) unbind project / set new code period to "previous version" / run second analysis with a new version
     var bindingsView = new BindingsView();
@@ -584,7 +583,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     // 3) bind to project on SonarQube / check issues exist now
     createConnectionAndBindProject(orchestrator, DBD_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
-    shellByName("SonarLint Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
+    shellByName("SonarQube - Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("dbd.py"));
     waitForSonarLintMarkers(onTheFlyView,
@@ -618,16 +617,16 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     // 3) bind to project on SonarQube / check issues exist now
     createConnectionAndBindProject(orchestrator, CUSTOM_SECRETS_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
-    shellByName("SonarLint Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
-
-    shellByName("SonarLint - Secret(s) detected").ifPresent(shell -> {
-      assertThat(getNotificationText(shell)).contains(CUSTOM_SECRETS_PROJECT_KEY);
-      new DefaultLink(shell, "Dismiss").click();
-    });
+    shellByName("SonarQube - Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("Heresy.txt"));
     waitForMarkers(new DefaultEditor(),
       tuple("User-specified secrets should not be disclosed.", 1));
+
+    shellByName("SonarQube - Secret(s) detected").ifPresent(shell -> {
+      assertThat(getNotificationText(shell)).contains(CUSTOM_SECRETS_PROJECT_KEY);
+      shell.close();
+    });
   }
 
   private static QualityProfile getQualityProfile(String projectKey, String qualityProfileName) {

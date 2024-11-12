@@ -30,7 +30,7 @@ import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 
 public class ReleaseNotesPreferences extends PropertyPage {
   public ReleaseNotesPreferences(WorkbenchPreferenceDialog preferenceDialog) {
-    super(preferenceDialog, "SonarLint", "Release Notes");
+    super(preferenceDialog, "SonarQube", "Release Notes");
   }
 
   public void cancel() {

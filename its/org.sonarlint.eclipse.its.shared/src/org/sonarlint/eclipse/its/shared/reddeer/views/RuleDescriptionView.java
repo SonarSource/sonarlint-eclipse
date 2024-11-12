@@ -33,7 +33,7 @@ import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 
 public class RuleDescriptionView extends WorkbenchView {
   public RuleDescriptionView() {
-    super("SonarLint Rule Description");
+    super("SonarQube Rule Description");
   }
 
   public Label getRuleName() {

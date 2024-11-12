@@ -66,9 +66,9 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
     var text = new Link(composite, SWT.NONE);
     var textGd = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
     text.setLayoutData(textGd);
-    text.setText("By sharing anonymous SonarLint usage statistics, you help us understand how SonarLint is used so "
+    text.setText("By sharing anonymous SonarQube for Eclipse usage statistics, you help us understand how it is used so "
       + "we can improve the plugin to work even better for you.\nWe don't collect source code, IP addresses, or any personally identifying "
-      + "information. And we don't share the data with anyone else.\n\nSee a <a href=\"#\">sample of the data.</a>");
+      + "information. And we don't share the data with anyone else.\nSee a <a href=\"#\">sample of the data.</a>");
 
     final var tip = new DefaultToolTip(text, ToolTip.RECREATE, true);
     tip.setText("{\n"
@@ -127,7 +127,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
     });
 
     enabledBtn = new Button(composite, SWT.CHECK);
-    enabledBtn.setText("Share anonymous SonarLint statistics");
+    enabledBtn.setText("Share anonymous SonarQube for Eclipse statistics");
     enabledBtn.setSelection(SonarLintTelemetry.isEnabled());
     var layoutData = new GridData();
     layoutData.horizontalSpan = 2;
@@ -136,11 +136,11 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
     /** Information on SonarLint for Eclipse user surveys */
     var surveyHeader = new Link(composite, SWT.NONE);
     surveyHeader.setLayoutData(textGd);
-    surveyHeader.setText("\nSonarLint for Eclipse user survey");
+    surveyHeader.setText("\nSonarQube for Eclipse user survey");
     var surveyText = new Link(composite, SWT.NONE);
     surveyText.setLayoutData(textGd);
     surveyText.setText("From time to time we might provide you with the link to a user survey as we are interested in "
-      + "your feedback to improve SonarLint for Eclipse.\nIt will pop-up for you on IDE startup and you are free to "
+      + "your feedback to improve SonarQube for\nEclipse. It will pop-up for you on IDE startup and you are free to "
       + "check it out, but there is no obligation to take part in the survey.\nYou can come back here anytime to find "
       + "the link to the survey once again, perhaps if you changed your mind and want to take part.");
     var link = SonarLintGlobalConfiguration.getUserSurveyLastLink();

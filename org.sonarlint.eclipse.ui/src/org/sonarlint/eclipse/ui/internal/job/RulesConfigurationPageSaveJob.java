@@ -42,12 +42,12 @@ public class RulesConfigurationPageSaveJob extends Job {
       // all projects are bound, inform the user about local changes don't apply
       MessageDialogUtils.connectedModeOnlyInformation("Changing rule configuration has no effect",
         "As all the projects found in the workspace are already in Connected Mode, rule changes done locally "
-          + "will have no impact on the analysis and its results. This has to be done on SonarQube / SonarCloud.",
+          + "will have no impact on the analysis and its results. This has to be done on SonarQube (Server, Cloud).",
         LinkTelemetry.RULES_SELECTION_DOCS);
     } else if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
       MessageDialogUtils.enhancedWithConnectedModeInformation("Are you working in a team?",
         "When using Connected Mode you can benefit from having the rule configuration centralized. It is "
-          + "synchronized to all project contributers using SonarLint, no manual configuration has to be done "
+          + "synchronized to all project contributers using SonarQube for IDE, no manual configuration has to be done "
           + "locally.");
     }
 

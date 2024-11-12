@@ -31,7 +31,7 @@ import org.sonarlint.eclipse.ui.internal.views.issues.TaintVulnerabilitiesView;
 
 public class SonarLintTaintVulnerabilitiesView extends AbstractMarkersSupportView {
   public SonarLintTaintVulnerabilitiesView() {
-    super("SonarLint Taint Vulnerabilities");
+    super("SonarQube Taint Vulnerabilities");
   }
 
   public List<TreeItem> getItems() {

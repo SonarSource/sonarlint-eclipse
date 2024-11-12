@@ -59,8 +59,8 @@ public class AnalysisRequirementNotificationsTest {
       .isEqualTo(
         List.of(new Notification(
           "Analyzer Requirement",
-          "SonarLint failed to analyze Java code",
-          "SonarLint requires Java runtime version 11 or later to analyze Java code. Current version is 1.8.\n" +
+          "SonarQube failed to analyze Java code",
+          "SonarQube requires Java runtime version 11 or later to analyze Java code. Current version is 1.8.\n" +
             "See <a href=\"https://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM\">the Eclipse Wiki</a> to configure your IDE to run with a more recent JRE.")));
   }
 
@@ -70,9 +70,9 @@ public class AnalysisRequirementNotificationsTest {
     assertThat(notifications).usingRecursiveComparison().isEqualTo(
       List.of(new Notification(
         "Analyzer Requirement",
-        "SonarLint failed to analyze JavaScript code",
-        "SonarLint requires Node.js runtime version 8.0 or later to analyze JavaScript code. Current version is 7.2.\n" +
-          "Please configure the Node.js path in the <a href=\"#edit-settings\">SonarLint settings</a>.")));
+        "SonarQube failed to analyze JavaScript code",
+        "SonarQube requires Node.js runtime version 8.0 or later to analyze JavaScript code. Current version is 7.2.\n" +
+          "Please configure the Node.js path in the <a href=\"#edit-settings\">SonarQube settings</a>.")));
   }
 
 }

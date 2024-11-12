@@ -61,7 +61,7 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
     if (reportTitle != null) {
       bottomLabel.setText(reportTitle + " (at " + DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(reportDate) + "). <a>Learn more</a>");
     } else {
-      bottomLabel.setText("Run the analysis from the SonarLint context menu to find issues in the SCM change set or in all your project files. <a>Learn more</a>");
+      bottomLabel.setText("Run the analysis from the SonarQube context menu to find issues in the SCM change set or in all your project files. <a>Learn more</a>");
     }
     bottomLabel.getParent().layout();
   }

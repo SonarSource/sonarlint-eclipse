@@ -99,7 +99,7 @@ public class HotspotsView extends ViewPart {
     body.setLayout(layout);
 
     var emptyMsg = new Link(body, SWT.CENTER | SWT.WRAP);
-    emptyMsg.setText("You can open a Security Hotspot from SonarQube. <a>Learn more</a>");
+    emptyMsg.setText("You can open a Security Hotspot from SonarQube Server. <a>Learn more</a>");
     var gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
     emptyMsg.setLayoutData(gd);
     emptyMsg.setBackground(emptyMsg.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));

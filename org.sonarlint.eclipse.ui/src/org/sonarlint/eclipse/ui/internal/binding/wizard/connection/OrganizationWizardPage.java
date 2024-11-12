@@ -40,7 +40,7 @@ public class OrganizationWizardPage extends AbstractServerConnectionWizardPage {
   private Binding orgaTextBinding;
 
   public OrganizationWizardPage(ServerConnectionModel model) {
-    super("organization_page", "SonarCloud Organization", model, 2);
+    super("organization_page", "SonarQube Cloud Organization", model, 2);
     setDescription("Start typing to search among organizations you are member of, or enter any organization key");
   }
 

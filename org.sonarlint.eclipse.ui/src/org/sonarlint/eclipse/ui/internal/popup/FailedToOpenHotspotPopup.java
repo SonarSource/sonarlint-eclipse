@@ -42,17 +42,15 @@ public class FailedToOpenHotspotPopup extends AbstractSonarLintPopup {
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
 
-    addLink("Open console", e ->
-      Display.getDefault().asyncExec(() -> {
-        close();
-        SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
-      })
-    );
+    addLink("Open console", e -> Display.getDefault().asyncExec(() -> {
+      close();
+      SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
+    }));
   }
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint - Unable to open hotspot";
+    return "SonarQube Server - Unable to open hotspot";
   }
 
   @Override

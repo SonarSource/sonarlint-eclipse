@@ -57,7 +57,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
 
   @Override
   public void init(IWorkbench workbench) {
-    setDescription("Configure rules used for SonarLint analysis for projects not in Connected Mode.");
+    setDescription("Configure rules used for SonarQube analysis for projects not in Connected Mode.");
   }
 
   @Override
@@ -68,8 +68,8 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     pageComponent.setLayout(layout);
 
     var label = new Link(pageComponent, SWT.NONE);
-    label.setText("When a project is connected to <a>SonarQube/SonarCloud</a>, "
-      + "configuration from the server applies.");
+    label.setText("When a project is connected to <a>SonarQube (Server, Cloud)</a>, "
+      + "configuration from the connection applies.");
     label.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CONNECTED_MODE_LINK, e.display));
 

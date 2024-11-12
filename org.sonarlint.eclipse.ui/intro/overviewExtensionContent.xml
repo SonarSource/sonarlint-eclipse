@@ -8,17 +8,17 @@
     <group labl="SonarLint" style-id="content=group" id="content-group">
       <!-- -->
       <link style-id="content-link"
-            label="SonarLint Release Notes"
+            label="SonarQube for Eclipse Release Notes"
             url="http://org.eclipse.ui.intro/runAction?pluginId=org.sonarlint.eclipse.ui&amp;class=org.sonarlint.eclipse.ui.internal.intro.ShowReleaseNotesAction"
             id="overviewReleaseNotes">
-        <text>Show SonarLint for Eclipse Release Notes</text>
+        <text>Show SonarQube for Eclipse Release Notes</text>
       </link>
       
       <link style-id="content-link"
             label="Sonar Community Forum"
             url="http://org.eclipse.ui.intro/openBrowser?url=https://community.sonarsource.com"
             id="sonarCommunity">
-        <text>Join the Sonar Community Forum, read news, announcements and help us improve SonarLint</text>
+        <text>Join the Sonar Community Forum, read news, announcements and help us improve SonarQube</text>
       </link>
     </group>
   </extensionContent>

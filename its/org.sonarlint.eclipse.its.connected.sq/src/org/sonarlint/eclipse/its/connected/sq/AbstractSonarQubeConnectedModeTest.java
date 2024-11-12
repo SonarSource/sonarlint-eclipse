@@ -150,7 +150,7 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     wizard.next();
 
     // as login can take time, wait for the next page to appear
-    new WaitUntil(new WidgetIsFound(Label.class, new WithTextMatcher("SonarQube Connection Identifier")));
+    new WaitUntil(new WidgetIsFound(Label.class, new WithTextMatcher("SonarQube Server Connection Identifier")));
     var connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
 
     connectionNamePage.setConnectionName("test");
@@ -196,7 +196,7 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
   }
 
   protected static void bindProjectFromContextMenu(Project project, String projectKey) {
-    new ContextMenu(project.getTreeItem()).getItem("SonarLint", "Bind to SonarQube or SonarCloud...").select();
+    new ContextMenu(project.getTreeItem()).getItem("SonarQube", "Bind to SonarQube (Server, Cloud)...").select();
 
     var projectBindingWizard = new ProjectBindingWizard();
     projectBindingWizard.next();

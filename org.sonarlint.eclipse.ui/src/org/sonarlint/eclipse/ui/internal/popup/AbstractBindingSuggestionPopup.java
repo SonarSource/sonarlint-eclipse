@@ -55,7 +55,7 @@ public abstract class AbstractBindingSuggestionPopup extends AbstractSonarLintPo
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint Binding Suggestion";
+    return "SonarQube - Binding Suggestion";
   }
 
   @Override

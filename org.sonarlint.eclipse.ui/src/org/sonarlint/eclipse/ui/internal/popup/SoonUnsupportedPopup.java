@@ -54,7 +54,7 @@ public class SoonUnsupportedPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarQube - Soon unsupported version";
+    return "SonarQube Server - Soon unsupported version";
   }
 
   @Override

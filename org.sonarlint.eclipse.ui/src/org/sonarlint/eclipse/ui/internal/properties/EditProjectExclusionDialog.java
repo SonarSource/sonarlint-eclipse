@@ -300,7 +300,7 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
     dialog.setAllowMultiple(false);
     dialog.addFilter(viewFilter);
     dialog.setValidator(validator);
-    dialog.setMessage("Select a project folder to be excluded from SonarLint analysis");
+    dialog.setMessage("Select a project folder to be excluded from analysis");
 
     if (editItem != null) {
       dialog.setInitialSelection(editItem.item());
@@ -359,7 +359,7 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
     dialog.setAllowMultiple(false);
     dialog.addFilter(viewFilter);
     dialog.setValidator(validator);
-    dialog.setMessage("Select a project file to be excluded from SonarLint analysis");
+    dialog.setMessage("Select a project file to be excluded from analysis");
     if (editItem != null) {
       dialog.setInitialSelection(editItem.item());
     }

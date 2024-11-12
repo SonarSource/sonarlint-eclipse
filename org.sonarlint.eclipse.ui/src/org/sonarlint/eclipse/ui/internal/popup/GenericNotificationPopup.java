@@ -62,7 +62,8 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
 
     if (longMsg != null) {
       addLink("More details...", e -> {
-        var dialog = new DialogWithLink(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "SonarLint - " + title, longMsg);
+        var dialog = new DialogWithLink(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+          "SonarQube - " + title, longMsg);
         dialog.open();
         close();
       });
@@ -125,7 +126,7 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint - " + title;
+    return "SonarQube - " + title;
   }
 
   @Override

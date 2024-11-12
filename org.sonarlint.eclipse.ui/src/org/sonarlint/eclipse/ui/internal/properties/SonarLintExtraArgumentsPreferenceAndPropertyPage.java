@@ -382,7 +382,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
 
   @Override
   public void init(IWorkbench workbench) {
-    setDescription("Additional properties passed to SonarLint analyzers");
+    setDescription("Additional properties passed to analyzers.");
     setPreferenceStore(SonarLintUiPlugin.getDefault().getPreferenceStore());
   }
 

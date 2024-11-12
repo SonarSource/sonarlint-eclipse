@@ -45,7 +45,7 @@ public class SecretsTest extends AbstractSonarLintTest {
     waitForMarkers(new DefaultEditor(),
       tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 3));
 
-    shellByName("SonarLint - Secret(s) detected").ifPresent(shell -> {
+    shellByName("SonarQube - Secret(s) detected").ifPresent(shell -> {
       assertThat(getNotificationText(shell)).contains(SECRET_IN_TEXT_FILE);
       new DefaultLink(shell, "Dismiss").click();
     });
@@ -60,7 +60,7 @@ public class SecretsTest extends AbstractSonarLintTest {
     waitForMarkers(new DefaultEditor(),
       tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 4));
 
-    shellByName("SonarLint - Secret(s) detected").ifPresent(shell -> {
+    shellByName("SonarQube - Secret(s) detected").ifPresent(shell -> {
       assertThat(getNotificationText(shell)).contains(SECRET_JAVA);
       new DefaultLink(shell, "Dismiss").click();
     });

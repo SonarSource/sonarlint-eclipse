@@ -26,7 +26,7 @@ import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 public class IssueLocationsView extends WorkbenchView {
 
   public IssueLocationsView() {
-    super("SonarLint Issue Locations");
+    super("SonarQube Issue Locations");
   }
 
   public Tree getTree() {

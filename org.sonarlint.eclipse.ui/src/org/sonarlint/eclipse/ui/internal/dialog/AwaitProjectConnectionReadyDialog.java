@@ -42,10 +42,11 @@ public class AwaitProjectConnectionReadyDialog extends MessageDialog {
       "Await Connected Mode to get ready",
       SonarLintImages.BALLOON_IMG,
       "In order to proceed we have to wait for the Connected Mode to get ready. Depending on your network connection "
-        + "it can take some time, at most SonarLint will wait for " + AwaitProjectConnectionReadyJob.maxWaitTime()
-        + " minute(s). When everything is finished this dialog will be closed automatically and SonarLint will "
-        + "proceed. If you click 'Cancel', the Connected Mode will still be established but the requested action will "
-        + "be cancelled.",
+        + "it can take some time, at most SonarQube for Eclipse will wait for "
+        + AwaitProjectConnectionReadyJob.maxWaitTime()
+        + " minute(s). When everything is finished this dialog will be closed automatically and SonarQube for Eclipse "
+        + "will proceed. If you click 'Cancel', the Connected Mode will still be established but the requested action "
+        + "will be cancelled.",
       INFORMATION,
       new String[] {"Cancel"},
       0);

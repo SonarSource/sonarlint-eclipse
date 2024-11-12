@@ -41,7 +41,7 @@ public class SonarProjectSelectionWizardPage extends AbstractProjectBindingWizar
   private Binding projectTextBinding;
 
   public SonarProjectSelectionWizardPage(ProjectBindingModel model) {
-    super("sonar_project_page", "Choose the SonarQube/SonarCloud project", model, 1);
+    super("sonar_project_page", "Choose the SonarQube (Server, Cloud) project", model, 1);
   }
 
   @Override

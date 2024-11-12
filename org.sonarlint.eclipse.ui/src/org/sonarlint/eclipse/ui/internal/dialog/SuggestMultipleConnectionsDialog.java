@@ -61,11 +61,11 @@ public class SuggestMultipleConnectionsDialog extends Dialog {
       if (suggestion.getConnectionSuggestion().isLeft()) {
         var sonarQubeSuggestion = suggestion.getConnectionSuggestion().getLeft();
         projectKey += sonarQubeSuggestion.getProjectKey();
-        title = "SonarQube at '" + sonarQubeSuggestion.getServerUrl() + "':";
+        title = "SonarQube Server at '" + sonarQubeSuggestion.getServerUrl() + "':";
       } else {
         var sonarCloudSuggestion = suggestion.getConnectionSuggestion().getRight();
         projectKey += sonarCloudSuggestion.getProjectKey();
-        title = "SonarCloud organization '" + sonarCloudSuggestion.getOrganization() + "':";
+        title = "SonarQube Cloud organization '" + sonarCloudSuggestion.getOrganization() + "':";
       }
       projectKey += "'";
 

@@ -79,7 +79,7 @@ public class MessageDialogUtils {
   public static void enhancedWithConnectedModeInformation(Shell shell, String title, String message) {
     var result = new MessageDialog(shell, title, null,
       message, MessageDialog.INFORMATION,
-      new String[] {"Learn more", "Try SonarCloud for free", "Don't ask again"}, 0).open();
+      new String[] {"Learn more", "Try SonarQube Cloud for free", "Don't ask again"}, 0).open();
 
     // The result corresponds to the index in the array; totally confusing as the pre-selected button (in our case
     // "Learn more") is always the rightmost one.

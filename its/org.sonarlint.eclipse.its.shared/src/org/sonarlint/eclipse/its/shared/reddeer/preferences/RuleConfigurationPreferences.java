@@ -34,7 +34,7 @@ import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 public class RuleConfigurationPreferences extends PropertyPage {
 
   public RuleConfigurationPreferences(WorkbenchPreferenceDialog preferenceDialog) {
-    super(preferenceDialog, "SonarLint", "Rules Configuration");
+    super(preferenceDialog, "SonarQube", "Rules Configuration");
   }
 
   public void add(String exclusion) {

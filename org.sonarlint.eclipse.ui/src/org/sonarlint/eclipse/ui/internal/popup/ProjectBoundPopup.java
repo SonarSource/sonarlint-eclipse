@@ -48,7 +48,7 @@ public class ProjectBoundPopup extends AbstractSonarLintToastPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "Project(s) bound to " + (isSonarCloud ? "SonarCloud" : "SonarQube");
+    return "Project(s) bound to SonarQube " + (isSonarCloud ? "Cloud" : "Server");
   }
 
   @Override

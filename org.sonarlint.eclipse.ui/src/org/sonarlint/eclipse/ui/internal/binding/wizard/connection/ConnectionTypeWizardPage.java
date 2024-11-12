@@ -77,12 +77,12 @@ public class ConnectionTypeWizardPage extends WizardPage {
     sonarQubeLabel.setLayoutData(gd);
 
     var sonarCloudFreeLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
-    sonarCloudFreeLabel.setText("<a>SonarCloud</a> is entirely free for open source projects");
+    sonarCloudFreeLabel.setText("<a>SonarQube Cloud</a> is entirely free for open source projects");
     sonarCloudFreeLabel.setLayoutData(gd);
     sonarCloudFreeLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowserWithTelemetry(LinkTelemetry.SONARCLOUD_PRODUCT_PAGE, e.display));
 
     var sonarQubeFreeLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
-    sonarQubeFreeLabel.setText("SonarQube offers a free <a>Community Edition</a>");
+    sonarQubeFreeLabel.setText("SonarQube Server offers a free <a>Community Build</a>");
     sonarQubeFreeLabel.setLayoutData(gd);
     sonarQubeFreeLabel.addListener(SWT.Selection, e -> BrowserUtils.openExternalBrowserWithTelemetry(LinkTelemetry.SONARQUBE_EDITIONS_DOWNLOADS, e.display));
 

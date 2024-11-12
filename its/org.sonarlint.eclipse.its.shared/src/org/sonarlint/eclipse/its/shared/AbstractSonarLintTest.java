@@ -131,7 +131,7 @@ public abstract class AbstractSonarLintTest {
     if ("oldest".equals(System.getProperty("target.platform"))) {
       Optional<DefaultShell> dialog;
       do {
-        dialog = shellByName("SonarLint - New Eclipse user survey");
+        dialog = shellByName("SonarQube for Eclipse - New user survey");
         dialog.ifPresent(DefaultShell::close);
       } while (dialog.isPresent());
     }
@@ -145,6 +145,8 @@ public abstract class AbstractSonarLintTest {
     // first wait for previous analyzes to finish properly
     // this prevents trying to clear the console in the middle of a job
     waitSonarLintAnalysisJobs();
+
+    shellByName("SonarQube for Eclipse - Release Notes").ifPresent(DefaultShell::close);
 
     var consoleView = new SonarLintConsole();
     System.out.println(consoleView.getConsoleView().getConsoleText());

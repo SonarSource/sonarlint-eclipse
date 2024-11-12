@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <introContent>
   <extensionContent id="org.sonarlint.eclipse.ui"
-                    name="SonarLint Release Notes"
+                    name="SonarQube for Eclipse Release Notes"
                     style="../css/welcome_view.css"
                     alt-style="../css/welcome_view.properties"
                     path="whatsnew/@">
@@ -10,7 +10,7 @@
             label="SonarLint Release Notes"
             url="http://org.eclipse.ui.intro/runAction?pluginId=org.sonarlint.eclipse.ui&amp;class=org.sonarlint.eclipse.ui.internal.intro.ShowReleaseNotesAction"
             id="releaseNotes">
-        <text>Show SonarLint for Eclipse Release Notes</text>
+        <text>Show SonarQube for Eclipse Release Notes</text>
       </link>
     </group>
   </extensionContent>

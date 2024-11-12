@@ -57,11 +57,11 @@ public class SuggestMultipleConnectionSelectionDialog extends ElementListSelecti
     if (suggestion.getConnectionSuggestion().isLeft()) {
       var sonarQubeSuggestion = suggestion.getConnectionSuggestion().getLeft();
       projectInfo += sonarQubeSuggestion.getProjectKey();
-      connectionInfo = "SonarQube at '" + sonarQubeSuggestion.getServerUrl() + "'";
+      connectionInfo = "SonarQube Server at '" + sonarQubeSuggestion.getServerUrl() + "'";
     } else {
       var sonarCloudSuggestion = suggestion.getConnectionSuggestion().getRight();
       projectInfo += sonarCloudSuggestion.getProjectKey();
-      connectionInfo = "SonarCloud organization '" + sonarCloudSuggestion.getOrganization() + "'";
+      connectionInfo = "SonarQube Cloud organization '" + sonarCloudSuggestion.getOrganization() + "'";
     }
     projectInfo += "'";
 

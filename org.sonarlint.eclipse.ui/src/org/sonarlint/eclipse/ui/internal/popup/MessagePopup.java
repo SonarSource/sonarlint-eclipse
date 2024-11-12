@@ -36,7 +36,7 @@ public class MessagePopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint";
+    return "SonarQube";
   }
 
   @Override

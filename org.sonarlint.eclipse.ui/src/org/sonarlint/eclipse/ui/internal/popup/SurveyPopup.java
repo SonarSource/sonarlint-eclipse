@@ -40,7 +40,7 @@ public class SurveyPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getMessage() {
-    return "We are seeking your feedback to improve SonarLint for Eclipse with a short and simple user survey.";
+    return "We are seeking your feedback to improve SonarQube for Eclipse with a short and simple user survey.";
   }
 
   @Override
@@ -58,7 +58,7 @@ public class SurveyPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint - New Eclipse user survey";
+    return "SonarQube for Eclipse - New user survey";
   }
 
   @Override

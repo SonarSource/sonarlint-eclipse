@@ -55,7 +55,7 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
 
   public AssistSuggestConnectionJob(Either<String, String> serverUrlOrOrganization,
     Map<String, List<ProjectSuggestionDto>> projectMapping) {
-    super("Connected Mode suggestion for " + (serverUrlOrOrganization.isLeft() ? "SonarQube" : "SonarCloud"),
+    super("Connected Mode suggestion for SonarQube " + (serverUrlOrOrganization.isLeft() ? "Server" : "Cloud"),
       serverUrlOrOrganization, false, true);
     this.projectMapping = projectMapping;
   }
@@ -117,9 +117,9 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
     } catch (ExecutionException | InterruptedException err) {
       var message = "";
       if (serverUrlOrOrganization.isLeft()) {
-        message += "SonarQube '" + serverUrlOrOrganization.getLeft() + "'";
+        message += "SonarQube Server '" + serverUrlOrOrganization.getLeft() + "'";
       } else {
-        message += "SonarCloud organization '" + serverUrlOrOrganization.getRight() + "'";
+        message += "SonarQube Cloud organization '" + serverUrlOrOrganization.getRight() + "'";
       }
 
       SonarLintLogger.get().error(message + " cannot be loaded", err);
