@@ -35,14 +35,14 @@ import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 public class BindingsView extends WorkbenchView {
 
   public BindingsView() {
-    super("SonarLint Bindings");
+    super("SonarQube Bindings");
   }
 
   public boolean isBindingEmpty() {
     activate();
     try {
       new DefaultLink(cTabItem, new WithTextMatcher(
-        "<a>Connect to SonarQube/SonarCloud...</a>"));
+        "<a>Connect to SonarQube (Server, Cloud)...</a>"));
       return true;
     } catch (CoreLayerException e) {
       return false;

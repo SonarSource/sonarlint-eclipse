@@ -34,7 +34,7 @@ import org.sonarlint.eclipse.its.shared.reddeer.conditions.OrganizationsAreFetch
 
 public class ServerConnectionWizard extends NewMenuWizard {
   public ServerConnectionWizard() {
-    super("Connect to SonarQube or SonarCloud", "SonarLint", "New SonarQube/SonarCloud Connection");
+    super("Connect to SonarQube (Server, Cloud)", "SonarQube", "New SonarQube (Server, Cloud) Connection");
   }
 
   public static class ServerTypePage extends WizardPage {

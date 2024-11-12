@@ -61,7 +61,7 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
 
     importExistingGradleProjectIntoWorkspace("java/gradle-project", GRADLE_PROJECT);
 
-    var shellOpt = shellByName("SonarLint Connection Suggestion to SonarQube");
+    var shellOpt = shellByName("Connection Suggestion to SonarQube Server");
     try {
       assertThat(shellOpt).isNotEmpty();
 
@@ -70,8 +70,13 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
         .contains(GRADLE_GROUP + ":" + GRADLE_PROJECT)
         .contains("local project '" + GRADLE_PROJECT);
     } finally {
-      shellOpt.ifPresent(DefaultShell::close);
+      shellOpt.ifPresent(shell -> {
+        if (!shell.getControl().isDisposed()) {
+          shell.close();
+        }
+      });
     }
+    shellByName("Connection Suggestion to SonarQube Server").ifPresent(DefaultShell::close);
   }
 
   @Test
@@ -80,7 +85,7 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
 
     importExistingGradleProjectIntoWorkspace("java/gradle-root-project", GRADLE_ROOT_PROJECT);
 
-    var firstShell = shellByName("SonarLint Connection Suggestion to SonarQube");
+    var firstShell = shellByName("Connection Suggestion to SonarQube Server");
     try {
       assertThat(firstShell).isNotEmpty();
       assertThat(getNotificationText(firstShell.get()))
@@ -98,9 +103,13 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
           list -> assertThat(list).contains("local project '" + GRADLE_SUB_PROJECT));
       }
     } finally {
-      firstShell.ifPresent(DefaultShell::close);
-      shellByName("SonarLint Connection Suggestion to SonarQube").ifPresent(DefaultShell::close);
+      firstShell.ifPresent(shell -> {
+        if (!shell.getControl().isDisposed()) {
+          shell.close();
+        }
+      });
     }
+    shellByName("Connection Suggestion to SonarQube Server").ifPresent(DefaultShell::close);
   }
 
   // Mixed Gradle/Maven project containing two different shared Connected Mode configurations
@@ -110,7 +119,7 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
 
     importExistingProjectIntoWorkspace("java/gradle-maven-mixed", GRADLE_MAVEN_MIXED_PROJECT);
 
-    var shellOpt = shellByName("SonarLint Multiple Connection Suggestions found");
+    var shellOpt = shellByName("SonarQube - Multiple Connection Suggestions found");
     try {
       assertThat(shellOpt).isNotEmpty();
 
@@ -134,5 +143,6 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
         }
       });
     }
+    shellByName("SonarQube - Multiple Connection Suggestions found").ifPresent(DefaultShell::close);
   }
 }

@@ -57,15 +57,15 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
 
     // Exclude file
     helloFile.select();
-    new ContextMenu(helloFile.getTreeItem()).getItem("SonarLint", "Exclude").select();
+    new ContextMenu(helloFile.getTreeItem()).getItem("SonarQube", "Exclude").select();
 
     // ensure issues markers are cleared even before the next analysis
-    new WaitUntil(new OnTheFlyViewIsEmpty(issuesView), TimePeriod.DEFAULT);
+    new WaitUntil(new OnTheFlyViewIsEmpty(issuesView), TimePeriod.getCustom(30));
     waitForNoSonarLintMarkers(issuesView);
 
     helloFile.select();
-    assertThat(new ContextMenuItem("SonarLint", "Exclude").isEnabled()).isFalse();
-    assertThat(new ContextMenuItem("SonarLint", "Analyze").isEnabled()).isFalse();
+    assertThat(new ContextMenuItem("SonarQube", "Exclude").isEnabled()).isFalse();
+    assertThat(new ContextMenuItem("SonarQube", "Analyze").isEnabled()).isFalse();
 
     // reopen the file to ensure issue doesn't come back
     openFileAndWaitForAnalysisCompletion(helloFile);
@@ -81,7 +81,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     // Clear the preference when running tests locally in developper env
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES);
     rootProject.select();
-    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarQube", "Analyze").select();
 
     doAndWaitForSonarLintAnalysisJob(() -> new OkButton(shellByName("Confirmation").get()).click());
     waitForNoSonarLintMarkers(issuesView);

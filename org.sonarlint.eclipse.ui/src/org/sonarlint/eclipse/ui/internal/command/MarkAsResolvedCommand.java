@@ -96,7 +96,7 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
     if (!result.isPermitted()) {
       currentWindow.getShell().getDisplay()
         .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(),
-          TITLE + " on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
+          TITLE + " on SonarQube " + (isSonarCloud ? "Cloud" : "Server"),
           result.getNotPermittedReason()));
       return;
     }
@@ -119,6 +119,6 @@ public class MarkAsResolvedCommand extends AbstractResolvedCommand {
     var serverIssue = marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
     return serverIssue != null
       ? new MarkAsResolvedDialog(parentShell, transitions, hostURL, isSonarCloud)
-        : new MarkAnticipatedIssueAsResolvedDialog(parentShell, transitions, hostURL);
+      : new MarkAnticipatedIssueAsResolvedDialog(parentShell, transitions, hostURL);
   }
 }

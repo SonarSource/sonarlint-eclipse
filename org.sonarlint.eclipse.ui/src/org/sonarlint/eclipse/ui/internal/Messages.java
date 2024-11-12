@@ -36,8 +36,6 @@ public final class Messages extends NLS {
   public static String SonarPreferencePage_title;
   public static String SonarPreferencePage_description;
   public static String SonarPreferencePage_label_marker_severity;
-  public static String SonarPreferencePage_label_issue_filter;
-  public static String SonarPreferencePage_label_issue_period;
   public static String SonarPreferencePage_label_extra_args;
   public static String SonarPreferencePage_label_test_file_glob_patterns;
   public static String SonarProjectPropertyBlock_label_override_workspace_settings;

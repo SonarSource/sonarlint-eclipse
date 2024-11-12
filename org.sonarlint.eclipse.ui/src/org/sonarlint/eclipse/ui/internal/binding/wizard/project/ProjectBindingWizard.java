@@ -73,7 +73,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   }
 
   private ProjectBindingWizard(Collection<ISonarLintProject> selectedProjects, @Nullable ConnectionFacade selectedConnection) {
-    this("Bind to a SonarQube or SonarCloud project", new ProjectBindingModel());
+    this("Bind to a SonarQube (Server, Cloud) project", new ProjectBindingModel());
     this.model.setProjects(selectedProjects.stream()
       .sorted(comparing(ISonarLintProject::getName))
       .collect(toCollection(ArrayList::new)));

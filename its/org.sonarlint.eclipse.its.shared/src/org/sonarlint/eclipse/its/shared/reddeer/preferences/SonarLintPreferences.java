@@ -28,7 +28,7 @@ import org.eclipse.reddeer.swt.impl.combo.DefaultCombo;
 import org.eclipse.reddeer.swt.impl.text.DefaultText;
 
 public class SonarLintPreferences extends PropertyPage {
-  public static final String NAME = "SonarLint";
+  public static final String NAME = "SonarQube";
 
   public SonarLintPreferences(ReferencedComposite referencedComposite) {
     super(referencedComposite, NAME);
@@ -39,15 +39,15 @@ public class SonarLintPreferences extends PropertyPage {
   }
 
   public void setMarkersSeverity(MarkerSeverity severity) {
-    new DefaultCombo(this, new WithLabelMatcher("SonarLint markers severity:")).setSelection(severity.getTextInCombo());
+    new DefaultCombo(this, new WithLabelMatcher("SonarQube markers severity:")).setSelection(severity.getTextInCombo());
   }
 
   public void setShowAllMarkers(boolean showAllMarkers) {
-    new CheckBox(this, new WithTextMatcher("Show SonarLint markers for resolved issues as well")).toggle(showAllMarkers);
+    new CheckBox(this, new WithTextMatcher("Show SonarQube markers for resolved issues as well")).toggle(showAllMarkers);
   }
 
   public void setFocusOnNewCode(boolean focusOnNewCode) {
-    new CheckBox(this, new WithTextMatcher("Show SonarLint markers only for new code")).toggle(focusOnNewCode);
+    new CheckBox(this, new WithTextMatcher("Show SonarQube markers only for new code")).toggle(focusOnNewCode);
   }
 
   public enum MarkerSeverity {

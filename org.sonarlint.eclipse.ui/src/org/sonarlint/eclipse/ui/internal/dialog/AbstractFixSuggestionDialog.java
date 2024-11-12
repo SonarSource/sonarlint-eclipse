@@ -123,7 +123,7 @@ public abstract class AbstractFixSuggestionDialog extends Dialog {
   protected void configureShell(Shell newShell) {
     super.configureShell(newShell);
 
-    newShell.setText(String.format("SonarLint Fix Suggestion (%d/%d)", snippetIndex + 1, absoluteNumberOfChanges));
+    newShell.setText(String.format("SonarQube Fix Suggestion (%d/%d)", snippetIndex + 1, absoluteNumberOfChanges));
     newShell.setSize(1000, 400);
   }
 

@@ -30,7 +30,7 @@ import org.eclipse.reddeer.swt.impl.text.DefaultText;
 
 public class ProjectBindingWizard extends WizardDialog {
   public ProjectBindingWizard() {
-    super(new DefaultShell("Bind to a SonarQube or SonarCloud project"));
+    super(new DefaultShell("Bind to a SonarQube (Server, Cloud) project"));
   }
 
   public static class BoundProjectsPage extends WizardPage {

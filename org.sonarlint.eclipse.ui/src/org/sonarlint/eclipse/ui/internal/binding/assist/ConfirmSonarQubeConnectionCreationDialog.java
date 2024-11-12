@@ -24,10 +24,10 @@ import org.eclipse.swt.widgets.Shell;
 public class ConfirmSonarQubeConnectionCreationDialog extends AbstractConfirmConnectionCreationDialog {
   public ConfirmSonarQubeConnectionCreationDialog(Shell parentShell, String serverUrl, boolean automaticSetUp) {
     super(parentShell,
-      "Do you trust this SonarQube server?",
-      "The server at '" + serverUrl + "' is attempting to set up a connection with SonarLint. Letting SonarLint "
-        + "connect to an untrusted server is potentially dangerous.",
-      "Connect to this SonarQube server",
+      "Do you trust this SonarQube Server?",
+      "The server at '" + serverUrl + "' is attempting to set up a connection. Letting SonarQube for Eclipse connect "
+        + "to an untrusted server is potentially dangerous.",
+      "Connect to this SonarQube Server",
       automaticSetUp);
   }
 }

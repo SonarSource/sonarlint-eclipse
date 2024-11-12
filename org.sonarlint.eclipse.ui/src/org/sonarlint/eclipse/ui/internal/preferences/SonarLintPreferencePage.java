@@ -88,14 +88,14 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
 
     addField(new BooleanFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_INCLUDE_RESOLVED,
-      "Show SonarLint markers for resolved issues as well",
+      "Show SonarQube markers for resolved issues as well",
       getFieldEditorParent()));
 
     // INFO: For the label to take up all the horizontal space in the grid (the size we cannot get), we have to use a
     // high span as it will be set internally to the actual grid width if ours is too big: Otherwise the
     // settings label from the line below would shift one row up!
     var issueFilterLabel = new Link(getFieldEditorParent(), SWT.NONE);
-    issueFilterLabel.setText("SonarLint markers can be resolved from within your IDE. <a>Learn how</a>.");
+    issueFilterLabel.setText("SonarQube markers can be resolved from within your IDE. <a>Learn how</a>.");
     issueFilterLabel.setLayoutData(labelLayoutData);
     issueFilterLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.MARK_ISSUES_LINK, e.display));
@@ -103,14 +103,14 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
 
     addField(new BooleanFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_ONLY_NEW_CODE,
-      "Show SonarLint markers only for new code",
+      "Show SonarQube markers only for new code",
       getFieldEditorParent()));
 
     var issuePeriodLabel = new Link(getFieldEditorParent(), SWT.NONE);
     issuePeriodLabel.setText("Focusing on new code helps you practice <a>Clean as You Code</a>.");
     issuePeriodLabel.setToolTipText("In Standalone Mode, any code added or changed in the last 30 days is considered "
       + "new code. Projects in Connected Mode can benefit from a more accurate new code definition based on your "
-      + "SonarQube or SonarCloud settings.");
+      + "SonarQube (Server, Cloud) settings.");
     issuePeriodLabel.setLayoutData(labelLayoutData);
     issuePeriodLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CLEAN_AS_YOU_CODE, e.display));
@@ -118,7 +118,8 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
 
     var powerUserLabel = new Link(getFieldEditorParent(), SWT.NONE);
-    powerUserLabel.setText("This section targets power users who want to tweak SonarLint even more. Please refer to <a>the documentation</a>.");
+    powerUserLabel.setText("This section targets power users who want to tweak SonarQube for Eclipse even more. "
+      + "Please refer to <a>the documentation</a>.");
     powerUserLabel.setLayoutData(labelLayoutData);
     powerUserLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.PROVIDE_JAVA_RUNTIME_LINK, e.display));
@@ -127,7 +128,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
   }
 
   private static class NodeJsField extends AbstractPathField {
-    private static final String NODE_JS_TOOLTIP = "SonarLint requires Node.js to analyze some languages. You can "
+    private static final String NODE_JS_TOOLTIP = "SonarQube requires Node.js to analyze some languages. You can "
       + "provide an explicit path for the node executable here or leave this field blank to let SonarLint look for "
       + "it using your PATH environment variable.";
 
@@ -165,10 +166,10 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
   }
 
   private static class Java17Field extends AbstractPathField {
-    private static final String JAVA_17_TOOLTIP = "SonarLint provides its own JRE to run part of the plug-in out of "
-      + "process if Eclipse is not running with a Java 17+ one that can be used. You can provide an explicit Java 17+ "
-      + "installation to be used instead, e.g. when your IDE is running on Java 16 or lower. But be cautious as it is "
-      + "your responsibility to make sure that it works correctly!";
+    private static final String JAVA_17_TOOLTIP = "SonarQube for Eclipse provides its own JRE to run part of the "
+      + "plug-in out of process if Eclipse is not running with a Java 17+ one that can be used. You can provide an "
+      + "explicit Java 17+ installation to be used instead, e.g. when your IDE is running on Java 16 or lower. But be "
+      + "cautious as it is your responsibility to make sure that it works correctly!";
 
     public Java17Field(Composite parent) {
       super(SonarLintGlobalConfiguration.PREF_JAVA17_PATH, "Java 17+ installation path:", parent, true);
@@ -187,7 +188,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
           getTextControl().setMessage("Using Java installation of Eclipse");
           break;
         case SONARLINT_BUNDLED:
-          getTextControl().setMessage("Using Java installation of SonarLint");
+          getTextControl().setMessage("Using Java installation of SonarQube for Eclipse");
       }
     }
 

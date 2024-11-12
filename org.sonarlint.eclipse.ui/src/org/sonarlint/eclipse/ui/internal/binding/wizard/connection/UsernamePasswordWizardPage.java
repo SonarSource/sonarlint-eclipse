@@ -39,7 +39,7 @@ import org.sonarlint.eclipse.ui.internal.util.wizard.WidgetPropertiesCompat;
 /**
  *  @deprecated SonarCloud only offers authentication via token, SonarQube should follow soon
  */
-@Deprecated(since="9.1", forRemoval=true)
+@Deprecated(since = "9.1", forRemoval = true)
 public class UsernamePasswordWizardPage extends AbstractServerConnectionWizardPage {
   public static final String DEPRECATION_MESSAGE = "Authentication via username and password is deprecated and will "
     + "be removed in the future. Please use a token instead.";
@@ -52,7 +52,7 @@ public class UsernamePasswordWizardPage extends AbstractServerConnectionWizardPa
   private Binding passwordTextBinding;
 
   public UsernamePasswordWizardPage(ServerConnectionModel model) {
-    super("server_credentials_page", "SonarQube User Credentials", model, 2);
+    super("server_credentials_page", "SonarQube Server User Credentials", model, 2);
   }
 
   @SuppressWarnings("unchecked")

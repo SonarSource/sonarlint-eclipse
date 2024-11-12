@@ -29,7 +29,7 @@ import org.eclipse.reddeer.swt.impl.label.DefaultLabel;
 
 public class SonarLintProperties extends PropertyPage {
 
-  public static final String NAME = "SonarLint";
+  public static final String NAME = "SonarQube";
 
   public SonarLintProperties(ReferencedComposite referencedComposite) {
     super(referencedComposite, NAME);

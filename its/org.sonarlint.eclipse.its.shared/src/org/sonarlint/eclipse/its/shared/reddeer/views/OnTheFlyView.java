@@ -41,7 +41,7 @@ import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
 public class OnTheFlyView extends AbstractMarkersSupportView {
 
   public OnTheFlyView() {
-    super("SonarLint On-The-Fly");
+    super("SonarQube On-The-Fly");
   }
 
   public List<TreeItem> getItems() {

@@ -73,9 +73,9 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.RULES, getShell().getDisplay()));
 
     if (SonarLintCorePlugin.getConnectionManager().checkForSonarCloud()) {
-      addLink("Bind to SonarCloud", e -> ProjectBindingWizard.createDialog(getParentShell(), Set.of(project)));
+      addLink("Bind to SonarQube Cloud", e -> ProjectBindingWizard.createDialog(getParentShell(), Set.of(project)));
     } else {
-      addLink("Try SonarCloud for free",
+      addLink("Try SonarQube Cloud for free",
         e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.SONARCLOUD_SIGNUP_LINK, getShell().getDisplay()));
     }
 
@@ -89,7 +89,7 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint - Language" + (languages.size() > 1 ? "s" : "") + " could not be analyzed";
+    return "SonarQube - Language" + (languages.size() > 1 ? "s" : "") + " could not be analyzed";
   }
 
   @Override

@@ -47,7 +47,7 @@ public class ConnectionSelectionWizardPage extends AbstractProjectBindingWizardP
   private Binding connectionBinding;
 
   public ConnectionSelectionWizardPage(ProjectBindingModel model) {
-    super("connection_select_page", "Choose the SonarQube or SonarCloud server connection", model, 2);
+    super("connection_select_page", "Choose the SonarQube (Server, Cloud) connection", model, 2);
   }
 
   @Override

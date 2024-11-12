@@ -42,8 +42,8 @@ public class NoBindingSuggestionFoundPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getMessage() {
-    return "The "
-      + (isSonarCloud ? "SonarCloud" : "SonarQube")
+    return "The SonarQube "
+      + (isSonarCloud ? "Cloud" : "Server")
       + " project '" + configurationScopeId + "' cannot be matched to any project in the workspace. "
       + "Please open your project, or bind it manually, and try again.";
   }
@@ -62,7 +62,7 @@ public class NoBindingSuggestionFoundPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint - No mathing open project found";
+    return "SonarQube " + (isSonarCloud ? "Cloud" : "Server") + " - No matching open project found";
   }
 
   @Override

@@ -169,7 +169,7 @@ public class OpenIssueInEclipseJob extends AbstractOpenInEclipseJob {
 
     // Ask the user if we are allowed to change the workspace preferences
     MessageDialogUtils.openInIdeQuestion("The issue might not be found due to the workspace preferences "
-      + "on the display of SonarLint markers. Please change the preferences and 'Apply and Close' them to continue!",
+      + "on the display of SonarQube markers. Please change the preferences and 'Apply and Close' them to continue!",
       () -> {
         var preferences = PlatformUtils.showPreferenceDialog(SonarLintPreferencePage.ID);
         var page = (SonarLintPreferencePage) preferences.getSelectedPage();
@@ -207,7 +207,7 @@ public class OpenIssueInEclipseJob extends AbstractOpenInEclipseJob {
         ruleDescriptionView.setInput(marker);
         ruleDescriptionView.setFocus();
       } catch (PartInitException e) {
-        SonarLintLogger.get().error("Open in IDE: An error occoured while opening the SonarLint views", e);
+        SonarLintLogger.get().error("Open in IDE: An error occoured while opening the SonarQube views", e);
       } finally {
         if (editor != null) {
           editor.setFocus();

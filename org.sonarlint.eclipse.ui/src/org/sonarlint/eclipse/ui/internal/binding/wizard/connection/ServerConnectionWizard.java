@@ -79,11 +79,12 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
   }
 
   public ServerConnectionWizard(ServerConnectionModel model) {
-    this("Connect to SonarQube or SonarCloud", model, null);
+    this("Connect to SonarQube (Server, Cloud)", model, null);
   }
 
   private ServerConnectionWizard(ConnectionFacade sonarServer) {
-    this(sonarServer.isSonarCloud() ? "Edit SonarCloud connection" : "Edit SonarQube connection", new ServerConnectionModel(sonarServer), sonarServer);
+    this(sonarServer.isSonarCloud() ? "Edit SonarQube Cloud connection" : "Edit SonarQube Server connection",
+      new ServerConnectionModel(sonarServer), sonarServer);
   }
 
   public static WizardDialog createDialog(Shell parent) {

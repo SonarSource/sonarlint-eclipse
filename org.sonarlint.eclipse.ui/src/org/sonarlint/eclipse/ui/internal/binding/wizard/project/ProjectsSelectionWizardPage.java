@@ -66,8 +66,9 @@ public class ProjectsSelectionWizardPage extends AbstractProjectBindingWizardPag
     gd.widthHint = 500;
 
     var bindingLabel = new Label(bindingContainer, SWT.WRAP);
-    bindingLabel.setText("Complete your Connected Mode setup by binding your local project to your SonarQube or SonarCloud project "
-      + "to benefit from the same rules and settings that are used to inspect the project on the server.");
+    bindingLabel.setText("Complete your Connected Mode setup by binding your local project to your SonarQube (Server, "
+      + "Cloud) project to benefit from the same rules and settings that are used to inspect the project on the "
+      + "server.");
     bindingLabel.setLayoutData(gd);
 
     var tableContainer = new Composite(bindingContainer, SWT.NONE);

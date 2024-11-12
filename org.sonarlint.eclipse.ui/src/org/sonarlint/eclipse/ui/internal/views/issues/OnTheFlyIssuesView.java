@@ -51,7 +51,7 @@ public class OnTheFlyIssuesView extends MarkerViewWithBottomPanel {
   @Override
   public void resetDefaultText() {
     bottomLabel.setText(
-      "Issues reported \"on the fly\" by SonarLint on files you have recently opened/edited. <a>Learn more</a>");
+      "Issues reported \"on the fly\" on files you have recently opened/edited. <a>Learn more</a>");
     bottomLabel.getParent().layout();
   }
 }

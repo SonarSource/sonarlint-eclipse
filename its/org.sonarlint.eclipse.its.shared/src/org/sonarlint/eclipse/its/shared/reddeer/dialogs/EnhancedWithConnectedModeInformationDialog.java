@@ -34,7 +34,7 @@ public class EnhancedWithConnectedModeInformationDialog extends DefaultShell {
   }
 
   public void trySonarCloudForFree() {
-    new CustomButton(this, "Try SonarCloud for free").click();
+    new CustomButton(this, "Try SonarQube Cloud for free").click();
   }
 
   public void dontAskAgain() {

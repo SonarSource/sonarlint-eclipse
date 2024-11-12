@@ -56,11 +56,11 @@ public class SonarLintNotifications {
     if (SonarLintGlobalConfiguration.secretsNeverDetected()) {
       SonarLintNotifications.get().showNotification(new SonarLintNotifications.Notification(
         "Secret(s) detected",
-        "SonarLint detected secrets in the open files of the project '" + project.getName() + "'.",
-        "SonarLint detected secrets in one of the open files of the project '" + project.getName() + "'. " +
+        "SonarQube detected secrets in the open files of the project '" + project.getName() + "'.",
+        "SonarQube detected secrets in one of the open files of the project '" + project.getName() + "'. " +
           "We strongly advise you to review those secrets " +
           "and ensure they are not committed into repositories. " +
-          "Please refer to the SonarLint On-The-Fly view for more information."));
+          "Please refer to the SonarQube On-The-Fly view for more information."));
       SonarLintGlobalConfiguration.setSecretsWereDetected();
     }
   }

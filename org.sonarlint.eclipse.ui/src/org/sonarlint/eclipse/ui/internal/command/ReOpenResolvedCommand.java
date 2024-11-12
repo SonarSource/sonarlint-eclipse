@@ -83,7 +83,7 @@ public class ReOpenResolvedCommand extends AbstractResolvedCommand {
     if (!result.isSuccess()) {
       currentWindow.getShell().getDisplay()
         .asyncExec(() -> MessageDialog.openError(currentWindow.getShell(),
-          TITLE + " on " + (isSonarCloud ? "SonarCloud" : "SonarQube"),
+          TITLE + " on SonarQube " + (isSonarCloud ? "Cloud" : "Server"),
           "Could not re-open the resolved Issue!"));
       return;
     }

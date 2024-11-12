@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <introContent>
   <extensionContent id="org.sonarlint.eclipse.ui"
-                    name="SonarLint Tutorials"
+                    name="SonarQube for Eclipse Tutorials"
                     style="../css/welcome_view.css"
                     alt-style="../css/welcome_view.properties"
                     path="tutorials/@">
@@ -11,7 +11,7 @@
             label="Investigating issues"
             url="http://org.eclipse.ui.intro/openBrowser?url=https://docs.sonarsource.com/sonarlint/eclipse/using-sonarlint/investigating-issues/"
             id="investigatingIssues">
-        <text>Learn how to investigate issues found by SonarLint</text>
+        <text>Learn how to investigate issues found by SonarQube for Eclipse</text>
       </link>
       
       <!-- 2) Learn about Connected Mode, setting it up -->
@@ -27,7 +27,7 @@
             label="Troubleshooting"
             url="http://org.eclipse.ui.intro/openBrowser?url=https://docs.sonarsource.com/sonarlint/eclipse/troubleshooting/"
             id="troubleshooting">
-        <text>Learn how to troubleshoot issues related to SonarLint</text>
+        <text>Learn how to troubleshoot issues related to SonarQube for Eclipse</text>
       </link>
     </group>
   </extensionContent>

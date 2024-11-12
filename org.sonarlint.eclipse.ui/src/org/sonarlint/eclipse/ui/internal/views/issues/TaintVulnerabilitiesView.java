@@ -52,7 +52,8 @@ public class TaintVulnerabilitiesView extends MarkerViewWithBottomPanel {
   @Override
   public void resetDefaultText() {
     bottomLabel.setText(
-      "This view displays taint vulnerabilities detected by SonarQube or SonarCloud. SonarLint does not detect those issues locally. <a>Learn more</a>");
+      "This view displays taint vulnerabilities detected by SonarQube (Server, Cloud). SonarQube for Eclipse does not "
+        + "detect those issues locally. <a>Learn more</a>");
     bottomLabel.getParent().layout();
   }
 }

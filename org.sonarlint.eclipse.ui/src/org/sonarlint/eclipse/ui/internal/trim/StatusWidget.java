@@ -114,11 +114,11 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
     showViewSubMenu.add(new ShowViewAction("On-The-Fly", OnTheFlyIssuesView.ID, SonarLintImages.VIEW_ON_THE_FLY, "Display issues found by the on-the-fly analysis"));
     showViewSubMenu.add(new ShowViewAction("Report", SonarLintReportView.ID, SonarLintImages.VIEW_REPORT, "Display issues found by manually triggered analyses"));
     showViewSubMenu.add(new ShowViewAction("Rule Description", RuleDescriptionWebView.ID, SonarLintImages.VIEW_RULE, "Display rule description for the selected issue"));
-    showViewSubMenu.add(new ShowViewAction("Bindings", BindingsView.ID, SonarLintImages.VIEW_BINDINGS, "Allow to configure connections and bindings for SonarLint Connected Mode"));
-    showViewSubMenu.add(new ShowViewAction("Security Hotspots", HotspotsView.ID, SonarLintImages.VIEW_HOTSPOTS, "Show security hotspots opened from SonarQube"));
+    showViewSubMenu.add(new ShowViewAction("Bindings", BindingsView.ID, SonarLintImages.VIEW_BINDINGS, "Allow to configure connections and bindings for SonarQube Connected Mode"));
+    showViewSubMenu.add(new ShowViewAction("Security Hotspots", HotspotsView.ID, SonarLintImages.VIEW_HOTSPOTS, "Show security hotspots opened from SonarQube Server"));
     showViewSubMenu.add(new ShowViewAction("Issue locations", IssueLocationsView.ID, SonarLintImages.VIEW_LOCATIONS, "Show secondary locations or flows for the selected issue"));
     showViewSubMenu.add(new ShowViewAction("Taint Vulnerabilities", TaintVulnerabilitiesView.ID, SonarLintImages.VIEW_VULNERABILITIES,
-      "Show taint vulnerabilities found by SonarQube or SonarCloud"));
+      "Show taint vulnerabilities found by SonarQube (Server, Cloud)"));
     menuMgr.add(showViewSubMenu);
 
     menuMgr.add(new OpenGloblaSettingsAction());
@@ -127,7 +127,7 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
   }
 
   private static void updateToolTip(Control icon) {
-    var text = "SonarLint";
+    var text = "SonarQube";
     if (!text.equals(icon.getToolTipText())) {
       icon.setToolTipText(text);
     }
@@ -160,7 +160,7 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
 
     OpenGloblaSettingsAction() {
       super("Preferences...");
-      setDescription("Open SonarLint Global Preferences");
+      setDescription("Open SonarQube Global Preferences");
     }
 
     @Override
@@ -173,7 +173,7 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
 
     OpenReleaseNotesAction() {
       super("Release Notes...");
-      setDescription("Open SonarLint Release Notes");
+      setDescription("Open SonarQube for Eclipse Release Notes");
     }
 
     @Override
@@ -187,7 +187,7 @@ public class StatusWidget extends WorkbenchWindowControlContribution {
     ShowConsoleAction() {
       super("Show Console");
       setImageDescriptor(ConsolePlugin.getImageDescriptor(IConsoleConstants.IMG_VIEW_CONSOLE));
-      setDescription("Open SonarLint Logs in the Console View");
+      setDescription("Open Logs in the SonarQube Console");
     }
 
     @Override

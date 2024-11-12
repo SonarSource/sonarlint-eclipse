@@ -39,7 +39,7 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
     this.connection = connection;
     this.notification = notification;
     this.isSonarCloud = isSonarCloud;
-    sqOrSc = isSonarCloud ? "SonarCloud" : "SonarQube";
+    sqOrSc = isSonarCloud ? "SonarQube Cloud" : "SonarQube Server";
   }
 
   @Override

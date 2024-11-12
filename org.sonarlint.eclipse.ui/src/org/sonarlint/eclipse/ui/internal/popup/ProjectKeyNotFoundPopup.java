@@ -53,8 +53,8 @@ public class ProjectKeyNotFoundPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "Project key(s) not found on "
-      + (serverUrlOrOrganization.isLeft() ? "SonarQube" : "SonarCloud");
+    return "Project key(s) not found on SonarQube "
+      + (serverUrlOrOrganization.isLeft() ? "Server" : "Cloud");
   }
 
   @Override

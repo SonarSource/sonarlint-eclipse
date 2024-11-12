@@ -32,7 +32,7 @@ import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
 public class ReportView extends AbstractMarkersSupportView {
 
   public ReportView() {
-    super("SonarLint Report");
+    super("SonarQube Report");
   }
 
   public List<TreeItem> getItems() {

@@ -24,9 +24,10 @@ import org.eclipse.swt.widgets.Shell;
 public class ConfirmSonarCloudConnectionCreationDialog extends AbstractConfirmConnectionCreationDialog {
   public ConfirmSonarCloudConnectionCreationDialog(Shell parentShell, String organization, boolean automaticSetUp) {
     super(parentShell,
-      "Do you trust this SonarCloud organization?",
-      "SonarCloud is attempting to set up a connection for the organization '" + organization + "' with SonarLint.",
-      "Connect to SonarCloud",
+      "Do you trust this SonarQube Cloud organization?",
+      "SonarQube Cloud is attempting to set up a connection for the organization '" + organization
+        + "'.",
+      "Connect to SonarQube Cloud",
       automaticSetUp);
   }
 }

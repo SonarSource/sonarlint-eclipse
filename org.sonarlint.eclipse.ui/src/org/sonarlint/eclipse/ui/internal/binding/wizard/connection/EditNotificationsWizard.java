@@ -48,7 +48,8 @@ public class EditNotificationsWizard extends Wizard implements INewWizard {
   }
 
   private EditNotificationsWizard(ConnectionFacade connection) {
-    this(connection.isSonarCloud() ? "Edit SonarCloud notifications" : "Edit SonarQube notifications", new ServerConnectionModel(connection), connection);
+    this(connection.isSonarCloud() ? "Edit SonarQube Cloud notifications" : "Edit SonarQube Server notifications",
+      new ServerConnectionModel(connection), connection);
   }
 
   public static WizardDialog createDialog(Shell parent, ConnectionFacade connection) {

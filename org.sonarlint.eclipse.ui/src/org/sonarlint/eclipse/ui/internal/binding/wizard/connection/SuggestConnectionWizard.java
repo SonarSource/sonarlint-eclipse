@@ -27,7 +27,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 /** Wizard that is containing only the token page for Connected Mode suggestions */
 public class SuggestConnectionWizard extends AbstractConnectionWizard {
   public SuggestConnectionWizard(ServerConnectionModel model) {
-    super("Connected Mode suggestion for SonarQube or SonarCloud", model);
+    super("Connected Mode suggestion for SonarQube (Server, Cloud)", model);
   }
 
   @Override

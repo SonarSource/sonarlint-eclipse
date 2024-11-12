@@ -69,7 +69,8 @@ public class ConnectionIdWizardPage extends AbstractServerConnectionWizardPage {
   public void setVisible(boolean visible) {
     super.setVisible(visible);
     if (visible) {
-      setTitle(model.getConnectionType() == ConnectionType.SONARCLOUD ? "SonarCloud Connection Identifier" : "SonarQube Connection Identifier");
+      setTitle((model.getConnectionType() == ConnectionType.SONARCLOUD ? "SonarQube Cloud" : "SonarQube Server")
+        + " Connection Identifier");
       connectionIdTextBinding.validateTargetToModel();
     }
   }

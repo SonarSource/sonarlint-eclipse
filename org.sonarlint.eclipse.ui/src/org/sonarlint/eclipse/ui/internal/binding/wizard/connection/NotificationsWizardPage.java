@@ -94,14 +94,15 @@ public class NotificationsWizardPage extends WizardPage {
   public void setVisible(boolean visible) {
     if (visible) {
       final var isSc = model.getConnectionType() == ConnectionType.SONARCLOUD;
-      final var sqOrSc = isSc ? "SonarCloud" : "SonarQube";
-      notificationsEnabledCheckbox.setText("Receive notifications from " + sqOrSc);
+      final var sqOrSc = isSc ? "Cloud" : "Server";
+      notificationsEnabledCheckbox.setText("Receive notifications from SonarQube" + sqOrSc);
       final var docUrl = isSc ? "https://docs.sonarcloud.io/advanced-setup/sonarlint-smart-notifications/"
         : "https://docs.sonarqube.org/latest/user-guide/sonarlint-connected-mode/#smart-notifications";
-      notificationsLink.setText("You will receive <a href=\"" + docUrl + "\">notifications</a> from " + sqOrSc + " in situations like:");
+      notificationsLink.setText("You will receive <a href=\"" + docUrl + "\">notifications</a> from SonarQube "
+        + sqOrSc + " in situations like:");
       notificationsDetails.setText(
         "  - the Quality Gate status of a bound project changes\n" +
-          "  - the latest analysis of a bound project on " + sqOrSc + " raises new issues assigned to you");
+          "  - the latest analysis of a bound project on SonarQube " + sqOrSc + " raises new issues assigned to you");
       container.requestLayout();
     }
     super.setVisible(visible);

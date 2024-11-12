@@ -26,7 +26,7 @@ import org.eclipse.reddeer.swt.impl.text.DefaultText;
 
 public class ProjectSelectionDialog extends DefaultShell {
   public ProjectSelectionDialog() {
-    super("SonarLint - Project Selection");
+    super("SonarQube - Project Selection");
   }
 
   public void filterProjectName(String projectName) {

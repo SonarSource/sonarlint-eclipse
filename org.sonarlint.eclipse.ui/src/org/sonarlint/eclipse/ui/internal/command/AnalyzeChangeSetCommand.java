@@ -84,7 +84,7 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
               iw.getActivePage().showView(SonarLintReportView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
               SonarLintReportView.setReportTitle(reportTitle);
             } catch (PartInitException e) {
-              SonarLintLogger.get().error("Unable to open SonarLint Report View", e);
+              SonarLintLogger.get().error("Unable to open SonarQube Report View", e);
             }
           });
         } else if (Status.CANCEL_STATUS == event.getResult()) {
@@ -97,7 +97,7 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
               iw.getActivePage().showView(SonarLintReportView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
               SonarLintReportView.setReportTitle(event.getResult().getMessage());
             } catch (PartInitException e) {
-              SonarLintLogger.get().error("Unable to open SonarLint Report View", e);
+              SonarLintLogger.get().error("Unable to open SonarQube Report View", e);
             }
           });
         }

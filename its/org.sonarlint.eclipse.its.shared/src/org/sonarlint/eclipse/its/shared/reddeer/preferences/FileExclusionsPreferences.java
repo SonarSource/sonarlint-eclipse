@@ -34,7 +34,7 @@ public class FileExclusionsPreferences extends PropertyPage {
   private static final String VALUE_COL = "Value";
 
   public FileExclusionsPreferences(ReferencedComposite referencedComposite) {
-    super(referencedComposite, new String[] {"SonarLint", "File Exclusions"});
+    super(referencedComposite, new String[] {"SonarQube", "File Exclusions"});
   }
 
   public void add(String exclusion) {

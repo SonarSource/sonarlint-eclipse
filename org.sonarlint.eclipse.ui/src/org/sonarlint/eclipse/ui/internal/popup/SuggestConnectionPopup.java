@@ -49,9 +49,9 @@ public class SuggestConnectionPopup extends AbstractSonarLintPopup {
   protected String getMessage() {
     String prefix;
     if (serverUrlOrOrganization.isLeft()) {
-      prefix = "For the SonarQube server '" + serverUrlOrOrganization.getLeft();
+      prefix = "For the SonarQube Server '" + serverUrlOrOrganization.getLeft();
     } else {
-      prefix = "For the SonarCloud organization '" + serverUrlOrOrganization.getRight();
+      prefix = "For the SonarQube Cloud organization '" + serverUrlOrOrganization.getRight();
     }
 
     if (projectMapping.keySet().size() > 1) {
@@ -87,7 +87,8 @@ public class SuggestConnectionPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint Connection Suggestion to " + (serverUrlOrOrganization.isLeft() ? "SonarQube" : "SonarCloud");
+    return "Connection Suggestion to "
+      + (serverUrlOrOrganization.isLeft() ? "SonarQube Server" : "SonarQube Cloud");
   }
 
   @Override

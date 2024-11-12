@@ -29,7 +29,7 @@ import org.eclipse.ui.views.markers.MarkerSupportView;
 import org.sonarlint.eclipse.ui.internal.SonarLintRpcClientSupportService;
 
 public abstract class MarkerViewWithBottomPanel extends MarkerSupportView {
-  protected static final String UNAVAILABLE_MESSAGE = "The analysis is not available as the SonarLint backend is not ready";
+  protected static final String UNAVAILABLE_MESSAGE = "The analysis is not available as the backend is not ready";
 
   @Nullable
   protected static MarkerViewWithBottomPanel instance;

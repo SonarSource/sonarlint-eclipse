@@ -81,11 +81,11 @@
 	
 	  <wizard
 	      id="org.sonarlint.eclipse.ui.new.server"
-	      name="New SonarQube/SonarCloud Connection"
+	      name="New SonarQube (Server, Cloud) Connection"
 	      class="org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard"
 	      category="org.sonarlint.eclipse"
 	      icon="icons/full/eview16/bindings.png">
-	    <description>Configure a connection with a SonarQube or SonarCloud server</description>
+	    <description>Configure a connection with SonarQube (Server, Cloud)</description>
 	  </wizard>
 	</extension>
 	
@@ -153,7 +153,7 @@
           class="org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView"
           icon="icons/full/eview16/rule.png"
           id="org.sonarlint.eclipse.ui.views.RuleDescriptionWebView"
-          name="SonarLint Rule Description">
+          name="SonarQube Rule Description">
     </view>
     <view
 	        allowMultiple="false"
@@ -161,7 +161,7 @@
           class="org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView"
           icon="icons/full/eview16/locations.png"
           id="org.sonarlint.eclipse.ui.views.IssueLocationsView"
-          name="SonarLint Issue Locations">
+          name="SonarQube Issue Locations">
     </view>
     <view
 	        allowMultiple="false"
@@ -169,7 +169,7 @@
 	        class="org.sonarlint.eclipse.ui.internal.binding.BindingsView"
 	        icon="icons/full/eview16/bindings.png"
 	        id="org.sonarlint.eclipse.ui.ServersView"
-	        name="SonarLint Bindings">
+	        name="SonarQube Bindings">
 	  </view>
     <view
 	        allowMultiple="false"
@@ -177,7 +177,7 @@
 	        class="org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView"
 	        icon="icons/full/eview16/hotspots.png"
 	        id="org.sonarlint.eclipse.ui.views.HotspotsView"
-	        name="SonarLint Security Hotspots">
+	        name="SonarQube Security Hotspots">
 	  </view>
     <view
         allowMultiple="false"
@@ -185,15 +185,15 @@
         class="org.sonarlint.eclipse.ui.internal.views.issues.TaintVulnerabilitiesView"
         icon="icons/full/eview16/vulnerabilities.png"
         id="org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView"
-        name="SonarLint Taint Vulnerabilities">
+        name="SonarQube Taint Vulnerabilities">
     </view>
   </extension>
   
   <extension point="org.eclipse.ui.contexts">
 	  <context
 	    id="org.eclipse.ui.sonarlintServerViewScope"
-	    name="In SonarLint Servers View"
-	    description="In SonarLint Servers View"
+	    name="In SonarQube Bindings View"
+	    description="In SonarQube Bindings View"
 	    parentId="org.eclipse.ui.contexts.window">
 	  </context>
 	</extension>
@@ -1237,19 +1237,19 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Bind to a project analyzed on SonarQube or SonarCloud"
+          description="Bind to a project analyzed on SonarQube (Server, Cloud)"
           id="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
-          name="Bind to SonarQube or SonarCloud..."
+          name="Bind to SonarQube (Server, Cloud)..."
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Share the binding information to SonarQube or SonarCloud"
+          description="Share the binding information to SonarQube (Server, Cloud)"
           id="org.sonarlint.eclipse.ui.internal.command.ShareBindingCommand"
           name="Share Binding..."
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Bind to a project analyzed on SonarQube or SonarCloud"
+          description="Bind to a project analyzed on SonarQube (Server, Cloud)"
           id="org.sonarlint.eclipse.ui.internal.command.ChangeProjectsBindingCommand"
           name="Change Binding..."
           categoryId="org.sonarlint.eclipse.ui.command.category">

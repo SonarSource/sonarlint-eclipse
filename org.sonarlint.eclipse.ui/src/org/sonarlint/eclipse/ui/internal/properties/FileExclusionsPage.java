@@ -78,7 +78,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
 
   @Override
   public void init(IWorkbench workbench) {
-    setDescription("Configure files to be excluded from SonarLint analysis");
+    setDescription("Configure files to be excluded from the analysis.");
     setPreferenceStore(SonarLintUiPlugin.getDefault().getPreferenceStore());
   }
 
@@ -261,7 +261,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
 
   private static void createLinkToDocumentation(Composite parent, boolean isSonarCloud) {
     var fLink = new Link(parent, SWT.NONE);
-    fLink.setText("As this project is bound to " + (isSonarCloud ? "SonarCloud" : "SonarQube")
+    fLink.setText("As this project is bound to SonarQube " + (isSonarCloud ? "Cloud" : "Server")
       + ", the file exclusions must be configured there. <a>Learn more</a>");
     var gridData = new GridData();
     gridData.horizontalSpan = 2;
