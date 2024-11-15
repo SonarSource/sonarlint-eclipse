@@ -57,7 +57,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
 
   @Override
   public void init(IWorkbench workbench) {
-    setDescription("Configure rules used for SonarQube analysis for projects not in Connected Mode.");
+    setDescription("Configure rules used for analysis for projects not in Connected Mode.");
   }
 
   @Override

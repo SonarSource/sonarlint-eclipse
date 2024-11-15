@@ -33,7 +33,7 @@ public class TrustButton extends PredefinedButton {
       index,
       isSonarCloud
         ? "Connect to SonarQube Cloud"
-        : "Connect to this SonarQube Server",
+        : "Connect to this SonarQube Server instance",
       SWT.PUSH);
   }
 }

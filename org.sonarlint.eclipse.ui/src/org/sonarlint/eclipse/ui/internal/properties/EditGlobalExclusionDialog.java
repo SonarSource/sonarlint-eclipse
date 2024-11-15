@@ -43,7 +43,7 @@ public class EditGlobalExclusionDialog extends EditExclusionDialog {
   /**
    * The standard message to be shown when there are no problems being reported.
    */
-  private static final String STANDARD_MESSAGE = "Define the GLOB pattern to exclude files from SonarQube analyses";
+  private static final String STANDARD_MESSAGE = "Define the GLOB pattern to exclude files from the analyses";
 
   public EditGlobalExclusionDialog(Shell parentShell, @Nullable String editItem) {
     super(parentShell);

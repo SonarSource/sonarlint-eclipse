@@ -42,17 +42,17 @@ public class AnalysisRequirementNotifications {
   public static void notifyOnceForSkippedPlugins(org.sonarsource.sonarlint.core.rpc.protocol.common.Language analyzedSkippedLanguage, SkipReason skipReason, String minVersion,
     @Nullable String currentVersion) {
     var languageWithLabel = Language.valueOf(analyzedSkippedLanguage.name());
-    final var shortMsg = "SonarQube failed to analyze " + languageWithLabel.getLabel() + " code";
+    final var shortMsg = "SonarQube for Eclipse failed to analyze " + languageWithLabel.getLabel() + " code";
     if (skipReason == SkipReason.UNSATISFIED_JRE) {
       var content = String.format(
-        "SonarQube requires Java runtime version %s or later to analyze %s code. "
+        "SonarQube for Eclipse requires Java runtime version %s or later to analyze %s code. "
           + "Current version is %s.\n"
           + "See <a href=\"https://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM\">the Eclipse Wiki</a> to configure your IDE to run with a more recent JRE.",
         minVersion, languageWithLabel.getLabel(), currentVersion);
       createNotificationOnce(shortMsg, content);
     } else if (skipReason == SkipReason.UNSATISFIED_NODE_JS) {
       var content = new StringBuilder(
-        String.format("SonarQube requires Node.js runtime version %s or later to analyze %s code.", minVersion, languageWithLabel.getLabel()));
+        String.format("SonarQube for Eclipse requires Node.js runtime version %s or later to analyze %s code.", minVersion, languageWithLabel.getLabel()));
       if (currentVersion != null) {
         content.append(String.format(" Current version is %s.", currentVersion));
       }

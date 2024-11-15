@@ -89,7 +89,7 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarQube - Language" + (languages.size() > 1 ? "s" : "") + " could not be analyzed";
+    return "SonarQube for Eclipse - Language" + (languages.size() > 1 ? "s" : "") + " could not be analyzed";
   }
 
   @Override
