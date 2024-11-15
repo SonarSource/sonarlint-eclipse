@@ -182,6 +182,12 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     // Close project binding wizard as we don't have a project opened
     var projectBindingWizard = new ProjectBindingWizard();
     var projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
+
+    // Because RedDeer can be faster than the actual UI, we have to wait for the page to populate itself!
+    try {
+      Thread.sleep(500);
+    } catch (Exception ignored) {
+    }
     projectsToBindPage.clickAdd();
 
     var projectSelectionDialog = new ProjectSelectionDialog();

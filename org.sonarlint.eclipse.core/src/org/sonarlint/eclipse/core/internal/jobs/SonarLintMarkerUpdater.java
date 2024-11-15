@@ -60,11 +60,13 @@ import org.sonarlint.eclipse.core.listener.TaintVulnerabilitiesListener;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.client.utils.ImpactSeverity;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TaintVulnerabilityDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TaintVulnerabilityDto.FlowDto.LocationDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.TextRangeWithHashDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.QuickFixDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.RaisedIssueDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.IssueSeverity;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TextRangeDto;
 
 public class SonarLintMarkerUpdater {
@@ -251,6 +253,7 @@ public class SonarLintMarkerUpdater {
 
       setMarkerViewUtilsAttributes(issuable, marker);
 
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR, MarkerUtils.encodeUuid(taintIssue.getId()));
       marker.setAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, taintIssue.getRuleKey());
       marker.setAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, taintIssue.getRuleDescriptionContextKey());
       marker.setAttribute(IMarker.SEVERITY, SonarLintGlobalConfiguration.getMarkerSeverity());
@@ -268,9 +271,21 @@ public class SonarLintMarkerUpdater {
         SonarLintLogger.get().debug("Position cannot be set for taint issue '" + taintIssue.getId() + "' in '" + taintIssue.getIdeFilePath() + "'");
       }
 
-      marker.setAttribute(IMarker.PRIORITY, getPriority(taintIssue.getSeverity()));
-      marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, taintIssue.getSeverity().name());
-      marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, taintIssue.getType().name());
+      var severityModeEither = taintIssue.getSeverityMode();
+      if (severityModeEither.isLeft()) {
+        var standardModeDetails = severityModeEither.getLeft();
+        marker.setAttribute(IMarker.PRIORITY, getPriority(standardModeDetails.getSeverity()));
+        marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, standardModeDetails.getSeverity().name());
+        marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, standardModeDetails.getType().name());
+      } else {
+        var mqrModeDetails = severityModeEither.getRight();
+        marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR, mqrModeDetails.getCleanCodeAttribute());
+        var highestImpactSeverityEncoded = MarkerUtils.encodeHighestImpact(mqrModeDetails.getImpacts());
+        marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR,
+          highestImpactSeverityEncoded);
+        marker.setAttribute(IMarker.PRIORITY, highestImpactSeverityEncoded);
+      }
+
       marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, taintIssue.getSonarServerKey());
       marker.setAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, taintIssue.isResolved());
 
@@ -297,8 +312,6 @@ public class SonarLintMarkerUpdater {
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR,
       issue.getRuleDescriptionContextKey());
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.SEVERITY, SonarLintGlobalConfiguration.getMarkerSeverity());
-    setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.PRIORITY, getPriority(issue.getSeverity()));
-
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.MESSAGE, issue.getPrimaryMessage());
 
     var textRange = issue.getTextRange();
@@ -310,17 +323,25 @@ public class SonarLintMarkerUpdater {
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_START, position != null ? position.getOffset() : null);
     setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_END, position != null ? (position.getOffset() + position.getLength()) : null);
 
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR,
-      issue.getSeverity());
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR,
-      issue.getType());
-
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR,
-      issue.getCleanCodeAttribute());
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_IMPACTS_ATTR,
-      MarkerUtils.encodeImpacts(issue.getImpacts()));
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR,
-      MarkerUtils.encodeHighestImpact(issue.getImpacts()));
+    var severityModeEither = issue.getSeverityMode();
+    if (severityModeEither.isLeft()) {
+      var standardModeDetails = severityModeEither.getLeft();
+      setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.PRIORITY,
+        getPriority(standardModeDetails.getSeverity()));
+      setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR,
+        standardModeDetails.getSeverity());
+      setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR,
+        standardModeDetails.getType());
+    } else {
+      var mqrModeDetails = severityModeEither.getRight();
+      setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_ATTRIBUTE_ATTR,
+        mqrModeDetails.getCleanCodeAttribute());
+      var highestImpactSeverityEncoded = MarkerUtils.encodeHighestImpact(mqrModeDetails.getImpacts());
+      setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.PRIORITY,
+        getPriority(highestImpactSeverityEncoded));
+      setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR,
+        highestImpactSeverityEncoded);
+    }
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR,
       issue.getServerKey());
@@ -501,15 +522,8 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  /**
-   * @return Priority marker attribute. A number from the set of high, normal and low priorities defined by the platform.
-   *
-   * @see IMarker.PRIORITY_HIGH
-   * @see IMarker.PRIORITY_NORMAL
-   * @see IMarker.PRIORITY_LOW
-   */
-  private static int getPriority(final org.sonarsource.sonarlint.core.rpc.protocol.common.@Nullable IssueSeverity severity) {
-    switch (severity != null ? severity : org.sonarsource.sonarlint.core.rpc.protocol.common.IssueSeverity.INFO) {
+  private static int getPriority(final IssueSeverity severity) {
+    switch (severity) {
       case BLOCKER:
       case CRITICAL:
         return IMarker.PRIORITY_HIGH;
@@ -520,6 +534,17 @@ public class SonarLintMarkerUpdater {
       default:
         return IMarker.PRIORITY_LOW;
     }
+  }
+
+  private static int getPriority(@Nullable String highestImpactSeverityEncoded) {
+    if (highestImpactSeverityEncoded == null
+      || ImpactSeverity.INFO.getLabel().equals(highestImpactSeverityEncoded)
+      || ImpactSeverity.LOW.getLabel().equals(highestImpactSeverityEncoded)) {
+      return IMarker.PRIORITY_LOW;
+    } else if (ImpactSeverity.MEDIUM.getLabel().equals(highestImpactSeverityEncoded)) {
+      return IMarker.PRIORITY_NORMAL;
+    }
+    return IMarker.PRIORITY_HIGH;
   }
 
   /** Markers should not be set / should be removed for issues already resolved when preference is set */

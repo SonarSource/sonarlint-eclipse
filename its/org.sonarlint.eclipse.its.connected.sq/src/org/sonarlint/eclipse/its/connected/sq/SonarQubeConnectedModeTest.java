@@ -334,6 +334,59 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     });
   }
 
+  @Test
+  public void switch_between_modes() throws Exception {
+    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 8));
+
+    try {
+      // 1) Open perspective and import project
+      new JavaPerspective().open();
+      new SonarLintConsole().clear();
+
+      var onTheFlyView = new OnTheFlyView();
+      onTheFlyView.open();
+      var ruleDescriptionView = new RuleDescriptionView();
+      ruleDescriptionView.open();
+
+      var rootProject = importExistingProjectIntoWorkspace("java/java-simple", JAVA_SIMPLE_PROJECT_KEY);
+
+      // 2) Bind project and await issue showing MQR mode
+      createConnectionAndBindProject(orchestrator, JAVA_SIMPLE_PROJECT_KEY);
+
+      shellByName("SonarLint Binding Suggestion")
+        .ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
+      waitForAnalysisReady(JAVA_SIMPLE_PROJECT_KEY);
+
+      openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
+      await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(1));
+      onTheFlyView.getItems().get(0).select();
+      ruleDescriptionView.open();
+      new DefaultEditor().close();
+
+      // 3) Unbind project and change mode
+      var bindingsView = new BindingsView();
+      bindingsView.open();
+      bindingsView.removeAllBindings();
+
+      setMode(false);
+
+      // 4) Bind project again and await issue showing Standard mode
+      createConnectionAndBindProject(orchestrator, JAVA_SIMPLE_PROJECT_KEY);
+
+      shellByName("SonarLint Binding Suggestion")
+        .ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
+      waitForAnalysisReady(JAVA_SIMPLE_PROJECT_KEY);
+
+      openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
+      await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(1));
+      onTheFlyView.getItems().get(0).select();
+      ruleDescriptionView.open();
+      new DefaultEditor().close();
+    } finally {
+      setMode(true);
+    }
+  }
+
   /**
    *  As we test against different SQ versions, we have to check that the grouping and the rule descriptions
    *  work correctly on old / new CCT connections
@@ -669,6 +722,16 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
       .setAdminCredentials()
       .setParam("project", projectKey)
       .setParam("type", "PREVIOUS_VERSION")
+      .execute();
+  }
+
+  private static void setMode(boolean value) {
+    orchestrator.getServer()
+      .newHttpCall("api/settings/set")
+      .setMethod(HttpMethod.POST)
+      .setAdminCredentials()
+      .setParam("key", "sonar.multi-quality-mode.enabled")
+      .setParam("value", Boolean.toString(value))
       .execute();
   }
 }

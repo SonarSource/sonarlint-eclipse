@@ -141,22 +141,14 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
       return;
     }
 
-    var issueType = MarkerUtils.decodeRuleType(element.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, null));
-    var issueSeverity = MarkerUtils.decodeSeverity(
-      element.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, null));
-    var issueImpacts = MarkerUtils.decodeImpacts(
-      element.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_IMPACTS_ATTR, null));
+    var issueId = MarkerUtils.decodeUuid(element.getAttribute(MarkerUtils.SONAR_MARKER_TRACKED_ISSUE_ID_ATTR, null));
 
     // Update project rule description asynchronous
     var slIssuable = SonarLintUtils.adapt(element.getResource(), ISonarLintIssuable.class,
       "[RuleDescriptionWebView#showRuleDescription] Try get issueable from marker '" + element.toString() + "'");
     if (slIssuable != null) {
-      new DisplayProjectRuleDescriptionJob(
-        slIssuable.getProject(),
-        ruleKey, issueType, issueSeverity, issueImpacts,
-        element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_DESC_CONTEXT_KEY_ATTR, null),
-        ruleDetailsPanel)
-          .schedule();
+      new DisplayProjectRuleDescriptionJob(slIssuable.getProject(), issueId, ruleDetailsPanel)
+        .schedule();
     }
   }
 

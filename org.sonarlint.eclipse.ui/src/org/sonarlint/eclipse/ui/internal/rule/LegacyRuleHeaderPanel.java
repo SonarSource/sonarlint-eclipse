@@ -24,7 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.AbstractRuleDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.StandardModeDetails;
 
 /** Rule header for the old CCT */
 public class LegacyRuleHeaderPanel extends AbstractRuleHeaderPanel {
@@ -34,8 +34,10 @@ public class LegacyRuleHeaderPanel extends AbstractRuleHeaderPanel {
   private final Label ruleSeverityLabel;
   private final Label ruleKeyLabel;
 
-  public LegacyRuleHeaderPanel(Composite parent) {
-    super(parent, 5);
+  private final StandardModeDetails details;
+
+  public LegacyRuleHeaderPanel(Composite parent, StandardModeDetails details, String ruleKey) {
+    super(parent, 5, ruleKey);
 
     ruleTypeIcon = new Label(this, SWT.NONE);
     ruleTypeLabel = new Label(this, SWT.NONE);
@@ -43,19 +45,20 @@ public class LegacyRuleHeaderPanel extends AbstractRuleHeaderPanel {
     ruleSeverityLabel = new Label(this, SWT.LEFT);
     ruleKeyLabel = new Label(this, SWT.LEFT);
     ruleKeyLabel.setLayoutData(new GridData(SWT.END, SWT.FILL, true, true));
+    this.details = details;
   }
 
   @Override
-  public void updateRule(AbstractRuleDto ruleInformation) {
-    var type = ruleInformation.getType();
+  public void updateRule() {
+    var type = details.getType();
     ruleTypeIcon.setImage(SonarLintImages.getTypeImage(type));
     ruleTypeLabel.setText(clean(type.toString()));
 
-    var severity = ruleInformation.getSeverity();
+    var severity = details.getSeverity();
     ruleSeverityIcon.setImage(SonarLintImages.getSeverityImage(severity));
     ruleSeverityLabel.setText(clean(severity.toString()));
 
-    ruleKeyLabel.setText(ruleInformation.getKey());
+    ruleKeyLabel.setText(ruleKey);
     layout();
   }
 }
