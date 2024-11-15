@@ -39,7 +39,7 @@ public class ProjectToBindSelectionDialog extends ElementListSelectionDialog {
   private ProjectToBindSelectionDialog(Shell parent, String message, List<ISonarLintProject> projects) {
     super(parent, new SonarLintProjectLabelProvider());
     setElements(projects.toArray());
-    setTitle("SonarQube - Project Selection");
+    setTitle("SonarQube for Eclipse - Project Selection");
     setMessage(message);
     setHelpAvailable(false);
   }

@@ -427,7 +427,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
       INSUFFICIENT_PERMISSION_USER);
 
     // 7) Remove binding suggestion notification
-    new DefaultLink(shellByName("SonarQube Binding Suggestion").get(), "Don't ask again").click();
+    new DefaultLink(shellByName("SonarQube - Binding Suggestion").get(), "Don't ask again").click();
 
     waitForAnalysisReady(MAVEN2_PROJECT_KEY);
 

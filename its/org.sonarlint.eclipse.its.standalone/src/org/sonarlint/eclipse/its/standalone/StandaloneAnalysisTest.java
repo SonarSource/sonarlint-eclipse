@@ -183,7 +183,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var abapFile = rootProject.getResource("Test.abap");
     openFileAndWaitForAnalysisCompletion(abapFile);
 
-    var notAnalyzedOpt = shellByName("SonarQube - Language could not be analyzed");
+    var notAnalyzedOpt = shellByName("SonarQube for Eclipse - Language could not be analyzed");
     notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Learn more").click());
     notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Try SonarQube Cloud for free").click());
     notAnalyzedOpt.ifPresent(DefaultShell::close);
@@ -194,7 +194,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     doAndWaitForSonarLintAnalysisJob(dialog::learnMore);
 
     // THe project contains multiple languages, therefore the shell name slightly differs
-    notAnalyzedOpt = shellByName("SonarQube - Languages could not be analyzed");
+    notAnalyzedOpt = shellByName("SonarQube for Eclipse - Languages could not be analyzed");
     notAnalyzedOpt.ifPresent(shell -> new DefaultLink(shell, "Don't show again").click());
 
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarQube", "Analyze").select();
