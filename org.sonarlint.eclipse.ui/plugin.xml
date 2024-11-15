@@ -866,7 +866,7 @@
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
-                 icon="icons/full/marker_resolution16/showrule.png"
+                 icon="icons/full/eview16/rule.png"
                  style="push"
                  mnemonic="R">
                  <visibleWhen
@@ -975,7 +975,7 @@
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
-                 icon="icons/full/marker_resolution16/showrule.png"
+                 icon="icons/full/eview16/rule.png"
                  style="push"
                  mnemonic="R">
                  <visibleWhen
@@ -1163,7 +1163,7 @@
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView">
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
-                 icon="icons/full/marker_resolution16/showrule.png"
+                 icon="icons/full/eview16/rule.png"
                  style="push"
                  mnemonic="R">
                  <visibleWhen
