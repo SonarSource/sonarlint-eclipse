@@ -19,17 +19,17 @@
  */
 package org.sonarlint.eclipse.ui.internal.rule;
 
+import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarsource.sonarlint.core.client.utils.CleanCodeAttribute;
 import org.sonarsource.sonarlint.core.client.utils.ImpactSeverity;
 import org.sonarsource.sonarlint.core.client.utils.SoftwareQuality;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.AbstractRuleDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.ImpactDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.CleanCodeAttribute;
 
 /** Rule header for the new CCT */
 public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
@@ -38,9 +38,11 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
   private final SoftwareQualityImpactPanel secondSoftwareQualityImpact;
   private final SoftwareQualityImpactPanel thirdSoftwareQualityImpact;
   private final Label ruleKeyLabel;
+  private final CleanCodeAttribute cleanCodeAttribute;
+  private final List<ImpactDto> impacts;
 
-  public RuleHeaderPanel(Composite parent) {
-    super(parent, 5);
+  public RuleHeaderPanel(Composite parent, CleanCodeAttribute cleanCodeAttribute, List<ImpactDto> impacts, String ruleKey) {
+    super(parent, 5, ruleKey);
 
     ruleCleanCodeAttributeLabel = new Label(this, SWT.NONE);
     firstSoftwareQualityImpact = new SoftwareQualityImpactPanel(this, SWT.NONE);
@@ -48,19 +50,17 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
     thirdSoftwareQualityImpact = new SoftwareQualityImpactPanel(this, SWT.LEFT);
     ruleKeyLabel = new Label(this, SWT.LEFT);
     ruleKeyLabel.setLayoutData(new GridData(SWT.END, SWT.FILL, true, true));
+    this.cleanCodeAttribute = cleanCodeAttribute;
+    this.impacts = impacts;
   }
 
   @Override
-  public void updateRule(AbstractRuleDto ruleInformation) {
-    /** INFO: We assume that the Optional#isPresent() check was already done */
-    var cca = ruleInformation.getCleanCodeAttribute();
-    var ccaWithLabel = CleanCodeAttribute.fromDto(cca);
+  public void updateRule() {
+    var ccaWithLabel = org.sonarsource.sonarlint.core.client.utils.CleanCodeAttribute.fromDto(cleanCodeAttribute);
     ruleCleanCodeAttributeLabel.setText(
       clean(ccaWithLabel.getCategory().getLabel()) + " | " + clean(ccaWithLabel.getLabel()));
     ruleCleanCodeAttributeLabel.setToolTipText(
       "Clean Code attributes are characteristics code needs to have to be considered clean.");
-
-    var impacts = ruleInformation.getDefaultImpacts();
 
     firstSoftwareQualityImpact.updateImpact(impacts.get(0));
     if (impacts.size() > 1) {
@@ -70,7 +70,7 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
       }
     }
 
-    ruleKeyLabel.setText(ruleInformation.getKey());
+    ruleKeyLabel.setText(ruleKey);
     layout();
   }
 

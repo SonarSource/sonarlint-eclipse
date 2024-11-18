@@ -40,9 +40,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.AbstractRuleDto;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.EffectiveRuleDetailsDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.EffectiveIssueDetailsDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.EffectiveRuleParamDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleDefinitionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleMonolithicDescriptionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.RuleSplitDescriptionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
@@ -104,22 +104,28 @@ public class RuleDetailsPanel extends Composite {
     scrollComposite.setMinSize(scrolledContent.computeSize(width, SWT.DEFAULT));
   }
 
-  public void updateRule(AbstractRuleDto ruleInformation, Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
+  public void updateRule(EffectiveIssueDetailsDto details) {
     try {
-      ruleNameLabel.setText(ruleInformation.getName());
+      ruleNameLabel.setText(details.getName());
       ruleNameLabel.requestLayout();
 
-      updateHeader(ruleInformation);
-
-      updateHtmlDescription(description, ruleInformation.getLanguage());
-
-      if (ruleInformation instanceof EffectiveRuleDetailsDto) {
-        updateParameters(((EffectiveRuleDetailsDto) ruleInformation).getParams());
-      }
-
-      requestLayout();
-      updateScrollCompositeMinSize();
+      updateHeader(details);
+      updateHtmlDescription(details.getDescription(), details.getLanguage());
+      updateParameters(details.getParams());
     } catch (SWTException ignored) {
+      // There might be a race condition between the background job running late and the view already being closed
+    }
+  }
+
+  public void updateRule(RuleDefinitionDto definition,
+    Either<RuleMonolithicDescriptionDto, RuleSplitDescriptionDto> description) {
+    try {
+      ruleNameLabel.setText(definition.getName());
+      ruleNameLabel.requestLayout();
+
+      updateHeader(definition);
+      updateHtmlDescription(description, definition.getLanguage());
+    } catch (SWTException ignroed) {
       // There might be a race condition between the background job running late and the view already being closed
     }
   }
@@ -133,28 +139,40 @@ public class RuleDetailsPanel extends Composite {
     ruleDescriptionPanel.updateRule(description);
   }
 
-  private void updateHeader(AbstractRuleDto ruleInformation) {
+  private void updateHeader(EffectiveIssueDetailsDto issueDetails) {
     if (ruleHeaderPanel != null && !ruleHeaderPanel.isDisposed()) {
       ruleHeaderPanel.dispose();
     }
 
-    var attributeOptional = ruleInformation.getCleanCodeAttribute();
-    var impacts = ruleInformation.getDefaultImpacts();
-
-    if (attributeOptional != null && !impacts.isEmpty()) {
-      ruleHeaderPanel = new RuleHeaderPanel(scrolledContent);
+    var ruleKey = issueDetails.getRuleKey();
+    var severityDetails = issueDetails.getSeverityDetails();
+    if (severityDetails.isLeft()) {
+      ruleHeaderPanel = new LegacyRuleHeaderPanel(scrolledContent, severityDetails.getLeft(), ruleKey);
     } else {
-      ruleHeaderPanel = new LegacyRuleHeaderPanel(scrolledContent);
+      var mqrDetails = severityDetails.getRight();
+      ruleHeaderPanel = new RuleHeaderPanel(scrolledContent, mqrDetails.getCleanCodeAttribute(),
+        mqrDetails.getImpacts(), ruleKey);
     }
     ruleHeaderPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+    ruleHeaderPanel.updateRule();
+  }
 
-    ruleHeaderPanel.updateRule(ruleInformation);
+  private void updateHeader(RuleDefinitionDto definition) {
+    if (ruleHeaderPanel != null && !ruleHeaderPanel.isDisposed()) {
+      ruleHeaderPanel.dispose();
+    }
+
+    ruleHeaderPanel = new RuleHeaderPanel(scrolledContent, definition.getCleanCodeAttribute(),
+      definition.getSoftwareImpacts(), definition.getKey());
+    ruleHeaderPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+    ruleHeaderPanel.updateRule();
   }
 
   private void updateParameters(Collection<EffectiveRuleParamDto> params) {
     if (ruleParamsPanel != null && !ruleParamsPanel.isDisposed()) {
       ruleParamsPanel.dispose();
     }
+
     if (!params.isEmpty()) {
       ruleParamsPanel = new Group(scrolledContent, SWT.NONE);
       ruleParamsPanel.setText("Parameters");
@@ -178,7 +196,11 @@ public class RuleDetailsPanel extends Composite {
       for (var param : params) {
         var paramDefaultValue = param.getDefaultValue();
         var defaultValue = paramDefaultValue != null ? paramDefaultValue : "(none)";
-        var currentValue = param.getValue();
+
+        // When in Connected Mode the rules configuration from the server applies and therefore also the parameters.
+        // When in Standalone Mode this information is saved locally and must be retrieved for the specific parameter!
+        var currentValue = param.getValue() != null ? param.getValue() : param.getDefaultValue();
+
         var paramName = new Label(ruleParamsPanel, SWT.BOLD);
         paramName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
         paramName.setFont(JFaceResources.getFontRegistry().getBold(

@@ -76,7 +76,7 @@
     <tycho.version>4.0.8</tycho.version>
 
     <!-- Sloop embedded CLI version for fragment projects -->
-    <sloop.version>10.7.2.79501</sloop.version>
+    <sloop.version>10.10.0.79544</sloop.version>
     
     <!-- SonarQube analysis -->
     <sonar.java.source>11</sonar.java.source>

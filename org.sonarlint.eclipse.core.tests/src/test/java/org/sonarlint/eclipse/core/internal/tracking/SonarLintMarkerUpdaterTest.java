@@ -43,8 +43,16 @@ import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.ImpactDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.RaisedIssueDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.ImpactSeverity;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.IssueSeverity;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.MQRModeDetails;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.RuleType;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.SoftwareQuality;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.StandardModeDetails;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TextRangeDto;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -127,8 +135,10 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
     var priority = 2;
     var severity = IssueSeverity.BLOCKER;
+    var type = RuleType.BUG;
     var eclipseSeverity = 0;
-    when(issue.getSeverity()).thenReturn(severity);
+
+    when(issue.getSeverityMode()).thenReturn(Either.forLeft(new StandardModeDetails(severity, type)));
 
     var message = "Self assignment of field";
     when(issue.getPrimaryMessage()).thenReturn(message);
@@ -159,6 +169,10 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
   public void test_marker_of_trackable_with_text_range() throws Exception {
     var issue = newMockRaisedIssueDto();
 
+    var severity = IssueSeverity.MINOR;
+    var type = RuleType.BUG;
+    when(issue.getSeverityMode()).thenReturn(Either.forLeft(new StandardModeDetails(severity, type)));
+
     when(issue.getTextRange()).thenReturn(new TextRangeDto(5, 4, 5, 14));
 
     var markers = processRaisedIssueDto(issue);
@@ -173,6 +187,10 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
   public void test_marker_of_trackable_with_rule_context() throws Exception {
     var issue = newMockRaisedIssueDto();
 
+    var severity = IssueSeverity.BLOCKER;
+    var type = RuleType.BUG;
+    when(issue.getSeverityMode()).thenReturn(Either.forLeft(new StandardModeDetails(severity, type)));
+
     when(issue.getRuleDescriptionContextKey()).thenReturn("struts");
 
     var markers = processRaisedIssueDto(issue);
@@ -184,6 +202,12 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
   @Test
   public void test_marker_of_trackable_with_line() throws Exception {
     var issue = newMockRaisedIssueDto();
+
+    var cleanCodeAttribute = CleanCodeAttribute.CLEAR;
+    var impacts = List.of(new ImpactDto(SoftwareQuality.MAINTAINABILITY, ImpactSeverity.INFO),
+      new ImpactDto(SoftwareQuality.RELIABILITY, ImpactSeverity.MEDIUM));
+
+    when(issue.getSeverityMode()).thenReturn(Either.forRight(new MQRModeDetails(cleanCodeAttribute, impacts)));
 
     when(issue.getTextRange()).thenReturn(new TextRangeDto(5, 4, 5, 14));
 
@@ -198,6 +222,12 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
   @Test
   public void test_marker_of_trackable_without_line() throws Exception {
     var issue = newMockRaisedIssueDto();
+
+    var cleanCodeAttribute = CleanCodeAttribute.CLEAR;
+    var impacts = List.of(new ImpactDto(SoftwareQuality.MAINTAINABILITY, ImpactSeverity.INFO));
+
+    when(issue.getSeverityMode()).thenReturn(Either.forRight(new MQRModeDetails(cleanCodeAttribute, impacts)));
+
     var markers = processRaisedIssueDto(issue);
     assertThat(markers).hasSize(1);
     assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(1);
@@ -206,6 +236,12 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
   @Test
   public void test_marker_of_trackable_with_creation_date() throws Exception {
     var issue = newMockRaisedIssueDto();
+
+    var cleanCodeAttribute = CleanCodeAttribute.CLEAR;
+    var impacts = List.of(new ImpactDto(SoftwareQuality.MAINTAINABILITY, ImpactSeverity.INFO),
+      new ImpactDto(SoftwareQuality.RELIABILITY, ImpactSeverity.HIGH));
+
+    when(issue.getSeverityMode()).thenReturn(Either.forRight(new MQRModeDetails(cleanCodeAttribute, impacts)));
 
     var introduction = Instant.now();
     when(issue.getIntroductionDate()).thenReturn(introduction);

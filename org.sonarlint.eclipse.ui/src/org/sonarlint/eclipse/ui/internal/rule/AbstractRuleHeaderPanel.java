@@ -25,15 +25,17 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.AbstractRuleDto;
 
 public abstract class AbstractRuleHeaderPanel extends Composite {
-  protected AbstractRuleHeaderPanel(Composite parent, int numColumns) {
+  protected final String ruleKey;
+
+  protected AbstractRuleHeaderPanel(Composite parent, int numColumns, String ruleKey) {
     super(parent, SWT.NONE);
     setLayout(new GridLayout(numColumns, false));
+    this.ruleKey = ruleKey;
   }
 
-  public abstract void updateRule(AbstractRuleDto ruleInformation);
+  public abstract void updateRule();
 
   protected static String clean(@Nullable String txt) {
     return txt == null
