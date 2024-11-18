@@ -203,7 +203,7 @@ qa_connectedModeSonarQube_task:
         SQ_VERSION: 'LATEST_RELEASE'
         QA_CATEGORY: 'LATEST_RELEASE'
     - env:
-        SQ_VERSION: 'DEV'
+        SQ_VERSION: '10.8.0.99052'
         QA_CATEGORY: 'DEV'
   <<: *SETUP_MAVEN_CACHE_QA
   <<: *SETUP_ORCHESTRATOR_CACHE
