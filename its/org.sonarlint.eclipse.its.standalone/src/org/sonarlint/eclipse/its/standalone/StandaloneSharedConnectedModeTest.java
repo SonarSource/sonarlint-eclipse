@@ -43,9 +43,9 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
   private static final String GRADLE_SUB_PROJECT = "gradle-sub-project";
   private static final String GRADLE_MAVEN_MIXED_PROJECT = "MixedProjectMavenSide";
 
-  private static final String SHELL_NAME_SONARQUBE = "SonarLint Connection Suggestion to SonarQube";
-  private static final String SHELL_NAME_SONARCLOUD = "SonarLint Connection Suggestion to SonarCloud";
-  private static final String SHELL_NAME_MULTIPLE = "SonarLint Multiple Connection Suggestions found";
+  private static final String SHELL_NAME_SONARQUBE = "Connection Suggestion to SonarQube Server";
+  private static final String SHELL_NAME_SONARCLOUD = "Connection Suggestion to SonarQube Cloud";
+  private static final String SHELL_NAME_MULTIPLE = "SonarQube - Multiple Connection Suggestions found";
 
   // When one test fails it shouldn't let following tests fail due to the pop-ups staying.
   @After
@@ -61,14 +61,23 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
 
     importExistingGradleProjectIntoWorkspace("java/gradle-project", GRADLE_PROJECT);
 
-    var shellOpt = shellByName("Connection Suggestion to SonarQube Server");
+    var shellOpt = shellByName(SHELL_NAME_SONARQUBE);
     try {
       assertThat(shellOpt).isNotEmpty();
+      var shell = shellOpt.get();
 
-      assertThat(getNotificationText(shellOpt.get()))
-        .contains(LOCAL_SONARQUBE)
-        .contains(GRADLE_GROUP + ":" + GRADLE_PROJECT)
-        .contains("local project '" + GRADLE_PROJECT);
+      assertThat(getNotificationText(shell))
+        .contains(LOCAL_SONARQUBE);
+
+      // Sadly the Gradle integration is very slow and error-prone here. Not every time it sees the projects being
+      // connected and therefore loads them sometimes correctly as one project, sometimes as two projects with a job
+      // joining them together afterwards. The second case is too slow for the SonarLint backend and therefore flaky on
+      // the CI (but can be witnessed locally as well sometimes), that's why we catch it here just in case: The
+      // SonarLint integration is working correctly as expected in both situations, the Gradle integration just isn't.
+      assertThat(getNotificationText(shell)).satisfiesAnyOf(
+        list -> assertThat(list).contains("local project '" + GRADLE_ROOT_PROJECT),
+        list -> assertThat(list).contains("local project '" + GRADLE_SUB_PROJECT),
+        list -> assertThat(list).contains("local project '" + GRADLE_PROJECT));
     } finally {
       shellOpt.ifPresent(shell -> {
         if (!shell.getControl().isDisposed()) {
@@ -76,7 +85,7 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
         }
       });
     }
-    shellByName("Connection Suggestion to SonarQube Server").ifPresent(DefaultShell::close);
+    shellByName(SHELL_NAME_SONARQUBE).ifPresent(DefaultShell::close);
   }
 
   @Test
@@ -85,7 +94,7 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
 
     importExistingGradleProjectIntoWorkspace("java/gradle-root-project", GRADLE_ROOT_PROJECT);
 
-    var firstShell = shellByName("Connection Suggestion to SonarQube Server");
+    var firstShell = shellByName(SHELL_NAME_SONARQUBE);
     try {
       assertThat(firstShell).isNotEmpty();
       assertThat(getNotificationText(firstShell.get()))
@@ -109,7 +118,7 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
         }
       });
     }
-    shellByName("Connection Suggestion to SonarQube Server").ifPresent(DefaultShell::close);
+    shellByName(SHELL_NAME_SONARQUBE).ifPresent(DefaultShell::close);
   }
 
   // Mixed Gradle/Maven project containing two different shared Connected Mode configurations
@@ -119,7 +128,7 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
 
     importExistingProjectIntoWorkspace("java/gradle-maven-mixed", GRADLE_MAVEN_MIXED_PROJECT);
 
-    var shellOpt = shellByName("SonarQube - Multiple Connection Suggestions found");
+    var shellOpt = shellByName(SHELL_NAME_MULTIPLE);
     try {
       assertThat(shellOpt).isNotEmpty();
 
@@ -143,6 +152,6 @@ public class StandaloneSharedConnectedModeTest extends AbstractSonarLintTest {
         }
       });
     }
-    shellByName("SonarQube - Multiple Connection Suggestions found").ifPresent(DefaultShell::close);
+    shellByName(SHELL_NAME_MULTIPLE).ifPresent(DefaultShell::close);
   }
 }
