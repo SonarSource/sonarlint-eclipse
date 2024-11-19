@@ -49,6 +49,9 @@ public class SonarLintDocumentation {
   public static final String SONARCLOUD_PRODUCT_LINK = BASE_MARKETING_URL + "/products/sonarcloud";
   public static final String SONARCLOUD_SIGNUP_LINK = SONARCLOUD_PRODUCT_LINK + "/signup";
 
+  public static final String SONARQUBE_SMART_NOTIFICATIONS = "https://docs.sonarsource.com/sonarqube/latest/user-guide/sonarlint-connected-mode/#smart-notifications";
+  public static final String SONARCLOUD_SMART_NOTIFICATIONS = "https://docs.sonarsource.com/sonarcloud/improving/sonarlint/#smart-notifications";
+
   public static final String COMMUNITY_FORUM = "https://community.sonarsource.com/c/sl/11";
   public static final String COMMUNITY_FORUM_ECLIPSE_RELEASES = "https://community.sonarsource.com/tags/c/sl/sonarlint-releases/37/eclipse";
 
