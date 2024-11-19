@@ -1,7 +1,7 @@
-SonarLint for Eclipse
-=====================
+SonarQube for IDE: Eclipse
+==========================
 
-SonarLint helps you deliver [Clean Code](https://www.sonarsource.com/solutions/clean-code/?utm_medium=referral&utm_source=github&utm_campaign=clean-code&utm_content=sonarlint-eclipse) in your IDE.
+SonarQube for IDE: Eclipse helps you deliver [Clean Code](https://www.sonarsource.com/solutions/clean-code/?utm_medium=referral&utm_source=github&utm_campaign=clean-code&utm_content=sonarlint-eclipse) in your IDE.
 
 Installing and using
 --------------------
@@ -13,7 +13,7 @@ For offline installation and older versions see the update site archive at https
 Have Questions or Feedback?
 --------------------------
 
-For SonarLint support questions ("How do I?", "I got this error, why?", ...), please first read the [FAQ](https://community.sonarsource.com/t/frequently-asked-questions/7204) and then head to the [SonarSource forum](https://community.sonarsource.com/c/help/sl). There are chances that a question similar to yours has already been answered. 
+For SonarQube for IDE support questions ("How do I?", "I got this error, why?", ...), please first read the [FAQ](https://community.sonarsource.com/t/frequently-asked-questions/7204) and then head to the [SonarSource forum](https://community.sonarsource.com/c/help/sl). There are chances that a question similar to yours has already been answered. 
 
 Be aware that this forum is a community, so the standard pleasantries ("Hi", "Thanks", ...) are expected. And if you don't get an answer to your thread, you should sit on your hands for at least three days before bumping it. Operators are not standing by. :-)
 
