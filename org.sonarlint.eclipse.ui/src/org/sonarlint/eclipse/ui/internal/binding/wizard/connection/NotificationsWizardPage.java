@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
@@ -96,8 +97,9 @@ public class NotificationsWizardPage extends WizardPage {
       final var isSc = model.getConnectionType() == ConnectionType.SONARCLOUD;
       final var sqOrSc = isSc ? "Cloud" : "Server";
       notificationsEnabledCheckbox.setText("Receive notifications from SonarQube" + sqOrSc);
-      final var docUrl = isSc ? "https://docs.sonarcloud.io/advanced-setup/sonarlint-smart-notifications/"
-        : "https://docs.sonarqube.org/latest/user-guide/sonarlint-connected-mode/#smart-notifications";
+      final var docUrl = isSc
+        ? SonarLintDocumentation.SONARCLOUD_SMART_NOTIFICATIONS
+        : SonarLintDocumentation.SONARQUBE_SMART_NOTIFICATIONS;
       notificationsLink.setText("You will receive <a href=\"" + docUrl + "\">notifications</a> from SonarQube "
         + sqOrSc + " in situations like:");
       notificationsDetails.setText(
