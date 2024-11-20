@@ -75,35 +75,13 @@ public class ServerConnectionWizard extends NewMenuWizard {
     }
   }
 
-  public static class AuthenticationModePage extends WizardPage {
-
-    public AuthenticationModePage(ReferencedComposite referencedComposite) {
-      super(referencedComposite);
-    }
-
-    public void selectUsernamePasswordMode() {
-      new RadioButton(this, 1).click();
-    }
-  }
-
   public static class AuthenticationPage extends WizardPage {
-    public final String DEPRECATION_MESSAGE = "Authentication via username and password is deprecated and will "
-      + "be removed in the future. Please use a token instead.";
-
     public AuthenticationPage(ReferencedComposite referencedComposite) {
       super(referencedComposite);
     }
 
     public void setToken(String token) {
       new DefaultText(this).setText(token);
-    }
-
-    public void setUsername(String adminLogin) {
-      new DefaultText(this).setText(adminLogin);
-    }
-
-    public void setPassword(String password) {
-      new DefaultText(this, 1).setText(password);
     }
 
     public String getDeprecationMessage() {

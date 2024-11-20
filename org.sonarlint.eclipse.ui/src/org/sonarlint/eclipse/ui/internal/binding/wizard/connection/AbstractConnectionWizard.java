@@ -44,7 +44,6 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.binding.BindingsView;
-import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarCloudConnectionDto;
@@ -193,7 +192,7 @@ public abstract class AbstractConnectionWizard extends Wizard implements INewWiz
   }
 
   protected Either<TokenDto, UsernamePasswordDto> modelToCredentialDto() {
-    return model.getAuthMethod() == AuthMethod.TOKEN
+    return model.getPassword() == null
       ? Either.<TokenDto, UsernamePasswordDto>forLeft(new TokenDto(model.getUsername()))
       : Either.<TokenDto, UsernamePasswordDto>forRight(new UsernamePasswordDto(model.getUsername(), model.getPassword()));
   }
