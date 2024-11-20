@@ -97,8 +97,12 @@ import static java.util.Objects.requireNonNull;
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.defaultString;
 
 public class SonarLintBackendService {
-
   private static final SonarLintBackendService INSTANCE = new SonarLintBackendService();
+
+  // Properties / options passed to SonarLint Core
+  private static final String SONARLINT_DEBUG_RPC = "sonarlint.debug.rpc";
+  private static final String SONARLINT_DEBUG_ACTIVE_RULES = "sonarlint.debug.active.rules";
+  private static final String SONARLINT_JVM_OPTS = "SONARLINT_JVM_OPTS";
 
   @Nullable
   private static ConfigScopeSynchronizer configScopeSynchronizer;
@@ -165,7 +169,7 @@ public class SonarLintBackendService {
               SonarLintLogger.get().info("Using Java installation of SonarLint");
           }
 
-          var sloop = sloopLauncher.start(sloopBasedir, javaRuntimePath);
+          var sloop = sloopLauncher.start(sloopBasedir, javaRuntimePath, passSloopJvmOpts());
           sloop.onExit().thenAccept(SonarLintBackendService::onSloopExit);
           backend = sloop.getRpcServer();
 
@@ -251,6 +255,38 @@ public class SonarLintBackendService {
     };
     initJob.schedule();
 
+  }
+
+  /**
+   *  This handles system properties that are used inside Sloop by passing them as JVM options. In addition to debug
+   *  properties there is a environment variable "SONARLINT_JVM_OPTS" that could also be provided as a system property
+   *  for easier configuration of the IDE.
+   */
+  @Nullable
+  private static String passSloopJvmOpts() {
+    var properties = "";
+
+    // i) To debug the JSON RPC connection
+    var debugRpc = System.getProperty(SONARLINT_DEBUG_RPC);
+    if (debugRpc != null) {
+      properties += "-D" + SONARLINT_DEBUG_RPC + "=" + debugRpc;
+    }
+
+    // ii) To debug the active rules
+    var debugActiveRules = System.getProperty(SONARLINT_DEBUG_ACTIVE_RULES);
+    if (debugActiveRules != null) {
+      properties += " -D" + SONARLINT_DEBUG_ACTIVE_RULES + "=" + debugActiveRules;
+    }
+
+    // iii) JVM options that are already checked by "SloopLauncher#createCommand(...)" when coming from environment
+    // variables. But it is easier to pass system properties to the IDE and therefore they are checked here as well
+    var jvmOpts = System.getProperty(SONARLINT_JVM_OPTS);
+    if (jvmOpts != null) {
+      properties += " " + jvmOpts;
+    }
+
+    properties = properties.trim();
+    return properties.isEmpty() ? null : properties;
   }
 
   @Nullable
