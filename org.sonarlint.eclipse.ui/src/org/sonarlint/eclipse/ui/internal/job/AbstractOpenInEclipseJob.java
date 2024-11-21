@@ -131,7 +131,7 @@ public abstract class AbstractOpenInEclipseJob extends Job {
       // 3) Based on the implementation, actually run it and handle its failure accordingly
       actualRun();
     } catch (CoreException e) {
-      var message = "An error occured while trying to run the requested action.";
+      var message = "An error occurred while trying to run the requested action.";
       MessageDialogUtils.openInEclipseFailed(message + " Please see the console for the full error log!");
       SonarLintLogger.get().error(message, e);
     }

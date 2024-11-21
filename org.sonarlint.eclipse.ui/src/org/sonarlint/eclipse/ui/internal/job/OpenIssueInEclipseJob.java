@@ -146,7 +146,7 @@ public class OpenIssueInEclipseJob extends AbstractOpenInEclipseJob {
           // analysis job shutting down to then say "oh maybe now we can open the issue in Eclipse because the markers
           // should be there". We give it some time.
           // This is a corner case and only happens if the file of the issue opened in the IDE was never analyzed
-          // before. Basically the waiting ("sheduling") is on-top of what it takes to end the analysis.
+          // before. Basically the waiting ("scheduling") is on-top of what it takes to end the analysis.
           new OpenIssueInEclipseJob(new OpenIssueContext(name, issueDetails, project, binding, file, true))
             .schedule(1000);
         } else {
