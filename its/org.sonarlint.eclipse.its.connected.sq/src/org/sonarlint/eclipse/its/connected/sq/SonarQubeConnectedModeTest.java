@@ -150,24 +150,15 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     assertThat(wizard.isNextEnabled()).isTrue();
     wizard.next();
 
-    var authenticationModePage = new ServerConnectionWizard.AuthenticationModePage(wizard);
-    authenticationModePage.selectUsernamePasswordMode();
-    wizard.next();
-
     var authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
     assertThat(wizard.isNextEnabled()).isFalse();
-    authenticationPage.setUsername(Server.ADMIN_LOGIN);
-    assertThat(wizard.isNextEnabled()).isFalse();
-    authenticationPage.setPassword("wrong");
+    authenticationPage.setToken("Goo");
     assertThat(wizard.isNextEnabled()).isTrue();
-
-    // until we change the ITs with the removal of the username / password authentication we check here once
-    assertThat(authenticationPage.getDeprecationMessage()).isEqualTo(authenticationPage.DEPRECATION_MESSAGE);
 
     wizard.next();
     new WaitUntil(new DialogMessageIsExpected(wizard, "Authentication failed"));
 
-    authenticationPage.setPassword(Server.ADMIN_PASSWORD);
+    authenticationPage.setToken(token);
     wizard.next();
 
     // as login can take time, wait for the next page to appear

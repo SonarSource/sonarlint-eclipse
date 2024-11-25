@@ -150,13 +150,8 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     assertThat(serverUrlPage.getUrl()).isEqualTo(orchestrator.getServer().getUrl());
     wizard.next();
 
-    var authenticationModePage = new ServerConnectionWizard.AuthenticationModePage(wizard);
-    authenticationModePage.selectUsernamePasswordMode();
-    wizard.next();
-
     var authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
-    authenticationPage.setUsername(Server.ADMIN_LOGIN);
-    authenticationPage.setPassword(Server.ADMIN_PASSWORD);
+    authenticationPage.setToken(token);
     wizard.next();
 
     // as login can take time, wait for the next page to appear

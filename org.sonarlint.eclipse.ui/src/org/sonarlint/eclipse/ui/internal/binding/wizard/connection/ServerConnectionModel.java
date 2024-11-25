@@ -55,19 +55,21 @@ public class ServerConnectionModel extends ModelObject {
     SONARCLOUD, ONPREMISE
   }
 
-  public enum AuthMethod {
-    TOKEN, PASSWORD
-  }
-
   private final boolean edit;
   private final boolean fromConnectionSuggestion;
   private ConnectionType connectionType = ConnectionType.SONARCLOUD;
-  private AuthMethod authMethod = AuthMethod.TOKEN;
   private String connectionId;
   private String serverUrl = SonarLintUtils.getSonarCloudUrl();
   private String organization;
   private String username;
+
+  /**
+   *  @deprecated as only token authentication is supported from now on and this is saved in the username field!
+   */
+  @Deprecated(since = "10.10", forRemoval = true)
+  @Nullable
   private String password;
+
   private boolean notificationsSupported;
   private boolean notificationsDisabled;
 
@@ -97,7 +99,6 @@ public class ServerConnectionModel extends ModelObject {
         SonarLintLogger.get().error(ERROR_READING_SECURE_STORAGE, e);
         MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_READING_SECURE_STORAGE, "Unable to read password from secure storage: " + e.getMessage());
       }
-      this.authMethod = StringUtils.isBlank(password) ? AuthMethod.TOKEN : AuthMethod.PASSWORD;
     }
     this.notificationsDisabled = connection.areNotificationsDisabled();
   }
@@ -122,20 +123,7 @@ public class ServerConnectionModel extends ModelObject {
       setServerUrl(null);
     } else {
       setServerUrl(SonarLintUtils.getSonarCloudUrl());
-      setAuthMethod(AuthMethod.TOKEN);
     }
-  }
-
-  public AuthMethod getAuthMethod() {
-    return authMethod;
-  }
-
-  public void setAuthMethod(AuthMethod authMethod) {
-    var old = this.authMethod;
-    this.authMethod = authMethod;
-    firePropertyChange(PROPERTY_AUTH_METHOD, old, this.authMethod);
-    setUsername(null);
-    setPassword(null);
   }
 
   public String getConnectionId() {
@@ -255,7 +243,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   public Either<TokenDto, UsernamePasswordDto> getTransientRpcCrendentials() {
-    if (authMethod == AuthMethod.TOKEN) {
+    if (password == null) {
       return Either.forLeft(new TokenDto(username));
     } else {
       return Either.forRight(new UsernamePasswordDto(username, password));

@@ -25,6 +25,7 @@ import com.sonar.orchestrator.junit4.OrchestratorRule;
 import com.sonar.orchestrator.locator.URLLocation;
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Map;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -50,17 +51,26 @@ import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
 import org.sonarqube.ws.client.projects.CreateRequest;
 import org.sonarqube.ws.client.settings.SetRequest;
+import org.sonarqube.ws.client.usertokens.GenerateRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 /** Every test class targeting SonarQube derives from here */
 public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLintTest {
+  private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
+  private static final String TOKEN_NAME = "SLE-IT-" + TIMESTAMP;
+
   protected static WsClient adminWsClient;
+  protected static String token;
 
   /** Should be used on @BeforeClass implementation for orchestrators to share the logic */
   public static void prepare(OrchestratorRule orchestrator) {
     adminWsClient = newAdminWsClient(orchestrator.getServer());
+    token = adminWsClient.userTokens()
+      .generate(new GenerateRequest().setName(TOKEN_NAME))
+      .getToken();
+
     adminWsClient.settings().set(new SetRequest().setKey("sonar.forceAuthentication").setValue("true"));
 
     try {
@@ -140,13 +150,10 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     serverUrlPage.setUrl(orchestrator.getServer().getUrl());
     wizard.next();
 
-    var authenticationModePage = new ServerConnectionWizard.AuthenticationModePage(wizard);
-    authenticationModePage.selectUsernamePasswordMode();
-    wizard.next();
-
+    assertThat(wizard.isNextEnabled()).isFalse();
     var authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
-    authenticationPage.setUsername(username);
-    authenticationPage.setPassword(password);
+    authenticationPage.setToken(token);
+    assertThat(wizard.isNextEnabled()).isTrue();
     wizard.next();
 
     // as login can take time, wait for the next page to appear

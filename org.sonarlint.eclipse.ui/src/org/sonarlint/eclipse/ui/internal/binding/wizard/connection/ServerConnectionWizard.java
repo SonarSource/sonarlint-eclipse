@@ -37,7 +37,6 @@ import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
@@ -48,8 +47,6 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
 
   private final ConnectionTypeWizardPage connectionTypeWizardPage;
   private final UrlWizardPage urlPage;
-  private final AuthMethodWizardPage authMethodPage;
-  private final UsernamePasswordWizardPage credentialsPage;
   private final OrganizationWizardPage orgPage;
   private final ConnectionIdWizardPage connectionIdPage;
   private final NotificationsWizardPage notifPage;
@@ -63,8 +60,6 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
     this.editedServer = editedServer;
     connectionTypeWizardPage = new ConnectionTypeWizardPage(model);
     urlPage = new UrlWizardPage(model);
-    authMethodPage = new AuthMethodWizardPage(model);
-    credentialsPage = new UsernamePasswordWizardPage(model);
     orgPage = new OrganizationWizardPage(model);
     connectionIdPage = new ConnectionIdWizardPage(model);
     notifPage = new NotificationsWizardPage(model);
@@ -111,7 +106,12 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
   protected void actualHandlePageChanging(PageChangingEvent event) {
     var currentPage = (WizardPage) event.getCurrentPage();
     var advance = getNextPage(currentPage) == event.getTargetPage();
-    if (advance && !redirectedAfterNotificationCheck && (currentPage == credentialsPage || currentPage == tokenPage)) {
+    if (advance && !redirectedAfterNotificationCheck && currentPage == tokenPage) {
+      // When having a username/password based connection and editing it, there is only the option to switch to a token
+      // available. In this case, when a token was generated, we will remove the password and set the authentication
+      // method to "TOKEN" that is then used on the "AbstractConnectionWizard#testConnection(...)" already!
+      model.setPassword(null);
+
       if (!testConnection(null)) {
         event.doit = false;
         return;
@@ -155,8 +155,6 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
       addPage(connectionIdPage);
     }
     addPage(urlPage);
-    addPage(authMethodPage);
-    addPage(credentialsPage);
     addPage(tokenPage);
     addPage(orgPage);
     addPage(notifPage);
@@ -169,10 +167,7 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
       return firstPageAfterConnectionType();
     }
     if (page == urlPage) {
-      return authMethodPage;
-    }
-    if (page == authMethodPage) {
-      return model.getAuthMethod() == AuthMethod.PASSWORD ? credentialsPage : tokenPage;
+      return tokenPage;
     }
 
     // This comes from Connection suggestion, we don't need anything from here!
@@ -180,7 +175,7 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
       return null;
     }
 
-    if (page == credentialsPage || page == tokenPage) {
+    if (page == tokenPage) {
       if (model.getConnectionType() == ConnectionType.SONARCLOUD) {
         return orgPage;
       } else {

@@ -433,6 +433,10 @@ public class ConnectionManager {
     return getFromSecure(facade, USERNAME_ATTRIBUTE);
   }
 
+  /**
+   *  @deprecated as only token authentication is supported from now on and this is saved in the username attribute!
+   */
+  @Deprecated(since = "10.10", forRemoval = true)
   @Nullable
   public static String getPassword(ConnectionFacade facade) throws StorageException {
     return getFromSecure(facade, PASSWORD_ATTRIBUTE);
