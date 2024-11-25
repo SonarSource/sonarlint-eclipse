@@ -15,8 +15,12 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     ./aws/install && \
     rm awscliv2.zip
 
+# Node.js for JS/TS/CSS analysis
+# "build-essential" (containing gcc/g++/make) for C/C++ analysis
+# Webkit libraries for rendering the SonarQube Rule Description view
 ARG NODE_VERSION=20
-RUN apt-get update && apt-get install -y metacity xvfb ffmpeg nodejs=${NODE_VERSION}.* gettext-base \
+RUN apt-get update && apt-get install -y build-essential metacity xvfb ffmpeg nodejs=${NODE_VERSION}.* gettext-base \
+    libwebkit2gtk-4.* \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 COPY --chmod=755 .cirrus/init.d/xvfb /etc/init.d/
