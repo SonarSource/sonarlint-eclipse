@@ -59,8 +59,8 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     ruleDescriptionView.open();
 
     new WaitUntil(new RuleDescriptionViewIsLoaded(ruleDescriptionView));
-    var flatTextContent = ruleDescriptionView.getFlatTextContent();
-    await().untilAsserted(() -> assertThat(flatTextContent).contains("java:S106"));
+    await().untilAsserted(() -> assertThat(ruleDescriptionView.getFlatTextContent())
+      .contains("java:S106"));
   }
 
   @Test
@@ -125,7 +125,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     ruleDescriptionView.open();
 
     new WaitUntil(new RuleDescriptionViewIsLoaded(ruleDescriptionView));
-    var flatTextContent = ruleDescriptionView.getFlatTextContent();
-    await().untilAsserted(() -> assertThat(flatTextContent).contains("python:PrintStatementUsage"));
+    await().untilAsserted(() -> assertThat(ruleDescriptionView.getFlatTextContent())
+      .contains("python:PrintStatementUsage"));
   }
 }
