@@ -24,6 +24,7 @@ import org.eclipse.reddeer.eclipse.ui.markers.matcher.MarkerDescriptionMatcher;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.hamcrest.CoreMatchers;
+import org.junit.Assume;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.RuleDescriptionViewIsLoaded;
@@ -39,6 +40,9 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
   @Test
   public void openRuleDescription() {
+    // Because the CI can only provide GTK 4+ WebKit libraries, Eclipse 4.8 requires GTK3 tho!
+    Assume.assumeTrue(!"oldest-java-11_e48".equals(System.getProperty("target.platform")));
+
     new JavaPerspective().open();
     var ruleDescriptionView = new RuleDescriptionView();
     ruleDescriptionView.open();
@@ -61,6 +65,9 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
   @Test
   public void openRuleDescription_with_educational_content() {
+    // Because the CI can only provide GTK 4+ WebKit libraries, Eclipse 4.8 requires GTK3 tho!
+    Assume.assumeTrue(!"oldest-java-11_e48".equals(System.getProperty("target.platform")));
+
     var ruleConfigurationPreferences = RuleConfigurationPreferences.open();
     var monsterClassRule = ruleConfigurationPreferences.selectRule("java:S6539", "Java", "Classes should not depend on an excessive number of classes (aka Monster Class)");
     ruleConfigurationPreferences.setRuleParameter(2);
@@ -97,6 +104,9 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
    */
   @Test
   public void openRuleRescription_with_PythonSyntaxHighlighting() {
+    // Because the CI can only provide GTK 4+ WebKit libraries, Eclipse 4.8 requires GTK3 tho!
+    Assume.assumeTrue(!"oldest-java-11_e48".equals(System.getProperty("target.platform")));
+
     new JavaPerspective().open();
     var ruleDescriptionView = new RuleDescriptionView();
     ruleDescriptionView.open();

@@ -4,6 +4,7 @@ target/
 # Eclipse
 .classpath
 .project
+.cproject
 .settings
 
 # IntelliJ
