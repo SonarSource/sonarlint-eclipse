@@ -131,7 +131,11 @@ build_task:
   build_script: |
     base64 --decode "${SM_CLIENT_CERT_FILE}.b64" > "${SM_CLIENT_CERT_FILE}"
     source cirrus-env BUILD-PRIVATE
-    .cirrus/regular_mvn_build_deploy_analyze -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
+    .cirrus/regular_mvn_build_deploy_analyze \
+      -Declipse.p2.mirrors=false \
+      -Dmaven.test.skip=true \
+      -Dsonar.skip=true \
+      -Dcyclonedx.skip=false
   site_artifacts:
     paths: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
     type: application/zip
@@ -160,8 +164,11 @@ validate_task:
     metacity --sm-disable --replace &
     sleep 10 # give metacity some time to start
     source cirrus-env QA
-    mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify -Pcoverage \
-      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/ut-coverage.exec
+    mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+      -Pcoverage \
+      -Declipse.p2.mirrors=false \
+      -Djacoco.append=true \
+      -Djacoco.destFile=${CIRRUS_WORKING_DIR}/ut-coverage.exec
     /etc/init.d/xvfb stop
   cleanup_before_cache_script: cleanup_maven_repository
   always:
@@ -211,7 +218,11 @@ qa_connectedModeSonarQube_task:
     set -euo pipefail
     source cirrus-env QA
     source .cirrus/set_maven_build_version $BUILD_NUMBER
-    mvn -B -e -V dependency:unpack -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:${PROJECT_VERSION}:zip -DoutputDirectory=${CIRRUS_WORKING_DIR}/staged-repository
+    mvn -B -e -V dependency:unpack \
+      -Declipse.p2.mirrors=false \
+      -Dtycho.mode=maven \
+      -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:${PROJECT_VERSION}:zip \
+      -DoutputDirectory=${CIRRUS_WORKING_DIR}/staged-repository
   prepare_background_script: |
     set -euo pipefail
     /etc/init.d/xvfb start
@@ -224,11 +235,13 @@ qa_connectedModeSonarQube_task:
     cd its/
     mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
       -P coverage,\!standaloneMode,\!connectedModeSc \
+      -Declipse.p2.mirrors=false \
       -Dtarget.platform=latest-java-17_e431 \
       -Dtycho.localArtifacts=ignore \
       -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/staged-repository" \
       -Dsonar.runtimeVersion=${SQ_VERSION} \
-      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
+      -Djacoco.append=true \
+      -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
     mv ${CIRRUS_WORKING_DIR}/it-coverage.exec ${CIRRUS_WORKING_DIR}/it-coverage-${QA_CATEGORY}.exec
   cleanup_before_cache_script: cleanup_maven_repository
   always:
@@ -278,7 +291,11 @@ qa_connectedModeSonarCloud_task:
     set -euo pipefail
     source cirrus-env QA
     source .cirrus/set_maven_build_version $BUILD_NUMBER
-    mvn -B -e -V dependency:unpack -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:${PROJECT_VERSION}:zip -DoutputDirectory=${CIRRUS_WORKING_DIR}/staged-repository
+    mvn -B -e -V dependency:unpack \
+      -Declipse.p2.mirrors=false \
+      -Dtycho.mode=maven \
+      -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:${PROJECT_VERSION}:zip \
+      -DoutputDirectory=${CIRRUS_WORKING_DIR}/staged-repository
   prepare_background_script: |
     set -euo pipefail
     /etc/init.d/xvfb start
@@ -292,10 +309,12 @@ qa_connectedModeSonarCloud_task:
     env SONARCLOUD_IT_PASSWORD=$SONARCLOUD_IT_PASSWORD \
       mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
       -P coverage,\!standaloneMode,\!connectedModeSq \
+      -Declipse.p2.mirrors=false \
       -Dtarget.platform=latest-java-21 \
       -Dtycho.localArtifacts=ignore \
       -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/staged-repository" \
-      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
+      -Djacoco.append=true \
+      -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
     mv ${CIRRUS_WORKING_DIR}/it-coverage.exec ${CIRRUS_WORKING_DIR}/it-coverage-sc.exec
   cleanup_before_cache_script: cleanup_maven_repository
   always:
@@ -351,7 +370,11 @@ qa_standaloneMode_task:
     set -euo pipefail
     source cirrus-env QA
     source .cirrus/set_maven_build_version $BUILD_NUMBER
-    mvn -B -e -V dependency:unpack -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:${PROJECT_VERSION}:zip -DoutputDirectory=${CIRRUS_WORKING_DIR}/staged-repository
+    mvn -B -e -V dependency:unpack \
+      -Declipse.p2.mirrors=false \
+      -Dtycho.mode=maven \
+      -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:${PROJECT_VERSION}:zip \
+      -DoutputDirectory=${CIRRUS_WORKING_DIR}/staged-repository
   prepare_background_script: |
     set -euo pipefail
     /etc/init.d/xvfb start
@@ -364,10 +387,12 @@ qa_standaloneMode_task:
     cd its/
     mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
       -P coverage,\!connectedModeSq,\!connectedModeSc \
+      -Declipse.p2.mirrors=false \
       -Dtarget.platform=${TARGET_PLATFORM} \
       -Dtycho.localArtifacts=ignore \
       -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/staged-repository" \
-      -Djacoco.append=true -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
+      -Djacoco.append=true \
+      -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
     mv ${CIRRUS_WORKING_DIR}/it-coverage.exec ${CIRRUS_WORKING_DIR}/it-coverage-${TARGET_PLATFORM}.exec
   cleanup_before_cache_script: cleanup_maven_repository
   always:
@@ -446,8 +471,14 @@ sonarqube_task:
     unzip jacoco_it_sc.zip -d ${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/
     source cirrus-env QA
     .cirrus/regular_mvn_build_deploy_analyze \
-      -P-deploy-sonarsource,-release,-sign -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true \
-      -Pcoverage -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+      -P-deploy-sonarsource,-release,-sign \
+      -Declipse.p2.mirrors=false \
+      -Dmaven.install.skip=true \
+      -DskipTests \
+      -Dmaven.deploy.skip=true \
+      -Pcoverage \
+      -Djacoco.append=true \
+      -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
     /etc/init.d/xvfb stop
   cleanup_before_cache_script: cleanup_maven_repository
   on_failure:

@@ -58,7 +58,8 @@ qa_ibuilds_task:
     set -euo pipefail
     source cirrus-env QA
     source .cirrus/set_maven_build_version "$BUILD_NUMBER"
-    mvn -B -e -V package
+    mvn -B -e -V package \
+      -Declipse.p2.mirrors=false
   prepare_background_script: |
     set -euo pipefail
     /etc/init.d/xvfb start
@@ -71,6 +72,7 @@ qa_ibuilds_task:
     cd its/
     mvn -B -e -V verify \
       -P \!connectedModeSq,\!connectedModeSc \
+      -Declipse.p2.mirrors=false \
       -Dtarget.platform=ibuilds \
       -Dtycho.localArtifacts=ignore \
       -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.site/target/repository"
