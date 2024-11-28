@@ -76,16 +76,17 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
 
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
-    var changedOrAddedFiles = new ArrayList<ISonarLintFile>();
+    var addedFiles = new ArrayList<ISonarLintFile>();
+    var changedFiles = new ArrayList<ISonarLintFile>();
     var removedFiles = new ArrayList<URI>();
     try {
-      event.getDelta().accept(delta -> visitDeltaPostChange(delta, changedOrAddedFiles, removedFiles));
+      event.getDelta().accept(delta -> visitDeltaPostChange(delta, addedFiles, changedFiles, removedFiles));
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
 
     // When there was no valuable resource changed, then we don't have to do anything else!
-    if (changedOrAddedFiles.isEmpty() && removedFiles.isEmpty()) {
+    if (addedFiles.isEmpty() && changedFiles.isEmpty() && removedFiles.isEmpty()) {
       return;
     }
 
@@ -94,18 +95,22 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     // "DefaultSonarLintProjectAdapter#files()" call will always include no files after an import, they have to be
     // "added" first and that is done the first time this is called!
     final ISonarLintProject project;
-    if (!changedOrAddedFiles.isEmpty()) {
-      project = changedOrAddedFiles.get(0).getProject();
+    if (!addedFiles.isEmpty()) {
+      project = addedFiles.get(0).getProject();
+    } else if (!changedFiles.isEmpty()) {
+      project = changedFiles.get(0).getProject();
+    } else {
+      // The variable has to be "final" to be usable in the thread spawned by the job, therefore we set it here
+      // to null in order to not have it in a "uninitialized" state as it doesn't default to "null"!
+      project = null;
+    }
 
+    if (project != null) {
       // Invalidate cache if files were added, or changed as otherwise importing another related hierarchical project
       // as well as manually selecting multiple projects for analysis would be affected and could potentially lead to
       // incorrect results!
       DefaultSonarLintProjectAdapterCache.INSTANCE.removeEntry(
         ConfigScopeSynchronizer.getConfigScopeId(project));
-    } else {
-      // The variable has to be "final" to be usable in the thread spawned by the job, therefore we set it here
-      // to null in order to not have it in a "uninitialized" state as it doesn't default to "null"!
-      project = null;
     }
 
     var job = new Job("SonarLint - Propagate FileSystem changes") {
@@ -114,31 +119,43 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
         // For added files this won't include SonarLint configuration files in order to not suggest connections twice
         // after a project import (everything after an import is also considered "added"). In case of changes done
         // either inside or outside the IDE, the files will be included.
-        var changedOrAddedDto = changedOrAddedFiles.stream()
+        var addedDto = addedFiles.stream()
+          .map(f -> FileSystemSynchronizer.toFileDto(f, monitor))
+          .filter(Objects::nonNull)
+          .collect(toList());
+        var changedDto = changedFiles.stream()
           .map(f -> FileSystemSynchronizer.toFileDto(f, monitor))
           .filter(Objects::nonNull)
           .collect(toList());
 
-        // In order to add additional "changes" for informing the sub-projects we have to make the list modifiable!
-        var allChangedOrAddedDtos = new ArrayList<>(changedOrAddedDto);
+        // In order to add additional "changes" for informing the sub-projects we have to make the lists modifiable!
+        var allAddedDtos = new ArrayList<>(addedDto);
+        var allChangedDtos = new ArrayList<>(changedDto);
 
-        var changedOrAddedSonarLintDto = allChangedOrAddedDtos.stream()
+        var addedSonarLintDto = allAddedDtos.stream()
+          .filter(dto -> SONARLINT_JSON_REGEX.matcher(dto.getIdeRelativePath().toString()).find())
+          .collect(toList());
+        var changedSonarLintDto = allChangedDtos.stream()
           .filter(dto -> SONARLINT_JSON_REGEX.matcher(dto.getIdeRelativePath().toString()).find())
           .collect(toList());
 
         // Only if there were actual changes to SonarLint configuration files we want to do the hussle and check for
         // sub-projects and inform them as well!
-        if (!changedOrAddedSonarLintDto.isEmpty()) {
+        if (!addedSonarLintDto.isEmpty() || !changedSonarLintDto.isEmpty()) {
           // INFO: "project" cannot be null in this case!
           for (var subProject : getSubProjects(project)) {
-            var changedOrAddedSubProjectDto = changedOrAddedSonarLintDto.stream()
+            var addedSubProjectDto = addedSonarLintDto.stream()
               .map(dto -> toSubProjectFileDto(subProject, dto))
               .collect(toList());
-            allChangedOrAddedDtos.addAll(changedOrAddedSubProjectDto);
+            var changedSubProjectDto = changedSonarLintDto.stream()
+              .map(dto -> toSubProjectFileDto(subProject, dto))
+              .collect(toList());
+            allAddedDtos.addAll(addedSubProjectDto);
+            allChangedDtos.addAll(changedSubProjectDto);
           }
         }
 
-        backend.getFileService().didUpdateFileSystem(new DidUpdateFileSystemParams(removedFiles, allChangedOrAddedDtos));
+        backend.getFileService().didUpdateFileSystem(new DidUpdateFileSystemParams(allAddedDtos, allChangedDtos, removedFiles));
         return Status.OK_STATUS;
       }
     };
@@ -147,7 +164,8 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
     job.schedule();
   }
 
-  private static boolean visitDeltaPostChange(IResourceDelta delta, List<ISonarLintFile> changedOrAddedFiles, List<URI> removedFiles) {
+  private static boolean visitDeltaPostChange(IResourceDelta delta, List<ISonarLintFile> addedFiles,
+    List<ISonarLintFile> changedFiles, List<URI> removedFiles) {
     var res = delta.getResource();
     var fullPath = res.getFullPath();
 
@@ -207,7 +225,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
 
     if (delta.getKind() == IResourceDelta.ADDED) {
       SonarLintLogger.get().debug("File added: " + slFile.getName());
-      changedOrAddedFiles.add(slFile);
+      addedFiles.add(slFile);
     } else if (delta.getKind() == IResourceDelta.CHANGED) {
       var interestingChangeForSlBackend = false;
       var flags = delta.getFlags();
@@ -224,7 +242,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
         SonarLintLogger.get().debug("File encoding changed: " + slFile.getName());
       }
       if (interestingChangeForSlBackend) {
-        changedOrAddedFiles.add(slFile);
+        changedFiles.add(slFile);
       }
     }
 
