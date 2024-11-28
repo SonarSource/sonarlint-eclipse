@@ -45,7 +45,7 @@ qa_ibuilds_task:
   skip_notifications: true
   eks_container:
     <<: *BUILDER_CONTAINER_DEFINITION
-    cpu: 6
+    cpu: 4
     memory: 12G
     type: m6a.large
   env:
