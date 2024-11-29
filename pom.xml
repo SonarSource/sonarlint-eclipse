@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.sonarsource.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>80.0.0.2205</version>
+    <version>82.0.0.2314</version>
     <relativePath />
   </parent>
 
@@ -60,6 +60,7 @@
 
 
   <properties>
+    <license.name>GNU LGPL v3</license.name>
     <license.title>SonarLint for Eclipse</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
