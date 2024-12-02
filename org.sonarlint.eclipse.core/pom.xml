@@ -75,13 +75,13 @@
                 <artifactItem>
                   <groupId>org.sonarsource.java</groupId>
                   <artifactId>sonar-java-plugin</artifactId>
-                  <version>8.6.0.37351</version>
+                  <version>8.7.0.37452</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.sonarsource.java</groupId>
                   <artifactId>sonar-java-symbolic-execution-plugin</artifactId>
-                  <version>8.6.0.37351</version>
+                  <version>8.7.0.37452</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
