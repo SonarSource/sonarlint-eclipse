@@ -52,7 +52,7 @@ public class OpenFixSuggestionInEclipseJob extends AbstractOpenInEclipseJob {
   private final FixSuggestionDto fixSuggestion;
 
   public OpenFixSuggestionInEclipseJob(FixSuggestionDto fixSuggestion, ISonarLintProject project) {
-    super("Open fix suggestion in IDE", project, true, true);
+    super("Open fix suggestion in IDE", project, true);
 
     this.fixSuggestion = fixSuggestion;
   }
