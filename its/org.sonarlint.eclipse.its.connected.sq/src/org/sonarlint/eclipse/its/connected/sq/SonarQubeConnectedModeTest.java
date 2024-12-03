@@ -326,6 +326,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   }
 
   @Test
+  @Ignore("12/2024: Due to last minute changes in SQ-S 10.8 and onwards the change of the setting does not work anymore")
   public void switch_between_modes() throws Exception {
     Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 8));
 
