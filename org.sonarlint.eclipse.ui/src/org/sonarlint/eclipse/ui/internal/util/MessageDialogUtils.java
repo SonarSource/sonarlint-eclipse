@@ -45,17 +45,8 @@ public class MessageDialogUtils {
     showError("Dialog cancelled", message);
   }
 
-  public static void branchMismatch(String message) {
-    showError("Branch does not match", message);
-  }
-
   public static void openInEclipseFailed(String message) {
     showError("Open in Eclipse failed", message);
-  }
-
-  public static void branchNotAvailable(String message) {
-    Display.getDefault().syncExec(() -> MessageDialog.openInformation(
-      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Branch not matchable", message));
   }
 
   /** For the "Open in IDE" feature we want to display a yes/no question for the user to answer */

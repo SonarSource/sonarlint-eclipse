@@ -61,7 +61,7 @@ public class OpenIssueInEclipseJob extends AbstractOpenInEclipseJob {
   private final boolean askedForPreferenceChangeAlready;
 
   public OpenIssueInEclipseJob(OpenIssueContext context) {
-    super(context.getName(), context.getProject(), false, false);
+    super(context.getName(), context.getProject(), false);
 
     this.name = context.getName();
     this.issueDetails = context.getIssueDetails();
@@ -78,11 +78,6 @@ public class OpenIssueInEclipseJob extends AbstractOpenInEclipseJob {
   @Override
   protected String getIdeFilePath() {
     return issueDetails.getIdeFilePath().toString();
-  }
-
-  @Override
-  protected String getBranch() {
-    return issueDetails.getBranch();
   }
 
   /** Handle normal issues: They can be present as On-the-fly / Report markers */

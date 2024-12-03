@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.job;
 
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.core.runtime.CoreException;
@@ -32,16 +31,12 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
-import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.jobs.AnalysisReadyStatusCache;
-import org.sonarlint.eclipse.core.internal.vcs.VcsService;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.dialog.AwaitProjectConnectionReadyDialog;
-import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.MessageDialogUtils;
 
 /**
@@ -55,15 +50,12 @@ public abstract class AbstractOpenInEclipseJob extends Job {
 
   protected final ISonarLintProject project;
   private final boolean skipAnalysisReadyCheck;
-  private final boolean skipBranchCheck;
 
-  protected AbstractOpenInEclipseJob(String name, ISonarLintProject project, boolean skipAnalysisReadyCheck,
-    boolean skipBranchCheck) {
+  protected AbstractOpenInEclipseJob(String name, ISonarLintProject project, boolean skipAnalysisReadyCheck) {
     super(name);
 
     this.project = project;
     this.skipAnalysisReadyCheck = skipAnalysisReadyCheck;
-    this.skipBranchCheck = skipBranchCheck;
   }
 
   @Override
@@ -116,15 +108,6 @@ public abstract class AbstractOpenInEclipseJob extends Job {
         return Status.CANCEL_STATUS;
       }
       file = fileOpt.get();
-
-      /**
-       *  Due to the Git logic moving slowly to SLCORE to be IDE-independant, this check might already been done on
-       *  their side based on the feature using this logic. On the long run this is going to be removed as the branch
-       *  check will be done completely on SLCORE side for every feature.
-       */
-      if (!skipBranchCheck && !tryMatchBranches()) {
-        return Status.CANCEL_STATUS;
-      }
     }
 
     try {
@@ -159,48 +142,6 @@ public abstract class AbstractOpenInEclipseJob extends Job {
   }
 
   /**
-   *  Branch check: Local and remote information should match (if no local branch found, at least try your best).
-   *
-   *  As mentioned above, this might not be needed by every feature building on-top of this class and will eventually
-   *  be removed. That is also the reason for the constructor flag!
-   */
-  private boolean tryMatchBranches() {
-    var branch = getBranch();
-    if (branch == null) {
-      return false;
-    }
-
-    // In case SLCORE is not yet ready for the SonarProjectBranchService, we also check via this plug-ins VcsService
-    // using the JGit dependency coming bundled from SLCORE. This should yield a result when actually in a Git
-    // repository but if not, it is no problem as it is only used in case of the Open in IDE with automatic Connected
-    // Mode setup.
-    Optional<String> localBranch = Optional.empty();
-    try {
-      var response = SonarLintBackendService.get().getMatchedSonarProjectBranch(project);
-      localBranch = Optional.ofNullable(response.getMatchedSonarProjectBranch());
-    } catch (InterruptedException | ExecutionException err) {
-      SonarLintLogger.get().debug("Cannot get matched branch from backend, trying local VCS service", err);
-    }
-    if (localBranch.isEmpty()) {
-      localBranch = VcsService.getCachedSonarProjectBranch(project);
-    }
-
-    if (localBranch.isEmpty()) {
-      // This error message may be misleading to COBOL / ABAP developers but that is okay for now :>
-      MessageDialogUtils.branchNotAvailable("The local branch of the project '" + project.getName()
-        + "' could not be determined. SonarLint now can only try to find the matching local issue!");
-    } else if (!branch.equals(localBranch.get())) {
-      MessageDialogUtils.branchMismatch("The local branch '" + localBranch.get() + "' of the project '"
-        + project.getName() + "' does not match the remote branch '" + branch + "'. "
-        + "Please checkout the correct branch and invoke the requested action once again!");
-      BrowserUtils.openExternalBrowser(SonarLintDocumentation.BRANCH_AWARENESS, Display.getDefault());
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
    *  The actual feature specific logic after everything is set up accordingly and the base checks are done.
    *
    *  Contract applies that "file" (ISonarLintFile) is not set to "null" when this method is invoked! So no check for
@@ -210,13 +151,4 @@ public abstract class AbstractOpenInEclipseJob extends Job {
 
   /** As we work per "ISonarLintFile" we want to get the IDE (project relative) path from a file on the server */
   abstract String getIdeFilePath();
-
-  /**
-   *  This is needed to get the branch from the specific feature information, shouldn't be overwritten by sub-classes
-   *  that have "skipBranchCheck" set to "true"!
-   */
-  @Nullable
-  protected String getBranch() {
-    return null;
-  }
 }

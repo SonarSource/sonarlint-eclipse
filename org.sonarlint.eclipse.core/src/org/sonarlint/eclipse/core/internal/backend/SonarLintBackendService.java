@@ -62,8 +62,6 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.AnalyzeFiles
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.binding.GetSharedConnectedModeConfigFileParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.binding.GetSharedConnectedModeConfigFileResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.branch.DidVcsRepositoryChangeParams;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.branch.GetMatchedSonarProjectBranchParams;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.branch.GetMatchedSonarProjectBranchResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.config.DidChangeCredentialsParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.GetAllProjectsParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.SonarProjectDto;
@@ -326,14 +324,6 @@ public class SonarLintBackendService {
     getBackend()
       .getSonarProjectBranchService()
       .didVcsRepositoryChange(new DidVcsRepositoryChangeParams(ConfigScopeSynchronizer.getConfigScopeId(project)));
-  }
-
-  public GetMatchedSonarProjectBranchResponse getMatchedSonarProjectBranch(ISonarLintProject project)
-    throws InterruptedException, ExecutionException {
-    return getBackend()
-      .getSonarProjectBranchService()
-      .getMatchedSonarProjectBranch(new GetMatchedSonarProjectBranchParams(ConfigScopeSynchronizer.getConfigScopeId(project)))
-      .get();
   }
 
   public void credentialsChanged(ConnectionFacade connection) {
