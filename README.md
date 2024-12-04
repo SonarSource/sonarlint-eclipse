@@ -40,6 +40,7 @@ Normally, m2e will automatically suggest to install missing connectors (Tycho co
 missing lifecycle mappings. This can all be done later.
 
 1. Run `mvn clean verify -DskipTests` on the command line to fetch artifacts referenced in the parent pom
+ - for forks use `-Dskip-sonarsource-repo` as the reference to the CFamily analyzer is not available on Maven Central
 2. In Eclipse, import the project root as a Maven project
 3. In Eclipse, import the project root of the ITs as a Maven project and add them to the main project
 4. Open `target-platforms/dev.target` with the target platform editor
@@ -68,6 +69,8 @@ In Eclipse:
 With Maven:
 
     mvn clean verify
+
+ - for forks use `-Dskip-sonarsource-repo` as the reference to the CFamily analyzer is not available on Maven Central
 
 Running ITs
 -----------
