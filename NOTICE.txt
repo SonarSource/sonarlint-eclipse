@@ -5,4 +5,6 @@ mailto:info AT sonarsource DOT com
 
 This program is distributed with SonarQube analyzers that are subject to specific license terms.
 
-All of the analyzers distributed with this program are published under the terms of the Sonar Source-Available License Version 1, as published by SonarSource SA. For more details see https://sonarsource.com/license/ssal/ 
+The sonar-cfamily-plugin is a SonarQube analyzer published under the following proprietary license: SonarSource SA  grants you a non-transferable, non-sublicensable, limited license to use the aforementioned plugins solely as part of this program. Any use, reproduction, distribution, or modification of the plugins outside the scope of this program is strictly prohibited.
+
+All of the other analyzers distributed with this program are published under the terms of the Sonar Source-Available License Version 1, as published by SonarSource SA. For more details see https://sonarsource.com/license/ssal/ 
