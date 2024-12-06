@@ -234,6 +234,7 @@ qa_connectedModeSonarQube_task:
     echo "Run Maven ITs for Connected Mode with SonarQube on Eclipse 2024-03 / 4.31 (latest Java 17) and Server ${SQ_VERSION}"
     cd its/
     mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+      -s ${HOME}/.m2/settings-public-auth.xml \
       -P coverage,\!standaloneMode,\!connectedModeSc \
       -Declipse.p2.mirrors=false \
       -Dtarget.platform=latest-java-17_e431 \
@@ -308,6 +309,7 @@ qa_connectedModeSonarCloud_task:
     cd its/
     env SONARCLOUD_IT_PASSWORD=$SONARCLOUD_IT_PASSWORD \
       mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+      -s ${HOME}/.m2/settings-public-auth.xml \
       -P coverage,\!standaloneMode,\!connectedModeSq \
       -Declipse.p2.mirrors=false \
       -Dtarget.platform=latest-java-21 \
@@ -386,6 +388,7 @@ qa_standaloneMode_task:
     echo "Run Maven ITs for Standalone Mode on Eclipse '${TARGET_PLATFORM}'"
     cd its/
     mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+      -s ${HOME}/.m2/settings-public-auth.xml \
       -P coverage,\!connectedModeSq,\!connectedModeSc \
       -Declipse.p2.mirrors=false \
       -Dtarget.platform=${TARGET_PLATFORM} \
