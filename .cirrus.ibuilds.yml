@@ -71,6 +71,7 @@ qa_ibuilds_task:
     echo "Run Maven ITs for Standalone Mode on Eclipse iBuilds"
     cd its/
     mvn -B -e -V verify \
+      -s ${HOME}/.m2/settings-public-auth.xml \
       -P \!connectedModeSq,\!connectedModeSc \
       -Declipse.p2.mirrors=false \
       -Dtarget.platform=ibuilds \
