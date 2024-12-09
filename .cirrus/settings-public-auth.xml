@@ -20,24 +20,40 @@
     <!-- Authenticated P2 repo part 1 -->
     <server>
       <id>reddeerLatest</id>
+      <username>${env.ARTIFACTORY_PRIVATE_USERNAME}</username>
+      <password>${env.ARTIFACTORY_PRIVATE_PASSWORD}</password>
       <configuration>
-        <httpHeaders>
-          <property>
-            <name>Authorization</name>
-            <value>Bearer ${env.ARTIFACTORY_ACCESS_TOKEN}</value>
-          </property>
-        </httpHeaders>
+        <wagonProvider>httpclient</wagonProvider>
+        <httpConfiguration>
+          <all>
+            <params>
+              <param>
+                <name>http.authentication.preemptive</name>
+                <value>%b,false</value>
+              </param>
+            </params>
+            <usePreemptive>true</usePreemptive>
+          </all>
+        </httpConfiguration>
       </configuration>
     </server>
     <server>
       <id>reddeer420</id>
+      <username>${env.ARTIFACTORY_PRIVATE_USERNAME}</username>
+      <password>${env.ARTIFACTORY_PRIVATE_PASSWORD}</password>
       <configuration>
-        <httpHeaders>
-          <property>
-            <name>Authorization</name>
-            <value>Bearer ${env.ARTIFACTORY_ACCESS_TOKEN}</value>
-          </property>
-        </httpHeaders>
+        <wagonProvider>httpclient</wagonProvider>
+        <httpConfiguration>
+          <all>
+            <params>
+              <param>
+                <name>http.authentication.preemptive</name>
+                <value>%b,false</value>
+              </param>
+            </params>
+            <usePreemptive>true</usePreemptive>
+          </all>
+        </httpConfiguration>
       </configuration>
     </server>
     <!-- /Authenticated P2 repo part 1 -->
