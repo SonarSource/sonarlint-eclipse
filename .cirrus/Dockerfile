@@ -21,6 +21,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 ARG NODE_VERSION=20
 RUN apt-get update && apt-get install -y \
     build-essential \
+    dbus-x11 \
     ffmpeg \
     gettext-base \
     libwebkit2gtk-4.* \
