@@ -45,7 +45,12 @@ public class FileAssociationsPreferences extends PropertyPage {
   }
 
   public void resetFileAssociation() {
-    new DefaultCombo(this, new WithLabelMatcher(LABEL)).setSelection("System Editor; if none: Text Editor");
+    // With Eclipse 4.34 (2024-12) they changed the label inside the combo box from "Text Editor" to "Plain Text Editor"
+    try {
+      new DefaultCombo(this, new WithLabelMatcher(LABEL)).setSelection("System Editor; if none: Text Editor");
+    } catch (RedDeerException ignored) {
+      new DefaultCombo(this, new WithLabelMatcher(LABEL)).setSelection("System Editor; if none: Plain Text Editor");
+    }
   }
 
   public void enforceFileAssociation() {
