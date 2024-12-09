@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.its.shared.reddeer.preferences;
 
+import org.eclipse.reddeer.common.exception.RedDeerException;
 import org.eclipse.reddeer.core.matcher.WithLabelMatcher;
 import org.eclipse.reddeer.core.reference.ReferencedComposite;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyPage;
@@ -48,7 +49,12 @@ public class FileAssociationsPreferences extends PropertyPage {
   }
 
   public void enforceFileAssociation() {
-    new DefaultCombo(this, new WithLabelMatcher(LABEL)).setSelection("Text Editor");
+    // With Eclipse 4.34 (2024-12) they changed the label inside the combo box from "Text Editor" to "Plain Text Editor"
+    try {
+      new DefaultCombo(this, new WithLabelMatcher(LABEL)).setSelection("Text Editor");
+    } catch (RedDeerException ignored) {
+      new DefaultCombo(this, new WithLabelMatcher(LABEL)).setSelection("Plain Text Editor");
+    }
   }
 
   public void ok() {
