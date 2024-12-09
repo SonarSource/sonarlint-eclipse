@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.awaitility.Awaitility;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
@@ -636,8 +637,20 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     new DefaultEditor().close();
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "dbd", "Main.java"));
-    waitForSonarLintMarkers(onTheFlyView,
-      tuple("Fix this access on a collection that may trigger an 'ArrayIndexOutOfBoundsException'. [+2 locations]", "Main.java", "few seconds ago"));
+
+    // Due to changes in the DBD Java analyzer the rule "S6466" was changed to now find more locations. This analyzer
+    // is only included in the latest version of SonarQube Server!
+    Awaitility.await()
+      .atMost(20, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertThat(onTheFlyView.getIssues()).hasSize(1);
+        assertThat(onTheFlyView.getIssues())
+          .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource, SonarLintIssueMarker::getCreationDate)
+          .containsAnyOf(
+            tuple("Fix this access on a collection that may trigger an 'ArrayIndexOutOfBoundsException'. [+2 locations]", "Main.java", "few seconds ago"),
+            tuple("Fix this access on a collection that may trigger an 'ArrayIndexOutOfBoundsException'. [+4 locations]", "Main.java", "few seconds ago"));
+      });
+
     new DefaultEditor().close();
   }
 
