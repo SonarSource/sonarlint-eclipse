@@ -47,13 +47,11 @@ import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.CFamilyLoaded;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ConfirmConnectionCreationDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.DialogMessageIsExpected;
-import org.sonarlint.eclipse.its.shared.reddeer.conditions.FileNotFoundDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.FixSuggestionAvailableDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.FixSuggestionUnavailableDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectBindingWizardIsOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectSelectionDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmConnectionCreationDialog;
-import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FileNotFoundDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionAvailableDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionUnavailableDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ProjectSelectionDialog;
@@ -262,8 +260,10 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new WaitUntil(new ProjectSelectionDialogOpened());
     new ProjectSelectionDialog().ok();
 
-    new WaitUntil(new FileNotFoundDialogOpened());
-    new FileNotFoundDialog().ok();
+    // The error message from SLCORE is not denoted by a specific title.
+    var shellOpt = shellByName("SonarQube");
+    assertThat(shellOpt).isNotEmpty();
+    shellOpt.get().close();
   }
 
   @Test
