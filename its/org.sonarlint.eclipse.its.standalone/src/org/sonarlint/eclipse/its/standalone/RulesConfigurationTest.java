@@ -97,14 +97,13 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   public void ruleParametersActivationRoundTrip() {
     var ruleConfigurationPreferences = RuleConfigurationPreferences.open();
     var cognitiveComplexityRuleItem = ruleConfigurationPreferences.selectRule("java:S3776", "Java", "Cognitive Complexity of methods should not be too high");
-
-    assertThat(ruleConfigurationPreferences.getRuleParamSpinner().isEnabled()).isTrue();
+    await().untilAsserted(() -> assertThat(ruleConfigurationPreferences.getRuleParamSpinner().isEnabled()).isTrue());
 
     new ContextMenu(cognitiveComplexityRuleItem).getItem("Deactivate").select();
-    assertThat(ruleConfigurationPreferences.getRuleParamSpinner().isEnabled()).isFalse();
+    await().untilAsserted(() -> assertThat(ruleConfigurationPreferences.getRuleParamSpinner().isEnabled()).isFalse());
 
     new ContextMenu(cognitiveComplexityRuleItem).getItem("Activate").select();
-    assertThat(ruleConfigurationPreferences.getRuleParamSpinner().isEnabled()).isTrue();
+    await().untilAsserted(() -> assertThat(ruleConfigurationPreferences.getRuleParamSpinner().isEnabled()).isTrue());
 
     ruleConfigurationPreferences.cancel();
   }
