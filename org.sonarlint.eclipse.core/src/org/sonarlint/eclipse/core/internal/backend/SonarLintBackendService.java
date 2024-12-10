@@ -179,6 +179,7 @@ public class SonarLintBackendService {
           embeddedPlugins.put("web", requireNonNull(PluginPathHelper.findEmbeddedHtmlPlugin(), "HTML plugin not found"));
           embeddedPlugins.put("xml", requireNonNull(PluginPathHelper.findEmbeddedXmlPlugin(), "XML plugin not found"));
           embeddedPlugins.put("text", requireNonNull(PluginPathHelper.findEmbeddedSecretsPlugin(), "Secrets plugin not found"));
+          embeddedPlugins.put("cpp", requireNonNull(PluginPathHelper.findEmbeddedCFamilyPlugin(), "CFamily plugin not found"));
 
           var sqConnections = ConnectionSynchronizer.buildSqConnectionDtos();
           var scConnections = ConnectionSynchronizer.buildScConnectionDtos();

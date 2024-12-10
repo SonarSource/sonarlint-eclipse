@@ -56,12 +56,12 @@ public class SonarLintUtils {
    */
   private static final Set<SonarLintLanguage> DEFAULT_LANGUAGES = EnumSet.of(SonarLintLanguage.PYTHON, SonarLintLanguage.JS, SonarLintLanguage.TS,
     SonarLintLanguage.HTML, SonarLintLanguage.CSS, SonarLintLanguage.PHP, SonarLintLanguage.XML, SonarLintLanguage.SECRETS);
-  private static final Set<SonarLintLanguage> OPTIONAL_LANGUAGES = EnumSet.of(SonarLintLanguage.JAVA, SonarLintLanguage.JSP);
+  private static final Set<SonarLintLanguage> OPTIONAL_LANGUAGES = EnumSet.of(SonarLintLanguage.JAVA,
+    SonarLintLanguage.JSP, SonarLintLanguage.C, SonarLintLanguage.CPP);
   private static final Set<SonarLintLanguage> DEFAULT_CONNECTED_LANGUAGES = EnumSet.of(SonarLintLanguage.ABAP,
     SonarLintLanguage.APEX, SonarLintLanguage.COBOL, SonarLintLanguage.JCL, SonarLintLanguage.KOTLIN,
     SonarLintLanguage.PLI, SonarLintLanguage.PLSQL, SonarLintLanguage.RPG, SonarLintLanguage.RUBY,
     SonarLintLanguage.SCALA, SonarLintLanguage.TSQL);
-  private static final Set<SonarLintLanguage> OPTIONAL_CONNECTED_LANGUAGES = EnumSet.of(SonarLintLanguage.C, SonarLintLanguage.CPP);
 
   private SonarLintUtils() {
     // utility class, forbidden constructor
@@ -119,12 +119,6 @@ public class SonarLintUtils {
   public static Set<SonarLintLanguage> getConnectedEnabledLanguages() {
     var enabledLanguages = EnumSet.noneOf(SonarLintLanguage.class);
     enabledLanguages.addAll(DEFAULT_CONNECTED_LANGUAGES);
-
-    var configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
-    for (var configurator : configurators) {
-      var enableLanguages = configurator.enableLanguages();
-      enableLanguages.stream().filter(OPTIONAL_CONNECTED_LANGUAGES::contains).forEach(enabledLanguages::add);
-    }
     return enabledLanguages;
   }
 

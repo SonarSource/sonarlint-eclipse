@@ -130,4 +130,49 @@
       </plugin>
     </plugins>
   </build>
+
+  <!--
+    Since the CFamily plug-in is not uploaded to Maven Central as it is not Open Source, this is not vailable to forks.
+    Forks must use "-Dskip-sonarsource-repo" when building the plug-in!
+  -->
+  <profiles>
+    <profile>
+      <id>cfamily-analyzer</id>
+      <activation>
+        <property>
+          <name>!skip-sonarsource-repo</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-cfamily-analyzer</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>com.sonarsource.cpp</groupId>
+                      <artifactId>sonar-cfamily-plugin</artifactId>
+                      <version>6.61.0.77816</version>
+                      <type>jar</type>
+                    </artifactItem>
+                  </artifactItems>
+                  <outputDirectory>${project.basedir}/plugins</outputDirectory>
+                  <overWriteReleases>false</overWriteReleases>
+                  <overWriteSnapshots>true</overWriteSnapshots>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
