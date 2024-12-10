@@ -216,6 +216,19 @@
   </repositories>
 
   <profiles>
+    <!-- Profile deactivated on CI to NOT include tests for CDT integration -->
+    <profile>
+      <id>cdtIntegration</id>
+      <activation>
+        <file>
+          <exists>pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>org.sonarlint.eclipse.its.cdt</module>
+      </modules>
+    </profile>
+
     <!-- Profile deactivated on CI to NOT include tests for Standalone Mode -->
     <profile>
       <id>standaloneMode</id>

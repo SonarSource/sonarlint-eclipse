@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
-<product name="Runtime of the ITs (Connected Mode with SonarCloud)"
-         uid="org.sonarlint.eclipse.its.connected.sc.product"
+<product name="Runtime of the ITs (CDT integration)"
+         uid="org.sonarlint.eclipse.its.cdt.product"
          id="org.eclipse.sdk.ide"
          application="org.eclipse.ui.ide.workbench"
          version="1"
@@ -26,15 +26,9 @@
       </win>
    </launcher>
    
-   <!--
-     We don't test for different Eclipse versions and compatibility (iBuilds) here, only inclyde some features to keep
-     it "light". Others are included on the "standalone" or "ibuilds" products that test SonarLint in Standalone Mode
-     and the compatibility against the latest in-development builds of Eclipse (plug-ins) respectively.
-   -->
    <features>
       <feature id="org.eclipse.platform"/>
-      <feature id="org.eclipse.jdt"/>
-      <feature id="org.eclipse.m2e.feature"/>
+      <feature id="org.eclipse.cdt"/>
       <feature id="org.sonarlint.eclipse.feature"/>
    </features>
 

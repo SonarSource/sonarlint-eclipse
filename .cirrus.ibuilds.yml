@@ -72,7 +72,7 @@ qa_ibuilds_task:
     cd its/
     mvn -B -e -V verify \
       -s ${HOME}/.m2/settings-public-auth.xml \
-      -P \!connectedModeSq,\!connectedModeSc \
+      -P \!connectedModeSq,\!connectedModeSc,\!cdtIntegration \
       -Declipse.p2.mirrors=false \
       -Dtarget.platform=ibuilds \
       -Dtycho.localArtifacts=ignore \
