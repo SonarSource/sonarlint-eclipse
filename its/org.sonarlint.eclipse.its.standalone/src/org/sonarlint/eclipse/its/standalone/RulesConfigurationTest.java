@@ -126,8 +126,9 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   public void open_rules_configuration() {
     var ruleConfigurationPreferences = RuleConfigurationPreferences.open();
 
-    assertThat(ruleConfigurationPreferences.getItems()).hasSize(9 /* CSS, HTML, Java, JavaScript, PHP, Python, Secrets, TypeScript, XML */);
-    var cssNode = ruleConfigurationPreferences.getItems().get(0);
+    /* C, C++, CSS, HTML, Java, JavaScript, PHP, Python, Secrets, TypeScript, XML */
+    assertThat(ruleConfigurationPreferences.getItems()).hasSize(11);
+    var cssNode = ruleConfigurationPreferences.getItems().get(2);
 
     assertThat(cssNode.getText()).isEqualTo("CSS");
 

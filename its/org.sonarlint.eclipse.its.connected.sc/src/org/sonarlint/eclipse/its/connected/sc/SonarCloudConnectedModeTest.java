@@ -36,15 +36,12 @@ import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
-import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
-import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
-import org.sonarlint.eclipse.its.shared.reddeer.conditions.CFamilyLoaded;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ConfirmConnectionCreationDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.FixSuggestionAvailableDialogOpened;
@@ -55,15 +52,11 @@ import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmConnectionCreatio
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionAvailableDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionUnavailableDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ProjectSelectionDialog;
-import org.sonarlint.eclipse.its.shared.reddeer.perspectives.CppPerspective;
 import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView;
-import org.sonarlint.eclipse.its.shared.reddeer.views.OnTheFlyView;
-import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ServerConnectionWizard;
 import org.sonarqube.ws.ProjectBranches.Branch;
 import org.sonarqube.ws.client.HttpConnector;
-import org.sonarqube.ws.client.PostRequest;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
 import org.sonarqube.ws.client.projectbranches.ListRequest;
@@ -72,7 +65,6 @@ import org.sonarqube.ws.client.usertokens.RevokeRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.assertj.core.api.Assertions.tuple;
 
 public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
@@ -82,8 +74,6 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String SONARCLOUD_PASSWORD = System.getenv("SONARCLOUD_IT_PASSWORD");
   private static final String TOKEN_NAME = "SLE-IT-" + TIMESTAMP;
   private static final String SAMPLE_JAVA_ISSUES_PROJECT_KEY = "sonarlint-its-sample-java-issues";
-  private static final String MAKEFILE_PROJECT_KEY = "MakefileProject";
-  private static final String MAKEFILE_PROJECT_SONAR_KEY = MAKEFILE_PROJECT_KEY + "-" + TIMESTAMP;
 
   private static HttpConnector connector;
   private static WsClient adminWsClient;
@@ -99,8 +89,6 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
       .credentials(SONARCLOUD_USER, SONARCLOUD_PASSWORD)
       .build();
     adminWsClient = WsClientFactories.getDefault().newClient(connector);
-
-    createProject(MAKEFILE_PROJECT_KEY, MAKEFILE_PROJECT_SONAR_KEY);
 
     token = adminWsClient.userTokens()
       .generate(new GenerateRequest().setName(TOKEN_NAME))
@@ -132,34 +120,6 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     var bindingsView = new BindingsView();
     bindingsView.open();
     bindingsView.removeAllBindings();
-  }
-
-  @Test
-  public void test_makefile_based_project() {
-    // i) Open C/C++ perspective and import project
-    new CppPerspective().open();
-    var rootProject = importExistingProjectIntoWorkspace("cdt/MakefileProject", MAKEFILE_PROJECT_KEY);
-
-    // ii) Open file and await notification and no SonarLint issue to be shown
-    openFileAndWaitForAnalysisCompletion(rootProject.getResource("hello.c"));
-    shellByName("SonarQube for Eclipse - Language could not be analyzed").ifPresent(DefaultShell::close);
-
-    var onTheFlyView = new OnTheFlyView();
-    onTheFlyView.open();
-    waitForNoSonarLintMarkers(onTheFlyView);
-    new DefaultEditor().close();
-
-    // iii) Create connection / bind project and SonarLint issue to be shown
-    createConnectionAndBindProject(MAKEFILE_PROJECT_KEY, MAKEFILE_PROJECT_SONAR_KEY);
-    shellByName("SonarQube - Binding Suggestion").ifPresent(DefaultShell::close);
-    new SonarLintConsole().clear();
-
-    openFileAndWaitForAnalysisCompletion(rootProject.getResource("hello.c"));
-    new WaitUntil(new CFamilyLoaded(new SonarLintConsole().getConsoleView()), TimePeriod.getCustom(120));
-    onTheFlyView = new OnTheFlyView();
-    onTheFlyView.open();
-    waitForSonarLintMarkers(onTheFlyView,
-      tuple("Complete the task associated to this \"TODO\" comment.", "hello.c", "few seconds ago"));
   }
 
   @Test
@@ -562,16 +522,5 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     serverProjectSelectionPage.waitForProjectsToBeFetched();
     serverProjectSelectionPage.setProjectKey(sonarProjectKey);
     projectBindingWizard.finish();
-  }
-
-  /** Creating a project on SonarCloud with all necessary information */
-  private static void createProject(String projectName, String projectKey) {
-    assertThat(hotspotServerPort).isNotEqualTo(-1);
-
-    var response = connector.call(new PostRequest("/api/projects/create")
-      .setParam("name", projectName)
-      .setParam("project", projectKey)
-      .setParam("organization", SONARCLOUD_ORGANIZATION_KEY));
-    assertThat(response.code()).isEqualTo(200);
   }
 }

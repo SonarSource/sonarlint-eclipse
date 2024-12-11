@@ -50,18 +50,28 @@ import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 
 public class SonarLintUtils {
   /**
+   *  This internal property is used between the CDT integration sub-plug-in and the CORE bundle as the communication
+   *  is only one-way and happening via the extension point:
+   *
+   *  When CDT ain't yet ready for a file, it cannot provide values for the `build-wrapper-dump.json` that is crucial
+   *  for the CFamily analysis. This can happen in corner cases like creating a project from within the IDE with a
+   *  source code file already present -> then the CDT integration for that project is not yet ready.
+   */
+  public static final String SONARLINT_ANALYSIS_CDT_EXCLUSION_PROPERY = "sonarlint.internal.analysis.cdt.exclusion";
+
+  /**
    *  Enabled languages should be consistent with https://www.sonarsource.com/products/sonarlint/features/eclipse!
    *
    *  Currently the only sub-plugins bringing their own languages are JDT (Java/JSP) and CDT (C/C++).
    */
   private static final Set<SonarLintLanguage> DEFAULT_LANGUAGES = EnumSet.of(SonarLintLanguage.PYTHON, SonarLintLanguage.JS, SonarLintLanguage.TS,
     SonarLintLanguage.HTML, SonarLintLanguage.CSS, SonarLintLanguage.PHP, SonarLintLanguage.XML, SonarLintLanguage.SECRETS);
-  private static final Set<SonarLintLanguage> OPTIONAL_LANGUAGES = EnumSet.of(SonarLintLanguage.JAVA, SonarLintLanguage.JSP);
+  private static final Set<SonarLintLanguage> OPTIONAL_LANGUAGES = EnumSet.of(SonarLintLanguage.JAVA,
+    SonarLintLanguage.JSP, SonarLintLanguage.C, SonarLintLanguage.CPP);
   private static final Set<SonarLintLanguage> DEFAULT_CONNECTED_LANGUAGES = EnumSet.of(SonarLintLanguage.ABAP,
     SonarLintLanguage.APEX, SonarLintLanguage.COBOL, SonarLintLanguage.JCL, SonarLintLanguage.KOTLIN,
     SonarLintLanguage.PLI, SonarLintLanguage.PLSQL, SonarLintLanguage.RPG, SonarLintLanguage.RUBY,
     SonarLintLanguage.SCALA, SonarLintLanguage.TSQL);
-  private static final Set<SonarLintLanguage> OPTIONAL_CONNECTED_LANGUAGES = EnumSet.of(SonarLintLanguage.C, SonarLintLanguage.CPP);
 
   private SonarLintUtils() {
     // utility class, forbidden constructor
@@ -119,12 +129,6 @@ public class SonarLintUtils {
   public static Set<SonarLintLanguage> getConnectedEnabledLanguages() {
     var enabledLanguages = EnumSet.noneOf(SonarLintLanguage.class);
     enabledLanguages.addAll(DEFAULT_CONNECTED_LANGUAGES);
-
-    var configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
-    for (var configurator : configurators) {
-      var enableLanguages = configurator.enableLanguages();
-      enableLanguages.stream().filter(OPTIONAL_CONNECTED_LANGUAGES::contains).forEach(enabledLanguages::add);
-    }
     return enabledLanguages;
   }
 
