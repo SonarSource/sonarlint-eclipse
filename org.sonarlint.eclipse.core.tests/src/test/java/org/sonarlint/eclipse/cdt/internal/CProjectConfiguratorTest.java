@@ -39,10 +39,8 @@ import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -69,7 +67,7 @@ public class CProjectConfiguratorTest {
   }
 
   @Test
-  public void should_configure() throws Exception {
+  public void should_configure_no_build_wrapper_output() throws Exception {
     var projectBaseDir = temp.newFolder().toPath();
     var project = mock(IProject.class);
     var file = mock(IFile.class);
@@ -94,15 +92,12 @@ public class CProjectConfiguratorTest {
 
     configurator.configure(context, monitor);
 
-    // json created
-    verify(jsonFactory).create(anyCollection(), eq(projectBaseDir.toRealPath().toString()));
+    // build-wrapper-dump.json was not created as no useful file was provided to the CDT integraton
+    verify(jsonFactory, never()).create(ArgumentMatchers.any(), ArgumentMatchers.any());
 
-    // json written
-    assertThat(temp.getRoot().toPath().resolve("build-wrapper-dump.json")).hasContent("json");
-
-    // property created
-    verify(context).setAnalysisProperty("sonar.cfamily.build-wrapper-output", temp.getRoot().toPath().toString());
-    verify(context).setAnalysisProperty("sonar.cfamily.useCache", "false");
+    // properties were not set
+    verify(context, never()).setAnalysisProperty("sonar.cfamily.build-wrapper-output", temp.getRoot().toPath().toString());
+    verify(context, never()).setAnalysisProperty("sonar.cfamily.useCache", "false");
 
     // no errors
     verify(logger, never()).error(ArgumentMatchers.any(), ArgumentMatchers.any());

@@ -58,6 +58,8 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.internal.utils.FileUtils;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.commons.api.progress.CanceledException;
@@ -148,6 +150,18 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       // and afterwards only analyzed one -> markers from both are shown!
       if (shouldClearReport) {
         ResourcesPlugin.getWorkspace().run(m -> SonarLintMarkerUpdater.deleteAllMarkersFromReport(), monitor);
+      }
+
+      // This is for working with the CDT integration and the CFamily analysis: It can be that files have to be
+      // removed from the analysis because no necessary information could be gathered and otherwise the analysis will
+      // fail as a whole.
+      var removedFilesByCdt = mergedExtraProps.get(SonarLintUtils.SONARLINT_ANALYSIS_CDT_EXCLUSION_PROPERY);
+      if (removedFilesByCdt != null) {
+        for (var uri : StringUtils.splitFromCommaString(removedFilesByCdt)) {
+          inputFiles = inputFiles.stream()
+            .filter(eclipseFile -> !eclipseFile.getFile().getResource().getLocationURI().toString().equals(uri))
+            .collect(Collectors.toList());
+        }
       }
 
       if (!inputFiles.isEmpty()) {
