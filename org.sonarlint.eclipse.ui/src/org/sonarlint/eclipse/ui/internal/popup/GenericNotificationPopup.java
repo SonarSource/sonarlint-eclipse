@@ -42,11 +42,14 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
   private final String title;
   private final String shortMsg;
   private final String longMsg;
+  private final String learnMoreUrl;
 
-  public GenericNotificationPopup(String title, String shortMsg, @Nullable String longMsg) {
+  public GenericNotificationPopup(String title, String shortMsg, @Nullable String longMsg,
+    @Nullable String learnMoreUrl) {
     this.title = title;
     this.shortMsg = shortMsg;
     this.longMsg = longMsg;
+    this.learnMoreUrl = learnMoreUrl;
   }
 
   @Override
@@ -60,12 +63,16 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
 
     addLink("Dismiss", e -> close());
 
+    if (learnMoreUrl != null) {
+      addLink("Learn more",
+        e -> BrowserUtils.openExternalBrowser(learnMoreUrl, PlatformUI.getWorkbench().getDisplay()));
+    }
+
     if (longMsg != null) {
       addLink("More details...", e -> {
         var dialog = new DialogWithLink(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
           "SonarQube - " + title, longMsg);
         dialog.open();
-        close();
       });
     }
   }

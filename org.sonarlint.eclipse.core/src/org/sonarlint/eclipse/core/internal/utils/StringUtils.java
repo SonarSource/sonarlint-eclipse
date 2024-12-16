@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -86,6 +87,10 @@ public class StringUtils {
       .filter(Objects::nonNull)
       .map(StringUtils::csvEscape)
       .collect(joining(COMMA_SEPARATOR));
+  }
+
+  public static Collection<String> splitFromCommaString(String list) {
+    return Arrays.asList(list.split(COMMA_SEPARATOR));
   }
 
   private static String csvEscape(String string) {

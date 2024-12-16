@@ -42,10 +42,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IPostAnalysisContext;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
@@ -58,6 +60,8 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.internal.utils.FileUtils;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.commons.api.progress.CanceledException;
@@ -148,6 +152,29 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       // and afterwards only analyzed one -> markers from both are shown!
       if (shouldClearReport) {
         ResourcesPlugin.getWorkspace().run(m -> SonarLintMarkerUpdater.deleteAllMarkersFromReport(), monitor);
+      }
+
+      // This is for working with the CDT integration and the CFamily analysis: It can be that files have to be
+      // removed from the analysis because no necessary information could be gathered and otherwise the analysis will
+      // fail as a whole.
+      var removedFilesByCdt = mergedExtraProps.get(SonarLintUtils.SONARLINT_ANALYSIS_CDT_EXCLUSION_PROPERY);
+      if (removedFilesByCdt != null) {
+        SonarLintNotifications.get()
+          .showNotification(new SonarLintNotifications.Notification(
+            "C/C++ analysis not available (yet)",
+            "Some C/C++ files were removed from the analysis by the CDT integration as no information was available "
+              + "from the Eclipse CDT plug-in. This might happen when the project was not yet built or the project is "
+              + "not configured correctly.",
+            "The following files were removed from the analysis: '" + removedFilesByCdt + "'. The information "
+              + "provided by Eclipse CDT is crucial for the analysis to work correctly, please consult the offcial"
+              + "documentation at: " + SonarLintDocumentation.ECLIPSE_CDT_DOCS,
+            SonarLintDocumentation.ECLIPSE_CDT_DOCS));
+
+        for (var uri : StringUtils.splitFromCommaString(removedFilesByCdt)) {
+          inputFiles = inputFiles.stream()
+            .filter(eclipseFile -> !eclipseFile.getFile().getResource().getLocationURI().toString().equals(uri))
+            .collect(Collectors.toList());
+        }
       }
 
       if (!inputFiles.isEmpty()) {

@@ -141,7 +141,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     @Override
     public void showNotification(Notification notif) {
       Display.getDefault().asyncExec(() -> {
-        var popup = new GenericNotificationPopup(notif.getTitle(), notif.getShortMsg(), notif.getLongMsg());
+        var popup = new GenericNotificationPopup(notif.getTitle(), notif.getShortMsg(), notif.getLongMsg(),
+          notif.getLearnMoreUrl());
         popup.open();
       });
     }

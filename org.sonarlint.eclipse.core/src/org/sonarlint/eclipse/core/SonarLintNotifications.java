@@ -69,11 +69,17 @@ public class SonarLintNotifications {
     private final String title;
     private final String shortMsg;
     private final String longMsg;
+    private final String learnMoreUrl;
 
     public Notification(String title, String shortMsg, @Nullable String longMsg) {
+      this(title, shortMsg, longMsg, null);
+    }
+
+    public Notification(String title, String shortMsg, @Nullable String longMsg, @Nullable String learnMoreUrl) {
       this.title = title;
       this.shortMsg = shortMsg;
       this.longMsg = longMsg;
+      this.learnMoreUrl = learnMoreUrl;
     }
 
     public String getTitle() {
@@ -87,6 +93,11 @@ public class SonarLintNotifications {
     @Nullable
     public String getLongMsg() {
       return longMsg;
+    }
+
+    @Nullable
+    public String getLearnMoreUrl() {
+      return learnMoreUrl;
     }
 
     @Override

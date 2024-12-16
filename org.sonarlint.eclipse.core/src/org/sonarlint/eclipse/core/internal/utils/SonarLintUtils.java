@@ -50,6 +50,16 @@ import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 
 public class SonarLintUtils {
   /**
+   *  This internal property is used between the CDT integration sub-plug-in and the CORE bundle as the communication
+   *  is only one-way and happening via the extension point:
+   *
+   *  When CDT ain't yet ready for a file, it cannot provide values for the `build-wrapper-dump.json` that is crucial
+   *  for the CFamily analysis. This can happen in corner cases like creating a project from within the IDE with a
+   *  source code file already present -> then the CDT integration for that project is not yet ready.
+   */
+  public static final String SONARLINT_ANALYSIS_CDT_EXCLUSION_PROPERY = "sonarlint.internal.analysis.cdt.exclusion";
+
+  /**
    *  Enabled languages should be consistent with https://www.sonarsource.com/products/sonarlint/features/eclipse!
    *
    *  Currently the only sub-plugins bringing their own languages are JDT (Java/JSP) and CDT (C/C++).
