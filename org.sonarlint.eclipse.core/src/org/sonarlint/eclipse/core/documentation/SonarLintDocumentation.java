@@ -63,6 +63,9 @@ public class SonarLintDocumentation {
   public static final String ECLIPSE_M2E = "https://projects.eclipse.org/projects/technology.m2e";
   public static final String ECLIPSE_BUILDSHIP = "https://projects.eclipse.org/projects/tools.buildship";
 
+  // Eclipse CDT documentation
+  public static final String ECLIPSE_CDT_DOCS = "https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.cdt.doc.user%2Fconcepts%2Fcdt_o_home.htm";
+
   private SonarLintDocumentation() {
     // utility class
   }

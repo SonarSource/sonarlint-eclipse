@@ -24,8 +24,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -47,6 +47,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.internal.jobs.DefaultPreAnalysisContext;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -90,8 +91,34 @@ public class CdtUtils {
       .filter(f -> f.getResource() instanceof IFile && fileValidator.test((IFile) f.getResource()))
       .collect(Collectors.toList());
 
+    // This contains the files that will be later removed from the analysis because of the information not being
+    // available from CDT but being crucial for the CFamily analyzer to NOT fail the whole analysis.
+    var removedFilesFromAnalysis = new ArrayList<ISonarLintFile>();
+
     try {
-      var configuredFiles = configureCProject(context, context.getProject(), filesToAnalyze);
+      var configuredFiles = configureCProject(context, context.getProject(), filesToAnalyze, removedFilesFromAnalysis);
+
+      // We have to provide this information back to the analysis when there are files that were removed by the CDT
+      // integration. Due to this relying on extension points, this can only be done via an internal property.
+      if (!removedFilesFromAnalysis.isEmpty()) {
+        var excludedFilesPerUri = removedFilesFromAnalysis.stream()
+          .map(slFile -> slFile.getResource().getLocationURI().toString())
+          .collect(Collectors.toList());
+
+        context.setAnalysisProperty(SonarLintUtils.SONARLINT_ANALYSIS_CDT_EXCLUSION_PROPERY, excludedFilesPerUri);
+
+        // The actual user facing notification is sent from the CORE bundle as this sub-plug-in has no access to the
+        // notification framework.
+        logger.debug("The following C/C++ files were excluded by the CDT integration as no information could be "
+          + "accessed from the Eclipse CDT plug-in: " + String.join(",", excludedFilesPerUri));
+      }
+
+      // When there is no configured file, we should inform the user that the build info was not written to any file
+      if (configuredFiles.isEmpty()) {
+        logger.debug("Wrote no build info as there is no file information available for the build wrapper.");
+        return;
+      }
+
       var jsonPath = writeJson(context, context.getProject(), configuredFiles);
       logger.debug("Wrote build info to: " + jsonPath.toString());
       context.setAnalysisProperty(CFAMILY_USE_CACHE, Boolean.FALSE.toString());
@@ -101,7 +128,8 @@ public class CdtUtils {
     }
   }
 
-  private Collection<ConfiguredFile> configureCProject(IPreAnalysisContext context, ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze) {
+  private Collection<ConfiguredFile> configureCProject(IPreAnalysisContext context, ISonarLintProject project,
+    Collection<ISonarLintFile> filesToAnalyze, Collection<ISonarLintFile> removedFilesFromAnalysis) {
     var files = new LinkedList<ConfiguredFile>();
     var infoProvider = cCorePlugin.getScannerInfoProvider((IProject) project.getResource());
 
@@ -111,14 +139,26 @@ public class CdtUtils {
       var path = ((DefaultPreAnalysisContext) context).getLocalPath(file);
       var fileInfo = infoProvider.getScannerInformation(file.getResource());
 
-      builder.includes(fileInfo.getIncludePaths() != null ? fileInfo.getIncludePaths() : new String[0])
-        .symbols(fileInfo.getDefinedSymbols() != null ? fileInfo.getDefinedSymbols() : Collections.emptyMap())
+      // We cannot work on this file when:
+      // - fileInfo is null which means there was no information (yet) available to CDT about the file
+      // - fileInfo.getDefinedSymbols() is null or empty as the requirement is to have at least one define directive
+      // - this can happen when the project is not configured correctly or CDT is not yet ready
+      // In this case we have to remove it as otherwise the whole analysis will fail!
+      if (fileInfo == null
+        || fileInfo.getDefinedSymbols() == null
+        || fileInfo.getDefinedSymbols().isEmpty()) {
+        removedFilesFromAnalysis.add(file);
+        continue;
+      }
+
+      builder.includes(fileInfo.getIncludePaths() == null ? new String[0] : fileInfo.getIncludePaths())
+        .symbols(fileInfo.getDefinedSymbols())
         .path(path);
 
       files.add(builder.build());
     }
-    return files;
 
+    return files;
   }
 
   private Path writeJson(IPreAnalysisContext context, ISonarLintProject project, Collection<ConfiguredFile> files) throws IOException {
@@ -163,6 +203,11 @@ public class CdtUtils {
   private static Path createJsonFile(Path workDir, String content) throws IOException {
     var jsonFilePath = workDir.resolve(BUILD_WRAPPER_OUTPUT_FILENAME);
     Files.createDirectories(workDir);
+
+    // In order to be able to trace the build wrapper output content for
+    SonarLintLogger.get().debug("CDT generated build wrapper output '" + jsonFilePath
+      + "' for C/C++ analysis written containing: " + content);
+
     Files.write(jsonFilePath, content.getBytes(BUILD_WRAPPER_OUTPUT_CHARSET));
     return jsonFilePath;
   }
