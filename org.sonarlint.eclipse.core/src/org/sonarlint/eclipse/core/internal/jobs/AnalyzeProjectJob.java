@@ -166,7 +166,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
               + "from the Eclipse CDT plug-in. This might happen when the project was not yet built or the project is "
               + "not configured correctly.",
             "The following files were removed from the analysis: '" + removedFilesByCdt + "'. The information "
-              + "provided by Eclipse CDT is crucial for the analysis to work correctly, please consult the offcial"
+              + "provided by Eclipse CDT is crucial for the analysis to work correctly, please consult the official "
               + "documentation at: " + SonarLintDocumentation.ECLIPSE_CDT_DOCS,
             SonarLintDocumentation.ECLIPSE_CDT_DOCS));
 

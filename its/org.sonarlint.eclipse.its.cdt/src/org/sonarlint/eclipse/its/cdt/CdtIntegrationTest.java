@@ -27,7 +27,7 @@ import org.sonarlint.eclipse.its.shared.reddeer.views.OnTheFlyView;
 import static org.assertj.core.api.Assertions.tuple;
 
 /**
- *  These tests are for the CDT integration of the plug-in. It should work correctly with different kidns of C/C++
+ *  These tests are for the CDT integration of the plug-in. It should work correctly with different kinds of C/C++
  *  projects that are supported by CDT itself or other tools generating the Eclipse project files.
  */
 public class CdtIntegrationTest extends AbstractSonarLintTest {
