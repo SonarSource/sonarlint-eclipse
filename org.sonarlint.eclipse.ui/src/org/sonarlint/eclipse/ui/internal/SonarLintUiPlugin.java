@@ -280,7 +280,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         // Check if newer version is available and then show a notification raising awareness about it. The
         // notification will only be displayed once a day in order to not annoy the user!
         if (!SonarLintGlobalConfiguration.sonarLintVersionHintHidden()
-          && !SonarLintGlobalConfiguration.isSonarLintVersionHintDateToday()) {
+          && SonarLintGlobalConfiguration.isNextSonarLintVersionHintDateToday()) {
           var newestSonarLintVersion = EclipseUpdateSite.getNewestVersion();
           var currentSonarLintVersion = BundleUtils.getBundleVersion();
           SonarLintLogger.get().debug("Current version (" + currentSonarLintVersion + "), newest version ("
@@ -293,13 +293,13 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
               + SonarLintDocumentation.GITHUB_RELEASES + ")!");
           } else if (newestSonarLintVersion.isNewerThan(currentSonarLintVersion)) {
             NewerVersionAvailablePopup.displayPopupIfNotAlreadyShown(newestSonarLintVersion.toString());
+            SonarLintGlobalConfiguration.setNextSonarLintVersionHintDate();
           }
         }
       }
 
       // We want to update the locally saved SonarLint version reference once everything is done!
       SonarLintGlobalConfiguration.setSonarLintVersion();
-      SonarLintGlobalConfiguration.setSonarLintVersionHintDate();
 
       // Display user survey pop-up (comment out if not needed, comment in again if needed and replace link)
       // Display.getDefault().syncExec(() -> SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed(""));

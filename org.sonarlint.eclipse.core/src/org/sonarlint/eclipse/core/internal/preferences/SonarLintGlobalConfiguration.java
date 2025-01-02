@@ -23,11 +23,14 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -472,22 +475,38 @@ public class SonarLintGlobalConfiguration {
       : Boolean.parseBoolean(property);
   }
 
-  public static boolean isSonarLintVersionHintDateToday() {
+  /**
+   *  Check whether it was already two weeks ago that the user got a hint about the new SonarQube
+   *  for Eclipse version. If it has not yet been two weeks, we don't want to show it again.
+   */
+  public static boolean isNextSonarLintVersionHintDateToday() {
     var date = getPreferenceString(PREF_SONARLINT_VERSION_HINT_DATE);
     if (date.isBlank()) {
-      return false;
+      return true;
     }
 
     try {
-      var today = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).format(Calendar.getInstance().getTime());
-      return date.equals(today);
+      var savedDate = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).parse(date);
+      var todayDate = Calendar.getInstance().getTime();
+
+      return todayDate.after(savedDate);
     } catch (Exception ignored) {
       return false;
     }
   }
 
-  public static void setSonarLintVersionHintDate() {
-    var date = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH).format(Calendar.getInstance().getTime());
+  /**
+   *  Only show hint about the new SonarQube for Eclipse version every two weeks in order to not
+   *  annoy users with a daily notification.
+   */
+  public static void setNextSonarLintVersionHintDate() {
+    var date = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH)
+      .format(Date.from(
+        LocalDate.now().plusDays(14)
+          .atStartOfDay()
+          .atZone(ZoneId.systemDefault())
+          .toInstant()));
+
     setPreferenceString(getApplicationLevelPreferenceNode(), PREF_SONARLINT_VERSION_HINT_DATE, date);
   }
 }
