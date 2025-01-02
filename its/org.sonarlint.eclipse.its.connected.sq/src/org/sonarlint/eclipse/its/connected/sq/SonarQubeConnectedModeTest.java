@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.its.connected.sq;
 
 import com.google.gson.Gson;
 import com.sonar.orchestrator.container.Edition;
-import com.sonar.orchestrator.container.Server;
 import com.sonar.orchestrator.http.HttpMethod;
 import com.sonar.orchestrator.junit4.OrchestratorRule;
 import java.io.InputStreamReader;
@@ -469,8 +468,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
       .setPermission("issueadmin"));
 
     // 6) Remove connections and reconnect with user
-    createConnectionAndBindProject(orchestrator, MAVEN2_PROJECT_KEY, INSUFFICIENT_PERMISSION_USER,
-      INSUFFICIENT_PERMISSION_USER);
+    createConnectionAndBindProject(orchestrator, MAVEN2_PROJECT_KEY);
 
     // 7) Remove binding suggestion notification
     new DefaultLink(shellByName("SonarQube - Binding Suggestion").get(), "Don't ask again").click();
@@ -559,7 +557,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     setFocusOnNewCode(false);
 
     // 3) bind to project on SonarQube / check issues and taint vulnerabilities exist
-    createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
+    createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY);
 
     new DefaultLink(shellByName("SonarLint - Binding Suggestion").get(), "Don't ask again").click();
 
@@ -586,7 +584,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
       Map.of("sonar.projectVersion", "1.2-SNAPSHOT"));
 
     // 5) bind to project on SonarQube / check that new code period preference is working
-    createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
+    createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY);
 
     waitForAnalysisReady(MAVEN_TAINT_PROJECT_KEY);
 
@@ -628,7 +626,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     new DefaultEditor().close();
 
     // 3) bind to project on SonarQube / check issues exist now
-    createConnectionAndBindProject(orchestrator, DBD_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
+    createConnectionAndBindProject(orchestrator, DBD_PROJECT_KEY);
     shellByName("SonarQube - Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("dbd.py"));
@@ -674,7 +672,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     new DefaultEditor().close();
 
     // 3) bind to project on SonarQube / check issues exist now
-    createConnectionAndBindProject(orchestrator, CUSTOM_SECRETS_PROJECT_KEY, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
+    createConnectionAndBindProject(orchestrator, CUSTOM_SECRETS_PROJECT_KEY);
     shellByName("SonarQube - Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("Heresy.txt"));

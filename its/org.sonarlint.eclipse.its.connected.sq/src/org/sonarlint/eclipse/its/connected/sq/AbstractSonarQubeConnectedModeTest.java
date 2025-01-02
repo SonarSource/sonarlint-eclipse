@@ -123,9 +123,13 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     Map<String, String> analysisProperties) {
     var build = MavenBuild.create(new File(folder, path))
       .setCleanPackageSonarGoals()
-      .setProperty("sonar.login", Server.ADMIN_LOGIN)
-      .setProperty("sonar.password", Server.ADMIN_PASSWORD)
       .setProperty("sonar.projectKey", projectKey);
+    if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
+      build = build.setProperty("sonar.token", orchestrator.getDefaultAdminToken());
+    } else {
+      build = build.setProperty("sonar.login", Server.ADMIN_LOGIN)
+        .setProperty("sonar.password", Server.ADMIN_PASSWORD);
+    }
 
     for (var pair : analysisProperties.entrySet()) {
       build = build.setProperty(pair.getKey(), pair.getValue());
@@ -136,11 +140,6 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
 
   /** Bind a specific project to SonarQube */
   protected static void createConnectionAndBindProject(OrchestratorRule orchestrator, String projectKey) {
-    createConnectionAndBindProject(orchestrator, projectKey, Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD);
-  }
-
-  protected static void createConnectionAndBindProject(OrchestratorRule orchestrator, String projectKey,
-    String username, String password) {
     var wizard = new ServerConnectionWizard();
     wizard.open();
     new ServerConnectionWizard.ServerTypePage(wizard).selectSonarQube();
