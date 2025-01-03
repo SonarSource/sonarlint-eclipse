@@ -38,6 +38,10 @@ public class SonarLintPreferences extends PropertyPage {
     new DefaultText(this, 1).setText(regex);
   }
 
+  public String getNodeJsPath() {
+    return new DefaultText(this, 2).getMessage();
+  }
+
   public void setMarkersSeverity(MarkerSeverity severity) {
     new DefaultCombo(this, new WithLabelMatcher("SonarQube markers severity:")).setSelection(severity.getTextInCombo());
   }

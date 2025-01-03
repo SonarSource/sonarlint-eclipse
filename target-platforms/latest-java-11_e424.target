@@ -14,6 +14,7 @@
       <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0" />
       <unit id="org.eclipse.platform.ide" version="0.0.0" />
       <unit id="org.eclipse.equinox.core.sdk.feature.group" version="0.0.0" />
+      <unit id="org.eclipse.wildwebdeveloper.embedder.node.feature.feature.group" version="0.0.0" />
       <!-- Needed to build the test environment -->
       <unit id="org.eclipse.equinox.executable.feature.group" version="0.0.0" />
       <repository location="https://download.eclipse.org/releases/2022-06/" />

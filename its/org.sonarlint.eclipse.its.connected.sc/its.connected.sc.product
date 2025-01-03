@@ -35,6 +35,7 @@
       <feature id="org.eclipse.platform"/>
       <feature id="org.eclipse.jdt"/>
       <feature id="org.eclipse.m2e.feature"/>
+      <feature id="org.eclipse.wildwebdeveloper.embedder.node.feature"/>
       <feature id="org.sonarlint.eclipse.feature"/>
    </features>
 
