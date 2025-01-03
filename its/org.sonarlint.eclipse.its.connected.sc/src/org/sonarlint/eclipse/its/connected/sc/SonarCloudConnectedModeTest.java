@@ -37,6 +37,7 @@ import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,6 +53,7 @@ import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmConnectionCreatio
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionAvailableDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionUnavailableDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ProjectSelectionDialog;
+import org.sonarlint.eclipse.its.shared.reddeer.preferences.SonarLintPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ServerConnectionWizard;
@@ -65,6 +67,7 @@ import org.sonarqube.ws.client.usertokens.RevokeRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.awaitility.Awaitility.await;
 
 public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
@@ -309,6 +312,28 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     // 2) Proceed with second suggestion (way out of range of the file)
     new WaitUntil(new FixSuggestionUnavailableDialogOpened(1, 2));
     new FixSuggestionUnavailableDialog(1, 2).proceed();
+  }
+
+  /**
+   *  When running this integration test using Maven from the CI it re-uses the "its.connected.sc.product" definition
+   *  and will therefore use the (unpacked) embedded Node.js version coming from Eclipse WWD. When running the test
+   *  from inside the Eclipse IDE via a "Run Configuration" make sure that it is configured correctly!
+   *
+   *  The unpacked Node.js runtime will be found in a folder denoted with ".node/" when running with Maven, but not
+   *  when running from within the Eclipse IDE! The assertion is therefore split to work correctly in both cases
+   *  without any overhead configuration.
+   */
+  @Test
+  public void test_NodeJs_from_EclipseWWD() {
+    var preferenceDialog = new WorkbenchPreferenceDialog();
+    preferenceDialog.open();
+    var preferences = new SonarLintPreferences(preferenceDialog);
+    preferenceDialog.select(preferences);
+
+    await().untilAsserted(
+      () -> assertThat(preferences.getNodeJsPath()).containsAnyOf(".node/", "/bin/node"));
+
+    preferenceDialog.ok();
   }
 
   private static List<String> getProjectKeys() throws InterruptedException, IOException {

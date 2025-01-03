@@ -36,8 +36,12 @@ public class BundleUtils {
   }
 
   public static boolean isBundleInstalledWithMinVersion(String name, int majorVersion, int minorVersion) {
+    return isBundleInstalledWithMinVersion(name, majorVersion, minorVersion, 0);
+  }
+
+  public static boolean isBundleInstalledWithMinVersion(String name, int majorVersion, int minorVersion, int microVersion) {
     return getInstalledBundle(name)
-      .map(bundle -> bundle.getVersion().compareTo(new Version(majorVersion, minorVersion, 0)) >= 0)
+      .map(bundle -> bundle.getVersion().compareTo(new Version(majorVersion, minorVersion, microVersion)) >= 0)
       .orElse(false);
   }
 

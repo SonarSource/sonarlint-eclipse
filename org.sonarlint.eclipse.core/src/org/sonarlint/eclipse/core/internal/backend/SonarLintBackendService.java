@@ -47,6 +47,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
+import org.sonarlint.eclipse.core.internal.nodejs.NodeJsService;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.DurationUtils;
@@ -207,7 +208,7 @@ public class SonarLintBackendService {
             null,
             SonarLintGlobalConfiguration.buildStandaloneRulesConfigDto(),
             SonarLintGlobalConfiguration.issuesOnlyNewCode(),
-            new LanguageSpecificRequirements(new JsTsRequirementsDto(SonarLintGlobalConfiguration.getNodejsPath(), null), null),
+            new LanguageSpecificRequirements(new JsTsRequirementsDto(NodeJsService.getNodeJsPath(), null), null),
             false,
             null)).join();
         } catch (IOException e) {
