@@ -362,7 +362,7 @@ qa_standaloneMode_task:
     MAVEN_OPTS: -Xmx3072m
   matrix:
     - env:
-        TARGET_PLATFORM: 'oldest-java-11_e48'
+        TARGET_PLATFORM: 'oldest-java-11_e417'
     - env:
         TARGET_PLATFORM: 'latest-java-17_e431'
     - env:
@@ -441,7 +441,7 @@ qa_cdtIntegration_task:
     MAVEN_OPTS: -Xmx3072m
   matrix:
     - env:
-        TARGET_PLATFORM: 'oldest-java-11_e48'
+        TARGET_PLATFORM: 'oldest-java-11_e417'
     - env:
         TARGET_PLATFORM: 'latest-java-17_e431'
     - env:

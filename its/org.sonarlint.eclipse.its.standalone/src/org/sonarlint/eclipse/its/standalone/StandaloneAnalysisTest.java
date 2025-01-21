@@ -86,7 +86,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @After
   public void enableAutomaticWorkspaceBuild() {
-    if ("oldest-java-11_e48".equals(System.getProperty("target.platform"))) {
+    if ("oldest-java-11_e417".equals(System.getProperty("target.platform"))) {
       var preferences = GeneralWorkspaceBuildPreferences.open();
       preferences.enableAutomaticBuild();
       preferences.ok();
@@ -101,7 +101,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   public void analyze_automatic_workspace_build_disabled() {
     // INFO: We only want to run it on one axis and the "oldest" ITs take the shortest!
-    Assume.assumeTrue("oldest-java-11_e48".equals(System.getProperty("target.platform")));
+    Assume.assumeTrue("oldest-java-11_e417".equals(System.getProperty("target.platform")));
 
     System.clearProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning");
 
@@ -509,7 +509,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void shouldAnalyseVirtualProject() throws Exception {
     // INFO: It is flaky when running on top of the oldest Eclipse version but works fine in the other test cases,
     // therefore it should be skipped in that particular situation!
-    Assume.assumeTrue(!"oldest-java-11_e48".equals(System.getProperty("target.platform")));
+    Assume.assumeTrue(!"oldest-java-11_e417".equals(System.getProperty("target.platform")));
 
     var remoteProjectDir = tempFolder.newFolder();
     FileUtils.copyDirectory(new File(projectDirectory, "java/java-simple"), remoteProjectDir);
