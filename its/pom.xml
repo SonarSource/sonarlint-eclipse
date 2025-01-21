@@ -277,7 +277,7 @@
       <activation>
         <property>
           <name>target.platform</name>
-          <value>oldest-java-11_e48</value>
+          <value>oldest-java-11_e417</value>
         </property>
       </activation>
       <build>

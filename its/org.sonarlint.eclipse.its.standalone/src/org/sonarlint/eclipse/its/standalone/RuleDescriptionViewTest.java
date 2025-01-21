@@ -40,8 +40,8 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
   @Test
   public void openRuleDescription() {
-    // Because the CI can only provide GTK 4+ WebKit libraries, Eclipse 4.8 requires GTK3 tho!
-    Assume.assumeTrue(!"oldest-java-11_e48".equals(System.getProperty("target.platform")));
+    // Because the CI can only provide GTK 4+ WebKit libraries, Eclipse 4.`7 requires GTK3 tho!
+    Assume.assumeTrue(!"oldest-java-11_e417".equals(System.getProperty("target.platform")));
 
     new JavaPerspective().open();
     var ruleDescriptionView = new RuleDescriptionView();
@@ -65,8 +65,8 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
   @Test
   public void openRuleDescription_with_educational_content() {
-    // Because the CI can only provide GTK 4+ WebKit libraries, Eclipse 4.8 requires GTK3 tho!
-    Assume.assumeTrue(!"oldest-java-11_e48".equals(System.getProperty("target.platform")));
+    // Because the CI can only provide GTK 4+ WebKit libraries, Eclipse 4.17 requires GTK3 tho!
+    Assume.assumeTrue(!"oldest-java-11_e417".equals(System.getProperty("target.platform")));
 
     var ruleConfigurationPreferences = RuleConfigurationPreferences.open();
     var monsterClassRule = ruleConfigurationPreferences.selectRule("java:S6539", "Java", "Classes should not depend on an excessive number of classes (aka Monster Class)");
@@ -104,8 +104,8 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
    */
   @Test
   public void openRuleRescription_with_PythonSyntaxHighlighting() {
-    // Because the CI can only provide GTK 4+ WebKit libraries, Eclipse 4.8 requires GTK3 tho!
-    Assume.assumeTrue(!"oldest-java-11_e48".equals(System.getProperty("target.platform")));
+    // Because the CI can only provide GTK 4+ WebKit libraries, Eclipse 4.17 requires GTK3 tho!
+    Assume.assumeTrue(!"oldest-java-11_e417".equals(System.getProperty("target.platform")));
 
     new JavaPerspective().open();
     var ruleDescriptionView = new RuleDescriptionView();
