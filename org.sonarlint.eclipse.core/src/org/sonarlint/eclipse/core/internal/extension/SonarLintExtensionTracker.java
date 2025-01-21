@@ -24,7 +24,6 @@ import java.util.List;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.resource.IProjectScopeProvider;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
@@ -35,7 +34,6 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
 
   private static SonarLintExtensionTracker singleInstance = null;
 
-  private final SonarLintEP<ProjectConfigurator> configuratorEp = new SonarLintEP<>("org.sonarlint.eclipse.core.projectConfigurators"); //$NON-NLS-1$
   private final SonarLintEP<IAnalysisConfigurator> analysisEp = new SonarLintEP<>("org.sonarlint.eclipse.core.analysisConfigurator"); //$NON-NLS-1$
   private final SonarLintEP<ISonarLintProjectsProvider> projectsProviderEp = new SonarLintEP<>("org.sonarlint.eclipse.core.projectsProvider"); //$NON-NLS-1$
   private final SonarLintEP<ISonarLintFileAdapterParticipant> fileAdapterParticipantEp = new SonarLintEP<>("org.sonarlint.eclipse.core.fileAdapterParticipant"); //$NON-NLS-1$
@@ -48,7 +46,7 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
   private final SonarLintEP<IProjectScopeProvider> projectScopeProviderEP = new SonarLintEP<>(
     "org.sonarlint.eclipse.core.projectScopeProvider"); //$NON-NLS-1$
 
-  private final Collection<SonarLintEP<?>> allEps = List.of(configuratorEp, analysisEp, projectsProviderEp,
+  private final Collection<SonarLintEP<?>> allEps = List.of(analysisEp, projectsProviderEp,
     fileAdapterParticipantEp, projectAdapterParticipantEp, languageEp, typeEp, projectHierarchyProviderEP,
     projectScopeProviderEP);
 
@@ -67,10 +65,6 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
     if (singleInstance != null) {
       singleInstance.unregister();
     }
-  }
-
-  public Collection<ProjectConfigurator> getConfigurators() {
-    return configuratorEp.getInstances();
   }
 
   public Collection<IAnalysisConfigurator> getAnalysisConfigurators() {

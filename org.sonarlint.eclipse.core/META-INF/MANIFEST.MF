@@ -9,7 +9,6 @@ Bundle-Vendor: %bundle_vendor
 Bundle-Localization: OSGI-INF/l10n/bundle
 Export-Package: org.sonarlint.eclipse.core,
  org.sonarlint.eclipse.core.analysis,
- org.sonarlint.eclipse.core.configurator,
  org.sonarlint.eclipse.core.documentation,
  org.sonarlint.eclipse.core.internal;x-friends:="org.sonarlint.eclipse.core.tests,org.sonarlint.eclipse.ui",
  org.sonarlint.eclipse.core.internal.adapter;x-friends:="org.sonarlint.eclipse.ui",

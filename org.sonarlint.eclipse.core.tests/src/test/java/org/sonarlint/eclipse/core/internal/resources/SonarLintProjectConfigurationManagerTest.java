@@ -36,8 +36,6 @@ import org.sonarlint.eclipse.tests.common.SonarTestCase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
-
-  private static final String PROJECT_WITH_DEPRECATED_SETTINGS = "DeprecatedModuleBinding";
   private final List<String> infos = new ArrayList<>();
   private final List<String> errors = new ArrayList<>();
 
@@ -63,15 +61,6 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
         // INFO: We ignore Eclipse-specific tracing in UTs
       }
     });
-  }
-
-  @Test
-  public void load_deprecated_project_config() throws IOException, CoreException, InterruptedException {
-    var project = importEclipseProject(PROJECT_WITH_DEPRECATED_SETTINGS);
-    // Configure the project
-    var configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), PROJECT_WITH_DEPRECATED_SETTINGS);
-    assertThat(configuration.getProjectBinding()).isEmpty();
-    assertThat(infos).contains("Binding configuration of project '" + PROJECT_WITH_DEPRECATED_SETTINGS + "' is outdated. Please rebind this project.");
   }
 
   @Test

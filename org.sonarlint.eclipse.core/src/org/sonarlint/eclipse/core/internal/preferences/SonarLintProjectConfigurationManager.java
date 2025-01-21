@@ -29,7 +29,6 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 import static java.util.Optional.ofNullable;
-import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isBlank;
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isNotBlank;
 
 public class SonarLintProjectConfigurationManager {
@@ -49,11 +48,6 @@ public class SonarLintProjectConfigurationManager {
    */
   @Deprecated(since = "10.0")
   private static final String P_IDE_PREFIX_KEY = "idePrefixKey";
-  /**
-   * @deprecated since 3.7
-   */
-  @Deprecated(since = "3.7")
-  private static final String P_MODULE_KEY = "moduleKey";
   private static final String P_AUTO_ENABLED_KEY = "autoEnabled";
   public static final String P_BINDING_SUGGESTIONS_DISABLED_KEY = "bindingSuggestionsDisabled";
   public static final String P_INDEXING_BASED_ON_ECLIPSE_PLUGINS = "indexingBasedOnEclipsePlugIns";
@@ -86,11 +80,6 @@ public class SonarLintProjectConfigurationManager {
     projectConfig.getExtraProperties().addAll(sonarProperties);
     projectConfig.getFileExclusions().addAll(fileExclusions);
     var projectKey = projectNode.get(P_PROJECT_KEY, "");
-    var moduleKey = projectNode.get(P_MODULE_KEY, "");
-    if (isBlank(projectKey) && isNotBlank(moduleKey)) {
-      SonarLintLogger.get().info("Binding configuration of project '" + projectName + "' is outdated. Please rebind this project.");
-    }
-    projectNode.remove(P_MODULE_KEY);
     var connectionId = projectNode.get(P_CONNECTION_ID, "");
     if (isNotBlank(connectionId) && isNotBlank(projectKey)) {
       projectConfig.setProjectBinding(new EclipseProjectBinding(connectionId, projectKey));
