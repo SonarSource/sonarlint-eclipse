@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 <plugin>
-   <extension-point id="projectConfigurators" name="Project Configurators" schema="schema/projectConfigurators.exsd"/>
    <extension-point id="projectsProvider" name="SonarLint Projects Provider" schema="schema/projectsProvider.exsd"/>
    <extension-point id="fileAdapterParticipant" name="SonarLint File Adapter Participant" schema="schema/fileAdapterParticipant.exsd"/>
    <extension-point id="projectAdapterParticipant" name="SonarLint Project Adapter Participant" schema="schema/projectAdapterParticipant.exsd"/>

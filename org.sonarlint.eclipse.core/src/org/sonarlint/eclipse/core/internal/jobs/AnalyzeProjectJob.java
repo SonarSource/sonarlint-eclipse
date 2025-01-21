@@ -28,12 +28,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -45,8 +42,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IPostAnalysisContext;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
@@ -139,7 +134,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       SonarLintLogger.get().info(this.getName() + "...");
       // Configure
       var mergedExtraProps = new LinkedHashMap<String, String>();
-      var usedDeprecatedConfigurators = configureDeprecated(getProject(), filesToAnalyzeMap.keySet(), mergedExtraProps, monitor);
 
       analysisWorkDir = Files.createTempDirectory(getProject().getWorkingDir(), "sonarlint");
       var inputFiles = buildInputFiles(analysisWorkDir, filesToAnalyzeMap);
@@ -182,7 +176,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         var result = run(filesToAnalyzeMap.keySet(), mergedExtraProps, start, monitor);
       }
 
-      analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
+      analysisCompleted(usedConfigurators, mergedExtraProps, monitor);
       SonarLintLogger.get().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
     } catch (CanceledException e) {
       return Status.CANCEL_STATUS;
@@ -244,29 +238,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return inputFiles;
   }
 
-  private static Collection<ProjectConfigurator> configureDeprecated(final ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze,
-    final Map<String, String> extraProperties,
-    final IProgressMonitor monitor) {
-    var usedConfigurators = new ArrayList<ProjectConfigurator>();
-    if (project.getResource() instanceof IProject) {
-      var configuratorRequest = new ProjectConfigurationRequest((IProject) project.getResource(),
-        filesToAnalyze.stream()
-          .map(f -> (f.getResource() instanceof IFile) ? (IFile) f.getResource() : null)
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList()),
-        extraProperties);
-      var configurators = SonarLintExtensionTracker.getInstance().getConfigurators();
-      for (var configurator : configurators) {
-        if (configurator.canConfigure((IProject) project.getResource())) {
-          configurator.configure(configuratorRequest, monitor);
-          usedConfigurators.add(configurator);
-        }
-      }
-    }
-
-    return usedConfigurators;
-  }
-
   private static Collection<IAnalysisConfigurator> configure(final ISonarLintProject project, List<EclipseInputFile> filesToAnalyze,
     final Map<String, String> extraProperties, Path tempDir, final IProgressMonitor monitor) {
     var usedConfigurators = new ArrayList<IAnalysisConfigurator>();
@@ -282,14 +253,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return usedConfigurators;
   }
 
-  private static void analysisCompleted(Collection<ProjectConfigurator> usedDeprecatedConfigurators, Collection<IAnalysisConfigurator> usedConfigurators,
+  private static void analysisCompleted(Collection<IAnalysisConfigurator> usedConfigurators,
     Map<String, String> properties, final IProgressMonitor monitor) {
     var unmodifiableMap = Collections.unmodifiableMap(properties);
-    for (var p : usedDeprecatedConfigurators) {
-      p.analysisComplete(unmodifiableMap, monitor);
-    }
-    var context = new IPostAnalysisContext() {
 
+    var context = new IPostAnalysisContext() {
       @Override
       public ISonarLintProject getProject() {
         return getProject();
