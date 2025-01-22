@@ -43,7 +43,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   public static void importProject() throws Exception {
     project = importEclipseProject("SimpleProject");
     // Configure the project
-    SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), "A Project");
+    SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project));
   }
 
   /** While we couldn't test this via integration tests, this must do it otherwise promotion failed due to SQ QG failing */
