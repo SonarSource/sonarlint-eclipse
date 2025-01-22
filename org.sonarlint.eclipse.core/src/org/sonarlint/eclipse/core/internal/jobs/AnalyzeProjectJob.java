@@ -52,6 +52,7 @@ import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
+import org.sonarlint.eclipse.core.internal.utils.CanceledException;
 import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.internal.utils.FileUtils;
 import org.sonarlint.eclipse.core.internal.utils.JobUtils;
@@ -59,7 +60,6 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.commons.api.progress.CanceledException;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.AnalyzeFilesResponse;
 
 import static java.text.MessageFormat.format;
