@@ -44,7 +44,6 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
-import org.sonarsource.sonarlint.core.commons.api.SonarLanguage;
 import org.sonarsource.sonarlint.core.rpc.client.ConfigScopeNotFoundException;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
 
@@ -136,16 +135,6 @@ public class SonarLintUtils {
   public static SonarLintLanguage convert(Language rpcLanguage) {
     try {
       return SonarLintLanguage.valueOf(rpcLanguage.name());
-    } catch (IllegalArgumentException e) {
-      // The language doesn't exist in SLE
-      return null;
-    }
-  }
-
-  @Nullable
-  public static SonarLintLanguage convert(SonarLanguage engineLanguage) {
-    try {
-      return SonarLintLanguage.valueOf(engineLanguage.name());
     } catch (IllegalArgumentException e) {
       // The language doesn't exist in SLE
       return null;

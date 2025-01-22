@@ -17,23 +17,9 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.core.internal.utils;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonarsource.sonarlint.core.commons.api.progress.ClientProgressMonitor;
-
-public class WrappedProgressMonitor implements ClientProgressMonitor {
-
-  private final IProgressMonitor wrapped;
-
-  public WrappedProgressMonitor(IProgressMonitor wrapped, String taskName) {
-    this.wrapped = wrapped;
-    wrapped.beginTask(taskName, 100);
-  }
-
-  @Override
-  public boolean isCanceled() {
-    return wrapped.isCanceled();
-  }
-
+/** Exception to indicate that a progress monitor was canceled */
+public class CanceledException extends RuntimeException {
+  private static final long serialVersionUID = -7006899869164687535L;
 }
