@@ -124,7 +124,6 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     var issue = mock(RaisedIssueDto.class);
     when(issue.getId()).thenReturn(UUID.randomUUID());
     when(issue.getTextRange()).thenReturn(new TextRangeDto(1, 2, 3, 4));
-    when(issue.getSeverity()).thenReturn(IssueSeverity.MAJOR);
     when(issue.getIntroductionDate()).thenReturn(Instant.now());
     return issue;
   }
