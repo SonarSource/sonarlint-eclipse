@@ -41,7 +41,6 @@
       <feature id="org.eclipse.cdt"/>
       <feature id="org.eclipse.wst.jsdt.feature"/>
       <feature id="org.eclipse.rse"/>
-      <feature id="org.eclipse.php"/>
       <feature id="org.eclipse.mylyn.commons"/>
       <feature id="org.eclipse.buildship"/>
       <feature id="org.sonarlint.eclipse.feature"/>

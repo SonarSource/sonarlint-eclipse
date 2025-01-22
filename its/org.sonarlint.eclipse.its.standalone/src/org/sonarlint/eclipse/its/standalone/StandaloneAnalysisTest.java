@@ -33,9 +33,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.eclipse.condition.ProjectExists;
 import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyDialog;
@@ -45,26 +43,22 @@ import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.core.StringContains;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ConfirmManualAnalysisDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.EnhancedWithConnectedModeInformationDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.OnTheFlyViewIsEmpty;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmManualAnalysisDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.EnhancedWithConnectedModeInformationDialog;
-import org.sonarlint.eclipse.its.shared.reddeer.perspectives.PhpPerspective;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.GeneralWorkspaceBuildPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.SonarLintPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.SonarLintProperties;
@@ -458,11 +452,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   // Need PDT
   @Test
-  @Category(RequiresExtraDependency.class)
   public void shouldAnalysePHP() {
-    new PhpPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("php", "php");
-    new WaitWhile(new JobIsRunning(StringContains.containsString("DLTK Indexing")), TimePeriod.LONG);
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("foo.php"));
 
@@ -505,7 +496,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   // Need RSE
   @Test
-  @Category(RequiresExtraDependency.class)
   public void shouldAnalyseVirtualProject() throws Exception {
     // INFO: It is flaky when running on top of the oldest Eclipse version but works fine in the other test cases,
     // therefore it should be skipped in that particular situation!
