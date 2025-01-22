@@ -69,12 +69,12 @@
     <jdk.min.version>11</jdk.min.version>
 
     <!-- Maven plug-ins -->
-    <jarsigner.version>3.0.0</jarsigner.version>
+    <jarsigner.version>3.1.0</jarsigner.version>
     <toolchains.version>3.2.0</toolchains.version>
     <os.version>1.7.1</os.version>
 
     <!-- Tycho plug-ins -->
-    <tycho.version>4.0.8</tycho.version>
+    <tycho.version>4.0.10</tycho.version>
 
     <!-- Sloop embedded CLI version for fragment projects -->
     <sloop.version>10.13.0.79996</sloop.version>
