@@ -65,7 +65,7 @@ public class SonarLintProjectConfigurationManager {
       });
   }
 
-  public SonarLintProjectConfiguration load(IScopeContext projectScope, String projectName) {
+  public SonarLintProjectConfiguration load(IScopeContext projectScope) {
     var projectNode = projectScope.getNode(SonarLintCorePlugin.PLUGIN_ID);
     var projectConfig = new SonarLintProjectConfiguration();
     if (projectNode == null) {
