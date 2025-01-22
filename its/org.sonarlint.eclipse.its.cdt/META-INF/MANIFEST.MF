@@ -37,7 +37,6 @@ Require-Bundle: org.eclipse.jdt.core,
  org.apache.commons.commons-io;bundle-version="2.16.1",
  org.awaitility;bundle-version="4.2.2",
  org.hamcrest;bundle-version="2.2.0",
- minimal-json;bundle-version="0.9.5",
  org.apache.commons.exec;bundle-version="1.3.0",
  com.google.protobuf;bundle-version="3.25.1",
  org.sonarlint.eclipse.its.shared
