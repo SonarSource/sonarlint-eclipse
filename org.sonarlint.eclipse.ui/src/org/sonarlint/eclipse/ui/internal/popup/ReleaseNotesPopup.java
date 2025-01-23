@@ -31,9 +31,9 @@ import org.sonarlint.eclipse.ui.internal.util.PopupUtils;
 public class ReleaseNotesPopup extends AbstractSonarLintVersionPopup {
   public ReleaseNotesPopup() {
     super("SonarQube for Eclipse - Release Notes",
-      "Thank you for installing / updating SonarLint. We invite you to learn about the recent changes by taking a"
-        + " look at the Release Notes. If you want to read them later, they can be found nested into the SonarLint "
-        + "preferences.");
+      "Thank you for installing / updating SonarQube for Eclipse (formerly known as SonarLint). We invite you to "
+        + "learn about the recent changes by taking a look at the Release Notes. If you want to read them later, they "
+        + "can be found nested into the SonarQube preferences.");
   }
 
   @Override
