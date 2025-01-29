@@ -68,6 +68,7 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
           + "' (pre close)");
       if (project != null) {
         SonarLintLogger.get().debug("Project about to be closed: " + project.getName());
+        SonarLintProjectConfigurationManager.removePreferenceChangeListenerForBindingProperties(project);
         backend.getConfigurationService()
           .didRemoveConfigurationScope(new DidRemoveConfigurationScopeParams(getConfigScopeId(project)));
       }
@@ -77,6 +78,7 @@ public class ConfigScopeSynchronizer implements IResourceChangeListener {
           + "' (pre delete)");
       if (project != null) {
         SonarLintLogger.get().debug("Project about to be deleted: " + project.getName());
+        SonarLintProjectConfigurationManager.removePreferenceChangeListenerForBindingProperties(project);
         backend.getConfigurationService()
           .didRemoveConfigurationScope(new DidRemoveConfigurationScopeParams(getConfigScopeId(project)));
       }
