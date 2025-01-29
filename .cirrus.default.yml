@@ -284,7 +284,7 @@ qa_connectedModeSonarCloud_task:
   env:
     ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
     GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
-    SONARCLOUD_IT_PASSWORD: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.password]
+    SONARCLOUD_IT_TOKEN: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.token]
     DISPLAY: :10
     MAVEN_OPTS: -Xmx3072m
   <<: *SETUP_MAVEN_CACHE_QA
@@ -307,7 +307,7 @@ qa_connectedModeSonarCloud_task:
   run_its_script: |
     echo "Run Maven ITs for Connected Mode with SonarCloud on Eclipse (latest Java 21)"
     cd its/
-    env SONARCLOUD_IT_PASSWORD=$SONARCLOUD_IT_PASSWORD \
+    env SONARCLOUD_IT_TOKEN=$SONARCLOUD_IT_TOKEN \
       mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
       -s ${HOME}/.m2/settings-public-auth.xml \
       -P coverage,\!standaloneMode,\!connectedModeSq,\!cdtIntegration \
