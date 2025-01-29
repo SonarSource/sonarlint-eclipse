@@ -36,6 +36,7 @@ import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.AfterClass;
@@ -49,12 +50,14 @@ import org.sonarlint.eclipse.its.shared.reddeer.conditions.FixSuggestionAvailabl
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.FixSuggestionUnavailableDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectBindingWizardIsOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectSelectionDialogOpened;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.ZeroIssuesOnProject;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmConnectionCreationDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionAvailableDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionUnavailableDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.SonarLintPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView;
+import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ServerConnectionWizard;
 import org.sonarqube.ws.ProjectBranches.Branch;
@@ -73,8 +76,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
   private static final String SONARCLOUD_STAGING_URL = "https://sc-staging.io";
   private static final String SONARCLOUD_ORGANIZATION_KEY = "sonarlint-it";
-  private static final String SONARCLOUD_USER = "sonarlint-it";
-  private static final String SONARCLOUD_PASSWORD = System.getenv("SONARCLOUD_IT_PASSWORD");
+  private static final String SONARCLOUD_TOKEN = System.getenv("SONARCLOUD_IT_TOKEN");
   private static final String TOKEN_NAME = "SLE-IT-" + TIMESTAMP;
   private static final String SAMPLE_JAVA_ISSUES_PROJECT_KEY = "sonarlint-its-sample-java-issues";
 
@@ -89,7 +91,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   public static void prepare() {
     connector = HttpConnector.newBuilder()
       .url(SONARCLOUD_STAGING_URL)
-      .credentials(SONARCLOUD_USER, SONARCLOUD_PASSWORD)
+      .token(SONARCLOUD_TOKEN)
       .build();
     adminWsClient = WsClientFactories.getDefault().newClient(connector);
 
@@ -116,6 +118,10 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     // Because we only use CDT in here, we switch back for other tests to not get confused!
     new JavaPerspective().open();
+
+    // Because we might kill the connection in the middle of synchronization a 401 can happen, in
+    // this case an error will throw (correctly)
+    shellByName("SonarQube for Eclipse - An error occurred").ifPresent(DefaultShell::close);
   }
 
   @Before
@@ -207,7 +213,9 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   @Test
   public void fixSuggestion_with_ConnectionSetup_fileNotFound() throws InterruptedException, IOException {
-    importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
+    new SonarLintConsole().clear();
+
+    var project = importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
     triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey,
       firstSonarCloudIssueKey,
@@ -223,10 +231,14 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new WaitUntil(new ProjectSelectionDialogOpened());
     new ProjectSelectionDialog().ok();
 
-    // The error message from SLCORE is not denoted by a specific title.
+    // 1) The error message from SLCORE is not denoted by a specific title.
     var shellOpt = shellByName("SonarQube");
     assertThat(shellOpt).isNotEmpty();
     shellOpt.get().close();
+
+    // 2) Wait until the synchronization is completely done to mitigate possible issues!
+    openFileAndWaitForAnalysisCompletion(project.getResource("FileExists.txt"));
+    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(30));
   }
 
   @Test
@@ -237,6 +249,8 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     final var after = "IntelliJ IDEA is not the best!";
     final var startLine = 0;
     final var endLine = 1;
+
+    new SonarLintConsole().clear();
 
     importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
@@ -275,6 +289,9 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     new WaitUntil(new FixSuggestionUnavailableDialogOpened(0, 1));
     new FixSuggestionUnavailableDialog(0, 1).proceed();
+
+    // 6) Wait until the synchronization is completely done to mitigate possible issues!
+    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(30));
   }
 
   @Test
@@ -288,6 +305,8 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     final var firstEndLine = 1;
     final var secondStartLine = 1107;
     final var secondEndLine = 1108;
+
+    new SonarLintConsole().clear();
 
     importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
@@ -312,6 +331,9 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     // 2) Proceed with second suggestion (way out of range of the file)
     new WaitUntil(new FixSuggestionUnavailableDialogOpened(1, 2));
     new FixSuggestionUnavailableDialog(1, 2).proceed();
+
+    // 3) Wait until the synchronization is completely done to mitigate possible issues!
+    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(30));
   }
 
   /**
