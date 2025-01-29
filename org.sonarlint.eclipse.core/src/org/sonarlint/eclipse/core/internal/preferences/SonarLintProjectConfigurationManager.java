@@ -19,8 +19,11 @@
  */
 package org.sonarlint.eclipse.core.internal.preferences;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -54,14 +57,26 @@ public class SonarLintProjectConfigurationManager {
 
   private static final Set<String> BINDING_RELATED_PROPERTIES = Set.of(P_PROJECT_KEY, P_CONNECTION_ID, P_BINDING_SUGGESTIONS_DISABLED_KEY);
 
+  private static final Map<ISonarLintProject, IPreferenceChangeListener> projectBindingPropertiesListener = new HashMap<>();
+
   public static void registerPreferenceChangeListenerForBindingProperties(ISonarLintProject project, Consumer<ISonarLintProject> listener) {
+    projectBindingPropertiesListener.put(project, event -> {
+      if (BINDING_RELATED_PROPERTIES.contains(event.getKey())) {
+        listener.accept(project);
+      }
+    });
+
+    ofNullable(project.getScopeContext().getNode(SonarLintCorePlugin.PLUGIN_ID))
+      .ifPresent(node -> node.addPreferenceChangeListener(projectBindingPropertiesListener.get(project)));
+  }
+
+  public static void removePreferenceChangeListenerForBindingProperties(ISonarLintProject project) {
     ofNullable(project.getScopeContext().getNode(SonarLintCorePlugin.PLUGIN_ID))
       .ifPresent(node -> {
-        node.addPreferenceChangeListener(event -> {
-          if (BINDING_RELATED_PROPERTIES.contains(event.getKey())) {
-            listener.accept(project);
-          }
-        });
+        var listener = projectBindingPropertiesListener.remove(project);
+        if (listener != null) {
+          node.removePreferenceChangeListener(listener);
+        }
       });
   }
 
