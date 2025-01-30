@@ -29,15 +29,15 @@ public class SonarLintDocumentation {
   public static final String CONNECTED_MODE_SHARING = CONNECTED_MODE_SETUP_LINK + "#reuse-the-binding-configuration";
   public static final String VERSION_SUPPORT_POLICY = CONNECTED_MODE_SETUP_LINK + "#sonarlint-sonarqube-version-support-policy";
   public static final String BRANCH_AWARENESS = CONNECTED_MODE_LINK + "#branch-awareness";
-  public static final String SECURITY_HOTSPOTS_LINK = BASE_DOCS_URL + "/using-sonarlint/security-hotspots/";
-  public static final String TAINT_VULNERABILITIES_LINK = BASE_DOCS_URL + "/using-sonarlint/taint-vulnerabilities/";
-  public static final String ON_THE_FLY_VIEW_LINK = BASE_DOCS_URL + "/using-sonarlint/investigating-issues/#the-on-the-fly-view";
-  public static final String ISSUE_TYPES_LINK = BASE_DOCS_URL + "/using-sonarlint/investigating-issues/#issue-types";
-  public static final String REPORT_VIEW_LINK = BASE_DOCS_URL + "/using-sonarlint/investigating-issues/#the-report-view";
-  public static final String ISSUE_PERIOD_LINK = BASE_DOCS_URL + "/using-sonarlint/investigating-issues/#focusing-on-new-code";
-  public static final String MARK_ISSUES_LINK = BASE_DOCS_URL + "/using-sonarlint/fixing-issues/#marking-issues";
-  public static final String FILE_EXCLUSIONS = BASE_DOCS_URL + "/using-sonarlint/file-exclusions/";
-  public static final String RULES = BASE_DOCS_URL + "/using-sonarlint/rules/";
+  public static final String SECURITY_HOTSPOTS_LINK = BASE_DOCS_URL + "/using/security-hotspots/";
+  public static final String TAINT_VULNERABILITIES_LINK = BASE_DOCS_URL + "/using/taint-vulnerabilities/";
+  public static final String ON_THE_FLY_VIEW_LINK = BASE_DOCS_URL + "/using/investigating-issues/#the-on-the-fly-view";
+  public static final String ISSUE_TYPES_LINK = BASE_DOCS_URL + "/using/investigating-issues/#issue-types";
+  public static final String REPORT_VIEW_LINK = BASE_DOCS_URL + "/using/investigating-issues/#the-report-view";
+  public static final String ISSUE_PERIOD_LINK = BASE_DOCS_URL + "/using/investigating-issues/#focusing-on-new-code";
+  public static final String MARK_ISSUES_LINK = BASE_DOCS_URL + "/using/fixing-issues/#marking-issues";
+  public static final String FILE_EXCLUSIONS = BASE_DOCS_URL + "/using/file-exclusions/";
+  public static final String RULES = BASE_DOCS_URL + "/using/rules/";
   public static final String RULES_SELECTION = RULES + "#rule-selection";
   public static final String TROUBLESHOOTING_LINK = BASE_DOCS_URL + "/troubleshooting/";
   public static final String ADVANCED_CONFIGURATION = BASE_DOCS_URL + "/team-features/advanced-configuration/";
@@ -46,8 +46,8 @@ public class SonarLintDocumentation {
   private static final String BASE_MARKETING_URL = "https://www.sonarsource.com";
   public static final String SONARCLOUD_FREE_SIGNUP_LINK = BASE_MARKETING_URL + "/products/sonarcloud/signup-free/";
 
-  public static final String SONARQUBE_SMART_NOTIFICATIONS = "https://docs.sonarsource.com/sonarqube/latest/user-guide/sonarlint-connected-mode/#smart-notifications";
-  public static final String SONARCLOUD_SMART_NOTIFICATIONS = "https://docs.sonarsource.com/sonarcloud/improving/sonarlint/#smart-notifications";
+  public static final String SONARQUBE_SMART_NOTIFICATIONS = "https://docs.sonarsource.com/sonarqube-server/latest/user-guide/sonarlint-connected-mode/#smart-notifications";
+  public static final String SONARCLOUD_SMART_NOTIFICATIONS = "https://docs.sonarsource.com/sonarqube-cloud/improving/sonarlint/#smart-notifications";
 
   public static final String COMMUNITY_FORUM = "https://community.sonarsource.com/c/sl/11";
   public static final String COMMUNITY_FORUM_ECLIPSE_RELEASES = "https://community.sonarsource.com/tags/c/sl/sonarlint-releases/37/eclipse";
