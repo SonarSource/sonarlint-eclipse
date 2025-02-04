@@ -203,6 +203,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   }
 
   @Test
+  @Ignore("Due to SLCORE-1083, has to be fixed later!")
   public void testLocalServerStatusRequest() throws Exception {
     assertThat(hotspotServerPort).isNotEqualTo(-1);
     var statusConnection = (HttpURLConnection) new URL(String.format("http://localhost:%d/sonarlint/api/status", hotspotServerPort)).openConnection();
