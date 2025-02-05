@@ -131,10 +131,9 @@ public abstract class AbstractConnectionWizard extends Wizard implements INewWiz
   protected abstract boolean actualPerformFinish();
 
   protected void finalizeConnectionCreation() {
-    resultServer = SonarLintCorePlugin.getConnectionManager().create(model.getConnectionId(), model.getServerUrl(), model.getOrganization(), model.getUsername(),
-      model.getPassword(),
-      model.getNotificationsDisabled());
-    SonarLintCorePlugin.getConnectionManager().addConnection(resultServer, model.getUsername(), model.getPassword());
+    resultServer = SonarLintCorePlugin.getConnectionManager().create(model.getConnectionId(), model.getServerUrl(),
+      model.getOrganization(), model.getUsername(), model.getNotificationsDisabled());
+    SonarLintCorePlugin.getConnectionManager().addConnection(resultServer, model.getUsername());
     try {
       PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BindingsView.ID);
     } catch (PartInitException e) {
@@ -192,9 +191,7 @@ public abstract class AbstractConnectionWizard extends Wizard implements INewWiz
   }
 
   protected Either<TokenDto, UsernamePasswordDto> modelToCredentialDto() {
-    return model.getPassword() == null
-      ? Either.<TokenDto, UsernamePasswordDto>forLeft(new TokenDto(model.getUsername()))
-      : Either.<TokenDto, UsernamePasswordDto>forRight(new UsernamePasswordDto(model.getUsername(), model.getPassword()));
+    return Either.forLeft(new TokenDto(model.getUsername()));
   }
 
   private static String message(Exception e) {

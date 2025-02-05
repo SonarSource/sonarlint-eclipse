@@ -125,10 +125,11 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
     return connectionOpt.get();
   }
 
+  /** There is no UsernamePasswordDto available in SonarQube for Eclipse anymore, only token authentication! */
   @Override
   public Either<TokenDto, UsernamePasswordDto> getCredentials(String connectionId) throws ConnectionNotFoundException {
     var connection = resolveConnection(connectionId);
-    return connection.getCredentials();
+    return Either.forLeft(connection.getCredentials());
   }
 
   @Override

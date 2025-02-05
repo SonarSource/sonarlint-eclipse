@@ -75,7 +75,7 @@ public class EditNotificationsWizard extends Wizard implements INewWizard {
 
   @Override
   public boolean performFinish() {
-    editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsDisabled());
+    editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getNotificationsDisabled());
     return true;
   }
 

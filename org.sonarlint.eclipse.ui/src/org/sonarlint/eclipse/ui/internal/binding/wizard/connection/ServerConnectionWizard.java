@@ -107,11 +107,6 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
     var currentPage = (WizardPage) event.getCurrentPage();
     var advance = getNextPage(currentPage) == event.getTargetPage();
     if (advance && !redirectedAfterNotificationCheck && currentPage == tokenPage) {
-      // When having a username/password based connection and editing it, there is only the option to switch to a token
-      // available. In this case, when a token was generated, we will remove the password and set the authentication
-      // method to "TOKEN" that is then used on the "AbstractConnectionWizard#testConnection(...)" already!
-      model.setPassword(null);
-
       if (!testConnection(null)) {
         event.doit = false;
         return;
@@ -208,7 +203,7 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
       }
 
       if (model.isEdit()) {
-        editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsDisabled());
+        editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getNotificationsDisabled());
         resultServer = editedServer;
       } else {
         finalizeConnectionCreation();

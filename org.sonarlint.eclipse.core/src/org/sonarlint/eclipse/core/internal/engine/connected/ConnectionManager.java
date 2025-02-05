@@ -55,8 +55,11 @@ public class ConnectionManager {
   static final String AUTH_ATTRIBUTE = "auth";
   static final String URL_ATTRIBUTE = "url";
   static final String ORG_ATTRIBUTE = "org";
-  static final String USERNAME_ATTRIBUTE = "username";
-  static final String PASSWORD_ATTRIBUTE = "password";
+
+  // Even though this now storing only the token, we cannot rename the attribute as updating from
+  // previous versions would not work anymore - keep compatibility!
+  static final String TOKEN_ATTRIBUTE = "username";
+
   static final String NOTIFICATIONS_DISABLED_ATTRIBUTE = "notificationsDisabled";
 
   private static final byte EVENT_CHANGED = 1;
@@ -253,12 +256,12 @@ public class ConnectionManager {
     return StringUtils.urlDecode(name);
   }
 
-  public void addConnection(ConnectionFacade facade, String username, String password) {
+  public void addConnection(ConnectionFacade facade, String token) {
     if (facadesByConnectionId.containsKey(facade.getId())) {
       throw new IllegalStateException("There is already a connection with id '" + facade.getId() + "'");
     }
-    if (hasAuth(username, password)) {
-      storeCredentials(facade, username, password);
+    if (StringUtils.isNotBlank(token)) {
+      storeCredentials(facade, token);
     }
     addOrUpdateProperties(facade);
     facadesByConnectionId.put(facade.getId(), facade);
@@ -268,16 +271,14 @@ public class ConnectionManager {
   /**
    * @return true if the new credentials are different compared to what is in the secure storage
    */
-  private static boolean storeCredentials(ConnectionFacade connectionFacade, String username, String password) {
+  private static boolean storeCredentials(ConnectionFacade connectionFacade, String token) {
     try {
       var secureConnectionsNode = getSecureConnectionsNode();
       var secureConnectionNode = secureConnectionsNode.node(getConnectionNodeName(connectionFacade.getId()));
-      var previousUsername = secureConnectionNode.get(USERNAME_ATTRIBUTE, null);
-      var previousPassword = secureConnectionNode.get(PASSWORD_ATTRIBUTE, null);
-      secureConnectionNode.put(USERNAME_ATTRIBUTE, username, true);
-      secureConnectionNode.put(PASSWORD_ATTRIBUTE, password, true);
+      var previousToken = secureConnectionNode.get(TOKEN_ATTRIBUTE, null);
+      secureConnectionNode.put(TOKEN_ATTRIBUTE, token, true);
       secureConnectionsNode.flush();
-      return !Objects.equals(previousUsername, username) || !Objects.equals(previousPassword, password);
+      return !Objects.equals(previousToken, token);
     } catch (StorageException | IOException e) {
       throw new IllegalStateException("Unable to store connection credentials in secure storage: " + e.getMessage(), e);
     }
@@ -365,7 +366,7 @@ public class ConnectionManager {
       });
   }
 
-  public void updateConnection(ConnectionFacade facade, String username, String password) {
+  public void updateConnection(ConnectionFacade facade, String token) {
     if (!facadesByConnectionId.containsKey(facade.getId())) {
       throw new IllegalStateException("There is no connection with id '" + facade.getId() + "'");
     }
@@ -377,7 +378,7 @@ public class ConnectionManager {
         var defaultServers = new ArrayList<>(facadesByConnectionId.values());
         facadesByConnectionId.clear();
         for (ConnectionFacade iServer : defaultServers) {
-          addConnection(iServer, "", "");
+          addConnection(iServer, "");
         }
       }
     } catch (BackingStoreException e) {
@@ -387,7 +388,7 @@ public class ConnectionManager {
     addOrUpdateProperties(facade);
     var credentialsChanged = false;
     if (facade.hasAuth()) {
-      credentialsChanged = storeCredentials(facade, username, password);
+      credentialsChanged = storeCredentials(facade, token);
     }
     var connectionToUpdate = facadesByConnectionId.get(facade.getId());
     update(connectionToUpdate, facade.getHost(), facade.getOrganization(), facade.hasAuth(), facade.areNotificationsDisabled());
@@ -429,17 +430,8 @@ public class ConnectionManager {
   }
 
   @Nullable
-  public static String getUsername(ConnectionFacade facade) throws StorageException {
-    return getFromSecure(facade, USERNAME_ATTRIBUTE);
-  }
-
-  /**
-   *  @deprecated as only token authentication is supported from now on and this is saved in the username attribute!
-   */
-  @Deprecated(since = "10.10", forRemoval = true)
-  @Nullable
-  public static String getPassword(ConnectionFacade facade) throws StorageException {
-    return getFromSecure(facade, PASSWORD_ATTRIBUTE);
+  public static String getToken(ConnectionFacade facade) throws StorageException {
+    return getFromSecure(facade, TOKEN_ATTRIBUTE);
   }
 
   @Nullable
@@ -473,12 +465,8 @@ public class ConnectionManager {
     return null;
   }
 
-  public ConnectionFacade create(String id, String url, @Nullable String organization, String username, String password, boolean notificationsEnabled) {
-    return update(new ConnectionFacade(id), url, organization, hasAuth(username, password), notificationsEnabled);
-  }
-
-  private static boolean hasAuth(@Nullable String username, @Nullable String password) {
-    return StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
+  public ConnectionFacade create(String id, String url, @Nullable String organization, String token, boolean notificationsEnabled) {
+    return update(new ConnectionFacade(id), url, organization, StringUtils.isNotBlank(token), notificationsEnabled);
   }
 
   private static ConnectionFacade update(ConnectionFacade facade, String url, @Nullable String organization, boolean hasAuth, boolean notificationsDisabled) {

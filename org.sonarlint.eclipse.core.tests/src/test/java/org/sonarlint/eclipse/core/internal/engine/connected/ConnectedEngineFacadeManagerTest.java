@@ -33,10 +33,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.AUTH_ATTRIBUTE;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.ORG_ATTRIBUTE;
-import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.PASSWORD_ATTRIBUTE;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.PREF_CONNECTIONS;
+import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.TOKEN_ATTRIBUTE;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.URL_ATTRIBUTE;
-import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.USERNAME_ATTRIBUTE;
 
 /**
  * To have this test pass when launched from the IDE, you have to set -pluginCustomization argument (see pom.xml).
@@ -61,12 +60,11 @@ public class ConnectedEngineFacadeManagerTest {
     assertThat(ROOT.nodeExists(PREF_CONNECTIONS)).isFalse();
     assertThat(ROOT_SECURE.nodeExists(PREF_CONNECTIONS)).isFalse();
     var id = "foo/bar";
-    var connection = manager.create(id, "http://foo", "bar", "login", "pwd", false);
-    manager.addConnection(connection, "login", "pwd");
+    var connection = manager.create(id, "http://foo", "bar", "token", false);
+    manager.addConnection(connection, "token");
     assertThat(manager.getConnections()).containsExactly(connection);
     assertThat(manager.findById(id)).contains(connection);
-    assertThat(ConnectionManager.getUsername(connection)).isEqualTo("login");
-    assertThat(ConnectionManager.getPassword(connection)).isEqualTo("pwd");
+    assertThat(ConnectionManager.getToken(connection)).isEqualTo("token");
     assertThat(ROOT.nodeExists(PREF_CONNECTIONS)).isTrue();
     assertThat(ROOT_SECURE.nodeExists(PREF_CONNECTIONS)).isTrue();
     assertThat(ROOT.node(PREF_CONNECTIONS).nodeExists("foo%2Fbar")).isTrue();
@@ -74,25 +72,23 @@ public class ConnectedEngineFacadeManagerTest {
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(URL_ATTRIBUTE, null)).isEqualTo("http://foo");
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").getBoolean(AUTH_ATTRIBUTE, false)).isTrue();
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(ORG_ATTRIBUTE, null)).isEqualTo("bar");
-    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(USERNAME_ATTRIBUTE, null)).isEqualTo("login");
-    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(PASSWORD_ATTRIBUTE, null)).isEqualTo("pwd");
+    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(TOKEN_ATTRIBUTE, null)).isEqualTo("token");
 
-    var connectionUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
+    var connectionUpdated = manager.create(id, "http://foo2", "bar2", "token2", false);
     try {
-      manager.addConnection(connectionUpdated, "login2", "pwd2");
+      manager.addConnection(connectionUpdated, "token2");
       fail("Expected exception");
     } catch (Exception e) {
       assertThat(e).isInstanceOf(IllegalStateException.class).hasMessage("There is already a connection with id '" + id + "'");
     }
 
-    manager.updateConnection(connectionUpdated, "login2", "pwd2");
+    manager.updateConnection(connectionUpdated, "token2");
     assertThat(manager.getConnections()).containsExactly(connection);
     assertThat(manager.findById(id)).contains(connection);
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(URL_ATTRIBUTE, null)).isEqualTo("http://foo2");
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").getBoolean(AUTH_ATTRIBUTE, false)).isTrue();
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(ORG_ATTRIBUTE, null)).isEqualTo("bar2");
-    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(USERNAME_ATTRIBUTE, null)).isEqualTo("login2");
-    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(PASSWORD_ATTRIBUTE, null)).isEqualTo("pwd2");
+    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(TOKEN_ATTRIBUTE, null)).isEqualTo("token2");
 
     manager.removeConnection(connectionUpdated);
     assertThat(manager.getConnections()).isEmpty();
@@ -118,7 +114,7 @@ public class ConnectedEngineFacadeManagerTest {
     var iServer = manager.findById("default").get();
     assertThat(iServer.getId()).isEqualTo("default");
 
-    manager.updateConnection(manager.create("default", "http://foo2", "bar2", "toto", null, false), "toto", null);
+    manager.updateConnection(manager.create("default", "http://foo2", "bar2", "toto", false), "toto");
     iServer = manager.findById("default").get();
     assertThat(iServer.getId()).isEqualTo("default");
     assertThat(iServer.getHost()).isEqualTo("http://foo2");
@@ -142,16 +138,16 @@ public class ConnectedEngineFacadeManagerTest {
     removed.clear();
 
     var id = "foo/bar";
-    var newServer = manager.create(id, "http://foo", "bar", "login", "pwd", false);
-    manager.addConnection(newServer, "login", "pwd");
+    var newServer = manager.create(id, "http://foo", "bar", "token", false);
+    manager.addConnection(newServer, "token");
     assertThat(removed).isEmpty();
     assertThat(changed).isEmpty();
     assertThat(added).containsExactly(newServer);
 
     added.clear();
 
-    var connectionUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
-    manager.updateConnection(connectionUpdated, "login2", "pwd2");
+    var connectionUpdated = manager.create(id, "http://foo2", "bar2", "token2", false);
+    manager.updateConnection(connectionUpdated, "token2");
     assertThat(removed).isEmpty();
     assertThat(changed).containsExactly(connectionUpdated);
     assertThat(added).isEmpty();
@@ -246,8 +242,8 @@ public class ConnectedEngineFacadeManagerTest {
 
   @Test
   public void should_ignore_case_for_scheme_and_host_when_finding_connection() {
-    var connection = manager.create("ID", "http://foo", "bar", "login", "pwd", false);
-    manager.addConnection(connection, "login", "pwd");
+    var connection = manager.create("ID", "http://foo", "bar", "token", false);
+    manager.addConnection(connection, "token");
 
     var facades = manager.findByUrl("HTTP://FOO");
     assertThat(facades).contains(connection);
