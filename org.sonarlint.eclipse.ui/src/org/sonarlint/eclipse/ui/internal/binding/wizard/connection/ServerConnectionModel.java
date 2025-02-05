@@ -34,9 +34,6 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ModelObject;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.org.OrganizationDto;
-import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
-import org.sonarsource.sonarlint.core.rpc.protocol.common.TokenDto;
-import org.sonarsource.sonarlint.core.rpc.protocol.common.UsernamePasswordDto;
 
 public class ServerConnectionModel extends ModelObject {
 
@@ -45,8 +42,12 @@ public class ServerConnectionModel extends ModelObject {
   public static final String PROPERTY_CONNECTION_TYPE = "connectionType";
   public static final String PROPERTY_SERVER_URL = "serverUrl";
   public static final String PROPERTY_AUTH_METHOD = "authMethod";
+
+  // Even though this now storing only the token, we cannot rename the property as updating from
+  // previous versions would not work anymore - keep compatibility!
+  // And this is configured via Java beans!
   public static final String PROPERTY_USERNAME = "username";
-  public static final String PROPERTY_PASSWORD = "password";
+
   public static final String PROPERTY_ORGANIZATION = "organization";
   public static final String PROPERTY_CONNECTION_ID = "connectionId";
   public static final String PROPERTY_NOTIFICATIONS_ENABLED = "notificationsEnabled";
@@ -61,14 +62,9 @@ public class ServerConnectionModel extends ModelObject {
   private String connectionId;
   private String serverUrl = SonarLintUtils.getSonarCloudUrl();
   private String organization;
-  private String username;
 
-  /**
-   *  @deprecated as only token authentication is supported from now on and this is saved in the username field!
-   */
-  @Deprecated(since = "10.10", forRemoval = true)
-  @Nullable
-  private String password;
+  // INFO: As setting this configured on the TokenWizardPage via Java beans, this has to keep the "username"!
+  private String username;
 
   private boolean notificationsSupported;
   private boolean notificationsDisabled;
@@ -93,8 +89,7 @@ public class ServerConnectionModel extends ModelObject {
     this.organization = connection.getOrganization();
     if (connection.hasAuth()) {
       try {
-        this.username = ConnectionManager.getUsername(connection);
-        this.password = ConnectionManager.getPassword(connection);
+        this.username = ConnectionManager.getToken(connection);
       } catch (StorageException e) {
         SonarLintLogger.get().error(ERROR_READING_SECURE_STORAGE, e);
         MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_READING_SECURE_STORAGE, "Unable to read password from secure storage: " + e.getMessage());
@@ -159,24 +154,16 @@ public class ServerConnectionModel extends ModelObject {
     suggestServerId();
   }
 
+  // INFO: As setting this configured on the TokenWizardPage via Java beans, this has to keep the "username"!
   public String getUsername() {
     return username;
   }
 
+  // INFO: As setting this configured on the TokenWizardPage via Java beans, this has to keep the "username"!
   public void setUsername(String username) {
     var old = this.username;
     this.username = username;
     firePropertyChange(PROPERTY_USERNAME, old, this.username);
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    var old = this.password;
-    this.password = password;
-    firePropertyChange(PROPERTY_PASSWORD, old, this.password);
   }
 
   public void suggestOrganization(List<OrganizationDto> userOrgs) {
@@ -240,13 +227,5 @@ public class ServerConnectionModel extends ModelObject {
 
   public boolean getNotificationsDisabled() {
     return this.notificationsDisabled;
-  }
-
-  public Either<TokenDto, UsernamePasswordDto> getTransientRpcCrendentials() {
-    if (password == null) {
-      return Either.forLeft(new TokenDto(username));
-    } else {
-      return Either.forRight(new UsernamePasswordDto(username, password));
-    }
   }
 }
