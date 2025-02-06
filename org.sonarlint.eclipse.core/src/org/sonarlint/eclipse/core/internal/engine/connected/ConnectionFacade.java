@@ -43,7 +43,6 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.Tra
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.SonarProjectDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TokenDto;
-import org.sonarsource.sonarlint.core.rpc.protocol.common.UsernamePasswordDto;
 
 import static java.util.stream.Collectors.toList;
 
@@ -118,26 +117,19 @@ public class ConnectionFacade {
   }
 
   @Nullable
-  public Either<TokenDto, UsernamePasswordDto> getCredentials() {
+  public TokenDto getCredentials() {
     if (!hasAuth()) {
       return null;
     }
     @Nullable
-    String username;
-    @Nullable
-    String password;
+    String token;
     try {
-      username = ConnectionManager.getUsername(this);
-      password = ConnectionManager.getPassword(this);
+      token = ConnectionManager.getToken(this);
     } catch (StorageException e) {
       SonarLintLogger.get().error("Unable to resolve credentials for connection: " + getId());
       return null;
     }
-    if (StringUtils.isNotBlank(password)) {
-      return Either.forRight(new UsernamePasswordDto(username, password));
-    } else {
-      return Either.forLeft(new TokenDto(username));
-    }
+    return new TokenDto(token);
   }
 
   public synchronized void delete() {
@@ -157,12 +149,12 @@ public class ConnectionFacade {
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_FLOW_ID);
   }
 
-  public void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsDisabled) {
+  public void updateConfig(String url, @Nullable String organization, String token, boolean notificationsDisabled) {
     this.host = url;
     this.organization = organization;
-    this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
+    this.hasAuth = StringUtils.isNotBlank(token);
     this.notificationsDisabled = notificationsDisabled;
-    SonarLintCorePlugin.getConnectionManager().updateConnection(this, username, password);
+    SonarLintCorePlugin.getConnectionManager().updateConnection(this, token);
   }
 
   private static Stream<ISonarLintProject> getOpenedProjects() {
@@ -274,9 +266,9 @@ public class ConnectionFacade {
 
   public Either<TransientSonarQubeConnectionDto, TransientSonarCloudConnectionDto> toTransientDto() {
     if (isSonarCloud()) {
-      return Either.forRight(new TransientSonarCloudConnectionDto(getOrganization(), getCredentials()));
+      return Either.forRight(new TransientSonarCloudConnectionDto(getOrganization(), Either.forLeft(getCredentials())));
     } else {
-      return Either.forLeft(new TransientSonarQubeConnectionDto(getHost(), getCredentials()));
+      return Either.forLeft(new TransientSonarQubeConnectionDto(getHost(), Either.forLeft(getCredentials())));
     }
   }
 
