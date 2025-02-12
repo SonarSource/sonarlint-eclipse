@@ -36,7 +36,6 @@ import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
-import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.AfterClass;
@@ -118,10 +117,6 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     // Because we only use CDT in here, we switch back for other tests to not get confused!
     new JavaPerspective().open();
-
-    // Because we might kill the connection in the middle of synchronization a 401 can happen, in
-    // this case an error will throw (correctly)
-    shellByName("SonarQube for Eclipse - An error occurred").ifPresent(DefaultShell::close);
   }
 
   @Before

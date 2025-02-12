@@ -20,6 +20,8 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -107,12 +109,33 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       }
 
       @Override
+      public void error(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+        var stack = new StringWriter();
+        t.printStackTrace(new PrintWriter(stack));
+        error(msg, fromAnalyzer);
+        error(stack.toString(), fromAnalyzer);
+      }
+
+      @Override
       public void debug(String msg, boolean fromAnalyzer) {
         System.out.println("DEBUG " + msg);
       }
 
       @Override
+      public void debug(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+        var stack = new StringWriter();
+        t.printStackTrace(new PrintWriter(stack));
+        debug(msg, fromAnalyzer);
+        debug(stack.toString(), fromAnalyzer);
+      }
+
+      @Override
       public void traceIdeMessage(@Nullable String msg) {
+        // INFO: We ignore Eclipse-specific tracing in UTs
+      }
+
+      @Override
+      public void traceIdeMessage(@Nullable String msg, Throwable t) {
         // INFO: We ignore Eclipse-specific tracing in UTs
       }
     };

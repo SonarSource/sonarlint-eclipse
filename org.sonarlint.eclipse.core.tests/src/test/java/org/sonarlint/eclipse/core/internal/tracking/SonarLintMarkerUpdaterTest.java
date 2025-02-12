@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +74,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
     SonarLintLogger.get().addLogListener(new LogListener() {
       @Override
       public void info(String msg, boolean fromAnalyzer) {
+        // We ignore info messages in UTs
       }
 
       @Override
@@ -84,11 +87,30 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
       }
 
       @Override
+      public void error(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+        var stack = new StringWriter();
+        t.printStackTrace(new PrintWriter(stack));
+        error(msg, fromAnalyzer);
+        error(stack.toString(), fromAnalyzer);
+      }
+
+      @Override
       public void debug(String msg, boolean fromAnalyzer) {
+        // We ignore debug messages in UTs
+      }
+
+      @Override
+      public void debug(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+        // We ignore debug messages in UTs
       }
 
       @Override
       public void traceIdeMessage(@Nullable String msg) {
+        // INFO: We ignore Eclipse-specific tracing in UTs
+      }
+
+      @Override
+      public void traceIdeMessage(@Nullable String msg, Throwable t) {
         // INFO: We ignore Eclipse-specific tracing in UTs
       }
     });

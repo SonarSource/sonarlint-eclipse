@@ -113,6 +113,13 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
 
     @Override
+    public void error(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+      if (PlatformUI.isWorkbenchRunning()) {
+        doAsyncInUiThread(() -> getSonarConsole().error(msg, t, fromAnalyzer));
+      }
+    }
+
+    @Override
     public void debug(@Nullable String msg, boolean fromAnalyzer) {
       if (PlatformUI.isWorkbenchRunning()) {
         doAsyncInUiThread(() -> getSonarConsole().debug(msg, fromAnalyzer));
@@ -120,9 +127,23 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
 
     @Override
+    public void debug(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+      if (PlatformUI.isWorkbenchRunning()) {
+        doAsyncInUiThread(() -> getSonarConsole().debug(msg, t, fromAnalyzer));
+      }
+    }
+
+    @Override
     public void traceIdeMessage(@Nullable String msg) {
       if (PlatformUI.isWorkbenchRunning()) {
         doAsyncInUiThread(() -> getSonarConsole().traceIdeMessage(msg));
+      }
+    }
+
+    @Override
+    public void traceIdeMessage(@Nullable String msg, Throwable t) {
+      if (PlatformUI.isWorkbenchRunning()) {
+        doAsyncInUiThread(() -> getSonarConsole().traceIdeMessage(msg, t));
       }
     }
 

@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.core;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
@@ -60,10 +58,7 @@ public class SonarLintLogger {
 
   public void error(String msg, Throwable t) {
     for (var listener : logListeners) {
-      listener.error(msg, false);
-      var stack = new StringWriter();
-      t.printStackTrace(new PrintWriter(stack));
-      listener.error(stack.toString(), false);
+      listener.error(msg, t, false);
     }
   }
 
@@ -93,10 +88,7 @@ public class SonarLintLogger {
 
   public void debug(String msg, Throwable t) {
     for (var listener : logListeners) {
-      listener.debug(msg, false);
-      var stack = new StringWriter();
-      t.printStackTrace(new PrintWriter(stack));
-      listener.debug(stack.toString(), false);
+      listener.debug(msg, t, false);
     }
   }
 
@@ -108,10 +100,7 @@ public class SonarLintLogger {
 
   public void traceIdeMessage(String msg, Throwable t) {
     for (var listener : logListeners) {
-      listener.traceIdeMessage(msg);
-      var stack = new StringWriter();
-      t.printStackTrace(new PrintWriter(stack));
-      listener.traceIdeMessage(stack.toString());
+      listener.traceIdeMessage(msg, t);
     }
   }
 }

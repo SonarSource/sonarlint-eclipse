@@ -27,7 +27,11 @@ public interface LogListener {
 
   void error(@Nullable String msg, boolean fromAnalyzer);
 
+  void error(@Nullable String msg, Throwable t, boolean fromAnalyzer);
+
   void debug(@Nullable String msg, boolean fromAnalyzer);
+
+  void debug(@Nullable String msg, Throwable t, boolean fromAnalyzer);
 
   /**
    *  This should only be used for IDE-specific logging and is not intended for tracing messages from SLCORE as these
@@ -35,4 +39,6 @@ public interface LogListener {
    *  extension point, ...
    */
   void traceIdeMessage(@Nullable String msg);
+
+  void traceIdeMessage(@Nullable String msg, Throwable t);
 }
