@@ -22,10 +22,12 @@ package org.sonarlint.eclipse.ui.internal.popup;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
@@ -37,17 +39,23 @@ import org.sonarlint.eclipse.ui.internal.util.PopupUtils;
  */
 public class ErrorPopup extends AbstractSonarLintPopup {
   protected static Set<Integer> ignoredErrorMessageHashes = Collections.synchronizedSet(new HashSet<>());
+  protected static Set<Class<? extends Throwable>> ignoredErrorClasses = Collections.synchronizedSet(new HashSet<>());
 
   private final int errorMessageHash;
 
-  public ErrorPopup(int errorMessageHash) {
+  @Nullable
+  private final Throwable error;
+
+  public ErrorPopup(int errorMessageHash, @Nullable Throwable error) {
     this.errorMessageHash = errorMessageHash;
+    this.error = error;
   }
 
   @Override
   protected String getMessage() {
     return "Please reach out to us via the Community Forum and provide logs so we can improve the plug-in even "
-      + "further. You can also decide to not show this particular error again until the next restart of the IDE.";
+      + "further. You can also decide to ignore this particular error until the next restart of the IDE or don't show "
+      + "any error notifications from now on.";
   }
 
   @Override
@@ -60,8 +68,16 @@ public class ErrorPopup extends AbstractSonarLintPopup {
     addLink("Community Forum",
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.COMMUNITY_FORUM, getShell().getDisplay()));
 
-    addLink("Don't show again", e -> {
+    addLink("Ignore this error", e -> {
       ignoredErrorMessageHashes.add(errorMessageHash);
+      if (error != null) {
+        ignoredErrorClasses.add(error.getClass());
+      }
+      close();
+    });
+
+    addLink("Don't show again", e -> {
+      SonarLintGlobalConfiguration.setNoErrorNotification();
       close();
     });
 
@@ -78,17 +94,22 @@ public class ErrorPopup extends AbstractSonarLintPopup {
     return SonarLintImages.IMG_ERROR;
   }
 
-  public static void displayPopupIfNotIgnored(String errorMessage) {
+  public static void displayPopupIfNotIgnored(String errorMessage, @Nullable Throwable error) {
+    if (PopupUtils.popupCurrentlyDisplayed(ErrorPopup.class)
+      || SonarLintGlobalConfiguration.noErrorNotifcation()
+      || (error != null && ErrorPopup.ignoredErrorClasses.contains(error.getClass()))) {
+      return;
+    }
+
     int errorMessageHash = errorMessage.hashCode();
-    if (ErrorPopup.ignoredErrorMessageHashes.contains(errorMessageHash)
-      || PopupUtils.popupCurrentlyDisplayed(ErrorPopup.class)) {
+    if (ErrorPopup.ignoredErrorMessageHashes.contains(errorMessageHash)) {
       return;
     }
 
     Display.getDefault().asyncExec(() -> {
       PopupUtils.addCurrentlyDisplayedPopup(ErrorPopup.class);
 
-      var popup = new ErrorPopup(errorMessageHash);
+      var popup = new ErrorPopup(errorMessageHash, error);
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);
       popup.open();

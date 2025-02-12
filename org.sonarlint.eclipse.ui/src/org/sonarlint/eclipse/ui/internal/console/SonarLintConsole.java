@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal.console;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceColors;
@@ -129,7 +131,25 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
 
       // Display a notification when an error is logged to the SonarQube Console. The first step towards a proper error
       // reporting mechanism.
-      ErrorPopup.displayPopupIfNotIgnored(msg);
+      ErrorPopup.displayPopupIfNotIgnored(msg, null);
+    }
+  }
+
+  public void error(String msg, Throwable t, boolean fromAnalyzer) {
+    if (showAnalysisLogs() || !fromAnalyzer) {
+      if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
+        bringConsoleToFront();
+      }
+
+      var stack = new StringWriter();
+      t.printStackTrace(new PrintWriter(stack));
+
+      write(getWarnStream(), msg);
+      write(getWarnStream(), stack.toString());
+
+      // Display a notification when an error is logged to the SonarQube Console. The first step towards a proper error
+      // reporting mechanism.
+      ErrorPopup.displayPopupIfNotIgnored(msg, t);
     }
   }
 
@@ -142,6 +162,13 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
     }
   }
 
+  public void debug(String msg, Throwable t, boolean fromAnalyzer) {
+    var stack = new StringWriter();
+    t.printStackTrace(new PrintWriter(stack));
+    debug(msg, fromAnalyzer);
+    debug(stack.toString(), fromAnalyzer);
+  }
+
   public void traceIdeMessage(String msg) {
     if (showIdeSpecificTracing()) {
       if (isShowConsoleOnOutput()) {
@@ -149,6 +176,13 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
       }
       write(getTraceStream(), msg);
     }
+  }
+
+  public void traceIdeMessage(String msg, Throwable t) {
+    var stack = new StringWriter();
+    t.printStackTrace(new PrintWriter(stack));
+    traceIdeMessage(msg);
+    traceIdeMessage(stack.toString());
   }
 
   private static void write(MessageConsoleStream stream, String msg) {
