@@ -189,10 +189,13 @@ public class SonarLintBackendService {
           // Check if telemetry was disabled via system properties (e.g. in unit / integration tests)
           var telemetryEnabled = !Boolean.parseBoolean(System.getProperty("sonarlint.telemetry.disabled", "false"));
 
+          // Getting this information is expensive, therefore only do it once and re-use the values!
+          var plugInVersion = SonarLintUtils.getPluginVersion();
+          var ideVersion = SonarLintTelemetry.ideVersionForTelemetry();
+
           backend.initialize(new InitializeParams(
-            new ClientConstantInfoDto(getIdeName(), "SonarLint Eclipse " + SonarLintUtils.getPluginVersion()),
-            new TelemetryClientConstantAttributesDto("eclipse", "SonarLint Eclipse", SonarLintUtils.getPluginVersion(), SonarLintTelemetry.ideVersionForTelemetry(),
-              Map.of()),
+            new ClientConstantInfoDto(getIdeName(), "SonarQube for IDE (SonarLint) - Eclipse " + plugInVersion + " - " + ideVersion),
+            new TelemetryClientConstantAttributesDto("eclipse", "SonarLint Eclipse", plugInVersion, ideVersion, Map.of()),
             httpConfiguration,
             getSonarCloudAlternativeEnvironment(),
             new FeatureFlagsDto(true, true, true, true, false, true, true, true, telemetryEnabled, true, false),
