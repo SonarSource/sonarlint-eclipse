@@ -58,6 +58,7 @@ import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueContext;
 import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
+import org.sonarlint.eclipse.ui.internal.popup.InvalidTokenPopup;
 import org.sonarlint.eclipse.ui.internal.popup.LanguageFromConnectedModePopup;
 import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
 import org.sonarlint.eclipse.ui.internal.popup.NoBindingSuggestionFoundPopup;
@@ -509,5 +510,15 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
     }
     var languages = languagesToPromote.stream().map(language -> SonarLintLanguage.valueOf(language.name())).collect(Collectors.toList());
     LanguageFromConnectedModePopup.displayPopupIfNotIgnored(projectOpt.get(), languages);
+  }
+
+  @Override
+  public void invalidToken(String connectionId) {
+    var connectionFacadeOpt = SonarLintCorePlugin.getConnectionManager().findById(connectionId);
+    if (connectionFacadeOpt.isEmpty()) {
+      return;
+    }
+
+    InvalidTokenPopup.displayPopupIfNotIgnored(connectionFacadeOpt.get());
   }
 }
