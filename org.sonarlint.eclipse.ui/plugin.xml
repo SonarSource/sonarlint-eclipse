@@ -1707,6 +1707,7 @@
   </extension>
 
   <extension point="org.eclipse.ui.perspectiveExtensions">
+  	<!-- JDT provided main Java development perspective -->
     <perspectiveExtension
         targetID="org.eclipse.jdt.ui.JavaPerspective">
         <view id="org.sonarlint.eclipse.ui.views.IssueLocationsView"
@@ -1715,6 +1716,49 @@
         <view id="org.sonarlint.eclipse.ui.views.issues.IssuesView"
             relative="org.eclipse.ui.views.ProblemView"
             relationship="stack"/>
+        <view id="org.sonarlint.eclipse.ui.ServersView"
+            relative="org.eclipse.ui.views.ProblemView"
+            relationship="right"/>
+        <view id="org.sonarlint.eclipse.ui.views.RuleDescriptionWebView"
+            relative="org.eclipse.ui.views.ContentOutline"
+            relationship="stack" visible="false"/>
+        <viewShortcut
+              id="org.sonarlint.eclipse.ui.views.issues.IssuesView">
+        </viewShortcut>
+    </perspectiveExtension>
+    
+    <!-- CDT provided main C/C++ development perspective -->
+    <perspectiveExtension
+        targetID="org.eclipse.cdt.ui.CPerspective">
+        <view id="org.sonarlint.eclipse.ui.views.IssueLocationsView"
+            relative="org.eclipse.ui.views.ContentOutline"
+            relationship="stack" visible="false"/>
+        <view id="org.sonarlint.eclipse.ui.views.issues.IssuesView"
+            relative="org.eclipse.ui.views.ProblemView"
+            relationship="stack"/>
+        <view id="org.sonarlint.eclipse.ui.ServersView"
+            relative="org.eclipse.ui.views.ProblemView"
+            relationship="right"/>
+        <view id="org.sonarlint.eclipse.ui.views.RuleDescriptionWebView"
+            relative="org.eclipse.ui.views.ContentOutline"
+            relationship="stack" visible="false"/>
+        <viewShortcut
+              id="org.sonarlint.eclipse.ui.views.issues.IssuesView">
+        </viewShortcut>
+    </perspectiveExtension>
+    
+    <!-- PDE provided main plug-in development perspective -->
+    <perspectiveExtension
+        targetID="org.eclipse.pde.ui.PDEPerspective">
+        <view id="org.sonarlint.eclipse.ui.views.IssueLocationsView"
+            relative="org.eclipse.ui.views.ContentOutline"
+            relationship="stack" visible="false"/>
+        <view id="org.sonarlint.eclipse.ui.views.issues.IssuesView"
+            relative="org.eclipse.ui.views.ProblemView"
+            relationship="stack"/>
+        <view id="org.sonarlint.eclipse.ui.ServersView"
+            relative="org.eclipse.ui.views.ProblemView"
+            relationship="right"/>
         <view id="org.sonarlint.eclipse.ui.views.RuleDescriptionWebView"
             relative="org.eclipse.ui.views.ContentOutline"
             relationship="stack" visible="false"/>
