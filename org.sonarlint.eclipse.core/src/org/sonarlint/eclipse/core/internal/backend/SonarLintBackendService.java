@@ -198,7 +198,7 @@ public class SonarLintBackendService {
             new TelemetryClientConstantAttributesDto("eclipse", "SonarLint Eclipse", plugInVersion, ideVersion, Map.of()),
             httpConfiguration,
             getSonarCloudAlternativeEnvironment(),
-            new FeatureFlagsDto(true, true, true, true, false, true, true, true, telemetryEnabled, true, false),
+            new FeatureFlagsDto(true, true, true, true, false, true, true, true, telemetryEnabled, true, true),
             StoragePathManager.getStorageDir(),
             StoragePathManager.getDefaultWorkDir(),
             Set.copyOf(embeddedPluginPaths),
