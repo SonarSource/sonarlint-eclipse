@@ -60,7 +60,7 @@ public class SonarLintRpcClientSupportPopup extends AbstractSonarLintPopup {
 
   @Override
   protected Image getPopupShellImage(int maximumHeight) {
-    return SonarLintImages.IMG_SEVERITY_BLOCKER;
+    return SonarLintImages.IMG_ERROR;
   }
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */

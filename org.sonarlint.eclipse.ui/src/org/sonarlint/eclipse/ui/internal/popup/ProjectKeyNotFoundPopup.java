@@ -59,6 +59,6 @@ public class ProjectKeyNotFoundPopup extends AbstractSonarLintPopup {
 
   @Override
   protected Image getPopupShellImage(int maximumHeight) {
-    return SonarLintImages.IMG_SEVERITY_BLOCKER;
+    return SonarLintImages.IMG_ERROR;
   }
 }
