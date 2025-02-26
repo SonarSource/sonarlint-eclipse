@@ -42,6 +42,7 @@ import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
@@ -122,6 +123,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   public void restoreDeactivatedRule() {
     var qualityProfile = getQualityProfile(JAVA_SIMPLE_PROJECT_KEY, "SonarLint IT Java");
     activateRule(qualityProfile, S106);
+
+    shellByName("SonarQube Server - Invalid token for connection").ifPresent(DefaultShell::close);
   }
 
   @Test
