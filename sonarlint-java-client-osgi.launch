@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.ui.externaltools.ProgramLaunchConfigurationType">
+    <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
+    <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
+        <listEntry value="org.eclipse.ui.externaltools.launchGroup"/>
+    </listAttribute>
+    <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="/usr/bin/find"/>
+    <stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value=". -name '_remote.repositories' -delete"/>
+    <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${env_var:HOME}/.m2/repository/org/sonarsource/sonarlint/core/sonarlint-java-client-osgi"/>
+</launchConfiguration>
