@@ -18,7 +18,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 # Node.js for JS/TS/CSS analysis
 # "build-essential" (containing gcc/g++/make) for C/C++ analysis
 # Webkit libraries for rendering the SonarQube Rule Description view
-ARG NODE_VERSION=20
+ARG NODE_VERSION=22
 RUN apt-get update && apt-get install -y \
     build-essential \
     dbus-x11 \
