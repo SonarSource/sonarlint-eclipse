@@ -21,6 +21,8 @@ package org.sonarlint.eclipse.core.internal.backend;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -291,8 +293,16 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       fileContent = slFile.getDocument().get();
     }
 
+    Charset charset;
+    try {
+      charset = slFile.getCharset();
+    } catch (UnsupportedCharsetException e) {
+      SonarLintLogger.get().debug("Unsupported charset in file " + slFile, e);
+      return null;
+    }
+
     return new ClientFileDto(slFile.uri(), Paths.get(slFile.getProjectRelativePath()), configScopeId, TestFileClassifier.get().isTest(slFile),
-      slFile.getCharset().name(), fsPath, fileContent, tryDetectLanguage(slFile), true);
+      charset.name(), fsPath, fileContent, tryDetectLanguage(slFile), true);
   }
 
   /**

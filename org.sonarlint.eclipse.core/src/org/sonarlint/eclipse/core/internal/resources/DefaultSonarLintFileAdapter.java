@@ -114,4 +114,9 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
     return Objects.equals(file, other.file);
   }
 
+  @Override
+  public String toString() {
+    return getName();
+  }
+
 }
