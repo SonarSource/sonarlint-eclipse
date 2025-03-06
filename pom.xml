@@ -83,6 +83,7 @@
     <sonar.java.source>11</sonar.java.source>
     <sonar.java.target>11</sonar.java.target>
     <sonar.exclusions>**/.tycho-consumer-pom.xml</sonar.exclusions>
+    <sonar.sca.mavenOptions>-Dtycho.target.eager=true</sonar.sca.mavenOptions>
 
     <!-- Global properties -->
     <jarsigner.skip>true</jarsigner.skip>
