@@ -364,8 +364,6 @@ qa_standaloneMode_task:
     - env:
         TARGET_PLATFORM: 'oldest-java-11_e417'
     - env:
-        TARGET_PLATFORM: 'latest-java-17_e431'
-    - env:
         TARGET_PLATFORM: 'latest-java-21'
   <<: *SETUP_MAVEN_CACHE_QA
   download_staged_update_site_script: |
