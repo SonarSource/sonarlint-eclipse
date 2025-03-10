@@ -40,7 +40,6 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.check.CheckSmartNotificationsSupportedParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.org.ListUserOrganizationsParams;
 
 public class ServerConnectionWizard extends AbstractConnectionWizard {
@@ -106,23 +105,9 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
   protected void actualHandlePageChanging(PageChangingEvent event) {
     var currentPage = (WizardPage) event.getCurrentPage();
     var advance = getNextPage(currentPage) == event.getTargetPage();
-    if (advance && !redirectedAfterNotificationCheck && currentPage == tokenPage) {
-      if (!testConnection(null)) {
-        event.doit = false;
-        return;
-      }
-      // We need to wait for credentials before testing if notifications are supported
-      populateNotificationsSupported();
-      // Next page depends if notifications are supported
-      var newNextPage = getNextPage(currentPage);
-      if (newNextPage != event.getTargetPage()) {
-        // Avoid infinite recursion
-        redirectedAfterNotificationCheck = true;
-        getContainer().showPage(newNextPage);
-        redirectedAfterNotificationCheck = false;
-        event.doit = false;
-        return;
-      }
+    if (advance && currentPage == tokenPage && !testConnection(null)) {
+      event.doit = false;
+      return;
     }
     if (advance && event.getTargetPage() == orgPage) {
       event.doit = tryLoadOrganizations(currentPage);
@@ -181,7 +166,7 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
       return afterOrgPage();
     }
     if (page == connectionIdPage) {
-      return notifPageIfSupportedOrConfirm();
+      return notifPage;
     }
     if (page == notifPage) {
       return confirmPage;
@@ -224,11 +209,7 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
   }
 
   private IWizardPage afterOrgPage() {
-    return model.isEdit() ? notifPageIfSupportedOrConfirm() : connectionIdPage;
-  }
-
-  private IWizardPage notifPageIfSupportedOrConfirm() {
-    return model.getNotificationsSupported() ? notifPage : confirmPage;
+    return model.isEdit() ? notifPage : connectionIdPage;
   }
 
   private IWizardPage firstPageAfterConnectionType() {
@@ -249,35 +230,6 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
           .createDialogSkipConnectionSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), resultServer)
           .open();
       }
-    }
-  }
-
-  private void populateNotificationsSupported() {
-    if (model.getConnectionType() == ConnectionType.SONARCLOUD) {
-      model.setNotificationsSupported(true);
-      return;
-    }
-    try {
-      getContainer().run(true, false, new IRunnableWithProgress() {
-
-        @Override
-        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-          monitor.beginTask("Check if notifications are supported", IProgressMonitor.UNKNOWN);
-          try {
-            var future = SonarLintBackendService.get().getBackend().getConnectionService()
-              .checkSmartNotificationsSupported(new CheckSmartNotificationsSupportedParams(modelToTransientConnectionDto()));
-            var response = JobUtils.waitForFutureInIRunnableWithProgress(monitor, future);
-
-            model.setNotificationsSupported(response.isSuccess());
-          } finally {
-            monitor.done();
-          }
-        }
-      });
-    } catch (InvocationTargetException e) {
-      SonarLintLogger.get().debug("Unable to test notifications", e.getCause());
-    } catch (InterruptedException e) {
-      // Nothing to do, the task was simply canceled
     }
   }
 

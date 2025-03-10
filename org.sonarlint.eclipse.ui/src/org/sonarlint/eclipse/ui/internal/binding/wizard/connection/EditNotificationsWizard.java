@@ -38,8 +38,6 @@ public class EditNotificationsWizard extends Wizard implements INewWizard {
   private EditNotificationsWizard(String title, ServerConnectionModel model, ConnectionFacade editedServer) {
     super();
     this.model = model;
-    // Assume that if we open this wizard, notifications are supported
-    model.setNotificationsSupported(true);
     this.editedServer = editedServer;
     setNeedsProgressMonitor(true);
     setWindowTitle(title);

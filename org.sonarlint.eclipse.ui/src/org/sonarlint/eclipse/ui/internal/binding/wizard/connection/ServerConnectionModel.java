@@ -66,7 +66,6 @@ public class ServerConnectionModel extends ModelObject {
   // INFO: As setting this configured on the TokenWizardPage via Java beans, this has to keep the "username"!
   private String username;
 
-  private boolean notificationsSupported;
   private boolean notificationsDisabled;
 
   private List<ISonarLintProject> selectedProjects;
@@ -190,17 +189,6 @@ public class ServerConnectionModel extends ModelObject {
         // Ignore, should not occurs
       }
     }
-  }
-
-  public boolean getNotificationsSupported() {
-    return notificationsSupported;
-  }
-
-  /**
-   * Used by bean binding
-   */
-  public void setNotificationsSupported(boolean value) {
-    notificationsSupported = value;
   }
 
   /**
