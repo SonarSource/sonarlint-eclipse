@@ -324,4 +324,19 @@ public class SonarLintUtils {
   public static String getConfigScopeId(IProject project) {
     return project.getLocationURI().toString();
   }
+
+  /**
+   *  Some charsets might not be supported or available in the JVM. When such a file is encountered, the plug-in
+   *  currently throws an exception. These files should be excluded completely from indexing and the analysis.
+   */
+  public static boolean hasSupportedCharset(ISonarLintFile file) {
+    try {
+      file.getCharset();
+      return true;
+    } catch (Exception err) {
+      SonarLintLogger.get().traceIdeMessage("[SonarLintUtils#hasSupportedCharset] Unsupported charset/encoding for file: "
+        + file.getName(), err);
+      return false;
+    }
+  }
 }

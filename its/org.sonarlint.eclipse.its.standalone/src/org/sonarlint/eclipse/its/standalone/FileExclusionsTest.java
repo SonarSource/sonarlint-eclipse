@@ -35,6 +35,7 @@ import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.OnTheFlyViewIsEmpty;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.FileExclusionsPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.views.OnTheFlyView;
+import org.sonarlint.eclipse.its.shared.reddeer.views.ReportView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintConsole;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -136,5 +137,49 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     openFileAndWaitForAnalysisCompletion(pythonFile);
     waitForSonarLintMarkers(issuesView,
       tuple("Complete the task associated to this \"TODO\" comment.", "Test.py", "few seconds ago"));
+  }
+
+  /**
+   *  When there is a file with an unsupported charset (or encoding) in the project, it should be excluded from
+   *  indexing and the analysis but should not impact other files in the project.
+   */
+  @Test
+  public void should_exclude_file_with_unsupported_charset() {
+    var reportView = new ReportView();
+    reportView.open();
+
+    var console = new SonarLintConsole();
+    console.clear();
+    console.enableIdeSpecificLogs(true);
+
+    var project = importExistingProjectIntoWorkspace("UnsupportedCharset", "UnsupportedCharset");
+
+    // i) We check that opening the file does not trigger an uncaught exception.
+    var unsupportedFile = project.getResource("din_66003.xml");
+    open(unsupportedFile);
+    // There won't be an analysis triggered, but we have to await the "failed" text editor to load
+    try {
+      Thread.sleep(1000);
+    } catch (Exception ignored) {
+    }
+
+    var errorPopupOpt = shellByName("Problem Occurred");
+    assertThat(errorPopupOpt).isEmpty();
+    // We cannot close the "failed" text editor as there is no class for it in Eclipse RedDeer.
+
+    // ii) We check that manually forcing an analysis on the file does not trigger an uncaught exception.
+    unsupportedFile.select();
+    new ContextMenu(unsupportedFile.getTreeItem()).getItem("SonarQube", "Analyze").select();
+    errorPopupOpt = shellByName("Problem Occurred");
+    assertThat(errorPopupOpt).isEmpty();
+
+    // iii) We check that a full project analysis does only run on the non-excluded files and yields results.
+    project.select();
+    new ContextMenu(project.getTreeItem()).getItem("SonarQube", "Analyze").select();
+    waitForSonarLintReportIssues(reportView, 2);
+
+    // iv) We check that everything is properly logged in the console as a IDE trace.
+    assertThat(console.getConsoleView().getConsoleText())
+      .contains("[SonarLintUtils#hasSupportedCharset] Unsupported charset/encoding for file:");
   }
 }

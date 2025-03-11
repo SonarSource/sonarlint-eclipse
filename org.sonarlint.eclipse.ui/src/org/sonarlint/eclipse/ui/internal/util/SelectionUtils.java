@@ -117,7 +117,10 @@ public final class SelectionUtils {
     // SLE-503 Start with the more specific to the more generic
     var file = SonarLintUtils.adapt(elem, ISonarLintFile.class,
       "[SelectionUtils#collectFiles] Try get file of object '" + elem.toString() + "'");
-    if (file != null) {
+
+    // We have to check the charset (and internally the encoding is also checked for XML files) here as well as
+    // for unsupported charsets the manual (forced) analysis should also not start at all.
+    if (file != null && SonarLintUtils.hasSupportedCharset(file)) {
       selectedFiles.add(file);
       return;
     }
