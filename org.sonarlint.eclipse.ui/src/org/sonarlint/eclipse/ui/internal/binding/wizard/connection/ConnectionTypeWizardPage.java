@@ -99,7 +99,7 @@ public class ConnectionTypeWizardPage extends WizardPage {
       var euRegionRadioSelector = new Button(sonarQubeCloudRegionRadioButtonGroup, SWT.RADIO);
       euRegionRadioSelector.setText("EU - sonarcloud.io");
       var usRegionRadioSelector = new Button(sonarQubeCloudRegionRadioButtonGroup, SWT.RADIO);
-      usRegionRadioSelector.setText("US - us.sonarcloud.io");
+      usRegionRadioSelector.setText("US - sonarqube.us");
       
       sonarCloudButton.addSelectionListener(new SelectionListener() {
         @Override
