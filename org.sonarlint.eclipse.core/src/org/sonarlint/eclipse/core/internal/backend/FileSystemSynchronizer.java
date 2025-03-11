@@ -201,6 +201,10 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       return true;
     }
 
+    if (!SonarLintUtils.hasSupportedCharset(slFile)) {
+      return false;
+    }
+
     var project = slFile.getProject();
     Set<IPath> exclusions;
     if (SonarLintCorePlugin.loadConfig(project).isIndexingBasedOnEclipsePlugIns()) {

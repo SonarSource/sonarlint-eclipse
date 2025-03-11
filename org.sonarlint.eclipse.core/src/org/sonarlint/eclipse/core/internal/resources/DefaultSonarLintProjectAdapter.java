@@ -129,6 +129,10 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
           var sonarLintFile = SonarLintUtils.adapt(resource, ISonarLintFile.class,
             "[DefaultSonarLintProjectAdapter#files] Try get file of resource '" + resource + "'");
           if (sonarLintFile != null) {
+            if (!SonarLintUtils.hasSupportedCharset(sonarLintFile)) {
+              return false;
+            }
+
             result.add(sonarLintFile);
           }
           return true;
