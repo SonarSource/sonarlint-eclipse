@@ -83,7 +83,7 @@ public class SonarLintUtils {
 
   public static String getSonarCloudUrl(@Nullable String sonarCloudRegion) {
     if (sonarCloudRegion != null && sonarCloudRegion.equalsIgnoreCase("US")) {
-      return "https://us.sonarcloud.io";
+      return "https://sonarqube.us";
     } else {
       return getSonarCloudUrl();
     }
