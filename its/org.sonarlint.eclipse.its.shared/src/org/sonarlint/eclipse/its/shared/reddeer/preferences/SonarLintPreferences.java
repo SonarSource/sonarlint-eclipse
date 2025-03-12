@@ -54,6 +54,10 @@ public class SonarLintPreferences extends PropertyPage {
     new CheckBox(this, new WithTextMatcher("Show SonarQube markers only for new code")).toggle(focusOnNewCode);
   }
 
+  public void enableSonarQubeCloudRegionEA(boolean enableEarlyAccess) {
+    new CheckBox(this, new WithTextMatcher("Show region selection for SonarQube Cloud (Early Access)")).toggle(enableEarlyAccess);
+  }
+
   public enum MarkerSeverity {
     ERROR("Error"), WARNING("Warning"), INFO("Info");
 

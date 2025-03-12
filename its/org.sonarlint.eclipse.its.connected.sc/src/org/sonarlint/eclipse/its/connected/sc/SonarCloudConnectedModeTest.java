@@ -34,10 +34,11 @@ import org.assertj.core.groups.Tuple;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.core.exception.CoreLayerException;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -70,14 +71,20 @@ import org.sonarqube.ws.client.usertokens.RevokeRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertThrows;
 
 public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
   private static final String SONARCLOUD_STAGING_URL = "https://sc-staging.io";
   private static final String SONARCLOUD_ORGANIZATION_KEY = "sonarlint-it";
   private static final String SONARCLOUD_TOKEN = System.getenv("SONARCLOUD_IT_TOKEN");
+  private static final String SONARCLOUD_TOKEN_US = System.getenv("SONARCLOUD_IT_TOKEN_US");
   private static final String TOKEN_NAME = "SLE-IT-" + TIMESTAMP;
   private static final String SAMPLE_JAVA_ISSUES_PROJECT_KEY = "sonarlint-its-sample-java-issues";
+
+  // SonarQube Cloud Region set on the CI
+  private static final boolean SONARQUBE_CLOUD_REGION_IS_EU = "EU".equalsIgnoreCase(
+    System.getProperty("sonar.region", "EU"));
 
   private static HttpConnector connector;
   private static WsClient adminWsClient;
@@ -90,7 +97,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   public static void prepare() {
     connector = HttpConnector.newBuilder()
       .url(SONARCLOUD_STAGING_URL)
-      .token(SONARCLOUD_TOKEN)
+      .token(SONARQUBE_CLOUD_REGION_IS_EU ? SONARCLOUD_TOKEN : SONARCLOUD_TOKEN_US)
       .build();
     adminWsClient = WsClientFactories.getDefault().newClient(connector);
 
@@ -114,9 +121,11 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   public static void cleanupOrchestrator() {
     adminWsClient.userTokens()
       .revoke(new RevokeRequest().setName(TOKEN_NAME));
+  }
 
-    // Because we only use CDT in here, we switch back for other tests to not get confused!
-    new JavaPerspective().open();
+  @After
+  public void disableSonarQubeCloudRegionEA() {
+    changeSonarQubeCloudRegionEA(false);
   }
 
   @Before
@@ -130,7 +139,33 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   public void configureServerWithTokenAndOrganization() throws InterruptedException {
     var wizard = new ServerConnectionWizard();
     wizard.open();
-    new ServerConnectionWizard.ServerTypePage(wizard).selectSonarCloud();
+    var serverTypePage = new ServerConnectionWizard.ServerTypePage(wizard);
+
+    // i) Try to select EU/US that is not yet available (we cannot query the UI text but just check for
+    serverTypePage.selectSonarCloud();
+    assertThrows(CoreLayerException.class, serverTypePage::selectSonarQubeCloudEuRegion);
+    assertThrows(CoreLayerException.class, serverTypePage::selectSonarQubeCloudUsRegion);
+    wizard.cancel();
+
+    // ii) Enable SonarQube Cloud Region (Early Access)
+    changeSonarQubeCloudRegionEA(true);
+    wizard = new ServerConnectionWizard();
+    wizard.open();
+    serverTypePage = new ServerConnectionWizard.ServerTypePage(wizard);
+
+    // iii) Check that region selectors are available, disabled when selecting SonarQube Server and
+    // then select the region based on the environment property.
+    serverTypePage.selectSonarQube();
+    assertThat(serverTypePage.isSonarQubeCloudEuRegionEnabled()).isFalse();
+    assertThat(serverTypePage.isSonarQubeCloudUsRegionEnabled()).isFalse();
+    serverTypePage.selectSonarCloud();
+    if (SONARQUBE_CLOUD_REGION_IS_EU) {
+      serverTypePage.selectSonarQubeCloudUsRegion();
+      serverTypePage.selectSonarQubeCloudEuRegion();
+    } else {
+      serverTypePage.selectSonarQubeCloudEuRegion();
+      serverTypePage.selectSonarQubeCloudUsRegion();
+    }
     wizard.next();
 
     assertThat(wizard.isNextEnabled()).isFalse();
@@ -564,5 +599,14 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     serverProjectSelectionPage.waitForProjectsToBeFetched();
     serverProjectSelectionPage.setProjectKey(sonarProjectKey);
     projectBindingWizard.finish();
+  }
+
+  private static void changeSonarQubeCloudRegionEA(boolean enabled) {
+    var preferenceDialog = new WorkbenchPreferenceDialog();
+    preferenceDialog.open();
+    var preferences = new SonarLintPreferences(preferenceDialog);
+    preferenceDialog.select(preferences);
+    preferences.enableSonarQubeCloudRegionEA(enabled);
+    preferenceDialog.ok();
   }
 }

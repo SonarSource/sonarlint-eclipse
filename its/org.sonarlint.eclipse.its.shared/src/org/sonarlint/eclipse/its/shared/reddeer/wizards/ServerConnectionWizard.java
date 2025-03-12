@@ -51,12 +51,36 @@ public class ServerConnectionWizard extends NewMenuWizard {
       getSonarQubeRB().click();
     }
 
+    public void selectSonarQubeCloudEuRegion() {
+      getSonarQubeCloudEuRegionRB().click();
+    }
+
+    public void selectSonarQubeCloudUsRegion() {
+      getSonarQubeCloudUsRegionRB().click();
+    }
+
     public boolean isSonarQubeSelected() {
       return getSonarQubeRB().isSelected();
     }
 
+    public boolean isSonarQubeCloudEuRegionEnabled() {
+      return getSonarQubeCloudEuRegionRB().isEnabled();
+    }
+
+    public boolean isSonarQubeCloudUsRegionEnabled() {
+      return getSonarQubeCloudUsRegionRB().isEnabled();
+    }
+
     private RadioButton getSonarQubeRB() {
       return new RadioButton(this, 1);
+    }
+
+    private RadioButton getSonarQubeCloudEuRegionRB() {
+      return new RadioButton(this, 2);
+    }
+
+    private RadioButton getSonarQubeCloudUsRegionRB() {
+      return new RadioButton(this, 3);
     }
   }
 
