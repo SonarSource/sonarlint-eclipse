@@ -82,7 +82,7 @@ public class SonarLintUtils {
   }
 
   public static String getSonarQubeCloudUsRegionUrl() {
-    return System.getProperty("sonarlint.internal.us.sonarcloud.url", "https://sonarqube.us");
+    return System.getProperty("sonarlint.internal.sonarcloud.us.url", "https://sonarqube.us");
   }
 
   public static String getSonarCloudUrl(@Nullable String sonarCloudRegion) {

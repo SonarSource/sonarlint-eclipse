@@ -300,9 +300,9 @@ public class SonarLintBackendService {
     var sonarQubeCloudEuUrl = System.getProperty("sonarlint.internal.sonarcloud.url");
     var sonarQubeCloudEuApiUrl = System.getProperty("sonarlint.internal.sonarcloud.api.url");
     var sonarQubeCloudEuWebSocketUrl = System.getProperty("sonarlint.internal.sonarcloud.websocket.url");
-    var sonarQubeCloudUsUrl = System.getProperty("sonarlint.internal.us.sonarcloud.url");
-    var sonarQubeCloudUsApiUrl = System.getProperty("sonarlint.internal.us.sonarcloud.api.url");
-    var sonarQubeCloudUsWebSocketUrl = System.getProperty("sonarlint.internal.us.sonarcloud.websocket.url");
+    var sonarQubeCloudUsUrl = System.getProperty("sonarlint.internal.sonarcloud.us.url");
+    var sonarQubeCloudUsApiUrl = System.getProperty("sonarlint.internal.sonarcloud.us.api.url");
+    var sonarQubeCloudUsWebSocketUrl = System.getProperty("sonarlint.internal.sonarcloud.us.websocket.url");
 
     return new SonarCloudAlternativeEnvironmentDto(
       Map.of(
