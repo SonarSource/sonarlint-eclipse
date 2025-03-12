@@ -73,6 +73,7 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.Initialize
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.JsTsRequirementsDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.LanguageSpecificRequirements;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.SonarCloudAlternativeEnvironmentDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.SonarQubeCloudRegionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.SslConfigurationDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.TelemetryClientConstantAttributesDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.AddIssueCommentParams;
@@ -92,6 +93,7 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.ListAllStandalo
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.ListAllParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.tracking.ListAllResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
+import org.sonarsource.sonarlint.core.rpc.protocol.common.SonarCloudRegion;
 
 import static java.util.Objects.requireNonNull;
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.defaultString;
@@ -295,12 +297,25 @@ public class SonarLintBackendService {
 
   @Nullable
   private static SonarCloudAlternativeEnvironmentDto getSonarCloudAlternativeEnvironment() {
-    var sonarCloudUrl = System.getProperty("sonarlint.internal.sonarcloud.url");
-    var sonarCloudWebSocketUrl = System.getProperty("sonarlint.internal.sonarcloud.websocket.url");
-    if (sonarCloudUrl != null && sonarCloudWebSocketUrl != null) {
-      return new SonarCloudAlternativeEnvironmentDto(URI.create(sonarCloudUrl), URI.create(sonarCloudWebSocketUrl));
-    }
-    return null;
+    var sonarQubeCloudEuUrl = System.getProperty("sonarlint.internal.sonarcloud.url");
+    var sonarQubeCloudEuApiUrl = System.getProperty("sonarlint.internal.sonarcloud.api.url");
+    var sonarQubeCloudEuWebSocketUrl = System.getProperty("sonarlint.internal.sonarcloud.websocket.url");
+    var sonarQubeCloudUsUrl = System.getProperty("sonarlint.internal.us.sonarcloud.url");
+    var sonarQubeCloudUsApiUrl = System.getProperty("sonarlint.internal.us.sonarcloud.api.url");
+    var sonarQubeCloudUsWebSocketUrl = System.getProperty("sonarlint.internal.us.sonarcloud.websocket.url");
+
+    return new SonarCloudAlternativeEnvironmentDto(
+      Map.of(
+        SonarCloudRegion.EU,
+        new SonarQubeCloudRegionDto(
+          sonarQubeCloudEuUrl == null ? null : URI.create(sonarQubeCloudEuUrl),
+          sonarQubeCloudEuApiUrl == null ? null : URI.create(sonarQubeCloudEuApiUrl),
+          sonarQubeCloudEuWebSocketUrl == null ? null : URI.create(sonarQubeCloudEuWebSocketUrl)),
+        SonarCloudRegion.US,
+        new SonarQubeCloudRegionDto(
+          sonarQubeCloudUsUrl == null ? null : URI.create(sonarQubeCloudUsUrl),
+          sonarQubeCloudUsApiUrl == null ? null : URI.create(sonarQubeCloudUsApiUrl),
+          sonarQubeCloudUsWebSocketUrl == null ? null : URI.create(sonarQubeCloudUsWebSocketUrl))));
   }
 
   @Nullable
