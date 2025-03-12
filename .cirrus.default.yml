@@ -285,8 +285,14 @@ qa_connectedModeSonarCloud_task:
     ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
     GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
     SONARCLOUD_IT_TOKEN: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.token]
+#    SONARCLOUD_IT_TOKEN_US: VAULT[development/team/sonarlint/kv/data/sonarcloud-it-US data.token]
     DISPLAY: :10
     MAVEN_OPTS: -Xmx3072m
+  matrix:
+    - env:
+        SQC_REGION: EU
+#    - env:
+#        SQC_REGION: US
   <<: *SETUP_MAVEN_CACHE_QA
   download_staged_update_site_script: |
     set -euo pipefail
@@ -303,7 +309,7 @@ qa_connectedModeSonarCloud_task:
     metacity --sm-disable --replace &
     sleep 10 # give metacity some time to start
     echo 'Recording tests on video'
-    ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording.mp4
+    ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 ${CIRRUS_WORKING_DIR}/recording_${SQC_REGION}.mp4
   run_its_script: |
     echo "Run Maven ITs for Connected Mode with SonarCloud on Eclipse (latest Java 21)"
     cd its/
@@ -315,9 +321,10 @@ qa_connectedModeSonarCloud_task:
       -Dtarget.platform=latest-java-21 \
       -Dtycho.localArtifacts=ignore \
       -Dsonarlint-eclipse.p2.url="file://${CIRRUS_WORKING_DIR}/staged-repository" \
+      -Dsonar.region=${SQC_REGION} \
       -Djacoco.append=true \
       -Djacoco.destFile=${CIRRUS_WORKING_DIR}/it-coverage.exec
-    mv ${CIRRUS_WORKING_DIR}/it-coverage.exec ${CIRRUS_WORKING_DIR}/it-coverage-sc.exec
+    mv ${CIRRUS_WORKING_DIR}/it-coverage.exec ${CIRRUS_WORKING_DIR}/it-coverage-sc-${SQC_REGION}.exec
   cleanup_before_cache_script: cleanup_maven_repository
   always:
     stop_recording_script: |
@@ -325,7 +332,7 @@ qa_connectedModeSonarCloud_task:
       while pgrep ffmpeg >/dev/null; do sleep 1; done
       /etc/init.d/xvfb stop
     test_recording_artifacts:
-      path: "${CIRRUS_WORKING_DIR}/recording.mp4"
+      path: "${CIRRUS_WORKING_DIR}/recording_${SQC_REGION}.mp4"
     jacoco_it_sc_artifacts:
       path: "${CIRRUS_WORKING_DIR}/it-coverage*.exec"
     mvn_startTestLog_artifacts:
