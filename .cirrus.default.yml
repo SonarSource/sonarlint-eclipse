@@ -285,14 +285,14 @@ qa_connectedModeSonarCloud_task:
     ARTIFACTORY_API_KEY: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-private-reader access_token]
     GITHUB_TOKEN: VAULT[development/github/token/licenses-ro token]
     SONARCLOUD_IT_TOKEN: VAULT[development/team/sonarlint/kv/data/sonarcloud-it data.token]
-#    SONARCLOUD_IT_TOKEN_US: VAULT[development/team/sonarlint/kv/data/sonarcloud-it-US data.token]
+    SONARCLOUD_IT_TOKEN_US: VAULT[development/team/sonarlint/kv/data/sonarcloud-it-US data.token]
     DISPLAY: :10
     MAVEN_OPTS: -Xmx3072m
   matrix:
     - env:
         SQC_REGION: EU
-#    - env:
-#        SQC_REGION: US
+    - env:
+        SQC_REGION: US
   <<: *SETUP_MAVEN_CACHE_QA
   download_staged_update_site_script: |
     set -euo pipefail
