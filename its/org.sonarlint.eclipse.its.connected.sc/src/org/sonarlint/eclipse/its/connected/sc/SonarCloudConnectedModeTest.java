@@ -40,6 +40,7 @@ import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -75,7 +76,6 @@ import static org.junit.Assert.assertThrows;
 
 public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
-  private static final String SONARCLOUD_STAGING_URL = "https://sc-staging.io";
   private static final String SONARCLOUD_ORGANIZATION_KEY = "sonarlint-it";
   private static final String SONARCLOUD_TOKEN = System.getenv("SONARCLOUD_IT_TOKEN");
   private static final String SONARCLOUD_TOKEN_US = System.getenv("SONARCLOUD_IT_TOKEN_US");
@@ -93,10 +93,16 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static String firstSonarCloudIssueKey;
   private static String firstSonarCloudBranch;
 
+  private static String sonarqubeCloudStagingUrl;
+
   @BeforeClass
   public static void prepare() {
+    sonarqubeCloudStagingUrl = SONARQUBE_CLOUD_REGION_IS_EU
+      ? "https://sc-staging.io"
+      : "https://us-sc-staging.io";
+
     connector = HttpConnector.newBuilder()
-      .url(SONARCLOUD_STAGING_URL)
+      .url(sonarqubeCloudStagingUrl)
       .token(SONARQUBE_CLOUD_REGION_IS_EU ? SONARCLOUD_TOKEN : SONARCLOUD_TOKEN_US)
       .build();
     adminWsClient = WsClientFactories.getDefault().newClient(connector);
@@ -105,16 +111,17 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
       .generate(new GenerateRequest().setName(TOKEN_NAME))
       .getToken();
 
-    try {
-      var sonarCloudProjectKeys = getProjectKeys();
-      var keyAndProject = getFirstProjectAndIssueKey(sonarCloudProjectKeys);
-      firstSonarCloudIssueKey = (String) keyAndProject.toList().get(0);
-      firstSonarCloudProjectKey = (String) keyAndProject.toList().get(1);
-    } catch (InterruptedException | IOException err) {
-      fail("Cannot query the project keys and / or first issue and project key from SonarCloud!", err);
+    if (SONARQUBE_CLOUD_REGION_IS_EU) {
+      try {
+        var sonarCloudProjectKeys = getProjectKeys();
+        var keyAndProject = getFirstProjectAndIssueKey(sonarCloudProjectKeys);
+        firstSonarCloudIssueKey = (String) keyAndProject.toList().get(0);
+        firstSonarCloudProjectKey = (String) keyAndProject.toList().get(1);
+        firstSonarCloudBranch = getFirstBranch(firstSonarCloudProjectKey).getName();
+      } catch (Exception err) {
+        fail("Cannot query the project keys and / or first issue and project key from SonarCloud!", err);
+      }
     }
-
-    firstSonarCloudBranch = getFirstBranch(firstSonarCloudProjectKey).getName();
   }
 
   @AfterClass
@@ -224,6 +231,9 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   @Test
   public void fixSuggestion_with_ConnectionSetup_noProject() throws InterruptedException, IOException {
+    // INFO: This one does not work yet on SonarQube Cloud US Region as no project is on it!
+    Assume.assumeTrue(SONARQUBE_CLOUD_REGION_IS_EU);
+
     triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey,
       firstSonarCloudIssueKey,
       "NotExisting.txt",
@@ -243,6 +253,9 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   @Test
   public void fixSuggestion_with_ConnectionSetup_fileNotFound() throws InterruptedException, IOException {
+    // INFO: This one does not work yet on SonarQube Cloud US Region as no project is on it!
+    Assume.assumeTrue(SONARQUBE_CLOUD_REGION_IS_EU);
+
     new SonarLintConsole().clear();
 
     var project = importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
@@ -273,6 +286,9 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   @Test
   public void fixSuggestion_with_fix() throws InterruptedException, IOException {
+    // INFO: This one does not work yet on SonarQube Cloud US Region as no project is on it!
+    Assume.assumeTrue(SONARQUBE_CLOUD_REGION_IS_EU);
+
     final var file = "FileExists.txt";
     final var explanation = "This is common knowledge!";
     final var before = "Eclipse IDE is the best!";
@@ -326,6 +342,9 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   @Test
   public void fixSuggestion_with_multipleFixes() throws InterruptedException, IOException {
+    // INFO: This one does not work yet on SonarQube Cloud US Region as no project is on it!
+    Assume.assumeTrue(SONARQUBE_CLOUD_REGION_IS_EU);
+
     final var file = "FileExists.txt";
     final var explanation = "We need to change this!";
     final var before = "Eclipse IDE is the best!";
@@ -392,7 +411,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     assertThat(hotspotServerPort).isNotEqualTo(-1);
 
     var request = HttpRequest.newBuilder()
-      .uri(URI.create(SONARCLOUD_STAGING_URL + "/api/projects/search?organization=" + SONARCLOUD_ORGANIZATION_KEY
+      .uri(URI.create(sonarqubeCloudStagingUrl + "/api/projects/search?organization=" + SONARCLOUD_ORGANIZATION_KEY
         + "&analyzedBefore=" + LocalDate.now()))
       .header("Authorization", "Bearer " + token)
       .GET()
@@ -418,7 +437,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     assertThat(hotspotServerPort).isNotEqualTo(-1);
 
     var request = HttpRequest.newBuilder()
-      .uri(URI.create(SONARCLOUD_STAGING_URL + "/api/issues/search?organization=" + SONARCLOUD_ORGANIZATION_KEY
+      .uri(URI.create(sonarqubeCloudStagingUrl + "/api/issues/search?organization=" + SONARCLOUD_ORGANIZATION_KEY
         + "&componentKeys=" + String.join(",", projectKeys)))
       .header("Authorization", "Bearer " + token)
       .GET()
@@ -516,7 +535,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
         + "&tokenValue=" + token
         + "&branch=" + firstSonarCloudBranch))
       .header("Content-Type", "application/json")
-      .header("Origin", SONARCLOUD_STAGING_URL)
+      .header("Origin", sonarqubeCloudStagingUrl)
       .POST(BodyPublishers.ofString(body))
       .build();
 
