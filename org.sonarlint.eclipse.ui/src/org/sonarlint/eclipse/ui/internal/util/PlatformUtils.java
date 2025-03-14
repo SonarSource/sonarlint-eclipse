@@ -219,7 +219,12 @@ public final class PlatformUtils {
         var file = ((IFileEditorInput) input).getFile();
         var slFile = SonarLintUtils.adapt(file, ISonarLintFile.class,
           "[PlatformUtils#doIfSonarLintFileInEditor] Try get file of editor input '" + file.getName() + "'");
-        if (slFile != null) {
+
+        // We have to check the charset (and internally the encoding is also checked for XML files) here as well as
+        // for unsupported charsets the Eclipse builtin editor already fails to open the file but will trigger the
+        // "IPartListener2#partOpened" nevertheless. When Eclipse (and internally the JVM) cannot even handle the file,
+        // we don't even try to do so.
+        if (slFile != null && SonarLintUtils.hasSupportedCharset(slFile)) {
           consumer.accept(slFile, editorPart);
         }
       }
