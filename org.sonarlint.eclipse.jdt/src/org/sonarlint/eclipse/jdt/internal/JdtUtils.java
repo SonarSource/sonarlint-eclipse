@@ -390,8 +390,22 @@ public class JdtUtils {
         + project.getName() + "' based on JDT!", err);
     }
 
+    var projectPath = project.getFullPath().makeAbsolute().toOSString();
+    exclusions = new HashSet<IPath>(exclusions.stream()
+      .filter(path -> {
+        // When the user has the project / base directory configured to be the output directory either as the default
+        // output folder or for one of the source folders, we should not take it into account as otherwise as a side
+        // effect it could exclude all files by accident.
+        // In case of Windows, like for CDT (see CdtUtils#getExcludedPaths), we have to replace the backslashes with
+        // forwards slashes that are used as an identifier of the relative resources in the context of Eclipse.
+        var outputDirectoryPath = path.makeAbsolute().toOSString().replace("\\", "/");
+        var localProjectPath = projectPath.replace("\\", "/");
+        return !localProjectPath.equals(outputDirectoryPath) && !"/".equals(outputDirectoryPath);
+      })
+      .collect(Collectors.toSet()));
+
     SonarLintLogger.get().traceIdeMessage("[JdtUtils#getExcludedPaths] The following paths have been excluded from "
-      + "indexing for the project at '" + project.getFullPath().makeAbsolute().toOSString() + "': "
+      + "indexing for the project at '" + projectPath + "': "
       + String.join(", ", exclusions.stream().map(Object::toString).collect(Collectors.toList())));
 
     return exclusions;
