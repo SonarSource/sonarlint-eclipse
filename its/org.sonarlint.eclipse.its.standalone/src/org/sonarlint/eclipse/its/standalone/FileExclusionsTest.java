@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.its.standalone;
 
+import org.awaitility.Awaitility;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
@@ -28,16 +29,23 @@ import org.eclipse.reddeer.swt.impl.button.OkButton;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
+import org.junit.After;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.OnTheFlyViewIsEmpty;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.FileExclusionsPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.views.OnTheFlyView;
+import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintConsole;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 public class FileExclusionsTest extends AbstractSonarLintTest {
+  @After
+  public void after() {
+    var console = new SonarLintConsole();
+    console.enableIdeSpecificLogs(false);
+  }
 
   @Test
   public void should_exclude_file() throws Exception {
@@ -102,4 +110,31 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     preferenceDialog.cancel();
   }
 
+  @Test
+  public void test_JDT_output_directory_equals_project_directory() {
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("java/TestOutputEqualsProject", "TestOutputEqualsProject");
+
+    var issuesView = new OnTheFlyView();
+    issuesView.open();
+
+    var console = new SonarLintConsole();
+    console.enableIdeSpecificLogs(true);
+    console.clear();
+
+    // i) We check that the Java file was excluded because the project has no source folders configured in .classpath.
+    var javaFile = rootProject.getResource("src", "aaa", "Main.java");
+    javaFile.select();
+    javaFile.getTreeItem().doubleClick();
+    waitForNoSonarLintMarkers(issuesView);
+    Awaitility.await().untilAsserted(() -> assertThat(console.getConsoleView().getConsoleText())
+      .contains("File 'src/aaa/Main.java' excluded by 'JavaProjectConfiguratorExtension'"));
+    new JavaEditor("Main.java").close();
+
+    // ii) We check that the project directory was not excluded by running a Python analysis yielding one result.
+    var pythonFile = rootProject.getResource("Test.py");
+    openFileAndWaitForAnalysisCompletion(pythonFile);
+    waitForSonarLintMarkers(issuesView,
+      tuple("Complete the task associated to this \"TODO\" comment.", "Test.py", "few seconds ago"));
+  }
 }
