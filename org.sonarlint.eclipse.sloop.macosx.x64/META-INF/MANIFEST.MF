@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonarlint.eclipse.sloop.macosx.x64;singleton:=true
-Bundle-Version: 11.3.0.qualifier
+Bundle-Version: 11.4.0.qualifier
 Bundle-Vendor: %bundle_vendor
 Fragment-Host: org.sonarlint.eclipse.core
 Automatic-Module-Name: org.sonarlint.eclipse.sloop.macosx.x64
