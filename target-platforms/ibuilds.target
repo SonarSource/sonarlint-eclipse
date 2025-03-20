@@ -19,8 +19,7 @@
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.eclipse.reddeer.eclipse.feature.feature.group" version="0.0.0" />
-      <!-- Mirror of the defunct "https://download.eclipse.org/reddeer/releases/latest/" -->
-      <repository location="https://repox.jfrog.io/artifactory/reddeer/releases/latest/" />
+      <repository location="https://binaries.sonarsource.com/RedDeer/releases/4.7.1.83/" />
     </location>
     
     <!-- Reddeer requires GEF legacy-->

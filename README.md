@@ -34,7 +34,7 @@ Development setup in Eclipse
 
 There are a few requirements for developing next to basic knowledge of Maven, Tycho and Eclipse plug-in development:
 - Eclipse IDE for RCP and RAP Developers (includes m2e, PDE)
-- RedDeer to run ITs
+- Eclipse RedDeer (or any forked 4.7.x version) to run ITs
 
 Normally, m2e will automatically suggest to install missing connectors (Tycho configurators, ...) or wants to configure
 missing lifecycle mappings. This can all be done later.

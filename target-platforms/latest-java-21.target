@@ -25,10 +25,9 @@
     </location>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <!-- Mirror of the defunct "https://download.eclipse.org/reddeer/releases/latest/" -->
-      <repository location="https://repox.jfrog.io/artifactory/reddeer/releases/latest/" />
       <unit id="org.eclipse.reddeer.eclipse.feature.feature.group" version="0.0.0" />
       <unit id="org.eclipse.reddeer.ui.feature.feature.group" version="0.0.0" />
+      <repository location="https://binaries.sonarsource.com/RedDeer/releases/4.7.1.83/" />
     </location>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">

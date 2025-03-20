@@ -37,5 +37,3 @@ ENV JAVA_HOME_11_X64=/opt/java/openjdk-11
 ENV JAVA_HOME_17_X64=/opt/java/openjdk
 ENV JAVA_HOME_21_X64=/opt/java/openjdk-21
 COPY --chown=sonarsource .cirrus/toolchains.xml .m2/toolchains.xml
-# Fix for authenticated access to Reddeer mirror on Repox
-COPY --chown=sonarsource .cirrus/settings-public-auth.xml .m2/settings-public-auth.xml
