@@ -2,8 +2,8 @@
 
 This project including its modules contains the integration tests (including compatibility against
 [iBuilds](https://download.eclipse.org/eclipse/downloads/), the in-development version of the Eclipse IDE) for
-SonarQube that are relying on [Eclipse RedDeer](https://github.com/eclipse/reddeer) as the test framework connected
-to [Eclipse Tycho](https://github.com/eclipse-tycho/tycho).
+SonarQube that are relying on [Eclipse RedDeer](https://github.com/SonarSource/reddeer) (in our case, our fork) as the
+test framework connected to [Eclipse Tycho](https://github.com/eclipse-tycho/tycho).
 
 The tests are split into separate modules for testing in Standalone Mode only, with the integration into CDT (which is
 also in Standalone Mode), in Connected Mode with SonarQube Server and SonarQube Cloud. Additionally, one module is used

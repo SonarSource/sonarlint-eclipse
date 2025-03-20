@@ -19,8 +19,7 @@
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.eclipse.reddeer.eclipse.feature.feature.group" version="0.0.0" />
-      <!-- Mirror of the defunct "https://download.eclipse.org/reddeer/releases/4.2.0/" -->
-      <repository location="https://repox.jfrog.io/artifactory/reddeer/releases/4.2.0/" />
+      <repository location="https://binaries.sonarsource.com/RedDeer/releases/4.2.1.93/" />
     </location>
     
     <location includeDependencyDepth="infinite" includeDependencyScopes="compile,runtime" includeSource="true" missingManifest="error" type="Maven">
