@@ -29,6 +29,10 @@
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-surefire-plugin</artifactId>
         <configuration>
+          <environmentVariables>
+            <SONARSOURCE_DOGFOODING>0</SONARSOURCE_DOGFOODING>
+          </environmentVariables>
+          
           <!-- We cannot have it in target/work as well due to Git ignored files not being analyzed! -->
           <osgiDataDirectory>${java.io.tmpdir}/SLE-${maven.build.timestamp}</osgiDataDirectory>
           

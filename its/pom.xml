@@ -194,6 +194,11 @@
           <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
 
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          
+          <environmentVariables>
+            <SONARSOURCE_DOGFOODING>0</SONARSOURCE_DOGFOODING>
+          </environmentVariables>
+          
           <systemProperties>
             <target.platform>${target.platform}</target.platform>
             <sonar.runtimeVersion>${sonar.runtimeVersion}</sonar.runtimeVersion>
