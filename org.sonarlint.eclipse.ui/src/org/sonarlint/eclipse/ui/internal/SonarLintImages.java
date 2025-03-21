@@ -132,7 +132,7 @@ public final class SonarLintImages {
       if (matchingStatus != null) {
         matchingStatusImage = matchingStatusToImageDescriptor(matchingStatus, isResolved);
       }
-      var severityImage = getImpactSeverityImageDescriptor(issueSeverity.toLowerCase(Locale.ENGLISH));
+      var severityImage = getImpactSeverityImageDescriptor(issueSeverity);
       ImageDescriptor typeImage = null;
       if (type != null) {
         typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
