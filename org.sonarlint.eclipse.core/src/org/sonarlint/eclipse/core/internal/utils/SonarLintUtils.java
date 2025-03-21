@@ -273,10 +273,10 @@ public class SonarLintUtils {
    *  Here we catch Git, Mercurial, and Apache Subversion as they're the most common ones.
    */
   public static boolean insideVCSFolder(IPath path) {
-    var osString = path.makeAbsolute().toOSString();
-    var satisfiesCheck = osString.contains(".git");
-    satisfiesCheck = satisfiesCheck || osString.contains(".hg");
-    satisfiesCheck = satisfiesCheck || osString.contains(".svn");
+    var osString = path.makeAbsolute().toOSString().replace("\\", "/");
+    var satisfiesCheck = osString.contains("/.git/");
+    satisfiesCheck = satisfiesCheck || osString.contains("/.hg/");
+    satisfiesCheck = satisfiesCheck || osString.contains("/.svn/");
     return satisfiesCheck;
   }
 
@@ -286,9 +286,9 @@ public class SonarLintUtils {
    *  plug-in to rely on for getting these values.
    */
   public static boolean isNodeJsRelated(IPath path) {
-    var osString = path.makeAbsolute().toOSString();
-    var satisfiesCheck = osString.contains("node_modules");
-    satisfiesCheck = satisfiesCheck || osString.contains("package-lock.json");
+    var osString = path.makeAbsolute().toOSString().replace("\\", "/");
+    var satisfiesCheck = osString.contains("/node_modules/");
+    satisfiesCheck = satisfiesCheck || osString.contains("/package-lock.json");
     return satisfiesCheck;
   }
 
@@ -300,11 +300,11 @@ public class SonarLintUtils {
    *  Here we catch the most common Python virtual environment names.
    */
   public static boolean isPythonRelated(IPath path) {
-    var osString = path.makeAbsolute().toOSString();
-    var satisfiesCheck = osString.contains("venv");
-    satisfiesCheck = satisfiesCheck || osString.contains("pyenv");
-    satisfiesCheck = satisfiesCheck || osString.contains("pyvenv");
-    satisfiesCheck = satisfiesCheck || osString.contains("virtualenv");
+    var osString = path.makeAbsolute().toOSString().replace("\\", "/");
+    var satisfiesCheck = osString.contains("/venv/");
+    satisfiesCheck = satisfiesCheck || osString.contains("/pyenv/");
+    satisfiesCheck = satisfiesCheck || osString.contains("/pyvenv/");
+    satisfiesCheck = satisfiesCheck || osString.contains("/virtualenv/");
     return satisfiesCheck;
   }
 
