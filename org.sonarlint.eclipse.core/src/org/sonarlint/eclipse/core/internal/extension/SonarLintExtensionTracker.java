@@ -24,6 +24,7 @@ import java.util.List;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
+import org.sonarlint.eclipse.core.resource.IConnectionTokenProvider;
 import org.sonarlint.eclipse.core.resource.IProjectScopeProvider;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
@@ -45,10 +46,12 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
     "org.sonarlint.eclipse.core.projectHierarchyProvider"); //$NON-NLS-1$
   private final SonarLintEP<IProjectScopeProvider> projectScopeProviderEP = new SonarLintEP<>(
     "org.sonarlint.eclipse.core.projectScopeProvider"); //$NON-NLS-1$
+  private final SonarLintEP<IConnectionTokenProvider> connectionTokenProviderEP = new SonarLintEP<>(
+    "org.sonarlint.eclipse.core.connectionTokenProvider");
 
   private final Collection<SonarLintEP<?>> allEps = List.of(analysisEp, projectsProviderEp,
     fileAdapterParticipantEp, projectAdapterParticipantEp, languageEp, typeEp, projectHierarchyProviderEP,
-    projectScopeProviderEP);
+    projectScopeProviderEP, connectionTokenProviderEP);
 
   private SonarLintExtensionTracker() {
     init(allEps);
@@ -97,5 +100,9 @@ public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker
 
   public Collection<IProjectScopeProvider> getProjectScopeProviders() {
     return projectScopeProviderEP.getInstances();
+  }
+
+  public Collection<IConnectionTokenProvider> getConnectionTokenProviders() {
+    return connectionTokenProviderEP.getInstances();
   }
 }
