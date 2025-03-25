@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.engine.connected;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -35,9 +34,6 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences.INodeChangeListe
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.NodeChangeEvent;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.equinox.security.storage.ISecurePreferences;
-import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
-import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
@@ -45,6 +41,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.token.ConnectionTokenService;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -56,10 +53,6 @@ public class ConnectionManager {
   static final String URL_ATTRIBUTE = "url";
   static final String ORG_ATTRIBUTE = "org";
   static final String REGION_ATTRIBUTE = "region";
-
-  // Even though this now storing only the token, we cannot rename the attribute as updating from
-  // previous versions would not work anymore - keep compatibility!
-  static final String TOKEN_ATTRIBUTE = "username";
 
   static final String NOTIFICATIONS_DISABLED_ATTRIBUTE = "notificationsDisabled";
 
@@ -263,31 +256,15 @@ public class ConnectionManager {
       throw new IllegalStateException("There is already a connection with id '" + facade.getId() + "'");
     }
     if (StringUtils.isNotBlank(token)) {
-      storeCredentials(facade, token);
+      ConnectionTokenService.setToken(facade.getId(), token);
     }
     addOrUpdateProperties(facade);
     facadesByConnectionId.put(facade.getId(), facade);
     fireConnectionAddedEvent(facade);
   }
 
-  /**
-   * @return true if the new credentials are different compared to what is in the secure storage
-   */
-  private static boolean storeCredentials(ConnectionFacade connectionFacade, String token) {
-    try {
-      var secureConnectionsNode = getSecureConnectionsNode();
-      var secureConnectionNode = secureConnectionsNode.node(getConnectionNodeName(connectionFacade.getId()));
-      var previousToken = secureConnectionNode.get(TOKEN_ATTRIBUTE, null);
-      secureConnectionNode.put(TOKEN_ATTRIBUTE, token, true);
-      secureConnectionsNode.flush();
-      return !Objects.equals(previousToken, token);
-    } catch (StorageException | IOException e) {
-      throw new IllegalStateException("Unable to store connection credentials in secure storage: " + e.getMessage(), e);
-    }
-  }
-
   public void removeConnection(ConnectionFacade connection) {
-    var connectionNodeName = getConnectionNodeName(connection.getId());
+    var connectionNodeName = StringUtils.urlEncode(connection.getId());
     try {
       var rootNode = getSonarLintPreferenceNode();
       var connectionsNode = rootNode.node(PREF_CONNECTIONS);
@@ -300,14 +277,7 @@ public class ConnectionManager {
     } catch (BackingStoreException e) {
       throw new IllegalStateException("Unable to save connection list", e);
     }
-    tryRemoveSecureProperties(connectionNodeName);
-  }
-
-  private static void tryRemoveSecureProperties(String connectionNodeName) {
-    var secureConnectionsNode = getSecureConnectionsNode();
-    if (secureConnectionsNode.nodeExists(connectionNodeName)) {
-      secureConnectionsNode.node(connectionNodeName).removeNode();
-    }
+    ConnectionTokenService.removeToken(connection.getId());
   }
 
   /**
@@ -390,7 +360,8 @@ public class ConnectionManager {
     addOrUpdateProperties(facade);
     var credentialsChanged = false;
     if (facade.hasAuth()) {
-      credentialsChanged = storeCredentials(facade, token);
+      credentialsChanged = !token.equals(ConnectionTokenService.getToken(facade.getId()));
+      ConnectionTokenService.setToken(facade.getId(), token);
     }
     var connectionToUpdate = facadesByConnectionId.get(facade.getId());
     update(connectionToUpdate, facade.getHost(), facade.getOrganization(), facade.getSonarCloudRegion(), facade.hasAuth(), facade.areNotificationsDisabled());
@@ -408,7 +379,7 @@ public class ConnectionManager {
   private void addOrUpdateProperties(ConnectionFacade facade) {
     var rootNode = getSonarLintPreferenceNode();
     var connectionsNode = rootNode.node(PREF_CONNECTIONS);
-    var connectionNode = (IEclipsePreferences) connectionsNode.node(getConnectionNodeName(facade.getId()));
+    var connectionNode = (IEclipsePreferences) connectionsNode.node(StringUtils.urlEncode(facade.getId()));
     try {
       connectionNode.removePreferenceChangeListener(connectedEngineChangeListener);
       connectionNode.put(URL_ATTRIBUTE, facade.getHost());
@@ -433,31 +404,6 @@ public class ConnectionManager {
     } finally {
       connectionNode.addPreferenceChangeListener(connectedEngineChangeListener);
     }
-  }
-
-  @Nullable
-  public static String getToken(ConnectionFacade facade) throws StorageException {
-    return getFromSecure(facade, TOKEN_ATTRIBUTE);
-  }
-
-  @Nullable
-  private static String getFromSecure(ConnectionFacade facade, String attribute) throws StorageException {
-    var connectionNodeName = getConnectionNodeName(facade.getId());
-    var secureConnectionsNode = getSecureConnectionsNode();
-    if (!secureConnectionsNode.nodeExists(connectionNodeName)) {
-      return null;
-    }
-    var secureConnectionNode = secureConnectionsNode.node(connectionNodeName);
-    return secureConnectionNode.get(attribute, null);
-  }
-
-  private static ISecurePreferences getSecureConnectionsNode() {
-    return SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID).node(ConnectionManager.PREF_CONNECTIONS);
-  }
-
-  private static String getConnectionNodeName(String connectionId) {
-    // Should not contain any "/"
-    return StringUtils.urlEncode(connectionId);
   }
 
   @Nullable
