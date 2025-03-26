@@ -471,9 +471,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
   // integration test for focusing on new code in connected mode
   @Test
-  @Ignore("10/2023: Currently failing constantly on the CI, to be investigated later")
   public void test_new_code_period_preference() {
-    Assume.assumeTrue("latest".equals(System.getProperty("target.platform")));
+    Assume.assumeTrue("latest".equals(System.getProperty("target.platform", "latest")));
 
     // 1) create project on server / run first analysis
     adminWsClient.projects()
@@ -508,7 +507,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     // 3) bind to project on SonarQube / check issues and taint vulnerabilities exist
     createConnectionAndBindProject(orchestrator, MAVEN_TAINT_PROJECT_KEY);
 
-    new DefaultLink(shellByName("SonarLint - Binding Suggestion").get(), "Don't ask again").click();
+    new DefaultLink(shellByName("SonarQube - Binding Suggestion").get(), "Don't ask again").click();
 
     waitForAnalysisReady(MAVEN_TAINT_PROJECT_KEY);
 
