@@ -119,9 +119,9 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
   }
 
   /** Run Maven build on specific project in folder with optional additional analysis properties */
-  public static void runMavenBuild(OrchestratorRule orchestrator, String projectKey, String folder, String path,
+  public static void runMavenBuild(OrchestratorRule orchestrator, String projectKey, String path,
     Map<String, String> analysisProperties) {
-    var build = MavenBuild.create(new File(folder, path))
+    var build = MavenBuild.create(new File(projectDirectory, path))
       .setCleanPackageSonarGoals()
       .setProperty("sonar.projectKey", projectKey);
     if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
