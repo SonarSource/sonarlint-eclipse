@@ -98,7 +98,7 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
 
     if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
       createProjectOnSonarQube(orchestrator, MAVEN_TAINT_PROJECT_KEY, "SonarLint IT New Code");
-      runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml",
+      runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "java/maven-taint/pom.xml",
         Map.of("sonar.branch.name", "main"));
     }
   }

@@ -329,60 +329,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     });
   }
 
-  @Test
-  @Ignore("12/2024: Due to last minute changes in SQ-S 10.8 and onwards the change of the setting does not work anymore")
-  public void switch_between_modes() throws Exception {
-    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 8));
-
-    try {
-      // 1) Open perspective and import project
-      new JavaPerspective().open();
-      new SonarLintConsole().clear();
-
-      var onTheFlyView = new OnTheFlyView();
-      onTheFlyView.open();
-      var ruleDescriptionView = new RuleDescriptionView();
-      ruleDescriptionView.open();
-
-      var rootProject = importExistingProjectIntoWorkspace("java/java-simple", JAVA_SIMPLE_PROJECT_KEY);
-
-      // 2) Bind project and await issue showing MQR mode
-      createConnectionAndBindProject(orchestrator, JAVA_SIMPLE_PROJECT_KEY);
-
-      shellByName("SonarLint Binding Suggestion")
-        .ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
-      waitForAnalysisReady(JAVA_SIMPLE_PROJECT_KEY);
-
-      openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
-      await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(1));
-      onTheFlyView.getItems().get(0).select();
-      ruleDescriptionView.open();
-      new DefaultEditor().close();
-
-      // 3) Unbind project and change mode
-      var bindingsView = new BindingsView();
-      bindingsView.open();
-      bindingsView.removeAllBindings();
-
-      setMode(false);
-
-      // 4) Bind project again and await issue showing Standard mode
-      createConnectionAndBindProject(orchestrator, JAVA_SIMPLE_PROJECT_KEY);
-
-      shellByName("SonarLint Binding Suggestion")
-        .ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
-      waitForAnalysisReady(JAVA_SIMPLE_PROJECT_KEY);
-
-      openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
-      await().untilAsserted(() -> assertThat(onTheFlyView.getItems()).hasSize(1));
-      onTheFlyView.getItems().get(0).select();
-      ruleDescriptionView.open();
-      new DefaultEditor().close();
-    } finally {
-      setMode(true);
-    }
-  }
-
   /**
    *  As we test against different SQ versions, we have to check that the grouping and the rule descriptions
    *  work correctly on old / new CCT connections
@@ -436,7 +382,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
   // integration test for the "Mark issue as ..." dialog without and then with permission
   @Test
-  @Ignore("10/2023: Currently failing constantly on the CI, to be investigated later")
   public void test_MarkIssueAs_Dialog() {
     // INFO: It is flaky when running on top of the oldest Eclipse version but works fine in the other test cases,
     // therefore it should be skipped in that particular situation!
@@ -457,7 +402,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     onTheFlyView.open();
 
     // 3) Run SonarQube analysis
-    runMavenBuild(orchestrator, MAVEN2_PROJECT_KEY, "projects", "java/maven2/pom.xml", Map.of());
+    runMavenBuild(orchestrator, MAVEN2_PROJECT_KEY, "java/maven2/pom.xml", Map.of());
 
     // 4) Add new user to SonarQube
     adminWsClient.users().create(new org.sonarqube.ws.client.users.CreateRequest()
@@ -486,7 +431,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     onTheFlyView.getIssues(ISSUE_MATCHER).get(0).select();
     new ContextMenuItem(onTheFlyView.getTree(), "Mark Issue as...").select();
 
-    new PushButton(shellByName("Mark Issue as Resolved on SonarQube").get(), "OK").click();
+    new PushButton(shellByName("Re-Opening resolved Issue on SonarQube Server").get(), "OK").click();
 
     // 9) Assert marker is still available
     await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(ISSUE_MATCHER)).satisfiesAnyOf(
@@ -537,7 +482,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
         .setProject(MAVEN_TAINT_PROJECT_KEY));
     orchestrator.getServer().associateProjectToQualityProfile(MAVEN_TAINT_PROJECT_KEY, "java", "SonarLint IT New Code");
 
-    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml", Map.of());
+    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "java/maven-taint/pom.xml", Map.of());
 
     // 2) import project / check that new code period preference does nothing in standalone mode
     new JavaPerspective().open();
@@ -579,12 +524,12 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     setNewCodePeriodToPreviousVersion(MAVEN_TAINT_PROJECT_KEY);
 
-    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml",
+    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "java/maven-taint/pom.xml",
       Map.of("sonar.projectVersion", "1.1-SNAPSHOT"));
 
     // Because of a bug in SQ that returns the techncial issue creation date, we have to run another analysis
     // to be sure issues will be before the new code period
-    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "projects", "java/maven-taint/pom.xml",
+    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "java/maven-taint/pom.xml",
       Map.of("sonar.projectVersion", "1.2-SNAPSHOT"));
 
     // 5) bind to project on SonarQube / check that new code period preference is working
@@ -729,16 +674,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
       .setAdminCredentials()
       .setParam("project", projectKey)
       .setParam("type", "PREVIOUS_VERSION")
-      .execute();
-  }
-
-  private static void setMode(boolean value) {
-    orchestrator.getServer()
-      .newHttpCall("api/settings/set")
-      .setMethod(HttpMethod.POST)
-      .setAdminCredentials()
-      .setParam("key", "sonar.multi-quality-mode.enabled")
-      .setParam("value", Boolean.toString(value))
       .execute();
   }
 }

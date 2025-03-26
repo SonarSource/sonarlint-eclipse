@@ -28,7 +28,7 @@ import org.eclipse.swt.SWT;
 
 public class MarkIssueAsDialog extends DefaultShell {
   public MarkIssueAsDialog() {
-    super("Mark Issue as Resolved on SonarQube");
+    super("Mark Issue as Resolved on SonarQube Server");
   }
 
   public void selectWontFix() {
@@ -45,12 +45,11 @@ public class MarkIssueAsDialog extends DefaultShell {
 
   public void ok() {
     new MarkAsResolvedButton(this).click();
-
   }
 
   private static class MarkAsResolvedButton extends PredefinedButton {
     public MarkAsResolvedButton(ReferencedComposite referencedComposite) {
-      super(referencedComposite, 0, "Mark as resolved", SWT.PUSH);
+      super(referencedComposite, 0, "Mark Issue as Resolved", SWT.PUSH);
     }
   }
 }
