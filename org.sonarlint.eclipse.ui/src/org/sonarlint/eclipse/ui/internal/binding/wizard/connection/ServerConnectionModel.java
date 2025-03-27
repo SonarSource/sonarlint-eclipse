@@ -22,13 +22,12 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager;
+import org.sonarlint.eclipse.core.internal.token.ConnectionTokenService;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -97,8 +96,8 @@ public class ServerConnectionModel extends ModelObject {
       ConnectionType.SONARCLOUD : ConnectionType.ONPREMISE;
     if (connection.hasAuth()) {
       try {
-        this.username = ConnectionManager.getToken(connection);
-      } catch (StorageException e) {
+        this.username = ConnectionTokenService.getToken(connectionId);
+      } catch (IllegalStateException e) {
         SonarLintLogger.get().error(ERROR_READING_SECURE_STORAGE, e);
         MessageDialog.openError(Display.getCurrent().getActiveShell(), ERROR_READING_SECURE_STORAGE, "Unable to read password from secure storage: " + e.getMessage());
       }

@@ -28,13 +28,14 @@ import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.token.ConnectionTokenService;
+import org.sonarlint.eclipse.core.internal.token.EclipseEquinoxSecurityUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.AUTH_ATTRIBUTE;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.ORG_ATTRIBUTE;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.PREF_CONNECTIONS;
-import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.TOKEN_ATTRIBUTE;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.URL_ATTRIBUTE;
 
 /**
@@ -64,7 +65,7 @@ public class ConnectedEngineFacadeManagerTest {
     manager.addConnection(connection, "token");
     assertThat(manager.getConnections()).containsExactly(connection);
     assertThat(manager.findById(id)).contains(connection);
-    assertThat(ConnectionManager.getToken(connection)).isEqualTo("token");
+    assertThat(ConnectionTokenService.getToken(connection.getId())).isEqualTo("token");
     assertThat(ROOT.nodeExists(PREF_CONNECTIONS)).isTrue();
     assertThat(ROOT_SECURE.nodeExists(PREF_CONNECTIONS)).isTrue();
     assertThat(ROOT.node(PREF_CONNECTIONS).nodeExists("foo%2Fbar")).isTrue();
@@ -72,7 +73,7 @@ public class ConnectedEngineFacadeManagerTest {
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(URL_ATTRIBUTE, null)).isEqualTo("http://foo");
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").getBoolean(AUTH_ATTRIBUTE, false)).isTrue();
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(ORG_ATTRIBUTE, null)).isEqualTo("bar");
-    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(TOKEN_ATTRIBUTE, null)).isEqualTo("token");
+    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(EclipseEquinoxSecurityUtils.TOKEN_ATTRIBUTE, null)).isEqualTo("token");
 
     var connectionUpdated = manager.create(id, "http://foo2", "bar2", "EU", "token2", false);
     try {
@@ -88,7 +89,7 @@ public class ConnectedEngineFacadeManagerTest {
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(URL_ATTRIBUTE, null)).isEqualTo("http://foo2");
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").getBoolean(AUTH_ATTRIBUTE, false)).isTrue();
     assertThat(ROOT.node(PREF_CONNECTIONS).node("foo%2Fbar").get(ORG_ATTRIBUTE, null)).isEqualTo("bar2");
-    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(TOKEN_ATTRIBUTE, null)).isEqualTo("token2");
+    assertThat(ROOT_SECURE.node(PREF_CONNECTIONS).node("foo%2Fbar").get(EclipseEquinoxSecurityUtils.TOKEN_ATTRIBUTE, null)).isEqualTo("token2");
 
     manager.removeConnection(connectionUpdated);
     assertThat(manager.getConnections()).isEmpty();

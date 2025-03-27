@@ -13,6 +13,9 @@
    <extension-point id="projectScopeProvider"
    					name="SonarLint Project Scope Provider"
    					schema="schema/projectScopeProvider.exsd" />
+   <extension-point id="connectionTokenProvider"
+   					name="SonarLint Connection Token Provider"
+   					schema="schema/connectionTokenProvider.exsd" />
 
 
    <extension

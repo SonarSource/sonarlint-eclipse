@@ -28,13 +28,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.internal.token.ConnectionTokenService;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -82,12 +82,12 @@ public class ConnectionFacade {
   public String getId() {
     return id;
   }
-  
+
   @Nullable
   public String getSonarCloudRegion() {
     return sonarCloudRegion;
   }
-  
+
   public ConnectionFacade setSonarCloudRegion(@Nullable String region) {
     this.sonarCloudRegion = region;
     return this;
@@ -137,9 +137,9 @@ public class ConnectionFacade {
     @Nullable
     String token;
     try {
-      token = ConnectionManager.getToken(this);
-    } catch (StorageException e) {
-      SonarLintLogger.get().error("Unable to resolve credentials for connection: " + getId());
+      token = ConnectionTokenService.getToken(getId());
+    } catch (IllegalStateException e) {
+      SonarLintLogger.get().error("Unable to resolve credentials for connection: " + getId(), e);
       return null;
     }
     return new TokenDto(token);
