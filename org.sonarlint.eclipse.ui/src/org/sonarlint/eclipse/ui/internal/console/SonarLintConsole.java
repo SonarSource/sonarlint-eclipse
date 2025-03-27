@@ -35,7 +35,6 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.popup.ErrorPopup;
 
 public class SonarLintConsole extends MessageConsole implements IPropertyChangeListener {
 
@@ -128,10 +127,6 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
         bringConsoleToFront();
       }
       write(getWarnStream(), msg);
-
-      // Display a notification when an error is logged to the SonarQube Console. The first step towards a proper error
-      // reporting mechanism.
-      ErrorPopup.displayPopupIfNotIgnored(msg, null);
     }
   }
 
@@ -146,10 +141,6 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
 
       write(getWarnStream(), msg);
       write(getWarnStream(), stack.toString());
-
-      // Display a notification when an error is logged to the SonarQube Console. The first step towards a proper error
-      // reporting mechanism.
-      ErrorPopup.displayPopupIfNotIgnored(msg, t);
     }
   }
 
