@@ -195,6 +195,19 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     assertThat(organizationsPage.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
 
+    // Check that when entering an invalid organization moving forward is blocked
+    var invalidOrganization = "thisOrganizationDoesNotExist";
+    organizationsPage.setOrganization(invalidOrganization);
+    assertThat(wizard.isNextEnabled()).isTrue();
+    wizard.next();
+    new WaitUntil(new DialogMessageIsExpected(wizard, "No organizations found for key: " + invalidOrganization));
+
+    wizard.back();
+    assertThat(wizard.isNextEnabled()).isTrue();
+    wizard.next();
+
+    organizationsPage = new ServerConnectionWizard.OrganizationsPage(wizard);
+    organizationsPage.waitForOrganizationsToBeFetched();
     organizationsPage.setOrganization(SONARCLOUD_ORGANIZATION_KEY);
     assertThat(wizard.isNextEnabled()).isTrue();
     wizard.next();
