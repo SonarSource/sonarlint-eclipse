@@ -93,7 +93,6 @@ public class SonarLintGlobalConfiguration {
   private static final String PREF_SOON_UNSUPPORTED_CONNECTIONS = "soonUnsupportedSonarQubeConnections"; //$NON-NLS-1$
   private static final String PREF_NO_AUTOMATIC_BUILD_WARNING = "noAutomaticBuildWarning"; //$NON-NLS-1$
   private static final String PREF_NO_CONNECTION_SUGGESTIONS = "NoConnectionSuggestions"; //$NON-NLS-1$
-  private static final String PREF_NO_ERROR_NOTIFICATION = "noErrorNotification"; //$NON-NLS-1$
 
   // When SonarLint is updated (or installed), we inform the user by opening the "Welcome" page and show a notification
   // about the new Release Notes. When a new version is available, we will inform the user as well (but only once a
@@ -454,18 +453,6 @@ public class SonarLintGlobalConfiguration {
 
   public static void setNoAutomaticBuildWarning() {
     setPreferenceBoolean(getWorkspaceLevelPreferenceNode(), PREF_NO_AUTOMATIC_BUILD_WARNING, true);
-  }
-
-  public static boolean noErrorNotifcation() {
-    // For integration tests we need to disable the notifications
-    var property = System.getProperty("sonarlint.internal.noErrorNotification");
-    return property == null || property.isBlank()
-      ? getPreferenceBoolean(PREF_NO_ERROR_NOTIFICATION)
-      : Boolean.parseBoolean(property);
-  }
-
-  public static void setNoErrorNotification() {
-    setPreferenceBoolean(getWorkspaceLevelPreferenceNode(), PREF_NO_ERROR_NOTIFICATION, true);
   }
 
   public static boolean noConnectionSuggestions() {
