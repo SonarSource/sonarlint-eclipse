@@ -145,7 +145,15 @@ public abstract class AbstractConnectionWizard extends Wizard implements INewWiz
     return resultServer;
   }
 
-  protected boolean testConnection(boolean doNotTestOrganization) {
+  protected boolean testToken() {
+    return testConnection(true);
+  }
+
+  protected boolean testOrganization() {
+    return testConnection(false);
+  }
+
+  private boolean testConnection(boolean doNotTestOrganization) {
     var currentPage = getContainer().getCurrentPage();
     var response = new AtomicReference<ValidateConnectionResponse>();
     try {

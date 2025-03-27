@@ -53,13 +53,13 @@ public class SuggestConnectionWizard extends AbstractConnectionWizard {
   @Override
   protected boolean actualCanFinish() {
     // INFO: testConnection(...) won't fail if model.getUsername(...) is null -.-
-    return model.getUsername() != null && testConnection(false);
+    return model.getUsername() != null && testOrganization();
   }
 
   @Override
   protected boolean actualPerformFinish() {
     try {
-      if (!testConnection(false)) {
+      if (!testOrganization()) {
         return false;
       }
 
