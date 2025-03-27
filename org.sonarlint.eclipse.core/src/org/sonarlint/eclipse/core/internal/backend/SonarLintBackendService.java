@@ -407,7 +407,7 @@ public class SonarLintBackendService {
       connectionSynchronizer = null;
     }
     if (backend != null) {
-      backend.shutdown();
+      backend.shutdown().join();
     }
     backend = null;
   }
