@@ -106,7 +106,7 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
   protected void actualHandlePageChanging(PageChangingEvent event) {
     var currentPage = (WizardPage) event.getCurrentPage();
     var advance = getNextPage(currentPage) == event.getTargetPage();
-    if (advance && currentPage == tokenPage && !testConnection(true)) {
+    if (advance && currentPage == tokenPage && !testToken()) {
       event.doit = false;
       return;
     }
@@ -114,7 +114,7 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
       event.doit = tryLoadOrganizations(currentPage);
       return;
     }
-    if (advance && currentPage == orgPage && !testConnection(false)) {
+    if (advance && currentPage == orgPage && !testOrganization()) {
       event.doit = false;
     }
   }
@@ -184,7 +184,7 @@ public class ServerConnectionWizard extends AbstractConnectionWizard {
   @Override
   protected boolean actualPerformFinish() {
     try {
-      if (model.isEdit() && !testConnection(false)) {
+      if (model.isEdit() && !testOrganization()) {
         return false;
       }
 
