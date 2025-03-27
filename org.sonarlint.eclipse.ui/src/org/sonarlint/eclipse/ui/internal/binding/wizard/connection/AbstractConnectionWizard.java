@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
@@ -146,7 +145,7 @@ public abstract class AbstractConnectionWizard extends Wizard implements INewWiz
     return resultServer;
   }
 
-  protected boolean testConnection(@Nullable String organization) {
+  protected boolean testConnection(boolean doNotTestOrganization) {
     var currentPage = getContainer().getCurrentPage();
     var response = new AtomicReference<ValidateConnectionResponse>();
     try {
@@ -154,9 +153,9 @@ public abstract class AbstractConnectionWizard extends Wizard implements INewWiz
 
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-          monitor.beginTask(organization == null ? "Testing connection" : "Testing access to the organization", IProgressMonitor.UNKNOWN);
+          monitor.beginTask(doNotTestOrganization ? "Testing connection" : "Testing access to the organization", IProgressMonitor.UNKNOWN);
           try {
-            var params = new ValidateConnectionParams(modelToTransientConnectionDto());
+            var params = new ValidateConnectionParams(modelToTransientConnectionDto(doNotTestOrganization));
             var future = SonarLintBackendService.get().getBackend().getConnectionService().validateConnection(params);
             response.set(JobUtils.waitForFutureInIRunnableWithProgress(monitor, future));
           } finally {
@@ -182,10 +181,12 @@ public abstract class AbstractConnectionWizard extends Wizard implements INewWiz
     }
   }
 
-  protected Either<TransientSonarQubeConnectionDto, TransientSonarCloudConnectionDto> modelToTransientConnectionDto() {
+  protected Either<TransientSonarQubeConnectionDto, TransientSonarCloudConnectionDto> modelToTransientConnectionDto(boolean doNotTestOrganization) {
     var credentials = modelToCredentialDto();
     if (model.getConnectionType() == ConnectionType.SONARCLOUD) {
-      return Either.forRight(new TransientSonarCloudConnectionDto(model.getOrganization(), credentials,
+      return Either.forRight(new TransientSonarCloudConnectionDto(
+        doNotTestOrganization ? null : model.getOrganization(),
+        credentials,
         model.getSonarCloudRegion() != null ? SonarCloudRegion.valueOf(model.getSonarCloudRegion().name()) : SonarCloudRegion.EU));
     } else {
       return Either.forLeft(new TransientSonarQubeConnectionDto(model.getServerUrl(), credentials));
