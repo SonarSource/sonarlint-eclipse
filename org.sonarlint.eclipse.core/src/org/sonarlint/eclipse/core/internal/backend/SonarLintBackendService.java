@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -407,7 +409,11 @@ public class SonarLintBackendService {
       connectionSynchronizer = null;
     }
     if (backend != null) {
-      backend.shutdown();
+      try {
+        backend.shutdown().get(10, TimeUnit.SECONDS);
+      } catch (InterruptedException | ExecutionException | TimeoutException err) {
+        SonarLintLogger.get().error("Unable to shutdown the SonarLint Core RPC server", err);
+      }
     }
     backend = null;
   }
