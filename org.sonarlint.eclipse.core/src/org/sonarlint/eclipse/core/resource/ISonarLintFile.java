@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.resource;
 
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.jface.text.IDocument;
 
@@ -45,6 +46,9 @@ public interface ISonarLintFile extends ISonarLintIssuable {
   /**
    * Some analyzers need to read the file from disk so {@link #getDocument()} will not be used, and instead
    * {@link EFS} will be queried for a physical copy of the file, and content will be read using this charset.
+   * 
+   * @throws UnsupportedCharsetException
+   *         If no support for the named charset is available in this instance of the Java virtual machine
    */
   Charset getCharset();
 
