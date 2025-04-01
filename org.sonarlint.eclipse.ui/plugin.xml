@@ -1767,5 +1767,14 @@
         </viewShortcut>
     </perspectiveExtension>
   </extension>
-
+  
+  <!--
+  	Starting on the Eclipse IDE Workbench initialization to start Sentry as early as possible
+  -->
+  <extension
+        point="org.eclipse.ui.startup">
+     <startup
+           class="org.sonarlint.eclipse.ui.internal.WorkbenchStartupHandler">
+     </startup>
+  </extension>
 </plugin>
