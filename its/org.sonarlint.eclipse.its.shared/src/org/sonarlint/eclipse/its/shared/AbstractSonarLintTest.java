@@ -114,6 +114,7 @@ public abstract class AbstractSonarLintTest {
 
   @BeforeClass
   public static final void setUpBeforeClass() {
+    System.setProperty("sonarlint.internal.disableDogfooding", "true");
     System.setProperty("sonarlint.internal.ignoreEnhancedFeature", "true");
     System.setProperty("sonarlint.internal.ignoreMissingFeature", "true");
     System.setProperty("sonarlint.internal.ignoreNoAutomaticBuildWarning", "true");
