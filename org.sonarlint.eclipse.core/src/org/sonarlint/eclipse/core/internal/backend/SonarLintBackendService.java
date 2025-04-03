@@ -51,6 +51,7 @@ import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.nodejs.NodeJsService;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.sentry.MonitoringService;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.DurationUtils;
 import org.sonarlint.eclipse.core.internal.utils.JavaRuntimeUtils;
@@ -197,12 +198,15 @@ public class SonarLintBackendService {
           var plugInVersion = SonarLintUtils.getPluginVersion();
           var ideVersion = SonarLintTelemetry.ideVersionForTelemetry();
 
+          var monitoringEnabled = MonitoringService.isDogfoodingEnvironment();
+          SonarLintLogger.get().debug("Monitoring with Sentry is " + (monitoringEnabled ? "enabled" : "disabled"));
+
           backend.initialize(new InitializeParams(
             new ClientConstantInfoDto(getIdeName(), "SonarQube for IDE (SonarLint) - Eclipse " + plugInVersion + " - " + ideVersion),
             new TelemetryClientConstantAttributesDto("eclipse", "SonarLint Eclipse", plugInVersion, ideVersion, Map.of()),
             httpConfiguration,
             getSonarCloudAlternativeEnvironment(),
-            new FeatureFlagsDto(true, true, true, true, false, true, true, true, telemetryEnabled, true, true),
+            new FeatureFlagsDto(true, true, true, true, false, true, true, true, telemetryEnabled, true, monitoringEnabled),
             StoragePathManager.getStorageDir(),
             StoragePathManager.getDefaultWorkDir(),
             Set.copyOf(embeddedPluginPaths),

@@ -20,11 +20,28 @@
 package org.sonarlint.eclipse.ui.internal;
 
 import org.eclipse.ui.IStartup;
+import org.eclipse.ui.statushandlers.StatusManager;
+import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.sentry.MonitoringService;
+import org.sonarlint.eclipse.core.internal.sentry.SentryLogListener;
 
+/**
+ *  This invoked by the Eclipse IDE directly after the workbench started up, therefore before the plug-ins are even
+ *  loaded. We initialize Sentry here as fast as possible to catch as many possible exceptions before the plug-in
+ *  activators are invoked for the UI bundle: {@link SonarLintUiPlugin#start(org.osgi.framework.BundleContext)}
+ *
+ *  We also add a listener to SonarLintLogger in case something is logged with an error before the SonarQube Console is
+ *  even available. This way we don't miss out on these corner cases either!
+ *
+ *  Additionally, we add a status listener for uncaught exceptions (that are triggering the infamous "Problem Occurred"
+ *  dialog in the Eclipse IDE) to also capture the ones related to our plug-in and tag them specifically to be
+ *  distinguishable and easier to act on in Sentry.io!
+ */
 public class WorkbenchStartupHandler implements IStartup {
   @Override
   public void earlyStartup() {
-    // TODO Auto-generated method stub
-
+    MonitoringService.init();
+    SonarLintLogger.get().addLogListener(new SentryLogListener());
+    StatusManager.getManager().addListener(UncaughtExceptionHandler.getInstance());
   }
 }
