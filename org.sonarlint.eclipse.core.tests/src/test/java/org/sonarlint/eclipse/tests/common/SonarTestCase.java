@@ -59,6 +59,7 @@ import static org.junit.Assert.assertTrue;
 public abstract class SonarTestCase {
 
   static {
+    System.setProperty("sonarlint.internal.disableDogfooding", "true");
     System.setProperty("sonarlint.telemetry.disabled", "true");
   }
 
