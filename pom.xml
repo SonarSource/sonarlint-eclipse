@@ -74,7 +74,7 @@
     <os.version>1.7.1</os.version>
 
     <!-- Tycho plug-ins -->
-    <tycho.version>4.0.10</tycho.version>
+    <tycho.version>4.0.12</tycho.version>
 
     <!-- Sloop embedded CLI version for fragment projects -->
     <sloop.version>10.18.0.80725</sloop.version>
