@@ -19,12 +19,10 @@
  */
 package org.sonarlint.eclipse.ui.internal.markers;
 
-import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.DocumentRewriteSession;
 import org.eclipse.jface.text.DocumentRewriteSessionType;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.swt.graphics.Image;
@@ -36,9 +34,6 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
@@ -46,7 +41,6 @@ import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 
 public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
@@ -78,21 +72,12 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
     Display.getDefault().asyncExec(() -> {
       var openEditor = openEditor(file, marker);
       if (fix.isValid()) {
-        var document = applyIn(openEditor, fix);
+        applyIn(openEditor, fix);
         SonarLintTelemetry.addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker));
-        scheduleAnalysis(new FileWithDocument(file, document));
       } else {
         SonarLintLogger.get().debug("Quick fix is not valid anymore");
       }
     });
-  }
-
-  private static void scheduleAnalysis(FileWithDocument fileWithDoc) {
-    var file = fileWithDoc.getFile();
-
-    var request = new AnalyzeProjectRequest(file.getProject(), List.of(fileWithDoc), TriggerType.QUICK_FIX, false);
-
-    AnalysisJobsScheduler.scheduleAutoAnalysisIfEnabled(request);
   }
 
   @Nullable
@@ -119,7 +104,7 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
     }
   }
 
-  private static IDocument applyIn(ITextEditor openEditor, MarkerQuickFix fix) {
+  private static void applyIn(ITextEditor openEditor, MarkerQuickFix fix) {
     var document = openEditor.getDocumentProvider().getDocument(openEditor.getEditorInput());
     // IDocumentExtension4 appeared before oldest supported version, no need to check
     var extendedDocument = (IDocumentExtension4) document;
@@ -137,7 +122,6 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
         extendedDocument.stopRewriteSession(session);
       }
     }
-    return document;
   }
 
   private static void apply(ITextEditor textEditor, IDocumentExtension4 document, MarkerTextEdit textEdit, boolean selectUpdatedText) {

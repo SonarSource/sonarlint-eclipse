@@ -27,7 +27,6 @@ public enum TriggerType {
   EDITOR_CHANGE("Editor change", ServerIssueFetchStrategy.DONT_FETCH),
   BINDING_CHANGE("Binding change", ServerIssueFetchStrategy.FETCH),
   STANDALONE_CONFIG_CHANGE("Standalone config change", ServerIssueFetchStrategy.DONT_FETCH),
-  QUICK_FIX("Quick fix", ServerIssueFetchStrategy.DONT_FETCH),
   AFTER_RESOLVE("After resolve", ServerIssueFetchStrategy.DONT_FETCH);
 
   /** For the analysis out of process this information is required */
