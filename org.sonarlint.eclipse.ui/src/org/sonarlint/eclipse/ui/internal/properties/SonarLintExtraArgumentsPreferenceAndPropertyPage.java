@@ -51,6 +51,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
@@ -58,6 +59,7 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 
 /**
  * An abstract field editor that manages a list of input values.
@@ -402,16 +404,22 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
   @Override
   public boolean performOk() {
     if (isGlobal()) {
-      var props = SonarLintGlobalConfiguration.serializeExtraProperties(sonarProperties);
-      getPreferenceStore().setValue(SonarLintGlobalConfiguration.PREF_EXTRA_ARGS, props);
+      var previousProperties = SonarLintGlobalConfiguration.getGlobalExtraProperties();
+      var serialized = SonarLintGlobalConfiguration.serializeExtraProperties(sonarProperties);
+      getPreferenceStore().setValue(SonarLintGlobalConfiguration.PREF_EXTRA_ARGS, serialized);
+      if (!sonarProperties.equals(previousProperties)) {
+        AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
+      }
     } else {
       var projectConfig = getProjectConfig();
       if (projectConfig != null) {
         projectConfig.getExtraProperties().clear();
         projectConfig.getExtraProperties().addAll(sonarProperties);
         SonarLintCorePlugin.saveConfig(getProject(), projectConfig);
+        AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(getProject(), TriggerType.STANDALONE_CONFIG_CHANGE);
       }
     }
+
     return true;
   }
 

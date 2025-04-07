@@ -165,14 +165,18 @@ public class SonarLintGlobalConfiguration {
   public static List<SonarLintProperty> getExtraPropertiesForLocalAnalysis(ISonarLintProject project) {
     var props = new ArrayList<SonarLintProperty>();
     // First add all global properties
-    var globalExtraArgs = getPreferenceString(PREF_EXTRA_ARGS);
-    props.addAll(deserializeExtraProperties(globalExtraArgs));
+    props.addAll(getGlobalExtraProperties());
 
     // Then add project properties
     var sonarProject = SonarLintCorePlugin.loadConfig(project);
     props.addAll(sonarProject.getExtraProperties());
 
     return props;
+  }
+
+  public static List<SonarLintProperty> getGlobalExtraProperties() {
+    var globalExtraArgs = getPreferenceString(PREF_EXTRA_ARGS);
+    return deserializeExtraProperties(globalExtraArgs);
   }
 
   public static List<SonarLintProperty> deserializeExtraProperties(@Nullable String property) {
