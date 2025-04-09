@@ -413,10 +413,13 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
     } else {
       var projectConfig = getProjectConfig();
       if (projectConfig != null) {
-        projectConfig.getExtraProperties().clear();
-        projectConfig.getExtraProperties().addAll(sonarProperties);
-        SonarLintCorePlugin.saveConfig(getProject(), projectConfig);
-        AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(getProject(), TriggerType.STANDALONE_CONFIG_CHANGE);
+        var previousProperties = projectConfig.getExtraProperties();
+        if (!sonarProperties.equals(previousProperties)) {
+          projectConfig.getExtraProperties().clear();
+          projectConfig.getExtraProperties().addAll(sonarProperties);
+          SonarLintCorePlugin.saveConfig(getProject(), projectConfig);
+          AnalysisJobsScheduler.scheduleAnalysisOfOpenFiles(getProject(), TriggerType.STANDALONE_CONFIG_CHANGE);
+        }
       }
     }
 
