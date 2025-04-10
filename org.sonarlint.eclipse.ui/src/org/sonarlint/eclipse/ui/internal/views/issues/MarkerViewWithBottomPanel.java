@@ -23,6 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.views.markers.MarkerSupportView;
@@ -32,20 +33,10 @@ public abstract class MarkerViewWithBottomPanel extends MarkerSupportView {
   protected static final String UNAVAILABLE_MESSAGE = "The analysis is not available as the backend is not ready";
 
   @Nullable
-  protected static MarkerViewWithBottomPanel instance;
-
-  @Nullable
   protected Link bottomLabel;
 
   protected MarkerViewWithBottomPanel(String contentGeneratorId) {
     super(contentGeneratorId);
-    instance = this;
-  }
-
-  @Override
-  public void dispose() {
-    super.dispose();
-    instance = null;
   }
 
   @Override
@@ -61,6 +52,11 @@ public abstract class MarkerViewWithBottomPanel extends MarkerSupportView {
     issuesTable.setLayoutData(issuesLayoutData);
     super.createPartControl(issuesTable);
     var bottom = new Composite(parent, SWT.NONE);
+    var bottomLayout = new RowLayout();
+    bottomLayout.center = true;
+    bottom.setLayout(bottomLayout);
+    var bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+    bottom.setLayoutData(bottomLayoutData);
     populateBottomPanel(bottom);
     if (SonarLintRpcClientSupportService.getSloopAvailability()) {
       resetDefaultText();
@@ -71,22 +67,10 @@ public abstract class MarkerViewWithBottomPanel extends MarkerSupportView {
 
   protected abstract void populateBottomPanel(Composite bottom);
 
-  protected abstract void resetDefaultText();
+  public abstract void resetDefaultText();
 
-  protected void warnAboutSloopUnavailable() {
+  public void warnAboutSloopUnavailable() {
     bottomLabel.setText(UNAVAILABLE_MESSAGE);
     bottomLabel.getParent().layout();
-  }
-
-  public static void tryWarnAboutSloopUnavailable() {
-    if (MarkerViewWithBottomPanel.instance != null) {
-      MarkerViewWithBottomPanel.instance.warnAboutSloopUnavailable();
-    }
-  }
-
-  public static void tryResetDefaultText() {
-    if (MarkerViewWithBottomPanel.instance != null) {
-      MarkerViewWithBottomPanel.instance.resetDefaultText();
-    }
   }
 }

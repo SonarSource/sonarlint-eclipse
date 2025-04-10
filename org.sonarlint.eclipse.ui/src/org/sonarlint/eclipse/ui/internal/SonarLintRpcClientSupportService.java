@@ -21,6 +21,8 @@ package org.sonarlint.eclipse.ui.internal;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.Objects;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintRpcClientSupportSynchronizer;
 import org.sonarlint.eclipse.ui.internal.popup.SonarLintRpcClientSupportPopup;
@@ -43,14 +45,20 @@ public class SonarLintRpcClientSupportService implements PropertyChangeListener 
     var newValue = ((Boolean) evt.getNewValue()).booleanValue();
     if (SonarLintRpcClientSupportSynchronizer.PROPERTY_NAME.equals(evt.getPropertyName())) {
       Display.getDefault().asyncExec(() -> {
-        if (newValue) {
-          OnTheFlyIssuesView.tryResetDefaultText();
-          TaintVulnerabilitiesView.tryResetDefaultText();
-          SonarLintReportView.tryResetDefaultText();
-        } else {
-          OnTheFlyIssuesView.tryWarnAboutSloopUnavailable();
-          TaintVulnerabilitiesView.tryWarnAboutSloopUnavailable();
-          SonarLintReportView.tryWarnAboutSloopUnavailable();
+        Arrays.asList(OnTheFlyIssuesView.getInstance(),
+          TaintVulnerabilitiesView.getInstance(),
+          SonarLintReportView.getInstance())
+          .stream()
+          .filter(Objects::nonNull)
+          .forEach(view -> {
+            if (newValue) {
+              view.resetDefaultText();
+            } else {
+              view.warnAboutSloopUnavailable();
+            }
+          });
+
+        if (!newValue) {
           SonarLintRpcClientSupportPopup.displayPopupIfNotAlreadyDisplayed();
         }
       });
