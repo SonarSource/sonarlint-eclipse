@@ -19,9 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
@@ -31,21 +30,25 @@ import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 public class OnTheFlyIssuesView extends MarkerViewWithBottomPanel {
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.issues.IssuesView";
 
+  @Nullable
+  private static OnTheFlyIssuesView instance;
+
   public OnTheFlyIssuesView() {
     super(SonarLintUiPlugin.PLUGIN_ID + ".views.issues.onTheFlyIssueMarkerGenerator");
+    instance = this;
   }
 
   @Override
   protected void populateBottomPanel(Composite bottom) {
-    var bottomLayout = new RowLayout();
-    bottomLayout.center = true;
-    bottom.setLayout(bottomLayout);
-    var bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
-    bottom.setLayoutData(bottomLayoutData);
-
     bottomLabel = new Link(bottom, SWT.NONE);
     bottomLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.ON_THE_FLY_VIEW_LINK, e.display));
+  }
+
+  @Override
+  public void dispose() {
+    instance = null;
+    super.dispose();
   }
 
   @Override
@@ -53,5 +56,10 @@ public class OnTheFlyIssuesView extends MarkerViewWithBottomPanel {
     bottomLabel.setText(
       "Issues reported \"on the fly\" on files you have recently opened/edited. <a>Learn more</a>");
     bottomLabel.getParent().layout();
+  }
+
+  @Nullable
+  public static OnTheFlyIssuesView getInstance() {
+    return instance;
   }
 }

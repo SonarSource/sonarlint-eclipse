@@ -23,8 +23,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
@@ -35,6 +33,10 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.issues.ChangeSetIssuesView";
   private static LocalDateTime reportDate;
   private static String reportTitle;
+
+  @Nullable
+  private static SonarLintReportView instance;
+
   private Composite bottom;
 
   public SonarLintReportView() {
@@ -45,15 +47,16 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
   @Override
   protected void populateBottomPanel(Composite bottom) {
     this.bottom = bottom;
-    var bottomLayout = new RowLayout();
-    bottomLayout.center = true;
-    bottom.setLayout(bottomLayout);
-    var bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
-    bottom.setLayoutData(bottomLayoutData);
 
     bottomLabel = new Link(bottom, SWT.NONE);
     bottomLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.REPORT_VIEW_LINK, e.display));
+  }
+
+  @Override
+  public void dispose() {
+    instance = null;
+    super.dispose();
   }
 
   @Override
@@ -66,11 +69,16 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
     bottomLabel.getParent().layout();
   }
 
+  @Nullable
+  public static SonarLintReportView getInstance() {
+    return instance;
+  }
+
   public static void setReportTitle(@Nullable String title) {
     SonarLintReportView.reportDate = title != null ? LocalDateTime.now() : null;
     SonarLintReportView.reportTitle = title;
     if (instance != null) {
-      var localInstance = (SonarLintReportView) instance;
+      var localInstance = instance;
       localInstance.resetDefaultText();
       localInstance.bottom.requestLayout();
     }
