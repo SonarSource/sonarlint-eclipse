@@ -60,7 +60,8 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.analysis.AnalyzeFilesResponse;
+import org.sonarsource.sonarlint.shaded.org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
+import org.sonarsource.sonarlint.shaded.org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
 import static java.text.MessageFormat.format;
 
@@ -172,8 +173,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
 
       if (!inputFiles.isEmpty()) {
-        var start = System.currentTimeMillis();
-        var result = run(filesToAnalyzeMap.keySet(), mergedExtraProps, start, monitor);
+        run(filesToAnalyzeMap.keySet(), mergedExtraProps, System.currentTimeMillis(), monitor);
       }
 
       analysisCompleted(usedConfigurators, mergedExtraProps, monitor);
@@ -274,7 +274,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   }
 
-  private AnalyzeFilesResponse run(final Set<ISonarLintFile> files, final Map<String, String> extraProps,
+  private void run(final Set<ISonarLintFile> files, final Map<String, String> extraProps,
     long startTime, IProgressMonitor monitor) {
     var fileURIs = files.stream().map(slFile -> slFile.getResource().getLocationURI()).collect(Collectors.toList());
 
@@ -285,7 +285,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       RunningAnalysesTracker.get().track(analysisState);
 
       var future = SonarLintBackendService.get().analyzeFilesAndTrack(getProject(), analysisId, fileURIs, extraProps, triggerType.shouldFetch(), startTime);
-      return JobUtils.waitForFutureInJob(monitor, future);
+      JobUtils.waitForFutureInJob(monitor, future);
     } catch (Exception err) {
       // If the analysis fails we assume that there will also be no "raiseIssues(...)" called. If so, we only handle it
       // incorrectly if this fails on a manual analysis invocation (we assume it is an update coming from SonarLint
@@ -294,6 +294,15 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       // "isIntermediatePublication" set to false called, this AnalysisState object would still be in memory until the
       // IDE (ergo SonarLint) is restarted.
       new FinishAnalysisStateJob(analysisState).schedule(5000);
+
+      // When a analysis request was cancelled by the scheduler of SonarLint Core, then don't raise an exception and
+      // just log a small debug notification.
+      var cause = err.getCause();
+      if (cause instanceof ResponseErrorException
+        && ResponseErrorCode.RequestCancelled.getValue() == ((ResponseErrorException) cause).getResponseError().getCode()) {
+        SonarLintLogger.get().debug("Analysis with id '" + analysisId + "' was cancelled by SonarLint Core scheduler");
+        return;
+      }
 
       if (err instanceof InterruptedException) {
         Thread.currentThread().interrupt();
