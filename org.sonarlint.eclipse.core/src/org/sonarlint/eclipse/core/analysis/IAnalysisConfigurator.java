@@ -44,7 +44,10 @@ public interface IAnalysisConfigurator {
 
   /**
    * This method is called after analysis is finished. Can be used to perform some cleanup.
+   *
+   * @deprecated because the analysis is asynchronous, third parties implementing this should rather rely on a scheduled removal
    */
+  @Deprecated(since = "11.6", forRemoval = true)
   default void analysisComplete(IPostAnalysisContext context, IProgressMonitor monitor) {
     // Do nothing by default
   }

@@ -24,7 +24,9 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
  * @since 3.0
+ * @deprecated because {@link IAnalysisConfigurator#analysisComplete()} is deprecated
  */
+@Deprecated(since = "11.6", forRemoval = true)
 public interface IPostAnalysisContext {
 
   ISonarLintProject getProject();

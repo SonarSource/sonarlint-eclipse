@@ -23,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,8 +39,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.SonarLintNotifications;
-import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
-import org.sonarlint.eclipse.core.analysis.IPostAnalysisContext;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
@@ -108,7 +105,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
     SonarLintLogger.get().debug("Analysis started with the engines being ready");
 
-    var startTime = System.currentTimeMillis();
     Path analysisWorkDir = null;
     try {
       var excludedFiles = new ArrayList<ISonarLintFile>();
@@ -138,7 +134,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
       analysisWorkDir = Files.createTempDirectory(getProject().getWorkingDir(), "sonarlint");
       var inputFiles = buildInputFiles(analysisWorkDir, filesToAnalyzeMap);
-      var usedConfigurators = configure(getProject(), inputFiles, mergedExtraProps, analysisWorkDir, monitor);
+      configure(getProject(), inputFiles, mergedExtraProps, analysisWorkDir, monitor);
 
       extraProps.forEach(sonarProperty -> mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue()));
 
@@ -175,9 +171,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       if (!inputFiles.isEmpty()) {
         run(filesToAnalyzeMap.keySet(), mergedExtraProps, System.currentTimeMillis(), monitor);
       }
-
-      analysisCompleted(usedConfigurators, mergedExtraProps, monitor);
-      SonarLintLogger.get().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
     } catch (CanceledException e) {
       return Status.CANCEL_STATUS;
     } catch (Exception e) {
@@ -238,40 +231,15 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return inputFiles;
   }
 
-  private static Collection<IAnalysisConfigurator> configure(final ISonarLintProject project, List<EclipseInputFile> filesToAnalyze,
+  private static void configure(final ISonarLintProject project, List<EclipseInputFile> filesToAnalyze,
     final Map<String, String> extraProperties, Path tempDir, final IProgressMonitor monitor) {
-    var usedConfigurators = new ArrayList<IAnalysisConfigurator>();
     var configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
     var context = new DefaultPreAnalysisContext(project, extraProperties, filesToAnalyze, tempDir);
     for (var configurator : configurators) {
       if (configurator.canConfigure(project)) {
         configurator.configure(context, monitor);
-        usedConfigurators.add(configurator);
       }
     }
-
-    return usedConfigurators;
-  }
-
-  private static void analysisCompleted(Collection<IAnalysisConfigurator> usedConfigurators,
-    Map<String, String> properties, final IProgressMonitor monitor) {
-    var unmodifiableMap = Collections.unmodifiableMap(properties);
-
-    var context = new IPostAnalysisContext() {
-      @Override
-      public ISonarLintProject getProject() {
-        return getProject();
-      }
-
-      @Override
-      public Map<String, String> getAnalysisProperties() {
-        return unmodifiableMap;
-      }
-    };
-    for (IAnalysisConfigurator p : usedConfigurators) {
-      p.analysisComplete(context, monitor);
-    }
-
   }
 
   private void run(final Set<ISonarLintFile> files, final Map<String, String> extraProps,
