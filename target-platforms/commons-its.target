@@ -83,7 +83,7 @@
         <dependency>
           <groupId>org.sonarsource.orchestrator</groupId>
           <artifactId>sonar-orchestrator</artifactId>
-          <version>5.1.0.2254</version>
+          <version>5.5.0.2535</version>
           <type>jar</type>
         </dependency>
       </dependencies>
@@ -104,7 +104,7 @@ DynamicImport-Package: *
         <dependency>
           <groupId>org.sonarsource.orchestrator</groupId>
           <artifactId>sonar-orchestrator-junit4</artifactId>
-          <version>5.1.0.2254</version>
+          <version>5.5.0.2535</version>
           <type>jar</type>
         </dependency>
       </dependencies>
