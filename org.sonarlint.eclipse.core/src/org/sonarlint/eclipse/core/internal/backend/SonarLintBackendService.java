@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,8 +70,8 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.branch.DidVcsReposito
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.config.DidChangeCredentialsParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.GetAllProjectsParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.SonarProjectDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.BackendCapability;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.ClientConstantInfoDto;
-import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.FeatureFlagsDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.HttpConfigurationDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.InitializeParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.JsTsRequirementsDto;
@@ -191,22 +192,16 @@ public class SonarLintBackendService {
           var sqConnections = ConnectionSynchronizer.buildSqConnectionDtos();
           var scConnections = ConnectionSynchronizer.buildScConnectionDtos();
 
-          // Check if telemetry was disabled via system properties (e.g. in unit / integration tests)
-          var telemetryEnabled = !Boolean.parseBoolean(System.getProperty("sonarlint.telemetry.disabled", "false"));
-
           // Getting this information is expensive, therefore only do it once and re-use the values!
           var plugInVersion = SonarLintUtils.getPluginVersion();
           var ideVersion = SonarLintTelemetry.ideVersionForTelemetry();
-
-          var monitoringEnabled = MonitoringService.isDogfoodingEnvironment();
-          SonarLintLogger.get().debug("Monitoring with Sentry is " + (monitoringEnabled ? "enabled" : "disabled"));
 
           backend.initialize(new InitializeParams(
             new ClientConstantInfoDto(getIdeName(), "SonarQube for IDE (SonarLint) - Eclipse " + plugInVersion + " - " + ideVersion),
             new TelemetryClientConstantAttributesDto("eclipse", "SonarLint Eclipse", plugInVersion, ideVersion, Map.of()),
             httpConfiguration,
             getSonarCloudAlternativeEnvironment(),
-            new FeatureFlagsDto(true, true, true, true, false, true, true, true, telemetryEnabled, true, monitoringEnabled),
+            getBackendCapabilities(),
             StoragePathManager.getStorageDir(),
             StoragePathManager.getDefaultWorkDir(),
             Set.copyOf(embeddedPluginPaths),
@@ -240,6 +235,32 @@ public class SonarLintBackendService {
         SonarLintRpcClientSupportSynchronizer.setSloopAvailability(true);
 
         return Status.OK_STATUS;
+      }
+
+      private Set<BackendCapability> getBackendCapabilities() {
+        // Check if telemetry was disabled via system properties (e.g. in unit / integration tests)
+        var telemetryEnabled = !Boolean.parseBoolean(System.getProperty("sonarlint.telemetry.disabled", "false"));
+
+        var monitoringEnabled = MonitoringService.isDogfoodingEnvironment();
+        SonarLintLogger.get().debug("Monitoring with Sentry is " + (monitoringEnabled ? "enabled" : "disabled"));
+
+        var backendCapabilities = EnumSet.of(
+                BackendCapability.SMART_NOTIFICATIONS,
+                BackendCapability.PROJECT_SYNCHRONIZATION,
+                BackendCapability.EMBEDDED_SERVER,
+                BackendCapability.SERVER_SENT_EVENTS,
+                BackendCapability.DATAFLOW_BUG_DETECTION,
+                BackendCapability.FULL_SYNCHRONIZATION);
+
+        if (telemetryEnabled) {
+          backendCapabilities.add(BackendCapability.TELEMETRY);
+        }
+
+        if (monitoringEnabled) {
+          backendCapabilities.add(BackendCapability.MONITORING);
+        }
+        
+        return backendCapabilities;
       }
 
       /**
