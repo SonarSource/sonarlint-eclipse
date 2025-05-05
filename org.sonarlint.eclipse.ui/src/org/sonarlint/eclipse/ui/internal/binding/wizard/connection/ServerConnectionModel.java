@@ -55,7 +55,7 @@ public class ServerConnectionModel extends ModelObject {
   public enum ConnectionType {
     SONARCLOUD, ONPREMISE
   }
-  
+
   public enum SonarCloudRegion {
     EU, US
   }
@@ -132,12 +132,17 @@ public class ServerConnectionModel extends ModelObject {
   public SonarCloudRegion getSonarCloudRegion() {
     return sonarCloudRegion;
   }
-  
+
   public void setSonarCloudRegion(SonarCloudRegion region) {
     var old = this.sonarCloudRegion;
     this.sonarCloudRegion = region;
     firePropertyChange(PROPERTY_SONARCLOUD_REGION, old, this.sonarCloudRegion);
     setServerUrl(SonarLintUtils.getSonarCloudUrl(region.name()));  
+  }
+
+  public org.sonarsource.sonarlint.core.rpc.protocol.common.SonarCloudRegion getProtocolRegionOrElseEU() {
+    return sonarCloudRegion != null ? org.sonarsource.sonarlint.core.rpc.protocol.common.SonarCloudRegion.valueOf(sonarCloudRegion.name())
+      : org.sonarsource.sonarlint.core.rpc.protocol.common.SonarCloudRegion.EU;
   }
 
   public String getConnectionId() {

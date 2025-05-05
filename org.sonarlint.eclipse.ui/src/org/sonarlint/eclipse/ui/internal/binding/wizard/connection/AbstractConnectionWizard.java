@@ -50,7 +50,6 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.Tra
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.validate.ValidateConnectionParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.validate.ValidateConnectionResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
-import org.sonarsource.sonarlint.core.rpc.protocol.common.SonarCloudRegion;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.TokenDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.UsernamePasswordDto;
 
@@ -195,7 +194,7 @@ public abstract class AbstractConnectionWizard extends Wizard implements INewWiz
       return Either.forRight(new TransientSonarCloudConnectionDto(
         doNotTestOrganization ? null : model.getOrganization(),
         credentials,
-        model.getSonarCloudRegion() != null ? SonarCloudRegion.valueOf(model.getSonarCloudRegion().name()) : SonarCloudRegion.EU));
+        model.getProtocolRegionOrElseEU()));
     } else {
       return Either.forLeft(new TransientSonarQubeConnectionDto(model.getServerUrl(), credentials));
     }
