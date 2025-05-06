@@ -52,7 +52,6 @@ import org.sonarsource.sonarlint.core.rpc.client.ConfigScopeNotFoundException;
 import org.sonarsource.sonarlint.core.rpc.client.ConnectionNotFoundException;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintCancelChecker;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintRpcClientDelegate;
-import org.sonarsource.sonarlint.core.rpc.protocol.client.event.DidReceiveServerHotspotEvent;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.GetProxyPasswordAuthenticationResponse;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.ProxyDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.http.X509CertificateDto;
@@ -168,11 +167,6 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
   @Override
   public boolean checkServerTrusted(List<X509CertificateDto> chain, String authType) {
     return false;
-  }
-
-  @Override
-  public void didReceiveServerHotspotEvent(DidReceiveServerHotspotEvent params) {
-    // No Hotspots in SLE
   }
 
   @Override

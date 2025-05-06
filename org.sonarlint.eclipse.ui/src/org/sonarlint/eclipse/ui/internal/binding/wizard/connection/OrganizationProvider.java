@@ -47,12 +47,12 @@ public class OrganizationProvider implements IContentProposalProvider {
     var list = new ArrayList<IContentProposal>();
     if (contents.isEmpty()) {
       var allUserOrgs = SonarLintBackendService.get().getBackend().getConnectionService()
-        .listUserOrganizations(new ListUserOrganizationsParams(Either.forLeft(new TokenDto(model.getUsername()))))
+        .listUserOrganizations(new ListUserOrganizationsParams(Either.forLeft(new TokenDto(model.getUsername())), model.getProtocolRegionOrElseEU()))
         .join();
       allUserOrgs.getUserOrganizations().stream().limit(10).forEach(o -> list.add(new ContentProposal(o.getKey(), o.getName(), toDescription(o))));
     } else {
       var filtered = SonarLintBackendService.get().getBackend().getConnectionService()
-        .fuzzySearchUserOrganizations(new FuzzySearchUserOrganizationsParams(Either.forLeft(new TokenDto(model.getUsername())), contents))
+        .fuzzySearchUserOrganizations(new FuzzySearchUserOrganizationsParams(Either.forLeft(new TokenDto(model.getUsername())), contents, model.getProtocolRegionOrElseEU()))
         .join();
       if (filtered.getTopResults().isEmpty()) {
         parentPage.setMessage("No results", IMessageProvider.INFORMATION);
