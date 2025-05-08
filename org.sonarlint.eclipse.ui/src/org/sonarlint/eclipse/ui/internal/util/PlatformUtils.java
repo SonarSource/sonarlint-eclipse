@@ -67,8 +67,13 @@ public final class PlatformUtils {
       try {
         // INFO: This information cannot be accessed from any constant, can be seen via "Plug-in Selection Spy"!
         showView("org.eclipse.ui.internal.introview");
-      } catch (PartInitException err) {
-        SonarLintLogger.get().error("Cannot open the 'Welcome' view, make sure Eclipse is properly installed!", err);
+      } catch (Exception err) {
+        // Some Eclipse based applications do not provide the Welcome view at all (which would throw a
+        // PartInitException) and some do not come with the default intro pages we extend and that will be opened by
+        // default by the Welcome view (which will throw a NullPointerException). There might be more cases, and for
+        // that very reason we catch all kinds of exceptions here due to it being out of our scope and just log a debug
+        // message, no need for a confusing error.
+        SonarLintLogger.get().debug("Cannot open the 'Welcome' view", err);
       }
     });
   }
