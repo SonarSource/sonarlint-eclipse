@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IProject;
@@ -69,6 +71,7 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
   public static final Pattern SONARLINT_JSON_REGEX = Pattern.compile("^\\" + SONARLINT_FOLDER + "/.*\\.json$", Pattern.CASE_INSENSITIVE);
 
   private final SonarLintRpcServer backend;
+  private final ExecutorService fileSystemNotifierService = Executors.newSingleThreadExecutor(SonarLintUtils.threadFactory("sonarlint-fs-notifier", false));
 
   FileSystemSynchronizer(SonarLintRpcServer backend) {
     this.backend = backend;
@@ -76,6 +79,16 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
 
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
+    fileSystemNotifierService.execute(() -> {
+      try {
+        computeResourceChanged(event);
+      } catch (Exception e) {
+        SonarLintLogger.get().error(e.getMessage(), e);
+      }
+    });
+  }
+
+  private void computeResourceChanged(IResourceChangeEvent event) {
     var addedFiles = new ArrayList<ISonarLintFile>();
     var changedFiles = new ArrayList<ISonarLintFile>();
     var removedFiles = new ArrayList<URI>();
@@ -363,5 +376,9 @@ public class FileSystemSynchronizer implements IResourceChangeListener {
       exclusions.addAll(projectScopeProvider.getExclusions(project));
     }
     return exclusions;
+  }
+
+  public void shutdown() {
+    fileSystemNotifierService.shutdownNow();
   }
 }

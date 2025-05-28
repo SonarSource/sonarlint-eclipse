@@ -423,6 +423,7 @@ public class SonarLintBackendService {
     VcsService.removeBranchChangeListener();
     if (fileSystemSynchronizer != null) {
       ResourcesPlugin.getWorkspace().removeResourceChangeListener(fileSystemSynchronizer);
+      fileSystemSynchronizer.shutdown();
       fileSystemSynchronizer = null;
     }
     if (configScopeSynchronizer != null) {
