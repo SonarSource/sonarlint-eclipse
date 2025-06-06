@@ -117,7 +117,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.text</groupId>
                   <artifactId>sonar-text-plugin</artifactId>
-                  <version>2.23.0.6355</version>
+                  <version>2.24.0.6480</version>
                   <type>jar</type>
                 </artifactItem>
               </artifactItems>
