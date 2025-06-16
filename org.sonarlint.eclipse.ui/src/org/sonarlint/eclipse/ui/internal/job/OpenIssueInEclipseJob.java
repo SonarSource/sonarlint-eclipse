@@ -155,10 +155,10 @@ public class OpenIssueInEclipseJob extends AbstractOpenInEclipseJob {
   /** When the workspace preferences are not in our favor we want the consent from the user to change them */
   private IStatus handlePossibleHiddenIssue() {
     // When we already asked the user to change his workspace preferences, he agreed but did not change anything we
-    // don't want to end up in a loop asking the user if could please change his preferences ^^
+    // don't want to end up in a loop asking the user if could please change his preferences
     if (askedForPreferenceChangeAlready) {
       MessageDialogUtils.openInEclipseFailed("The issue was not found locally. Maybe the issue was already "
-        + "resolved or the resources has moved / was deleted.");
+        + "resolved or the resources has moved / was deleted. Please also verify you are in the right branch.");
       return Status.CANCEL_STATUS;
     }
 
