@@ -19,22 +19,25 @@
  */
 package org.sonarlint.eclipse.its.connected.sc;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import org.assertj.core.groups.Tuple;
+import java.util.Random;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.lang3.SystemUtils;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.core.exception.CoreLayerException;
+import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.junit.After;
@@ -48,9 +51,9 @@ import org.sonarlint.eclipse.its.shared.reddeer.conditions.ConfirmConnectionCrea
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.FixSuggestionAvailableDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.FixSuggestionUnavailableDialogOpened;
+import org.sonarlint.eclipse.its.shared.reddeer.conditions.IssuesOnProject;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectBindingWizardIsOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ProjectSelectionDialogOpened;
-import org.sonarlint.eclipse.its.shared.reddeer.conditions.ZeroIssuesOnProject;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ConfirmConnectionCreationDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionAvailableDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.FixSuggestionUnavailableDialog;
@@ -60,10 +63,14 @@ import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ProjectBindingWizard;
 import org.sonarlint.eclipse.its.shared.reddeer.wizards.ServerConnectionWizard;
+import org.sonarqube.ws.MediaTypes;
 import org.sonarqube.ws.ProjectBranches.Branch;
+import org.sonarqube.ws.client.GetRequest;
 import org.sonarqube.ws.client.HttpConnector;
+import org.sonarqube.ws.client.PostRequest;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
+import org.sonarqube.ws.client.issues.SearchRequest;
 import org.sonarqube.ws.client.projectbranches.ListRequest;
 import org.sonarqube.ws.client.usertokens.GenerateRequest;
 import org.sonarqube.ws.client.usertokens.RevokeRequest;
@@ -80,6 +87,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String SONARCLOUD_TOKEN_US = System.getenv("SONARCLOUD_IT_TOKEN_US");
   private static final String TOKEN_NAME = "SLE-IT-" + TIMESTAMP;
   private static final String SAMPLE_JAVA_ISSUES_PROJECT_KEY = "sonarlint-its-sample-java-issues";
+  private static final String ISSUE_PROJECT_KEY = "sle-java-issues";
 
   // SonarQube Cloud Region set on the CI
   private static final boolean SONARQUBE_CLOUD_REGION_IS_EU = "EU".equalsIgnoreCase(
@@ -88,10 +96,9 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static HttpConnector connector;
   private static WsClient adminWsClient;
   private static String token;
-  private static String firstSonarCloudProjectKey;
+  private static String sonarCloudProjectKey;
   private static String firstSonarCloudIssueKey;
   private static String firstSonarCloudBranch;
-
   private static String sonarqubeCloudStagingUrl;
 
   @BeforeClass
@@ -112,11 +119,18 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     if (SONARQUBE_CLOUD_REGION_IS_EU) {
       try {
-        var sonarCloudProjectKeys = getProjectKeys();
-        var keyAndProject = getFirstProjectAndIssueKey(sonarCloudProjectKeys);
-        firstSonarCloudIssueKey = (String) keyAndProject.toList().get(0);
-        firstSonarCloudProjectKey = (String) keyAndProject.toList().get(1);
-        firstSonarCloudBranch = getFirstBranch(firstSonarCloudProjectKey).getName();
+        new JavaPerspective().open();
+        importExistingProjectIntoWorkspace("connected-sc" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
+
+        sonarCloudProjectKey = projectKey(ISSUE_PROJECT_KEY);
+
+        restoreSonarCloudProfile("java-sonarlint.xml");
+        provisionSonarCloudProfile("SLE Java Issues", sonarCloudProjectKey);
+        associateSonarCloudProjectToQualityProfile("java", sonarCloudProjectKey, "SonarLint IT Java");
+        analyzeSonarCloudWithMaven(sonarCloudProjectKey, SAMPLE_JAVA_ISSUES_PROJECT_KEY, SONARCLOUD_TOKEN);
+
+        firstSonarCloudIssueKey = getFirstIssueKey(sonarCloudProjectKey);
+        firstSonarCloudBranch = getFirstBranch(sonarCloudProjectKey).getName();
       } catch (Exception err) {
         fail("Cannot query the project keys and / or first issue and project key from SonarCloud!", err);
       }
@@ -125,8 +139,10 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   @AfterClass
   public static void cleanupOrchestrator() {
-    adminWsClient.userTokens()
-      .revoke(new RevokeRequest().setName(TOKEN_NAME));
+    if (adminWsClient != null) {
+      cleanupProjects(sonarCloudProjectKey);
+      adminWsClient.userTokens().revoke(new RevokeRequest().setName(TOKEN_NAME));
+    }
   }
 
   @After
@@ -246,7 +262,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     // INFO: This one does not work yet on SonarQube Cloud US Region as no project is on it!
     Assume.assumeTrue(SONARQUBE_CLOUD_REGION_IS_EU);
 
-    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey,
+    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey,
       firstSonarCloudIssueKey,
       "NotExisting.txt",
       "fixSuggestion_with_ConnectionSetup_noProject",
@@ -272,7 +288,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     var project = importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
-    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey,
+    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey,
       firstSonarCloudIssueKey,
       "NotExisting.txt",
       "fixSuggestion_with_ConnectionSetup_fileNotFound",
@@ -292,8 +308,8 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     shellOpt.get().close();
 
     // 2) Wait until the synchronization is completely done to mitigate possible issues!
-    openFileAndWaitForAnalysisCompletion(project.getResource("FileExists.txt"));
-    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(30));
+    openFileAndWaitForAnalysisCompletion(project.getResource("src/main/java/foo/Bar.java"));
+    new WaitUntil(new IssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY, 1), TimePeriod.getCustom(30));
   }
 
   @Test
@@ -301,19 +317,19 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     // INFO: This one does not work yet on SonarQube Cloud US Region as no project is on it!
     Assume.assumeTrue(SONARQUBE_CLOUD_REGION_IS_EU);
 
-    final var file = "FileExists.txt";
+    final var file = "src/main/java/foo/Bar.java";
     final var explanation = "This is common knowledge!";
-    final var before = "Eclipse IDE is the best!";
-    final var after = "IntelliJ IDEA is not the best!";
-    final var startLine = 0;
-    final var endLine = 1;
+    final var before = "public class Bar {\n\n}";
+    final var after = "";
+    final var startLine = 3;
+    final var endLine = 5;
 
     new SonarLintConsole().clear();
 
     importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
     // 1) Cancel the suggestion (available)
-    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new ConfirmConnectionCreationDialogOpened(true));
     new ConfirmConnectionCreationDialog(true).trust();
@@ -325,31 +341,31 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new FixSuggestionAvailableDialog(0, 1).cancel();
 
     // 2) Decline the suggestion
-    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1));
     new FixSuggestionAvailableDialog(0, 1).declineTheChange();
 
     // 3) Apply the suggestion
-    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1));
     new FixSuggestionAvailableDialog(0, 1).applyTheChange();
 
     // 4) Cancel the suggestion (unavailable)
-    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionUnavailableDialogOpened(0, 1));
     new FixSuggestionUnavailableDialog(0, 1).cancel();
 
     // 5) Suggestion not found
-    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionUnavailableDialogOpened(0, 1));
     new FixSuggestionUnavailableDialog(0, 1).proceed();
 
     // 6) Wait until the synchronization is completely done to mitigate possible issues!
-    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(30));
+    new WaitUntil(new IssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY, 0), TimePeriod.getCustom(30));
   }
 
   @Test
@@ -357,13 +373,13 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     // INFO: This one does not work yet on SonarQube Cloud US Region as no project is on it!
     Assume.assumeTrue(SONARQUBE_CLOUD_REGION_IS_EU);
 
-    final var file = "FileExists.txt";
+    final var file = "src/main/java/foo/Bar.java";
     final var explanation = "We need to change this!";
-    final var before = "Eclipse IDE is the best!";
-    final var firstAfter = "IntelliJ IDEA is not the best!";
-    final var secondAfter = "PyCharm CE is also quite okey!";
-    final var firstStartLine = 0;
-    final var firstEndLine = 1;
+    final var before = "public class Bar {\n\n}";
+    final var firstAfter = "";
+    final var secondAfter = "// Eclipse is the best IDE!";
+    final var firstStartLine = 3;
+    final var firstEndLine = 5;
     final var secondStartLine = 1107;
     final var secondEndLine = 1108;
 
@@ -372,7 +388,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
     triggerOpenFixSuggestionWithTwoChanges(
-      firstSonarCloudProjectKey,
+      sonarCloudProjectKey,
       firstSonarCloudIssueKey,
       file,
       explanation,
@@ -394,7 +410,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new FixSuggestionUnavailableDialog(1, 2).proceed();
 
     // 3) Wait until the synchronization is completely done to mitigate possible issues!
-    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(30));
+    new WaitUntil(new IssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY, 0), TimePeriod.getCustom(30));
   }
 
   /**
@@ -418,49 +434,14 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     preferenceDialog.ok();
   }
 
-  private static List<String> getProjectKeys() throws InterruptedException, IOException {
+  private static String getFirstIssueKey(String projectKey) throws IOException, InterruptedException {
     assertThat(hotspotServerPort).isNotEqualTo(-1);
 
-    var request = HttpRequest.newBuilder()
-      .uri(URI.create(sonarqubeCloudStagingUrl + "/api/projects/search?organization=" + SONARCLOUD_ORGANIZATION_KEY
-        + "&analyzedBefore=" + LocalDate.now()))
-      .header("Authorization", "Bearer " + token)
-      .GET()
-      .build();
-
-    var response = HttpClient.newHttpClient().send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
-    assertThat(response.statusCode()).isEqualTo(200);
-
-    var jsonObject = (JsonObject) JsonParser.parseString(response.body());
-
-    var projectKeys = new ArrayList<String>();
-    var projectsList = jsonObject.get("components").getAsJsonArray();
-    for (var project : projectsList) {
-      var key = project.getAsJsonObject().get("key").getAsString();
-      if (key.contains(SAMPLE_JAVA_ISSUES_PROJECT_KEY)) {
-        projectKeys.add(key);
-      }
-    }
-    return projectKeys;
-  }
-
-  private static Tuple getFirstProjectAndIssueKey(List<String> projectKeys) throws IOException, InterruptedException {
-    assertThat(hotspotServerPort).isNotEqualTo(-1);
-
-    var request = HttpRequest.newBuilder()
-      .uri(URI.create(sonarqubeCloudStagingUrl + "/api/issues/search?organization=" + SONARCLOUD_ORGANIZATION_KEY
-        + "&componentKeys=" + String.join(",", projectKeys)))
-      .header("Authorization", "Bearer " + token)
-      .GET()
-      .build();
-
-    var response = HttpClient.newHttpClient().send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
-    assertThat(response.statusCode()).isEqualTo(200);
-
-    var jsonObject = (JsonObject) JsonParser.parseString(response.body());
-    var firstIssueKey = jsonObject.get("issues").getAsJsonArray().get(0).getAsJsonObject().get("key").getAsString();
-    var firstProjectKey = jsonObject.get("issues").getAsJsonArray().get(0).getAsJsonObject().get("project").getAsString();
-    return new Tuple(firstIssueKey, firstProjectKey);
+    var searchRequest = new SearchRequest();
+    searchRequest.setProjects(List.of(projectKey));
+    var searchResults = adminWsClient.issues().search(searchRequest);
+    var issue = searchResults.getIssuesList().get(0);
+    return issue.getKey();
   }
 
   private static Branch getFirstBranch(String projectKey) {
@@ -469,6 +450,80 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     assertThat(response.getBranchesCount()).isPositive();
 
     return response.getBranches(0);
+  }
+
+  private static String projectKey(String key) {
+    var randomPositiveInt = new Random().nextInt(Integer.MAX_VALUE) + 1;
+    return "sonarlint-its-" + key + "-" + randomPositiveInt;
+  }
+
+  private static void restoreSonarCloudProfile(String fileName) {
+    var backupFile = new File("res/" + fileName);
+    var request = new PostRequest("api/qualityprofiles/restore");
+    request.setParam("organization", SONARCLOUD_ORGANIZATION_KEY);
+    request.setPart("backup", new PostRequest.Part(MediaTypes.XML, backupFile));
+    adminWsClient.wsConnector().call(request);
+  }
+
+  private static void provisionSonarCloudProfile(String projectName, String projectKey) {
+    var request = new PostRequest("api/projects/create");
+    request.setParam("name", projectName);
+    request.setParam("project", projectKey);
+    request.setParam("organization", SONARCLOUD_ORGANIZATION_KEY);
+    adminWsClient.wsConnector().call(request);
+  }
+
+  private static void associateSonarCloudProjectToQualityProfile(String language, String projectKey, String qualityProfile) {
+    var request = new PostRequest("api/qualityprofiles/add_project");
+    request.setParam("language", language);
+    request.setParam("project", projectKey);
+    request.setParam("qualityProfile", qualityProfile);
+    request.setParam("organization", SONARCLOUD_ORGANIZATION_KEY);
+    adminWsClient.wsConnector().call(request);
+  }
+
+  private static void cleanupProjects(String projectKey) {
+    var request = new PostRequest("api/projects/bulk_delete");
+    request.setParam("q", projectKey);
+    request.setParam("organization", SONARCLOUD_ORGANIZATION_KEY);
+    adminWsClient.wsConnector().call(request);
+  }
+
+  private static void analyzeSonarCloudWithMaven(String projectKey, String projectDirName, String token) {
+    var projectDir = Paths.get("projects/" + projectDirName).toAbsolutePath();
+    runMaven(
+      projectDir, "clean", "package", "sonar:sonar",
+      "-Dsonar.projectKey=$projectKey",
+      "-Dsonar.host.url=$SONARCLOUD_STAGING_URL",
+      "-Dsonar.organization=$SONARCLOUD_ORGANIZATION",
+      "-Dsonar.token=$token",
+      "-Dsonar.scm.disabled=true",
+      "-Dsonar.branch.autoconfig.disabled=true");
+
+    var request = new GetRequest("api/analysis_reports/is_queue_empty");
+    await().untilAsserted(() -> assertThat(adminWsClient.wsConnector().call(request).content()).isEqualTo("true"));
+  }
+
+  private static void runMaven(Path workDir, String... args) {
+    CommandLine cmdLine;
+    if (SystemUtils.IS_OS_WINDOWS) {
+      cmdLine = CommandLine.parse("cmd.exe");
+      cmdLine.addArguments("/c");
+      cmdLine.addArguments("mvn");
+    } else {
+      cmdLine = CommandLine.parse("mvn");
+    }
+
+    cmdLine.addArguments(new String[] {"--batch-mode", "--show-version", "--errors"});
+    cmdLine.addArguments(args);
+    var executor = new DefaultExecutor();
+    executor.setWorkingDirectory(workDir.toFile());
+    try {
+      var exitValue = executor.execute(cmdLine);
+      assertThat(exitValue).isZero();
+    } catch (Exception e) {
+      fail("Error while executing SonarQube Cloud analysis via Maven", e);
+    }
   }
 
   private void triggerOpenFixSuggestionWithOneChange(String projectKey, String issueKey, String relativePath,
