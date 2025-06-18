@@ -158,7 +158,7 @@ public class OpenIssueInEclipseJob extends AbstractOpenInEclipseJob {
     // don't want to end up in a loop asking the user if could please change his preferences
     if (askedForPreferenceChangeAlready) {
       MessageDialogUtils.openInEclipseFailed("The issue was not found locally. Maybe the issue was already "
-        + "resolved or the resources has moved / was deleted. Please also verify you are in the right branch.");
+        + "resolved or the resources has moved / was deleted. Please also ensure the right branch is checked-out locally.");
       return Status.CANCEL_STATUS;
     }
 
