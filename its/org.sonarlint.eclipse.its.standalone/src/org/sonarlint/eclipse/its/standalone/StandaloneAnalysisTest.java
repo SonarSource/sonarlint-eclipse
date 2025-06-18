@@ -45,7 +45,6 @@ import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
-import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -332,8 +331,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/java-junit", "java-junit");
 
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    preferenceDialog.open();
+    var preferenceDialog = openPreferenceDialog();
     var preferences = new SonarLintPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
     preferences.setTestFileRegularExpressions("**/*TestUtil*");

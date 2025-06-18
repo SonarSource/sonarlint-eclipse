@@ -49,7 +49,6 @@ import org.eclipse.reddeer.workbench.condition.TextEditorContainsText;
 import org.eclipse.reddeer.workbench.exception.WorkbenchLayerException;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
-import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -227,8 +226,7 @@ public class QuickFixesTest extends AbstractSonarLintTest {
   }
 
   private static void changeSonarLintMarkerSeverity(MarkerSeverity severity) {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    preferenceDialog.open();
+    var preferenceDialog = openPreferenceDialog();
     var preferences = new SonarLintPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
     preferences.setMarkersSeverity(severity);
