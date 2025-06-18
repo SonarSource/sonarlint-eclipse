@@ -120,14 +120,14 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     if (SONARQUBE_CLOUD_REGION_IS_EU) {
       try {
         new JavaPerspective().open();
-        importExistingProjectIntoWorkspace("connected-sc" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
+        importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
         sonarCloudProjectKey = projectKey(ISSUE_PROJECT_KEY);
 
         restoreSonarCloudProfile("java-sonarlint.xml");
         provisionSonarCloudProfile("SLE Java Issues", sonarCloudProjectKey);
         associateSonarCloudProjectToQualityProfile("java", sonarCloudProjectKey, "SonarLint IT Java");
-        analyzeSonarCloudWithMaven(sonarCloudProjectKey, SAMPLE_JAVA_ISSUES_PROJECT_KEY, SONARCLOUD_TOKEN);
+        analyzeSonarCloudWithMaven(sonarCloudProjectKey, "connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SONARCLOUD_TOKEN, sonarqubeCloudStagingUrl);
 
         firstSonarCloudIssueKey = getFirstIssueKey(sonarCloudProjectKey);
         firstSonarCloudBranch = getFirstBranch(sonarCloudProjectKey).getName();
@@ -489,14 +489,14 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     adminWsClient.wsConnector().call(request);
   }
 
-  private static void analyzeSonarCloudWithMaven(String projectKey, String projectDirName, String token) {
-    var projectDir = Paths.get("projects/" + projectDirName).toAbsolutePath();
+  private static void analyzeSonarCloudWithMaven(String projectKey, String projectDirName, String token, String sonarqubeUrl) {
+    var projectDir = Paths.get("../projects/" + projectDirName).toAbsolutePath();
     runMaven(
       projectDir, "clean", "package", "sonar:sonar",
-      "-Dsonar.projectKey=$projectKey",
-      "-Dsonar.host.url=$SONARCLOUD_STAGING_URL",
-      "-Dsonar.organization=$SONARCLOUD_ORGANIZATION",
-      "-Dsonar.token=$token",
+      "-Dsonar.projectKey=" + projectKey,
+      "-Dsonar.host.url=" + sonarqubeUrl,
+      "-Dsonar.organization=" + SONARCLOUD_ORGANIZATION_KEY,
+      "-Dsonar.token=" + token,
       "-Dsonar.scm.disabled=true",
       "-Dsonar.branch.autoconfig.disabled=true");
 
