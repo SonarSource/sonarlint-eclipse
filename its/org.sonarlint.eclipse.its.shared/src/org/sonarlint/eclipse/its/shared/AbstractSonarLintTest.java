@@ -42,6 +42,7 @@ import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.core.exception.CoreLayerException;
 import org.eclipse.reddeer.core.lookup.ShellLookup;
 import org.eclipse.reddeer.eclipse.condition.ConsoleHasText;
 import org.eclipse.reddeer.eclipse.condition.ProjectExists;
@@ -66,6 +67,7 @@ import org.eclipse.reddeer.workbench.impl.editor.AbstractEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.eclipse.reddeer.workbench.impl.shell.WorkbenchShell;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
+import org.eclipse.reddeer.workbench.workbenchmenu.WorkbenchMenuPreferencesDialog;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
@@ -80,6 +82,7 @@ import org.sonarlint.eclipse.its.shared.reddeer.conditions.AnalysisReadyAfterUnr
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.FileAssociationsPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.RuleConfigurationPreferences;
 import org.sonarlint.eclipse.its.shared.reddeer.preferences.SonarLintPreferences;
+import org.sonarlint.eclipse.its.shared.reddeer.preferences.WorkbenchPreferenceDialogCustom;
 import org.sonarlint.eclipse.its.shared.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.ReportView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintConsole;
@@ -165,8 +168,7 @@ public abstract class AbstractSonarLintTest {
   }
 
   protected static void setFocusOnNewCode(boolean focusOnNewCode) {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    preferenceDialog.open();
+    var preferenceDialog = openPreferenceDialog();
     var preferences = new SonarLintPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
     preferences.setFocusOnNewCode(focusOnNewCode);
@@ -174,8 +176,7 @@ public abstract class AbstractSonarLintTest {
   }
 
   protected static void setShowAllMarkers(boolean showAllMarkers) {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    preferenceDialog.open();
+    var preferenceDialog = openPreferenceDialog();
     var preferences = new SonarLintPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
     preferences.setShowAllMarkers(showAllMarkers);
@@ -473,5 +474,21 @@ public abstract class AbstractSonarLintTest {
   /** When binding project it will move to unready state before going to ready state again */
   protected static void waitForAnalysisReady(String projectName) {
     new WaitUntil(new AnalysisReadyAfterUnready(projectName), TimePeriod.getCustom(60));
+  }
+
+  // On Eclipse 2025-06, Preferences is labeled "Preferences..." which requires this Custom call
+  public static WorkbenchMenuPreferencesDialog openPreferenceDialog() {
+    try {
+      return openPreferenceDialog(new WorkbenchPreferenceDialogCustom());
+    } catch (CoreLayerException e) {
+      return openPreferenceDialog(new WorkbenchPreferenceDialog());
+    }
+  }
+
+  private static WorkbenchMenuPreferencesDialog openPreferenceDialog(WorkbenchMenuPreferencesDialog preferenceDialog) {
+    if (!preferenceDialog.isOpen()) {
+      preferenceDialog.open();
+    }
+    return preferenceDialog;
   }
 }

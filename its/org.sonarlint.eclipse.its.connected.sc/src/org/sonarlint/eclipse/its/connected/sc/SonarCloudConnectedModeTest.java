@@ -37,7 +37,6 @@ import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.core.exception.CoreLayerException;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
-import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
@@ -409,8 +408,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
    */
   @Test
   public void test_NodeJs_from_EclipseWWD() {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    preferenceDialog.open();
+    var preferenceDialog = openPreferenceDialog();
     var preferences = new SonarLintPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
 
@@ -634,8 +632,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   }
 
   private static void changeSonarQubeCloudRegionEA(boolean enabled) {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    preferenceDialog.open();
+    var preferenceDialog = openPreferenceDialog();
     var preferences = new SonarLintPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
     preferences.enableSonarQubeCloudRegionEA(enabled);

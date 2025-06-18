@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.its.standalone;
 
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyDialog;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
-import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
@@ -34,9 +33,7 @@ import static org.assertj.core.api.Assertions.tuple;
 public class AnalyzerPropertiesTest extends AbstractSonarLintTest {
   @After
   public void clearGlobalAnalyzerProperties() {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    preferenceDialog.open();
-
+    var preferenceDialog = openPreferenceDialog();
     var analyzerPropertiesPreferences = new AnalyzerPropertiesPreferences(preferenceDialog);
     preferenceDialog.select(analyzerPropertiesPreferences);
 
@@ -59,9 +56,7 @@ public class AnalyzerPropertiesTest extends AbstractSonarLintTest {
       tuple("Replace this use of System.out by a logger.", "Hello.java", "few seconds ago"));
 
     // i) Change global properties
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    preferenceDialog.open();
-
+    var preferenceDialog = openPreferenceDialog();
     var analyzerPropertiesPreferences = new AnalyzerPropertiesPreferences(preferenceDialog);
     preferenceDialog.select(analyzerPropertiesPreferences);
 
