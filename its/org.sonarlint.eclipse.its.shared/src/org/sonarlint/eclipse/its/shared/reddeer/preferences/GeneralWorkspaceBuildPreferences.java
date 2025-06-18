@@ -23,7 +23,8 @@ import org.eclipse.reddeer.core.matcher.WithTextMatcher;
 import org.eclipse.reddeer.core.reference.ReferencedComposite;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.reddeer.swt.impl.button.CheckBox;
-import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
+import org.eclipse.reddeer.workbench.workbenchmenu.WorkbenchMenuPreferencesDialog;
+import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 
 public class GeneralWorkspaceBuildPreferences extends PropertyPage {
   public GeneralWorkspaceBuildPreferences(ReferencedComposite referencedComposite) {
@@ -45,15 +46,11 @@ public class GeneralWorkspaceBuildPreferences extends PropertyPage {
   }
 
   public void ok() {
-    ((WorkbenchPreferenceDialog) referencedComposite).ok();
+    ((WorkbenchMenuPreferencesDialog) referencedComposite).ok();
   }
 
   public static GeneralWorkspaceBuildPreferences open() {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    if (!preferenceDialog.isOpen()) {
-      preferenceDialog.open();
-    }
-
+    var preferenceDialog = AbstractSonarLintTest.openPreferenceDialog();
     var generalWorkspaceBuildPreferences = new GeneralWorkspaceBuildPreferences(preferenceDialog);
     preferenceDialog.select(generalWorkspaceBuildPreferences);
     return generalWorkspaceBuildPreferences;

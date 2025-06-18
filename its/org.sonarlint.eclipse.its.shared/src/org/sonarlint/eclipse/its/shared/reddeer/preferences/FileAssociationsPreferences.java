@@ -24,7 +24,8 @@ import org.eclipse.reddeer.core.matcher.WithLabelMatcher;
 import org.eclipse.reddeer.core.reference.ReferencedComposite;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.reddeer.swt.impl.combo.DefaultCombo;
-import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
+import org.eclipse.reddeer.workbench.workbenchmenu.WorkbenchMenuPreferencesDialog;
+import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 
 public class FileAssociationsPreferences extends PropertyPage {
   private static final String LABEL = "Open unassociated files with:";
@@ -34,11 +35,7 @@ public class FileAssociationsPreferences extends PropertyPage {
   }
 
   public static FileAssociationsPreferences open() {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    if (!preferenceDialog.isOpen()) {
-      preferenceDialog.open();
-    }
-
+    var preferenceDialog = AbstractSonarLintTest.openPreferenceDialog();
     var preferences = new FileAssociationsPreferences(preferenceDialog);
     preferenceDialog.select(preferences);
     return preferences;
@@ -63,6 +60,6 @@ public class FileAssociationsPreferences extends PropertyPage {
   }
 
   public void ok() {
-    ((WorkbenchPreferenceDialog) referencedComposite).ok();
+    ((WorkbenchMenuPreferencesDialog) referencedComposite).ok();
   }
 }

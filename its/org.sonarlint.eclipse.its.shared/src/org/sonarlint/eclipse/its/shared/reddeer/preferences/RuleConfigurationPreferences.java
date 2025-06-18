@@ -29,11 +29,12 @@ import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.swt.impl.spinner.DefaultSpinner;
 import org.eclipse.reddeer.swt.impl.text.DefaultText;
 import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
-import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
+import org.eclipse.reddeer.workbench.workbenchmenu.WorkbenchMenuPreferencesDialog;
+import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 
 public class RuleConfigurationPreferences extends PropertyPage {
 
-  public RuleConfigurationPreferences(WorkbenchPreferenceDialog preferenceDialog) {
+  public RuleConfigurationPreferences(WorkbenchMenuPreferencesDialog preferenceDialog) {
     super(preferenceDialog, "SonarQube", "Rules Configuration");
   }
 
@@ -69,19 +70,15 @@ public class RuleConfigurationPreferences extends PropertyPage {
   }
 
   public void cancel() {
-    ((WorkbenchPreferenceDialog) referencedComposite).cancel();
+    ((WorkbenchMenuPreferencesDialog) referencedComposite).cancel();
   }
 
   public void ok() {
-    ((WorkbenchPreferenceDialog) referencedComposite).ok();
+    ((WorkbenchMenuPreferencesDialog) referencedComposite).ok();
   }
 
   public static RuleConfigurationPreferences open() {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    if (!preferenceDialog.isOpen()) {
-      preferenceDialog.open();
-    }
-
+    var preferenceDialog = AbstractSonarLintTest.openPreferenceDialog();
     var ruleConfigurationPreferences = new RuleConfigurationPreferences(preferenceDialog);
     preferenceDialog.select(ruleConfigurationPreferences);
     return ruleConfigurationPreferences;

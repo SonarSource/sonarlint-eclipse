@@ -28,7 +28,6 @@ import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.button.OkButton;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
-import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
@@ -98,9 +97,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
 
   @Test
   public void should_add_new_entry() {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    preferenceDialog.open();
-
+    var preferenceDialog = openPreferenceDialog();
     var fileExclusionsPreferences = new FileExclusionsPreferences(preferenceDialog);
     preferenceDialog.select(fileExclusionsPreferences);
 

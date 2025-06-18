@@ -26,15 +26,16 @@ import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.reddeer.swt.api.Browser;
 import org.eclipse.reddeer.swt.condition.PageIsLoaded;
 import org.eclipse.reddeer.swt.impl.browser.InternalBrowser;
-import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
+import org.eclipse.reddeer.workbench.workbenchmenu.WorkbenchMenuPreferencesDialog;
+import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 
 public class ReleaseNotesPreferences extends PropertyPage {
-  public ReleaseNotesPreferences(WorkbenchPreferenceDialog preferenceDialog) {
+  public ReleaseNotesPreferences(WorkbenchMenuPreferencesDialog preferenceDialog) {
     super(preferenceDialog, "SonarQube", "Release Notes");
   }
 
   public void cancel() {
-    ((WorkbenchPreferenceDialog) referencedComposite).cancel();
+    ((WorkbenchMenuPreferencesDialog) referencedComposite).cancel();
   }
 
   public Browser getFirstBrowser() {
@@ -50,11 +51,7 @@ public class ReleaseNotesPreferences extends PropertyPage {
   }
 
   public static ReleaseNotesPreferences open() {
-    var preferenceDialog = new WorkbenchPreferenceDialog();
-    if (!preferenceDialog.isOpen()) {
-      preferenceDialog.open();
-    }
-
+    var preferenceDialog = AbstractSonarLintTest.openPreferenceDialog();
     var releaseNotesPreferences = new ReleaseNotesPreferences(preferenceDialog);
     preferenceDialog.select(releaseNotesPreferences);
     return releaseNotesPreferences;

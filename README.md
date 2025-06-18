@@ -3,6 +3,7 @@ SonarQube for IDE: Eclipse
 
 SonarQube for IDE: Eclipse helps you deliver [Clean Code](https://www.sonarsource.com/solutions/clean-code/?utm_medium=referral&utm_source=github&utm_campaign=clean-code&utm_content=sonarlint-eclipse) in your IDE.
 
+
 Installing and using
 --------------------
 
