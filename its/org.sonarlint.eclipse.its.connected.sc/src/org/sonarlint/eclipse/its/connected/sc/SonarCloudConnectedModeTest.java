@@ -27,6 +27,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Random;
@@ -501,7 +502,10 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
       "-Dsonar.branch.autoconfig.disabled=true");
 
     var request = new GetRequest("api/analysis_reports/is_queue_empty");
-    await().untilAsserted(() -> assertThat(adminWsClient.wsConnector().call(request).content()).isEqualTo("true"));
+    await().atMost(Duration.ofMinutes(1)).pollInterval(Duration.ofSeconds(5))
+      .untilAsserted(() -> assertThat(adminWsClient.wsConnector().call(request).content()).isEqualTo("true"));
+    // Once the queue is empty, wait one more second as it can sometimes happens that issue cannot be yet fetched from SQ:C
+    await().during(Duration.ofSeconds(1));
   }
 
   private static void runMaven(Path workDir, String... args) {
@@ -513,12 +517,12 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     } else {
       cmdLine = CommandLine.parse("mvn");
     }
-
     cmdLine.addArguments(new String[] {"--batch-mode", "--show-version", "--errors"});
     cmdLine.addArguments(args);
     var executor = new DefaultExecutor();
     executor.setWorkingDirectory(workDir.toFile());
     try {
+      System.out.println(cmdLine);
       var exitValue = executor.execute(cmdLine);
       assertThat(exitValue).isZero();
     } catch (Exception e) {
