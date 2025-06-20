@@ -88,7 +88,6 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String SONARCLOUD_TOKEN_US = System.getenv("SONARCLOUD_IT_TOKEN_US");
   private static final String TOKEN_NAME = "SLE-IT-" + TIMESTAMP;
   private static final String SAMPLE_JAVA_ISSUES_PROJECT_KEY = "sonarlint-its-sample-java-issues";
-  private static final String ISSUE_PROJECT_KEY = "sle-java-issues";
 
   // SonarQube Cloud Region set on the CI
   private static final boolean SONARQUBE_CLOUD_REGION_IS_EU = "EU".equalsIgnoreCase(
@@ -123,7 +122,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
         new JavaPerspective().open();
         importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
-        sonarCloudProjectKey = projectKey(ISSUE_PROJECT_KEY);
+        sonarCloudProjectKey = projectKey(SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
         restoreSonarCloudProfile("java-sonarlint.xml");
         provisionSonarCloudProfile("SLE Java Issues", sonarCloudProjectKey);
@@ -289,7 +288,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     var project = importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
-    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey,
+    triggerOpenFixSuggestionWithOneChange(SAMPLE_JAVA_ISSUES_PROJECT_KEY,
       firstSonarCloudIssueKey,
       "NotExisting.txt",
       "fixSuggestion_with_ConnectionSetup_fileNotFound",
@@ -330,7 +329,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
     // 1) Cancel the suggestion (available)
-    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(SAMPLE_JAVA_ISSUES_PROJECT_KEY, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new ConfirmConnectionCreationDialogOpened(true));
     new ConfirmConnectionCreationDialog(true).trust();
@@ -342,25 +341,25 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new FixSuggestionAvailableDialog(0, 1).cancel();
 
     // 2) Decline the suggestion
-    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(SAMPLE_JAVA_ISSUES_PROJECT_KEY, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1));
     new FixSuggestionAvailableDialog(0, 1).declineTheChange();
 
     // 3) Apply the suggestion
-    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(SAMPLE_JAVA_ISSUES_PROJECT_KEY, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1));
     new FixSuggestionAvailableDialog(0, 1).applyTheChange();
 
     // 4) Cancel the suggestion (unavailable)
-    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(SAMPLE_JAVA_ISSUES_PROJECT_KEY, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionUnavailableDialogOpened(0, 1));
     new FixSuggestionUnavailableDialog(0, 1).cancel();
 
     // 5) Suggestion not found
-    triggerOpenFixSuggestionWithOneChange(sonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+    triggerOpenFixSuggestionWithOneChange(SAMPLE_JAVA_ISSUES_PROJECT_KEY, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
     new WaitUntil(new FixSuggestionUnavailableDialogOpened(0, 1));
     new FixSuggestionUnavailableDialog(0, 1).proceed();
@@ -389,7 +388,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
     triggerOpenFixSuggestionWithTwoChanges(
-      sonarCloudProjectKey,
+      SAMPLE_JAVA_ISSUES_PROJECT_KEY,
       firstSonarCloudIssueKey,
       file,
       explanation,
