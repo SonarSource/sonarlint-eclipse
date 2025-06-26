@@ -250,7 +250,8 @@ public class SonarLintBackendService {
                 BackendCapability.EMBEDDED_SERVER,
                 BackendCapability.SERVER_SENT_EVENTS,
                 BackendCapability.DATAFLOW_BUG_DETECTION,
-                BackendCapability.FULL_SYNCHRONIZATION);
+                BackendCapability.FULL_SYNCHRONIZATION,
+                BackendCapability.ISSUE_STREAMING);
 
         if (telemetryEnabled) {
           backendCapabilities.add(BackendCapability.TELEMETRY);
