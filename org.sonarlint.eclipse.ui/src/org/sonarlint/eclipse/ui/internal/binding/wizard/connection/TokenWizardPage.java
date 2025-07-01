@@ -114,7 +114,7 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 
   private void openTokenCreationPage() {
     try {
-      var job = new GenerateTokenJob(model.getServerUrl());
+      var job = new GenerateTokenJob(model.getServerUrl(), model.getConnectionType());
       getContainer().run(true, true, job);
       var response = job.getResponse();
       var token = response.getToken();
@@ -138,17 +138,22 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
   static final class GenerateTokenJob implements IRunnableWithProgress {
 
     private final String serverUrl;
+    private final ConnectionType connectionType;
     private HelpGenerateUserTokenResponse response;
 
-    public GenerateTokenJob(String serverUrl) {
+    public GenerateTokenJob(String serverUrl, ConnectionType connectionType) {
       this.serverUrl = serverUrl;
+      this.connectionType = connectionType;
     }
 
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
       monitor.beginTask("Token generation", IProgressMonitor.UNKNOWN);
       try {
-        var params = new HelpGenerateUserTokenParams(serverUrl);
+        var utm = connectionType == ConnectionType.SONARCLOUD ?
+          new HelpGenerateUserTokenParams.Utm("referral", "sonarqube-ide-product-eclipse", "create-new-connection-panel", "create-sqc-token") :
+          null;
+        var params = new HelpGenerateUserTokenParams(serverUrl, utm);
         var future = SonarLintBackendService.get().getBackend().getConnectionService().helpGenerateUserToken(params);
         this.response = JobUtils.waitForFutureInIRunnableWithProgress(monitor, future);
       } finally {
