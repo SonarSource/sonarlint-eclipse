@@ -24,7 +24,7 @@ Require-Bundle: org.eclipse.jface,
  org.awaitility;bundle-version="4.2.2",
  org.hamcrest;bundle-version="2.2.0"
 Import-Package: org.sonarlint.eclipse.ui.internal.views.issues
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonarlint.eclipse.its.shared,
   org.sonarlint.eclipse.its.shared.reddeer.conditions,

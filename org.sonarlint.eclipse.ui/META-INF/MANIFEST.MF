@@ -37,6 +37,6 @@ Export-Package: org.sonarlint.eclipse.ui.internal;x-friends:="org.sonarlint.ecli
  org.sonarlint.eclipse.ui.internal.views.issues;x-friends:="org.sonarlint.eclipse.its",
  org.sonarlint.eclipse.ui.quickfixes;x-internal:=true,
  org.sonarlint.eclipse.ui.rule
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle

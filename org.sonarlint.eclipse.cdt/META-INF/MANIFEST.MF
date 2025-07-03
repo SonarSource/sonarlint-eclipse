@@ -22,6 +22,6 @@ Require-Bundle: org.eclipse.core.runtime,
 Import-Package:  org.eclipse.ui.texteditor,
  org.eclipse.jface.preference
 Export-Package: org.sonarlint.eclipse.cdt.internal;x-friends:="org.sonarlint.eclipse.core.tests"
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle

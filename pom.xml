@@ -65,8 +65,8 @@
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <!-- We build everything with Java 11 in order to support more targets -->
-    <jdk.min.version>11</jdk.min.version>
+    <!-- Updated to Java 17 for JGit 7 support -->
+    <jdk.min.version>17</jdk.min.version>
 
     <!-- Maven plug-ins -->
     <jarsigner.version>3.1.0</jarsigner.version>
@@ -77,11 +77,11 @@
     <tycho.version>4.0.12</tycho.version>
 
     <!-- Sloop embedded CLI version for fragment projects -->
-    <sloop.version>10.25.0.81463</sloop.version>
+    <sloop.version>10.25.0.81517</sloop.version>
     
     <!-- SonarQube analysis -->
-    <sonar.java.source>11</sonar.java.source>
-    <sonar.java.target>11</sonar.java.target>
+    <sonar.java.source>17</sonar.java.source>
+    <sonar.java.target>17</sonar.java.target>
     <sonar.exclusions>**/.tycho-consumer-pom.xml</sonar.exclusions>
     <sonar.sca.mavenOptions>-Dtycho.target.eager=true</sonar.sca.mavenOptions>
     <sonar.sca.exclusions>org.sonarlint.core.tests/testdata,its/projects</sonar.sca.exclusions>
@@ -182,7 +182,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <configuration>
-            <source>8</source>
+            <source>17</source>
           </configuration>
         </plugin>
 
@@ -280,7 +280,7 @@
         <artifactId>target-platform-configuration</artifactId>
         <configuration>
           <target>
-            <file>../target-platforms/latest-java-11_e424.target</file>
+            <file>../target-platforms/latest-java-17.target</file>
           </target>
           <environments>
             <environment>
