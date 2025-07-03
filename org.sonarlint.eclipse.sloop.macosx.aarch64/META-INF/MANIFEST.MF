@@ -6,6 +6,6 @@ Bundle-Version: 11.11.0.qualifier
 Bundle-Vendor: %bundle_vendor
 Fragment-Host: org.sonarlint.eclipse.core
 Automatic-Module-Name: org.sonarlint.eclipse.sloop.macosx.aarch64
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Eclipse-PlatformFilter: (& (osgi.os=macosx) (osgi.arch=aarch64))
 Eclipse-BundleShape: dir

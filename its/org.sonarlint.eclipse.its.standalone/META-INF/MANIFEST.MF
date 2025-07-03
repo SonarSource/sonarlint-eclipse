@@ -40,6 +40,6 @@ Require-Bundle: org.eclipse.jdt.core,
  com.google.protobuf;bundle-version="3.25.1",
  org.sonarlint.eclipse.its.shared
 Import-Package: org.sonarlint.eclipse.ui.internal.views.issues
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonarlint.eclipse.its.standalone

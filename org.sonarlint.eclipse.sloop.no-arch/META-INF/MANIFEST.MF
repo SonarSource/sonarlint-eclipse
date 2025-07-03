@@ -7,5 +7,5 @@ Eclipse-PlatformFilter: (& (osgi.os=win32) (osgi.arch=aarch64))
 Bundle-Vendor: %bundle_vendor
 Fragment-Host: org.sonarlint.eclipse.core
 Automatic-Module-Name: org.sonarlint.eclipse.sloop.no-arch
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Eclipse-BundleShape: dir

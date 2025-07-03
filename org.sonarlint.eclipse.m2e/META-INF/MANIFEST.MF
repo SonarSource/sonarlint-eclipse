@@ -11,6 +11,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.m2e.maven.runtime;resolution:=optional,
  org.sonarlint.eclipse.core,
  org.eclipse.jdt.annotation;resolution:=optional
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
