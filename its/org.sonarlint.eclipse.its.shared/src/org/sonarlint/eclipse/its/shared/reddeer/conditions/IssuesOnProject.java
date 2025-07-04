@@ -26,17 +26,19 @@ import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintConsole;
  *  Rely on the SonarQube Console that there is no issue found on the project, will always appear
  *  on bound projects that have no issue directly after the connection is fully synchronized.
  */
-public class ZeroIssuesOnProject extends AbstractWaitCondition {
+public class IssuesOnProject extends AbstractWaitCondition {
   private final String projectName;
+  private final int issuesNumber;
 
-  public ZeroIssuesOnProject(String projectName) {
+  public IssuesOnProject(String projectName, int issuesNumber) {
     this.projectName = projectName;
+    this.issuesNumber = issuesNumber;
   }
 
   @Override
   public boolean test() {
     var index = new SonarLintConsole().getConsoleView().getConsoleText()
-      .lastIndexOf("Found 0 issue(s) on project '" + projectName + "'");
+      .lastIndexOf("Found " + issuesNumber + " issue(s) on project '" + projectName + "'");
     return index > -1;
   }
 }
