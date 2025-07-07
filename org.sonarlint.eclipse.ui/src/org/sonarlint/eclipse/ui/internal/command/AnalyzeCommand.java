@@ -61,7 +61,9 @@ public class AnalyzeCommand extends AbstractHandler {
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
     var selectedFiles = HandlerUtil.getCurrentSelectionChecked(event);
+    var shell = HandlerUtil.getActiveShell(event);
 
+    // Run the scheduling of analysis in background thread
     analyzeCommandExecutor.execute(() -> {
       try {
         final Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject;
@@ -76,7 +78,13 @@ public class AnalyzeCommand extends AbstractHandler {
         }
 
         if (!filesPerProject.isEmpty()) {
-          runAnalysisJob(HandlerUtil.getActiveShell(event), filesPerProject);
+          // Displaying the dialog should be done in UI thread
+          var totalFileCount = filesPerProject.values().stream().mapToInt(Collection::size).sum();
+          var shouldProceed = executeDialogsIfNeeded(shell, totalFileCount);
+
+          if (shouldProceed) {
+            scheduleAnalysisJobs(filesPerProject);
+          }
         }
       } catch (Exception e) {
         SonarLintLogger.get().error(e.getMessage(), e);
@@ -86,19 +94,27 @@ public class AnalyzeCommand extends AbstractHandler {
     return null;
   }
 
-  private static void runAnalysisJob(Shell shell, Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject) {
-    var totalFileCount = filesPerProject.values().stream().mapToInt(Collection::size).sum();
+  private static boolean executeDialogsIfNeeded(Shell shell, int totalFileCount) {
+    // Use syncExec to ensure UI operations happen on UI thread and we get the result
+    var result = new boolean[1];
+    shell.getDisplay().syncExec(() -> {
+      if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
+        MessageDialogUtils.enhancedWithConnectedModeInformation(shell, "Are you working with a CI/CD pipeline?",
+          "Running an analysis with SonarQube (Server, Cloud) in your pipeline might be better suited for analyzing "
+            + "multiple files or a whole project!");
+        result[0] = true;
+      } else if (totalFileCount > 10 && !askConfirmation(shell)) {
+        // Asking for a few files (e.g. analyzing a package) is annoying, increasing the threshold in order to not spam
+        // pop-ups to the user
+        result[0] = false;
+      } else {
+        result[0] = true;
+      }
+    });
+    return result[0];
+  }
 
-    if (!SonarLintGlobalConfiguration.ignoreEnhancedFeatureNotifications()) {
-      MessageDialogUtils.enhancedWithConnectedModeInformation(shell, "Are you working with a CI/CD pipeline?",
-        "Running an analysis with SonarQube (Server, Cloud) in your pipeline might be better suited for analyzing "
-          + "multiple files or a whole project!");
-    } else if (totalFileCount > 10 && !askConfirmation(shell)) {
-      // Asking for a few files (e.g. analyzing a package) is annoying, increasing the threshold in order to not spam
-      // pop-ups to the user!
-      return;
-    }
-
+  private static void scheduleAnalysisJobs(Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject) {
     if (filesPerProject.size() == 1) {
       var entry = filesPerProject.entrySet().iterator().next();
       var req = new AnalyzeProjectRequest(entry.getKey(), entry.getValue(), TriggerType.MANUAL, true);
