@@ -45,7 +45,7 @@ public class SonarLintDocumentation {
 
   private static final String BASE_MARKETING_URL = "https://www.sonarsource.com";
   public static final String SONARCLOUD_FREE_SIGNUP_LINK = BASE_MARKETING_URL + "/products/sonarcloud/signup-free/"
-	+ "?utm_medium=referral&utm_source=sq-ide-product-eclipse&utm_content=sonarqube-bindings&utm_term=connect-to-sonarqube";
+    + "?utm_medium=referral&utm_source=sq-ide-product-eclipse&utm_content=sonarqube-bindings&utm_term=connect-to-sonarqube";
 
   public static final String SONARQUBE_SMART_NOTIFICATIONS = "https://docs.sonarsource.com/sonarqube-server/latest/user-guide/connected-mode/#smart-notifications";
   public static final String SONARCLOUD_SMART_NOTIFICATIONS = "https://docs.sonarsource.com/sonarqube-cloud/improving/connected-mode/#smart-notifications";
