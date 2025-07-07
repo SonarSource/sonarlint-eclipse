@@ -88,7 +88,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
 
     addField(new BooleanFieldEditor(SonarLintGlobalConfiguration.PREF_ISSUE_INCLUDE_RESOLVED,
-      "Show SonarQube markers for resolved issues as well",
+      "Show SonarQube markers for open and resolved issues",
       getFieldEditorParent()));
 
     // INFO: For the label to take up all the horizontal space in the grid (the size we cannot get), we have to use a
@@ -114,7 +114,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     issuePeriodLabel.setLayoutData(labelLayoutData);
     issuePeriodLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.CLEAN_AS_YOU_CODE, e.display));
-    
+
     PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
 
     addField(new BooleanFieldEditor(SonarLintGlobalConfiguration.PREF_SHOW_REGION_SELECTOR,
