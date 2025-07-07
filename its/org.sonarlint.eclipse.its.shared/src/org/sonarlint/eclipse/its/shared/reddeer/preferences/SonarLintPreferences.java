@@ -47,7 +47,7 @@ public class SonarLintPreferences extends PropertyPage {
   }
 
   public void setShowAllMarkers(boolean showAllMarkers) {
-    new CheckBox(this, new WithTextMatcher("Show SonarQube markers for resolved issues as well")).toggle(showAllMarkers);
+    new CheckBox(this, new WithTextMatcher("Show SonarQube markers for open and resolved issues")).toggle(showAllMarkers);
   }
 
   public void setFocusOnNewCode(boolean focusOnNewCode) {
