@@ -31,3 +31,5 @@ org.sonarlint.eclipse.ui/lib/
 
 # Visual Studio
 .vs
+
+**/bin/**
