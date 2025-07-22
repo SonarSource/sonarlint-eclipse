@@ -578,8 +578,18 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     shellByName("SonarQube - Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("dbd.py"));
-    waitForSonarLintMarkers(onTheFlyView,
-      tuple("Fix this condition that always evaluates to false; some subsequent code is never executed. [+2 locations]", "dbd.py", "few seconds ago"));
+    // The following assertion is not using waitForSonarLintMarkers because of inconsistencies between the lastest-released and dev SonarQube Server analyzers
+    // The old analyzer version is reporting `Fix this condition that always evaluates to false; some subsequent code is never executed. [+2 locations]`
+    // while the newer version is reporting `Fix this condition that always evaluates to false. [+1 location]`
+    // This is a temporary patch and it can be reverted on the next SQS latest-release
+    Awaitility.await()
+    .atMost(20, TimeUnit.SECONDS)
+    .untilAsserted(() -> {
+      assertThat(onTheFlyView.getIssues()).hasSize(1);
+      assertThat(onTheFlyView.getIssues())
+        .extracting(SonarLintIssueMarker::getResource, SonarLintIssueMarker::getCreationDate)
+        .containsOnly(tuple("dbd.py", "few seconds ago"));
+    });
     new DefaultEditor().close();
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "dbd", "Main.java"));
