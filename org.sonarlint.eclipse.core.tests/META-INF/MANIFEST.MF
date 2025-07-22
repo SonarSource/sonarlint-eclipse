@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SonarLint for Eclipse Tests
 Bundle-SymbolicName: org.sonarlint.eclipse.core.tests;singleton:=true
-Bundle-Version: 11.12.0.qualifier
+Bundle-Version: 11.13.0.qualifier
 Bundle-Vendor: SonarSource
 Require-Bundle: org.eclipse.core.resources,
  org.eclipse.core.runtime,
