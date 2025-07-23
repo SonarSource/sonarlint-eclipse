@@ -99,7 +99,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.python</groupId>
                   <artifactId>sonar-python-plugin</artifactId>
-                  <version>5.6.0.23855</version>
+                  <version>5.7.0.24163</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
