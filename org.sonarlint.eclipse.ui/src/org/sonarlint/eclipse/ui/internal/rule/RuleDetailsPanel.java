@@ -76,7 +76,7 @@ public class RuleDetailsPanel extends Composite {
 
     this.useEditorFontSize = useEditorFontSize;
 
-    ruleNameLabel = new Label(scrolledContent, SWT.NONE);
+    ruleNameLabel = new Label(scrolledContent, SWT.WRAP);
     ruleNameLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
     var nameLabelFont = FontDescriptor.createFrom(ruleNameLabel.getFont())
       .setStyle(SWT.BOLD)
