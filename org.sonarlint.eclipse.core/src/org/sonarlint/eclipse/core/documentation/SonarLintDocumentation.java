@@ -22,7 +22,7 @@ package org.sonarlint.eclipse.core.documentation;
 public class SonarLintDocumentation {
 
   private static final String BASE_DOCS_URL = "https://docs.sonarsource.com/sonarqube-for-ide/eclipse";
-  public static final String CLEAN_AS_YOU_CODE = BASE_DOCS_URL + "/clean-as-you-code-in-the-ide";
+  public static final String CLEAN_AS_YOU_CODE = BASE_DOCS_URL + "/using/new-code/";
   public static final String CONNECTED_MODE_LINK = BASE_DOCS_URL + "/team-features/connected-mode/";
   public static final String CONNECTED_MODE_BENEFITS = CONNECTED_MODE_LINK + "#benefits";
   public static final String CONNECTED_MODE_SETUP_LINK = BASE_DOCS_URL + "/team-features/connected-mode-setup/";
