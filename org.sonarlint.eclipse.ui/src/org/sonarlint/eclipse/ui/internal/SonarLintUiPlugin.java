@@ -99,37 +99,37 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     private final ExecutorService logConsumer = Executors.newSingleThreadExecutor(SonarLintUtils.threadFactory("sonarlint-log-consummer", true));
 
     @Override
-    public void info(@Nullable String msg, boolean fromAnalyzer) {
+    public void info(@Nullable String msg) {
       if (PlatformUI.isWorkbenchRunning()) {
-        doAsyncInUiThread(() -> getSonarConsole().info(msg, fromAnalyzer));
+        doAsyncInUiThread(() -> getSonarConsole().info(msg));
       }
     }
 
     @Override
-    public void error(@Nullable String msg, boolean fromAnalyzer) {
+    public void error(@Nullable String msg) {
       if (PlatformUI.isWorkbenchRunning()) {
-        doAsyncInUiThread(() -> getSonarConsole().error(msg, fromAnalyzer));
+        doAsyncInUiThread(() -> getSonarConsole().error(msg));
       }
     }
 
     @Override
-    public void error(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+    public void error(@Nullable String msg, Throwable t) {
       if (PlatformUI.isWorkbenchRunning()) {
-        doAsyncInUiThread(() -> getSonarConsole().error(msg, t, fromAnalyzer));
+        doAsyncInUiThread(() -> getSonarConsole().error(msg, t));
       }
     }
 
     @Override
-    public void debug(@Nullable String msg, boolean fromAnalyzer) {
+    public void debug(@Nullable String msg) {
       if (PlatformUI.isWorkbenchRunning()) {
-        doAsyncInUiThread(() -> getSonarConsole().debug(msg, fromAnalyzer));
+        doAsyncInUiThread(() -> getSonarConsole().debug(msg));
       }
     }
 
     @Override
-    public void debug(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+    public void debug(@Nullable String msg, Throwable t) {
       if (PlatformUI.isWorkbenchRunning()) {
-        doAsyncInUiThread(() -> getSonarConsole().debug(msg, t, fromAnalyzer));
+        doAsyncInUiThread(() -> getSonarConsole().debug(msg, t));
       }
     }
 

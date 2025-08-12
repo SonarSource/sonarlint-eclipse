@@ -29,17 +29,17 @@ public final class SonarLintUtilsLogOutput implements ClientLogOutput {
     switch (level) {
       case TRACE:
       case DEBUG:
-        SonarLintLogger.get().analyzerDebug(msg);
+        SonarLintLogger.get().debug(msg);
         break;
       case INFO:
       case WARN:
-        SonarLintLogger.get().analyzerInfo(msg);
+        SonarLintLogger.get().info(msg);
         break;
       case ERROR:
-        SonarLintLogger.get().analyzerError(msg);
+        SonarLintLogger.get().error(msg);
         break;
       default:
-        SonarLintLogger.get().analyzerInfo(msg);
+        SonarLintLogger.get().info(msg);
     }
 
   }

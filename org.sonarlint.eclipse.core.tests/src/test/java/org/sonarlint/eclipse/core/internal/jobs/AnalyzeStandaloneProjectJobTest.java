@@ -99,34 +99,34 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     listener = new LogListener() {
 
       @Override
-      public void info(String msg, boolean fromAnalyzer) {
+      public void info(String msg) {
         System.out.println("INFO " + msg);
       }
 
       @Override
-      public void error(String msg, boolean fromAnalyzer) {
+      public void error(String msg) {
         System.err.println("ERROR " + msg);
       }
 
       @Override
-      public void error(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+      public void error(@Nullable String msg, Throwable t) {
         var stack = new StringWriter();
         t.printStackTrace(new PrintWriter(stack));
-        error(msg, fromAnalyzer);
-        error(stack.toString(), fromAnalyzer);
+        error(msg);
+        error(stack.toString());
       }
 
       @Override
-      public void debug(String msg, boolean fromAnalyzer) {
+      public void debug(String msg) {
         System.out.println("DEBUG " + msg);
       }
 
       @Override
-      public void debug(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+      public void debug(@Nullable String msg, Throwable t) {
         var stack = new StringWriter();
         t.printStackTrace(new PrintWriter(stack));
-        debug(msg, fromAnalyzer);
-        debug(stack.toString(), fromAnalyzer);
+        debug(msg);
+        debug(stack.toString());
       }
 
       @Override

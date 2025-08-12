@@ -244,7 +244,6 @@ public abstract class AbstractSonarLintTest {
 
     var consoleView = new SonarLintConsole();
     consoleView.enableVerboseOutput();
-    consoleView.enableAnalysisLogs();
     consoleView.showConsole(ShowConsoleOption.NEVER);
     if (hotspotServerPort == -1) {
       var consoleHasText = new ConsoleHasText(consoleView.getConsoleView(), "Started embedded server on port");

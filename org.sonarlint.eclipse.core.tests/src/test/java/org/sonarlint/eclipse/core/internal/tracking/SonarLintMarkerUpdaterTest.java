@@ -73,12 +73,12 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
   public static void prepare() throws Exception {
     SonarLintLogger.get().addLogListener(new LogListener() {
       @Override
-      public void info(String msg, boolean fromAnalyzer) {
+      public void info(String msg) {
         // We ignore info messages in UTs
       }
 
       @Override
-      public void error(String msg, boolean fromAnalyzer) {
+      public void error(String msg) {
         // XXX Ugly hack to ignore asynchronous error messages from the backend
         if (!msg.contains("Attempt to update binding in configuration scope ")
           && !msg.contains("org.sonarsource.sonarlint.core.serverconnection.storage.StorageException: Failed to read file:")) {
@@ -87,20 +87,20 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
       }
 
       @Override
-      public void error(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+      public void error(@Nullable String msg, Throwable t) {
         var stack = new StringWriter();
         t.printStackTrace(new PrintWriter(stack));
-        error(msg, fromAnalyzer);
-        error(stack.toString(), fromAnalyzer);
+        error(msg);
+        error(stack.toString());
       }
 
       @Override
-      public void debug(String msg, boolean fromAnalyzer) {
+      public void debug(String msg) {
         // We ignore debug messages in UTs
       }
 
       @Override
-      public void debug(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+      public void debug(@Nullable String msg, Throwable t) {
         // We ignore debug messages in UTs
       }
 

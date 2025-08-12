@@ -23,15 +23,15 @@ import org.eclipse.jdt.annotation.Nullable;
 
 public interface LogListener {
 
-  void info(@Nullable String msg, boolean fromAnalyzer);
+  void info(@Nullable String msg);
 
-  void error(@Nullable String msg, boolean fromAnalyzer);
+  void error(@Nullable String msg);
 
-  void error(@Nullable String msg, Throwable t, boolean fromAnalyzer);
+  void error(@Nullable String msg, Throwable t);
 
-  void debug(@Nullable String msg, boolean fromAnalyzer);
+  void debug(@Nullable String msg);
 
-  void debug(@Nullable String msg, Throwable t, boolean fromAnalyzer);
+  void debug(@Nullable String msg, Throwable t);
 
   /**
    *  This should only be used for IDE-specific logging and is not intended for tracing messages from SLCORE as these

@@ -46,49 +46,32 @@ public class SonarLintLogger {
 
   public void error(@Nullable String msg) {
     for (LogListener listener : logListeners) {
-      listener.error(msg, false);
-    }
-  }
-
-  public void analyzerError(String msg) {
-    for (LogListener listener : logListeners) {
-      listener.error(msg, true);
+      listener.error(msg);
     }
   }
 
   public void error(String msg, Throwable t) {
     for (var listener : logListeners) {
-      listener.error(msg, t, false);
+      listener.error(msg, t);
     }
   }
 
   public void info(@Nullable String msg) {
     for (LogListener listener : logListeners) {
-      listener.info(msg, false);
-    }
-  }
-
-  public void analyzerInfo(String msg) {
-    for (LogListener listener : logListeners) {
-      listener.info(msg, true);
+      listener.info(msg);
     }
   }
 
   public void debug(@Nullable String msg) {
     for (LogListener listener : logListeners) {
-      listener.debug(msg, false);
+      listener.debug(msg);
     }
   }
 
-  public void analyzerDebug(String msg) {
-    for (LogListener listener : logListeners) {
-      listener.debug(msg, true);
-    }
-  }
 
   public void debug(String msg, Throwable t) {
     for (var listener : logListeners) {
-      listener.debug(msg, t, false);
+      listener.debug(msg, t);
     }
   }
 
