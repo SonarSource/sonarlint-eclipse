@@ -201,7 +201,7 @@ public class ServerConnectionModel extends ModelObject {
       try {
         String suggestedId;
         if (connectionType == ConnectionType.SONARCLOUD) {
-          suggestedId = "SonarCloud";
+          suggestedId = "SonarQube_Cloud";
         } else {
           var url = new URL(getServerUrl());
           suggestedId = url.getHost();
