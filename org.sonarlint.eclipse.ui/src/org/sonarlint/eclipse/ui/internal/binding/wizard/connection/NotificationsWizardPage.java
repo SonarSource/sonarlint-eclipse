@@ -96,7 +96,7 @@ public class NotificationsWizardPage extends WizardPage {
     if (visible) {
       final var isSc = model.getConnectionType() == ConnectionType.SONARCLOUD;
       final var sqOrSc = isSc ? "Cloud" : "Server";
-      notificationsEnabledCheckbox.setText("Receive notifications from SonarQube" + sqOrSc);
+      notificationsEnabledCheckbox.setText("Receive notifications from SonarQube " + sqOrSc);
       final var docUrl = isSc
         ? SonarLintDocumentation.SONARCLOUD_SMART_NOTIFICATIONS
         : SonarLintDocumentation.SONARQUBE_SMART_NOTIFICATIONS;
