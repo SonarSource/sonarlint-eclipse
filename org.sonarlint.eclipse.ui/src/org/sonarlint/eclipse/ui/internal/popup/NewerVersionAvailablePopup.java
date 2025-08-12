@@ -32,7 +32,7 @@ public class NewerVersionAvailablePopup extends AbstractSonarLintVersionPopup {
   public NewerVersionAvailablePopup(String version) {
     super("SonarQube for Eclipse - New version available",
       "A newer version of SonarQube for Eclipse has been released: " + version + ". Feel free to check it out or "
-        + "trigger an update. In case no update is available in your IDE, SonarLint might have been installed "
+        + "trigger an update. In case no update is available in your IDE, the plugin might have been installed "
         + "manually or is managed by your organization.");
   }
 
