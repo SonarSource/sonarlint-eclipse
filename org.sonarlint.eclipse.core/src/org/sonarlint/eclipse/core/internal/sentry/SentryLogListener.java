@@ -28,27 +28,27 @@ import org.sonarlint.eclipse.core.internal.LogListener;
  */
 public class SentryLogListener implements LogListener {
   @Override
-  public void info(@Nullable String msg, boolean fromAnalyzer) {
+  public void info(@Nullable String msg) {
     // Irrelevant to Sentry.io for now!
   }
 
   @Override
-  public void error(@Nullable String msg, boolean fromAnalyzer) {
+  public void error(@Nullable String msg) {
     // Irrelevant to Sentry.io for now!
   }
 
   @Override
-  public void error(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+  public void error(@Nullable String msg, Throwable t) {
     MonitoringService.captureCaughtException(t);
   }
 
   @Override
-  public void debug(@Nullable String msg, boolean fromAnalyzer) {
+  public void debug(@Nullable String msg) {
     // Irrelevant to Sentry.io for now!
   }
 
   @Override
-  public void debug(@Nullable String msg, Throwable t, boolean fromAnalyzer) {
+  public void debug(@Nullable String msg, Throwable t) {
     // Irrelevant to Sentry.io for now!
   }
 

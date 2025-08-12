@@ -39,7 +39,6 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 public class SonarLintConsole extends MessageConsole implements IPropertyChangeListener {
 
   public static final String P_VERBOSE_OUTPUT = "debugOutput"; //$NON-NLS-1$
-  public static final String P_ANALYZER_OUTPUT = "showAnalyzerOutput"; //$NON-NLS-1$
   public static final String P_IDE_TRACING_OUTPUT = "ideSpecificTracing"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE_NEVER = "never"; //$NON-NLS-1$
@@ -112,40 +111,34 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
     return false;
   }
 
-  public void info(String msg, boolean fromAnalyzer) {
-    if (showAnalysisLogs() || !fromAnalyzer) {
-      if (isShowConsoleOnOutput()) {
-        bringConsoleToFront();
-      }
-      write(getInfoStream(), msg);
+  public void info(String msg) {
+    if (isShowConsoleOnOutput()) {
+      bringConsoleToFront();
     }
+    write(getInfoStream(), msg);
   }
 
-  public void error(String msg, boolean fromAnalyzer) {
-    if (showAnalysisLogs() || !fromAnalyzer) {
-      if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
-        bringConsoleToFront();
-      }
-      write(getWarnStream(), msg);
+  public void error(String msg) {
+    if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
+      bringConsoleToFront();
     }
+    write(getWarnStream(), msg);
   }
 
-  public void error(String msg, Throwable t, boolean fromAnalyzer) {
-    if (showAnalysisLogs() || !fromAnalyzer) {
-      if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
-        bringConsoleToFront();
-      }
-
-      var stack = new StringWriter();
-      t.printStackTrace(new PrintWriter(stack));
-
-      write(getWarnStream(), msg);
-      write(getWarnStream(), stack.toString());
+  public void error(String msg, Throwable t) {
+    if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
+      bringConsoleToFront();
     }
+
+    var stack = new StringWriter();
+    t.printStackTrace(new PrintWriter(stack));
+
+    write(getWarnStream(), msg);
+    write(getWarnStream(), stack.toString());
   }
 
-  public void debug(String msg, boolean fromAnalyzer) {
-    if (isVerboseEnabled() && (showAnalysisLogs() || !fromAnalyzer)) {
+  public void debug(String msg) {
+    if (isVerboseEnabled()) {
       if (isShowConsoleOnOutput()) {
         bringConsoleToFront();
       }
@@ -153,11 +146,11 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
     }
   }
 
-  public void debug(String msg, Throwable t, boolean fromAnalyzer) {
+  public void debug(String msg, Throwable t) {
     var stack = new StringWriter();
     t.printStackTrace(new PrintWriter(stack));
-    debug(msg, fromAnalyzer);
-    debug(stack.toString(), fromAnalyzer);
+    debug(msg);
+    debug(stack.toString());
   }
 
   public void traceIdeMessage(String msg) {
@@ -213,10 +206,6 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
 
   public static boolean isVerboseEnabled() {
     return SonarLintUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarLintConsole.P_VERBOSE_OUTPUT);
-  }
-
-  public static boolean showAnalysisLogs() {
-    return SonarLintUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarLintConsole.P_ANALYZER_OUTPUT);
   }
 
   public static boolean showIdeSpecificTracing() {
