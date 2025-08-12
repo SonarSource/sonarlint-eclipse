@@ -71,12 +71,12 @@ public class ConnectionTypeWizardPage extends WizardPage {
 
     var sonarCloudLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
     sonarCloudLabel.setText("A Software-as-a-Service (SaaS) tool that easily integrates into the cloud DevOps platforms "
-      + "and extends the CI/CD workflow to systematically help developers and organizations deliver Clean Code.");
+      + "and extends the CI/CD workflow to systematically help developers and organizations deliver high-quality, secure code.");
     sonarCloudLabel.setLayoutData(gd);
 
     var sonarQubeLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
     sonarQubeLabel.setText("An Open-source, self-managed tool that easily integrates into the developers' "
-      + "CI/CD pipeline and DevOps platform to systematically help developers and organizations deliver Clean Code.");
+      + "CI/CD pipeline and DevOps platform to systematically help developers and organizations deliver high-quality, secure code.");
     sonarQubeLabel.setLayoutData(gd);
     
     var sonarCloudSelection = WidgetPropertiesCompat.buttonSelection().observe(sonarCloudButton);

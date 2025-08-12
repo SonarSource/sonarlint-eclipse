@@ -60,7 +60,7 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
     ruleCleanCodeAttributeLabel.setText(
       clean(ccaWithLabel.getCategory().getLabel()) + " | " + clean(ccaWithLabel.getLabel()));
     ruleCleanCodeAttributeLabel.setToolTipText(
-      "Clean Code attributes are characteristics code needs to have to be considered clean.");
+      "Code attributes are characteristics that, when followed, ensure strong code quality and security.");
 
     firstSoftwareQualityImpact.updateImpact(impacts.get(0));
     if (impacts.size() > 1) {
