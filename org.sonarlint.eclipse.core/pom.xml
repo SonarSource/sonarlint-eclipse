@@ -93,7 +93,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.php</groupId>
                   <artifactId>sonar-php-plugin</artifactId>
-                  <version>3.46.0.13151</version>
+                  <version>3.48.0.13483</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
@@ -117,7 +117,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.text</groupId>
                   <artifactId>sonar-text-plugin</artifactId>
-                  <version>2.26.0.7517</version>
+                  <version>2.27.0.7705</version>
                   <type>jar</type>
                 </artifactItem>
               </artifactItems>
