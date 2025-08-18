@@ -77,8 +77,8 @@
     <tycho.version>4.0.12</tycho.version>
 
     <!-- Sloop embedded CLI version for fragment projects -->
-    <sloop.version>10.28.0.82014</sloop.version>
-    
+    <sloop.version>10.28.0.82091</sloop.version>
+
     <!-- SonarQube analysis -->
     <sonar.java.source>11</sonar.java.source>
     <sonar.java.target>11</sonar.java.target>
@@ -216,7 +216,7 @@
                     <ignore />
                   </action>
                 </pluginExecution>
-    						
+
                 <pluginExecution>
                   <pluginExecutionFilter>
                     <groupId>org.eclipse.tycho</groupId>
@@ -393,7 +393,7 @@
                 </goals>
               </execution>
             </executions>
-          </plugin>          
+          </plugin>
         </plugins>
       </build>
     </profile>
