@@ -6,18 +6,18 @@
       <unit id="org.slf4j.api" version="0.0.0"/>
       <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20230531010532/repository/" />
     </location>
-    
+
     <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
       <dependencies>
         <dependency>
           <groupId>org.sonarsource.sonarlint.core</groupId>
           <artifactId>sonarlint-java-client-osgi</artifactId>
-          <version>10.28.0.82014</version>
+          <version>10.28.0.82091</version>
           <type>jar</type>
         </dependency>
       </dependencies>
     </location>
-    
+
     <location includeDependencyDepth="infinite" includeDependencyScopes="compile,runtime" includeSource="true" missingManifest="error" type="Maven">
       <dependencies>
         <dependency>
