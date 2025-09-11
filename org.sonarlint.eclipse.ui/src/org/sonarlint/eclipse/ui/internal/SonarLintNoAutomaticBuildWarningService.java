@@ -19,14 +19,28 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
-import org.sonarlint.eclipse.ui.internal.popup.NoAutomaticBuildWarningPopup;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.ui.internal.notifications.Notification;
 
 /** Service to handle analysis accuracy -> automatic workspace build should be enabled */
 public class SonarLintNoAutomaticBuildWarningService implements AnalysisListener {
+  private boolean notifiedOnce;
+
   @Override
   public void usedAnalysis(AnalysisEvent event) {
-    NoAutomaticBuildWarningPopup.displayPopupIfNotIgnored();
+    if (ResourcesPlugin.getWorkspace().getDescription().isAutoBuilding() || SonarLintGlobalConfiguration.noAutomaticBuildWarning() || notifiedOnce) {
+      return;
+    }
+    Notification.newNotification()
+      .setTitle("Automatic build of workspace disabled")
+      .setBody("The accuracy of analysis results might be slightly impacted as some rules require the context of the "
+        + "compiled bytecode provided by the automatic build of workspace.")
+      .addAction("Enable automatic build of workspace", shell -> PreferencesUtil.createPreferenceDialogOn(shell, "org.eclipse.ui.preferencePages.BuildOrder", null, null).open())
+      .addDoNotShowAgainAction(SonarLintGlobalConfiguration::setNoAutomaticBuildWarning)
+      .show();
   }
 }

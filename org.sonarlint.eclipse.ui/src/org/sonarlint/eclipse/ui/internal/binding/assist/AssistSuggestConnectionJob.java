@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding.assist;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,13 +37,13 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.jobs.EnableBindingSuggestionsJob;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.ProjectSuggestionDto;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.AbstractConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.SuggestConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
-import org.sonarlint.eclipse.ui.internal.popup.ProjectBoundPopup;
-import org.sonarlint.eclipse.ui.internal.popup.ProjectKeyNotFoundPopup;
+import org.sonarlint.eclipse.ui.internal.notifications.Notification;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarCloudConnectionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.common.TransientSonarQubeConnectionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.connection.projects.GetAllProjectsParams;
@@ -138,17 +139,49 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
         projectKeysUnavailable.add(projectKey);
         continue;
       }
-
       var projectSuggestions = entry.getValue();
       var projects = projectSuggestions.stream().map(state -> state.getProject()).collect(Collectors.toList());
       ProjectBindingProcess.bindProjects(connectionId, projects, projectKey);
-      new ProjectBoundPopup(projectKey, projects, serverUrlOrOrganization.isRight()).open();
+      showBindingConfirmationNotification(projectKey, projects, serverUrlOrOrganization.isRight());
       invokeTelemetryAfterSuccess(projectSuggestions);
     }
 
     if (!projectKeysUnavailable.isEmpty()) {
-      new ProjectKeyNotFoundPopup(projectKeysUnavailable, serverUrlOrOrganization).open();
+      showProjectKeyNotFoundNotification(projectKeysUnavailable, serverUrlOrOrganization);
     }
+  }
+
+  private static void showBindingConfirmationNotification(String projectKey, List<ISonarLintProject> projects, boolean isSonarCloud) {
+    var bodyPrefix = projects.size() == 1 ? ("The project '" + projects.get(0) + "' is bound to '" + projectKey)
+      : ("The projects " + String.join(",",
+        projects.stream().map(project -> "'" + project.getName() + "'").collect(Collectors.toList()))
+        + " are bound to '");
+    var body = bodyPrefix + projectKey + "'.";
+    Notification.newNotification()
+      .setTitle("Project(s) bound to SonarQube " + (isSonarCloud ? "Cloud" : "Server"))
+      .setIcon(isSonarCloud ? SonarLintImages.SONARCLOUD_SERVER_ICON_IMG
+        : SonarLintImages.SONARQUBE_SERVER_ICON_IMG)
+      .setBody(body)
+      .setAutoCloseAfter(Duration.ofSeconds(10))
+      .show();
+  }
+
+  private static void showProjectKeyNotFoundNotification(List<String> projectKeys, Either<String, String> serverUrlOrOrganization) {
+    String suffix;
+    if (serverUrlOrOrganization.isLeft()) {
+      suffix = " on server '" + serverUrlOrOrganization.getLeft() + "'.";
+    } else {
+      suffix = " in organization '" + serverUrlOrOrganization.getRight() + "'.";
+    }
+
+    var message = projectKeys.size() == 1
+      ? ("The project key '" + projectKeys.get(0) + "' was not found")
+      : ("The project keys " + String.join(",", projectKeys) + " were not found");
+    Notification.newNotification()
+      .setTitle("Project key(s) not found on SonarQube " + (serverUrlOrOrganization.isLeft() ? "Server" : "Cloud"))
+      .setIcon(SonarLintImages.IMG_ERROR)
+      .setBody(message + suffix)
+      .show();
   }
 
   private static void invokeTelemetryAfterSuccess(List<ProjectSuggestionDto> projectSuggestions) {

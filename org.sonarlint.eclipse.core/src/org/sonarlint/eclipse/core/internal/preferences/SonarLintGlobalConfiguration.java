@@ -77,7 +77,7 @@ public class SonarLintGlobalConfiguration {
   public static final int PREF_MARKER_SEVERITY_DEFAULT = IMarker.SEVERITY_INFO;
   public static final String PREF_ISSUE_INCLUDE_RESOLVED = "allIssuesIncludingResolved"; //$NON-NLS-1$
   public static final String PREF_ISSUE_ONLY_NEW_CODE = "onlyIssuesNewCode"; //$NON-NLS-1$
-  public static final String PREF_SHOW_REGION_SELECTOR = "showRegionSelector"; //$NON-NLS-1S
+  public static final String PREF_SHOW_REGION_SELECTOR = "showRegionSelector"; // $NON-NLS-1S
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
   public static final String PREF_FILE_EXCLUSIONS = "fileExclusions"; //$NON-NLS-1$
   public static final String PREF_RULES_CONFIG = "rulesConfig"; //$NON-NLS-1$
@@ -157,7 +157,7 @@ public class SonarLintGlobalConfiguration {
   public static int getMarkerSeverity() {
     return Platform.getPreferencesService().getInt(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_MARKER_SEVERITY, PREF_MARKER_SEVERITY_DEFAULT, null);
   }
-  
+
   public static boolean shouldShowRegionSelection() {
     return getPreferenceBoolean(PREF_SHOW_REGION_SELECTOR);
   }
@@ -389,17 +389,14 @@ public class SonarLintGlobalConfiguration {
     setPreferenceBoolean(getWorkspaceLevelPreferenceNode(), PREF_SECRETS_EVER_DETECTED, true);
   }
 
-  /** See {@link org.sonarlint.eclipse.ui.internal.popup.SurveyPopup} for more information */
   public static String getUserSurveyLastLink() {
     return getPreferenceString(PREF_USER_SURVEY_LAST_LINK);
   }
 
-  /** See {@link org.sonarlint.eclipse.ui.internal.popup.SurveyPopup} for more information */
   public static void setUserSurveyLastLink(String link) {
     setPreferenceString(getApplicationLevelPreferenceNode(), PREF_USER_SURVEY_LAST_LINK, link);
   }
 
-  /** See {@link org.sonarlint.eclipse.ui.internal.popup.SoonUnsupportedPopup} for more information */
   public static boolean alreadySoonUnsupportedConnection(String connectionVersionCombination) {
     var currentPreference = getPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS);
     if (PREF_DEFAULT.equals(currentPreference)) {
@@ -409,7 +406,6 @@ public class SonarLintGlobalConfiguration {
     return Set.of(currentPreference.split(",")).contains(connectionVersionCombination);
   }
 
-  /** See {@link org.sonarlint.eclipse.ui.internal.popup.SoonUnsupportedPopup} for more information */
   public static void addSoonUnsupportedConnection(String connectionVersionCombination) {
     var currentPreference = getPreferenceString(PREF_SOON_UNSUPPORTED_CONNECTIONS);
     if (PREF_DEFAULT.equals(currentPreference)) {

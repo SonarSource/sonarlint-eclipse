@@ -24,11 +24,13 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Objects;
 import org.eclipse.swt.widgets.Display;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.backend.SonarLintRpcClientSupportSynchronizer;
-import org.sonarlint.eclipse.ui.internal.popup.SonarLintRpcClientSupportPopup;
 import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
 import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
 import org.sonarlint.eclipse.ui.internal.views.issues.TaintVulnerabilitiesView;
+
+import static org.sonarlint.eclipse.ui.internal.notifications.Notification.newNotification;
 
 /**
  *  This service handles changes based on Sloop being (un-)available. This includes:
@@ -59,10 +61,24 @@ public class SonarLintRpcClientSupportService implements PropertyChangeListener 
           });
 
         if (!newValue) {
-          SonarLintRpcClientSupportPopup.displayPopupIfNotAlreadyDisplayed();
+          notifyBackendExited();
         }
       });
     }
+  }
+
+  private static void notifyBackendExited() {
+    newNotification()
+      .setTitle("SonarQube for Eclipse - RPC backend server unavailable or killed")
+      .setIcon(SonarLintImages.IMG_ERROR)
+      .setBody("As this should not happen, please provide us with a thread dump of the IDE process as well as a thread "
+        + "dump of the SonarQube for Eclipse process (can be identified by 'sloop') if available. To do that, please "
+        + "raise an issue on the Community Forum. \nWith that we can work on preventing such an issue in the future and "
+        + "make SonarQube for Eclipse more resiliant by recovering from this on its own! \nFor now the only possiblity "
+        + "is to restart the IDE :(")
+      .addLink("Troubleshooting", SonarLintDocumentation.TROUBLESHOOTING_LINK)
+      .addLink("Community Forum", SonarLintDocumentation.COMMUNITY_FORUM)
+      .show();
   }
 
   // This way the UI plug-in doesn't have to interact with the core package class

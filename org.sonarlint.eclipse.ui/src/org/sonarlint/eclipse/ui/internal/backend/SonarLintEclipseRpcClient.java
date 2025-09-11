@@ -32,9 +32,11 @@ import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
+import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.backend.ConfigScopeSynchronizer;
@@ -45,27 +47,25 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.ProjectSuggestionDto;
 import org.sonarlint.eclipse.ui.internal.binding.actions.AnalysisJobsScheduler;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AbstractAssistCreatingConnectionJob;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistBindingJob;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistCreatingAutomaticConnectionJob;
 import org.sonarlint.eclipse.ui.internal.binding.assist.AssistCreatingManualConnectionJob;
+import org.sonarlint.eclipse.ui.internal.binding.assist.AssistSuggestConnectionJob;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.EditNotificationsWizard;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
+import org.sonarlint.eclipse.ui.internal.dialog.SuggestConnectionDialog;
+import org.sonarlint.eclipse.ui.internal.dialog.SuggestMultipleConnectionSelectionDialog;
+import org.sonarlint.eclipse.ui.internal.dialog.SuggestMultipleConnectionsDialog;
 import org.sonarlint.eclipse.ui.internal.job.BackendProgressJobScheduler;
 import org.sonarlint.eclipse.ui.internal.job.OpenFixSuggestionInEclipseJob;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob;
 import org.sonarlint.eclipse.ui.internal.job.OpenIssueInEclipseJob.OpenIssueContext;
-import org.sonarlint.eclipse.ui.internal.popup.BindingSuggestionPopup;
-import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
-import org.sonarlint.eclipse.ui.internal.popup.InvalidTokenPopup;
-import org.sonarlint.eclipse.ui.internal.popup.LanguageFromConnectedModePopup;
-import org.sonarlint.eclipse.ui.internal.popup.MessagePopup;
-import org.sonarlint.eclipse.ui.internal.popup.NoBindingSuggestionFoundPopup;
-import org.sonarlint.eclipse.ui.internal.popup.SingleBindingSuggestionPopup;
-import org.sonarlint.eclipse.ui.internal.popup.SoonUnsupportedPopup;
-import org.sonarlint.eclipse.ui.internal.popup.SuggestConnectionPopup;
-import org.sonarlint.eclipse.ui.internal.popup.SuggestMultipleConnectionsPopup;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.rpc.client.SonarLintCancelChecker;
@@ -88,6 +88,8 @@ import org.sonarsource.sonarlint.core.rpc.protocol.client.progress.StartProgress
 import org.sonarsource.sonarlint.core.rpc.protocol.client.smartnotification.ShowSmartNotificationParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Either;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.Language;
+
+import static org.sonarlint.eclipse.ui.internal.notifications.Notification.newNotification;
 
 public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient {
 
@@ -112,22 +114,61 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
       }
     });
 
+    // TODO don't ask again?
     if (!suggestionsByProject.isEmpty()) {
       var firstProjectSuggestions = suggestionsByProject.values().iterator().next();
       if (suggestionsByProject.values().stream().allMatch(s -> areAllSameSuggestion(s, firstProjectSuggestions))) {
-        // Suggest binding all projects to the suggestion
-        Display.getDefault().asyncExec(() -> {
-          var popup = new SingleBindingSuggestionPopup(List.copyOf(suggestionsByProject.keySet()), firstProjectSuggestions.get(0));
-          popup.open();
-        });
+        suggestSingleBinding(suggestionsByProject.keySet(), firstProjectSuggestions.get(0));
       } else {
         // Suggest binding all projects but let the user choose
-        Display.getDefault().asyncExec(() -> {
-          var popup = new BindingSuggestionPopup(List.copyOf(suggestionsByProject.keySet()));
-          popup.open();
-        });
+        suggestMultipleBindings(suggestionsByProject.keySet());
       }
     }
+  }
+
+  private static void suggestSingleBinding(Set<ISonarLintProject> projectsToBind, BindingSuggestionDto suggestion) {
+    String message;
+    if (projectsToBind.size() == 1) {
+      message = "Bind project " + projectsToBind.iterator().next().getName() +
+        " to '" + suggestion.getSonarProjectName() + "' on '" + suggestion.getConnectionId() + "'?";
+    } else {
+      message = "Bind " + projectsToBind.size() +
+        " projects to '" + suggestion.getSonarProjectName() + "' on '" + suggestion.getConnectionId() + "'?";
+    }
+    newNotification()
+      .setTitle("SonarQube - Binding Suggestion")
+      .setBody(message)
+      .addActionWithTooltip("Bind", "Accept suggested binding", s -> {
+        ProjectBindingProcess.bindProjects(suggestion.getConnectionId(), List.copyOf(projectsToBind), suggestion.getSonarProjectKey());
+        if (SonarLintTelemetry.isEnabled()) {
+          if (suggestion.isFromSharedConfiguration()) {
+            SonarLintTelemetry.addedImportedBindings();
+          } else {
+            SonarLintTelemetry.addedAutomaticBindings();
+          }
+        }
+      })
+      .addActionWithTooltip("Select another", "Select another binding", shell -> ProjectBindingWizard.createDialog(shell, projectsToBind).open())
+      .addLearnMoreLink(SonarLintDocumentation.CONNECTED_MODE_SETUP_LINK)
+      .addDoNotAskAgainAction(projectsToBind, projectConfig -> projectConfig.setBindingSuggestionsDisabled(true))
+      .show();
+  }
+
+  private static void suggestMultipleBindings(Set<ISonarLintProject> projectsToBind) {
+    String message;
+    if (projectsToBind.size() == 1) {
+      message = "Bind project " + projectsToBind.iterator().next().getName() + "'?";
+    } else {
+      message = "Bind " + projectsToBind.size() + " projects?";
+    }
+    newNotification()
+      .setTitle("SonarQube - Binding Suggestion")
+      .addActionWithTooltip("Bind", "Select binding", shell -> ProjectBindingWizard.createDialog(shell, projectsToBind).open())
+      .addLink("Learn more", SonarLintDocumentation.CONNECTED_MODE_SETUP_LINK)
+      .addDoNotAskAgainAction(projectsToBind, projectConfig -> projectConfig.setBindingSuggestionsDisabled(true))
+      .setBody(message)
+      .show();
+
   }
 
   private static boolean areAllSameSuggestion(List<BindingSuggestionDto> otherSuggestions, List<BindingSuggestionDto> firstProjectSuggestions) {
@@ -142,7 +183,10 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
 
   @Override
   public void showMessage(MessageType type, String text) {
-    showPopup(text);
+    newNotification()
+      .setTitle("SonarQube")
+      .setBody(text)
+      .show();
   }
 
   @Override
@@ -170,7 +214,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
       } else {
         serverUrlOrOrganization = Either.forRight(connectionParams.getRight().getOrganizationKey());
       }
-      
+
       var region = connectionParams.isRight() ? connectionParams.getRight().getRegion().name() : null;
 
       SonarLintLogger.get().debug("Assist creating a new connection...");
@@ -197,7 +241,16 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
 
   @Override
   public void noBindingSuggestionFound(NoBindingSuggestionFoundParams params) {
-    NoBindingSuggestionFoundPopup.displayPopupIfNotIgnored(params.getProjectKey(), params.isSonarCloud());
+    var isSonarCloud = params.isSonarCloud();
+    newNotification()
+      .setTitle("SonarQube " + (isSonarCloud ? "Cloud" : "Server") + " - No matching open project found")
+      .setIcon(isSonarCloud ? SonarLintImages.SONARCLOUD_SERVER_ICON_IMG : SonarLintImages.SONARQUBE_SERVER_ICON_IMG)
+      .setBody("The SonarQube "
+        + (isSonarCloud ? "Cloud" : "Server")
+        + " project '" + params.getProjectKey() + "' cannot be matched to any project in the workspace. "
+        + "Please open your project, or bind it manually, and try again.")
+      .addLink("Open Troubleshooting documentation", SonarLintDocumentation.TROUBLESHOOTING_LINK)
+      .show();
   }
 
   @Override
@@ -226,21 +279,23 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
     }
   }
 
-  private static void showPopup(String message) {
-    Display.getDefault().asyncExec(() -> {
-      var popup = new MessagePopup(message);
-      popup.open();
-    });
-  }
-
   @Override
   public void showSmartNotification(ShowSmartNotificationParams params) {
     var connectionOpt = SonarLintCorePlugin.getConnectionManager().findById(params.getConnectionId());
     if (connectionOpt.isEmpty()) {
       return;
     }
+    var connection = connectionOpt.get();
+    var isSonarCloud = connection.isSonarCloud();
+    var product = isSonarCloud ? "SonarQube Cloud" : "SonarQube Server";
 
-    Display.getDefault().asyncExec(() -> new DeveloperNotificationPopup(connectionOpt.get(), params, connectionOpt.get().isSonarCloud()).open());
+    newNotification()
+      .setTitle(product + " Notification")
+      .setIcon(isSonarCloud ? SonarLintImages.SONARCLOUD_SERVER_ICON_IMG : SonarLintImages.SONARQUBE_SERVER_ICON_IMG)
+      .setBody(params.getText())
+      .addLink("Open in " + product, params.getLink(), () -> SonarLintTelemetry.devNotificationsClicked(params.getCategory()))
+      .addAction("Configure", shell -> EditNotificationsWizard.createDialog(shell, connection).open())
+      .show();
   }
 
   /** Start IDE progress bar for backend jobs running out of IDE scope */
@@ -299,12 +354,13 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
       return;
     }
 
-    Display.getDefault().syncExec(() -> {
-      var popup = new SoonUnsupportedPopup(params.getDoNotShowAgainId(), params.getText());
-      popup.setFadingEnabled(false);
-      popup.setDelayClose(0L);
-      popup.open();
-    });
+    newNotification()
+      .setTitle("SonarQube Server - Soon unsupported version")
+      .setIcon(SonarLintImages.SONARQUBE_SERVER_ICON_IMG)
+      .setBody(params.getText())
+      .addAction("Don't show again", s -> SonarLintGlobalConfiguration.addSoonUnsupportedConnection(params.getDoNotShowAgainId()))
+      .addLink("Learn more", SonarLintDocumentation.VERSION_SUPPORT_POLICY)
+      .show();
   }
 
   /**
@@ -489,22 +545,106 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
       // for all SonarCloud organizations display one notification each (so only one connection creation will be done
       // per organization)
       for (var entry : organizationBasedConnections.entrySet()) {
-        var dialog = new SuggestConnectionPopup(Either.forRight(entry.getKey()), entry.getValue(), regionsByOrganization.get(entry.getKey()));
-        dialog.open();
+        suggestConnection(Either.forRight(entry.getKey()), entry.getValue(), regionsByOrganization.get(entry.getKey()));
       }
 
       // for all SonarQube URLs display one notification each (so only one connection creation will be done per URL)
       for (var entry : serverUrlBasedConnections.entrySet()) {
-        var dialog = new SuggestConnectionPopup(Either.forLeft(entry.getKey()), entry.getValue(), null);
-        dialog.open();
+        suggestConnection(Either.forLeft(entry.getKey()), entry.getValue(), null);
       }
 
       // for all (complicated) leftover projects display a specific notification each
       for (var entry : multipleSuggestions.entrySet()) {
-        var dialog = new SuggestMultipleConnectionsPopup(entry.getKey(), entry.getValue());
-        dialog.open();
+        suggestMultipleConnections(entry.getKey(), entry.getValue());
       }
     });
+  }
+
+  private static void suggestConnection(Either<String, String> serverUrlOrOrganization, Map<String, List<ProjectSuggestionDto>> projectMapping, @Nullable String sonarCloudRegion) {
+    String prefix;
+    if (serverUrlOrOrganization.isLeft()) {
+      prefix = "For the SonarQube Server '" + serverUrlOrOrganization.getLeft();
+    } else {
+      prefix = "For the SonarQube Cloud organization '" + serverUrlOrOrganization.getRight();
+    }
+
+    String message;
+    if (projectMapping.keySet().size() > 1) {
+      message = prefix + "' there are multiple projects that can be connected to local projects. Click 'More "
+        + "Information' to see them all. Do you want to connect and bind the project?";
+    } else {
+      var projectKey = projectMapping.keySet().toArray()[0];
+      var mappedProjects = projectMapping.get(projectKey);
+      if (mappedProjects.size() > 1) {
+        message = prefix + "' the project '" + projectKey + "' can be connected to multiple local projects. Click 'More "
+          + "Information' to see them all. Do you want to connect and bind the project?";
+      } else {
+        message = prefix + "' the project '" + projectKey
+          + "' can be connected to the local project '" + mappedProjects.get(0).getProject().getName()
+          + "'. Do you want to connect and bind the project?";
+      }
+    }
+
+    var notification = newNotification()
+      .setTitle("Connection Suggestion to " + (serverUrlOrOrganization.isLeft() ? "SonarQube Server" : "SonarQube Cloud"))
+      .setIcon(serverUrlOrOrganization.isLeft() ? SonarLintImages.SONARQUBE_SERVER_ICON_IMG : SonarLintImages.SONARCLOUD_SERVER_ICON_IMG)
+      .setBody(message)
+      .addActionWithTooltip("Connect", "Connect to " + (serverUrlOrOrganization.isLeft() ? "server" : "organization"),
+        s -> {
+          var job = new AssistSuggestConnectionJob(serverUrlOrOrganization, projectMapping, sonarCloudRegion);
+          job.schedule();
+        });
+
+    var projectKeys = projectMapping.keySet().toArray();
+    if (projectKeys.length > 1 || projectMapping.get(projectKeys[0]).size() > 1) {
+      notification.addAction("More information", shell -> new SuggestConnectionDialog(shell, serverUrlOrOrganization, projectMapping).open());
+    }
+
+    notification.addDoNotAskAgainAction(SonarLintGlobalConfiguration::setNoConnectionSuggestions)
+      .show();
+  }
+
+  private static void suggestMultipleConnections(ISonarLintProject project, List<ConnectionSuggestionDto> suggestions) {
+    newNotification()
+      .setTitle("SonarQube - Multiple Connection Suggestions found")
+      .setBody("The local project '" + project.getName() + "' can be connected based on different suggestions. Click "
+        + "'More Information' to see them all. Do you want to choose which suggestion to use and then connect and bind "
+        + "the project?")
+      .addActionWithTooltip("Choose suggestion", "Based on suggestion", shell -> {
+        // ask the user to select the suggestion they want to use
+        var dialog = new SuggestMultipleConnectionSelectionDialog(shell, project, suggestions);
+        dialog.open();
+        var selection = (String) dialog.getFirstResult();
+        if (selection == null) {
+          return;
+        }
+
+        // from the dialog response we have to get back the actual connection suggestion
+        var suggestion = dialog.getSuggestionFromElement(selection);
+
+        var isFromSharedConnectedMode = suggestion.isFromSharedConfiguration();
+        var isSonarQube = suggestion.getConnectionSuggestion().isLeft();
+        var projectKey = isSonarQube
+          ? suggestion.getConnectionSuggestion().getLeft().getProjectKey()
+          : suggestion.getConnectionSuggestion().getRight().getProjectKey();
+        var region = isSonarQube ? null : suggestion.getConnectionSuggestion().getRight().getRegion().name();
+
+        Either<String, String> serverUrlOrOrganization;
+        if (isSonarQube) {
+          serverUrlOrOrganization = Either.forLeft(suggestion.getConnectionSuggestion().getLeft().getServerUrl());
+        } else {
+          serverUrlOrOrganization = Either.forRight(suggestion.getConnectionSuggestion().getRight().getOrganization());
+        }
+
+        var projectMapping = new HashMap<String, List<ProjectSuggestionDto>>();
+        projectMapping.put(projectKey, List.of(new ProjectSuggestionDto(project, isFromSharedConnectedMode)));
+
+        var job = new AssistSuggestConnectionJob(serverUrlOrOrganization, projectMapping, region);
+        job.schedule();
+      })
+      .addAction("More information", shell -> new SuggestMultipleConnectionsDialog(shell, project, suggestions).open())
+      .addDoNotAskAgainAction(SonarLintGlobalConfiguration::setNoConnectionSuggestions)
+      .show();
   }
 
   @Override
@@ -513,8 +653,32 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
     if (projectOpt.isEmpty()) {
       return;
     }
+    if (SonarLintGlobalConfiguration.ignoreMissingFeatureNotifications()) {
+      return;
+    }
     var languages = languagesToPromote.stream().map(language -> SonarLintLanguage.valueOf(language.name())).collect(Collectors.toList());
-    LanguageFromConnectedModePopup.displayPopupIfNotIgnored(projectOpt.get(), languages);
+
+    String message;
+    if (languages.size() == 1) {
+      message = "You tried to analyze a " + org.sonarsource.sonarlint.core.client.utils.Language.valueOf(languages.get(0).name()).getLabel()
+        + " file. This language analysis is only available in Connected Mode.";
+    } else {
+      var languagesList = String.join(" / ",
+        languages.stream().map(l -> org.sonarsource.sonarlint.core.client.utils.Language.valueOf(l.name()).getLabel()).collect(Collectors.toList()));
+      message = "You tried to analyze " + languagesList
+        + " files. These language analyses are only available in Connected Mode.";
+    }
+    var notification = newNotification()
+      .setTitle("SonarQube for Eclipse - Language" + (languages.size() > 1 ? "s" : "") + " could not be analyzed")
+      .setBody(message)
+      .addLearnMoreLink(SonarLintDocumentation.RULES);
+    if (SonarLintCorePlugin.getConnectionManager().checkForSonarCloud()) {
+      notification.addAction("Bind to SonarQube Cloud", shell -> ProjectBindingWizard.createDialog(shell, Set.of(projectOpt.get())));
+    } else {
+      notification.addLink("Try SonarQube Cloud for free", SonarLintDocumentation.SONARCLOUD_FREE_SIGNUP_LINK);
+    }
+    notification.addDoNotShowAgainAction(SonarLintGlobalConfiguration::setIgnoreMissingFeatureNotifications)
+      .show();
   }
 
   @Override
@@ -523,7 +687,15 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
     if (connectionFacadeOpt.isEmpty()) {
       return;
     }
-
-    InvalidTokenPopup.displayPopupIfNotIgnored(connectionFacadeOpt.get());
+    var facade = connectionFacadeOpt.get();
+    var isSonarCloud = facade.isSonarCloud();
+    var product = isSonarCloud ? "SonarQube Cloud" : "SonarQube Server";
+    newNotification()
+      .setTitle(product + " - Invalid token for connection")
+      .setIcon(isSonarCloud ? SonarLintImages.SONARCLOUD_SERVER_ICON_IMG : SonarLintImages.SONARQUBE_SERVER_ICON_IMG)
+      .setBody("The token for the connection '" + facade.getId() + "' (" + facade.getHost() + ") is invalid. Please "
+        + "change it to continue working in Connected Mode.")
+      .addAction("Edit Connection", shell -> ServerConnectionWizard.createDialog(shell, facade).open())
+      .show();
   }
 }

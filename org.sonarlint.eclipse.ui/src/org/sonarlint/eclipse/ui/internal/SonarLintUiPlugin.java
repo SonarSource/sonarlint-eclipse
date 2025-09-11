@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -32,9 +33,11 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -52,15 +55,18 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintVersion;
 import org.sonarlint.eclipse.ui.internal.backend.SonarLintEclipseRpcClient;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
+import org.sonarlint.eclipse.ui.internal.dialog.DialogWithLink;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
-import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
-import org.sonarlint.eclipse.ui.internal.popup.NewerVersionAvailablePopup;
-import org.sonarlint.eclipse.ui.internal.popup.ReleaseNotesPopup;
-import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
+import org.sonarlint.eclipse.ui.internal.job.TriggerUpdateAction;
+import org.sonarlint.eclipse.ui.internal.properties.ReleaseNotesPage;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
+import org.sonarlint.eclipse.ui.internal.views.issues.TaintVulnerabilitiesView;
+
+import static org.sonarlint.eclipse.ui.internal.notifications.Notification.newNotification;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
 
@@ -161,11 +167,19 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     @Override
     public void showNotification(Notification notif) {
-      Display.getDefault().asyncExec(() -> {
-        var popup = new GenericNotificationPopup(notif.getTitle(), notif.getShortMsg(), notif.getLongMsg(),
-          notif.getLearnMoreUrl());
-        popup.open();
-      });
+      var title = "SonarQube - " + notif.getTitle();
+      var notification = newNotification()
+        .setTitle(title)
+        .setBody(notif.getShortMsg());
+      var learnMoreUrl = notif.getLearnMoreUrl();
+      if (learnMoreUrl != null) {
+        notification.addLearnMoreLink(learnMoreUrl);
+      }
+      var longMessage = notif.getLongMsg();
+      if (longMessage != null) {
+        notification.addAction("More details...", shell -> new DialogWithLink(shell, title, longMessage).open());
+      }
+      notification.show();
     }
   }
 
@@ -213,7 +227,18 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   }
 
   private static void showTaintVulnerabitilityNotification(boolean comeFromSonarCloud) {
-    new TaintVulnerabilityAvailablePopup(comeFromSonarCloud).open();
+    newNotification()
+      .setTitle("SonarQube - Taint vulnerability found")
+      .setBody("Taint vulnerabilities have been detected by SonarQube" + (comeFromSonarCloud ? "Cloud" : "Server")
+        + " on this file. SonarQube for Eclipse can show you those vulnerabilities in your local code.")
+      .addAction("Show in view", s -> {
+        try {
+          PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(TaintVulnerabilitiesView.ID);
+        } catch (PartInitException exception) {
+          SonarLintLogger.get().debug("Cannot show taint vulnerabilitites view", exception);
+        }
+      })
+      .show();
   }
 
   @Override
@@ -294,7 +319,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         // Check if updated or freshly installed and then show a notification raising awareness about the release notes
         // -> also open the "Welcome" view for users to get started
         if (!SonarLintGlobalConfiguration.sonarLintVersionHintHidden() && BundleUtils.bundleUpdatedOrInstalled()) {
-          ReleaseNotesPopup.displayPopupIfNotAlreadyShown();
+          displayReleaseNotesPopup();
           PlatformUtils.openWelcomePage();
         }
 
@@ -313,7 +338,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
               + SonarLintDocumentation.COMMUNITY_FORUM_ECLIPSE_RELEASES + ") or the GitHub releases page ("
               + SonarLintDocumentation.GITHUB_RELEASES + ")!");
           } else if (newestSonarLintVersion.isNewerThan(currentSonarLintVersion)) {
-            NewerVersionAvailablePopup.displayPopupIfNotAlreadyShown(newestSonarLintVersion.toString());
+            displayNewerVersionAvailablePopup(newestSonarLintVersion);
             SonarLintGlobalConfiguration.setNextSonarLintVersionHintDate();
           }
         }
@@ -322,12 +347,29 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       // We want to update the locally saved SonarLint version reference once everything is done!
       SonarLintGlobalConfiguration.setSonarLintVersion();
 
-      // Display user survey pop-up (comment out if not needed, comment in again if needed and replace link)
-      // Display.getDefault().syncExec(() -> SurveyPopup.displaySurveyPopupIfNotAlreadyAccessed(""));
-
       return Status.OK_STATUS;
     }
 
+    private static void displayReleaseNotesPopup() {
+      newNotification()
+        .setTitle("SonarQube for Eclipse - Release Notes")
+        .setBody("Thank you for installing / updating SonarQube for Eclipse (formerly known as SonarLint). We invite you to "
+          + "learn about the recent changes by taking a look at the Release Notes. If you want to read them later, they "
+          + "can be found nested into the SonarQube preferences.")
+        .addAction("Show Release Notes", shell -> PreferencesUtil.createPreferenceDialogOn(shell, ReleaseNotesPage.ABOUT_CONFIGURATION_ID, null, null).open())
+        .show();
+    }
+
+    private static void displayNewerVersionAvailablePopup(SonarLintVersion newestVersion) {
+      newNotification()
+        .setTitle("SonarQube for Eclipse - New version available")
+        .setBody("A newer version of SonarQube for Eclipse has been released: " + newestVersion + ". Feel free to check it out or "
+          + "trigger an update. In case no update is available in your IDE, the plugin might have been installed "
+          + "manually or is managed by your organization.")
+        .addLinks("Check out in browser", List.of(SonarLintDocumentation.COMMUNITY_FORUM_ECLIPSE_RELEASES, SonarLintDocumentation.GITHUB_RELEASES))
+        .addAction("Check for updates", s -> new TriggerUpdateAction().schedule())
+        .show();
+    }
   }
 
   public void startupAsync() {
