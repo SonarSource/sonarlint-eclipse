@@ -153,7 +153,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     assertThrows(CoreLayerException.class, serverTypePage::selectSonarQubeCloudUsRegion);
     wizard.cancel();
 
-    // ii) Enable SonarQube Cloud Region (Early Access)
+    // ii) Enable SonarQube Cloud Region
     changeSonarQubeCloudRegionEA(true);
     wizard = new ServerConnectionWizard();
     wizard.open();

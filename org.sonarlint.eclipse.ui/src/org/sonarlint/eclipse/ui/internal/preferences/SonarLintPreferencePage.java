@@ -118,7 +118,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
 
     addField(new BooleanFieldEditor(SonarLintGlobalConfiguration.PREF_SHOW_REGION_SELECTOR,
-      "Show region selection for SonarQube Cloud (Early Access)",
+      "Show region selection for SonarQube Cloud",
       getFieldEditorParent()));
 
     PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
