@@ -55,7 +55,7 @@ public class SonarLintPreferences extends PropertyPage {
   }
 
   public void enableSonarQubeCloudRegionEA(boolean enableEarlyAccess) {
-    new CheckBox(this, new WithTextMatcher("Show region selection for SonarQube Cloud (Early Access)")).toggle(enableEarlyAccess);
+    new CheckBox(this, new WithTextMatcher("Show region selection for SonarQube Cloud")).toggle(enableEarlyAccess);
   }
 
   public enum MarkerSeverity {
