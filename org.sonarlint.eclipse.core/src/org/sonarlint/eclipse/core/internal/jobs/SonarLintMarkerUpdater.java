@@ -124,11 +124,21 @@ public class SonarLintMarkerUpdater {
     final boolean issuesOnlyNewCode, final boolean viableForStatusChange) {
 
     try {
+      /**
+       *  Duplicate keys because of duplicate markers on a resource might happen here, e.g. when switching branches
+       *  which have the same issue on the same resource/file and optionally different lines.
+       *  In case there is a duplicated marker, we use the new one for merging them together. This does not resolve the
+       *  root issue tho but is a valid workaround.
+       *  As later in the internally invoked method "createOrUpdateMarkers(...)" for existing markers no new one is
+       *  created, we don't have to delete the duplicate here.
+       */
       var markersForFile = Stream.of(file.getResource().findMarkers(
         issuesAreOnTheFly ? SonarLintCorePlugin.MARKER_ON_THE_FLY_ID : SonarLintCorePlugin.MARKER_REPORT_ID,
         false,
         IResource.DEPTH_ZERO))
-        .collect(Collectors.toMap(MarkerUtils::getTrackedIssueId, marker -> marker));
+        .collect(Collectors.toMap(MarkerUtils::getTrackedIssueId,
+          marker -> marker,
+          (existingMarker, newMarker) -> newMarker));
 
       var issueIds = issues.stream().map(issue -> issue.getId()).collect(Collectors.toSet());
 
