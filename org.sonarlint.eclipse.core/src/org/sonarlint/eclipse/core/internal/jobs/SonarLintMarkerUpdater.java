@@ -129,8 +129,8 @@ public class SonarLintMarkerUpdater {
        *  which have the same issue on the same resource/file and optionally different lines.
        *  In case there is a duplicated marker, we use the new one for merging them together. This does not resolve the
        *  root issue tho but is a valid workaround.
-       *  As later in the internally invoked method "createOrUpdateMarkers(...)" for existing markers no new one is
-       *  created, we don't have to delete the duplicate here.
+       *  In case we have a duplicated marker with the exact same issue id, we delete the old one and keep only the new
+       *  one.
        */
       var markersForFile = Stream.of(file.getResource().findMarkers(
         issuesAreOnTheFly ? SonarLintCorePlugin.MARKER_ON_THE_FLY_ID : SonarLintCorePlugin.MARKER_REPORT_ID,
@@ -138,7 +138,16 @@ public class SonarLintMarkerUpdater {
         IResource.DEPTH_ZERO))
         .collect(Collectors.toMap(MarkerUtils::getTrackedIssueId,
           marker -> marker,
-          (existingMarker, newMarker) -> newMarker));
+          (existingMarker, newMarker) -> {
+            try {
+              existingMarker.delete();
+            } catch (CoreException e) {
+              SonarLintLogger.get().error("Removing duplicate marker for issue id '"
+                + MarkerUtils.getTrackedIssueId(existingMarker)
+                + "' failed with an exception.", e);
+            }
+            return newMarker;
+          }));
 
       var issueIds = issues.stream().map(issue -> issue.getId()).collect(Collectors.toSet());
 
