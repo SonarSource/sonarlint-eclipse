@@ -19,24 +19,29 @@ jobs:
         with:
           version: 2025.7.12
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        with:
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true  -Dsonar.skip=true
+          artifactory-reader-role: private-reader
+      - name: Custom versioning
+        run: |
+          git checkout -f
+          echo "Override set_project_version to rely on Tycho and overcome limitation of parent action"
+          maven_expression() {
+            mvn -q -N -Dtycho.mode=maven help:evaluate \
+              -Dexpression="$1" -DforceStdout
+          }
+          export -f maven_expression
+          set_project_version() {
+            bash .cirrus/set_maven_build_version_github_action "$BUILD_NUMBER"
+          }
+          set_project_version
       - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
         with:
           maven-opts: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           run-shadow-scans: true
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
-          custom-run: |
-            echo "Override set_project_version to rely on Tycho and overcome limitation of parent action"
-            source ${GITHUB_ACTION_PATH}/build.sh
-            maven_expression() {
-              mvn -q -N -Dtycho.mode=maven help:evaluate \
-                -Dexpression="$1" -DforceStdout
-            }
-            export -f maven_expression
-            set_project_version() {
-              bash .cirrus/set_maven_build_version_github_action "$BUILD_NUMBER"
-            }
-            build_maven
       - name: Run IRIS sync
         uses: SonarSource/unified-dogfooding-actions/run-iris@v1
         with:
