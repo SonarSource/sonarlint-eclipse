@@ -38,9 +38,6 @@ jobs:
           mvn -version
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-          PATH: ${{ env.JAVA_HOME_17_X64 }}/bin:${{ env.PATH }}
         with:
           common-mvn-flags: -t $HOME/.m2/toolchains.xml -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true  -Dsonar.skip=true
           artifactory-reader-role: private-reader
@@ -58,9 +55,6 @@ jobs:
           }
           set_project_version
       - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-          PATH: ${{ env.JAVA_HOME_17_X64 }}/bin:${{ env.PATH }}
         with:
           maven-args: -t $HOME/.m2/toolchains.xml -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           run-shadow-scans: true
