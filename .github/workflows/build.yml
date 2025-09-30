@@ -19,6 +19,8 @@ jobs:
         with:
           version: 2025.7.12
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+      - name: Setup DigiCert Client Tools
+        uses: SonarSource/ci-github-actions/code-signing@v1
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
         with:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
