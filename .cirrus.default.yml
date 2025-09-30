@@ -577,33 +577,6 @@ sonarqube_task:
     slack_notification_script: |
       source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
-mend_scan_task:
-  # Run Mend analysis
-  depends_on:
-    - build
-  <<: *ONLY_MAIN_BRANCHES
-  eks_container:
-    <<: *BUILDER_CONTAINER_DEFINITION
-    cpu: 4
-    memory: 4G
-    type: m6a.large
-  env:
-    WS_APIKEY: VAULT[development/kv/data/mend data.apikey]
-  <<: *SETUP_MAVEN_CACHE
-  whitesource_script:
-    - source cirrus-env QA
-    - source .cirrus/set_maven_build_version $BUILD_NUMBER
-    - mvn -B -e -V clean install -DskipTests -Dcyclonedx.skip=false
-    - source ws_scan.sh
-  cleanup_before_cache_script: cleanup_maven_repository
-  allow_failures: "true"
-  always:
-    ws_artifacts:
-      path: "whitesource/**/*"
-  on_failure:
-    slack_notification_script: |
-      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
-
 promote_task:
   depends_on:
     - validate
