@@ -30,10 +30,8 @@ public class AnalysisReady extends AbstractReadyCondition {
     var consoleText = consoleView.getConsoleText();
 
     var indexFalse = consoleText.lastIndexOf(falsePattern);
-    if (indexFalse != -1) {
-      return false;
-    }
-
-    return consoleText.lastIndexOf(truePattern) > -1;
+    var indexTrue = consoleText.lastIndexOf(truePattern);
+    // returns true if ready=true is more recent
+    return indexTrue > indexFalse;
   }
 }
