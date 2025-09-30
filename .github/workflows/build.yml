@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
-          version: 2025.7.12
+          version: 2025.9.12
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - name: Setup DigiCert Client Tools
         uses: SonarSource/ci-github-actions/code-signing@v1
@@ -43,3 +43,9 @@ jobs:
           maven-opts: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
+      - name: Upload site artifacts
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: site-zip
+          path: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
