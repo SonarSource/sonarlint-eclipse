@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-: "${CIRRUS_BUILD_ID?}" "${PROJECT_VERSION?}" "${ARTIFACTORY_ACCESS_TOKEN?}" "${ARTIFACTORY_URL?}"
+: "${PROJECT_VERSION?}" "${ARTIFACTORY_ACCESS_TOKEN?}" "${ARTIFACTORY_URL?}"
 : "${S3_BUCKET:=downloads-cdn-eu-central-1-prod}"
 : "${BINARIES_URL:=https://binaries.sonarsource.com}"
 ROOT_BUCKET_KEY="SonarLint-for-Eclipse/dogfood"
@@ -13,18 +13,19 @@ pushd "${SCRIPT_DIR}/" >/dev/null
 dogfood_site_dir=$(mktemp -d -p "$PWD" -t tmp.XXXXXXXX)
 trap 'rm -rf "$dogfood_site_dir" "$dogfood_site_dir".zip' EXIT
 
-curl --fail --silent --show-error --location \
-  "https://api.cirrus-ci.com/v1/artifact/build/$CIRRUS_BUILD_ID/build/site/org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-$PROJECT_VERSION.zip" \
-  -o "$dogfood_site_dir".zip ||
-  {
-    # local usage or any use case with no Cirrus artifact
-    type jfrog 2>/dev/null || jfrog() { jf "$@"; }
-    echo "Failed to download org.sonarlint.eclipse.site-$PROJECT_VERSION.zip from Cirrus CI build $CIRRUS_BUILD_ID; fallback on Artifactory"
-    jfrog config use repox 2>/dev/null || jfrog config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_ACCESS_TOKEN"
-    jfrog rt curl "sonarsource-public-builds/org/sonarsource/sonarlint/eclipse/org.sonarlint.eclipse.site/$PROJECT_VERSION/org.sonarlint.eclipse.site-$PROJECT_VERSION.zip" -o "$dogfood_site_dir".zip
-  }
+# Download site ZIP - from workspace artifact if available
+if [ -f "$GITHUB_WORKSPACE/site-artifact/org.sonarlint.eclipse.site-$PROJECT_VERSION.zip" ]; then
+  echo "Using site artifact from GitHub Actions workspace"
+  cp "$GITHUB_WORKSPACE/site-artifact/org.sonarlint.eclipse.site-$PROJECT_VERSION.zip" "$dogfood_site_dir.zip"
+else
+  echo "Downloading from Artifactory"
+  command -v jfrog >/dev/null || jfrog() { jf "$@"; }
+  jfrog config use repox 2>/dev/null || jfrog config add repox --artifactory-url "$ARTIFACTORY_URL" --access-token "$ARTIFACTORY_ACCESS_TOKEN"
+  jfrog rt curl "sonarsource-public-builds/org/sonarsource/sonarlint/eclipse/org.sonarlint.eclipse.site/$PROJECT_VERSION/org.sonarlint.eclipse.site-$PROJECT_VERSION.zip" -o "$dogfood_site_dir.zip"
+fi
+
 mkdir -p "$dogfood_site_dir/$PROJECT_VERSION"
-unzip -q "$dogfood_site_dir".zip -d "$dogfood_site_dir/$PROJECT_VERSION"
+unzip -q "$dogfood_site_dir.zip" -d "$dogfood_site_dir/$PROJECT_VERSION"
 
 NOW=$(date -u +"%s%3N")
 export NOW BINARIES_URL VERSION_BUCKET_KEY
