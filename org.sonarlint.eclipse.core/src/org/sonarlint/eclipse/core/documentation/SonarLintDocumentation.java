@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.core.documentation;
 
 public class SonarLintDocumentation {
 
-  private static final String BASE_DOCS_URL = "https://docs.sonarsource.com/sonarqube-for-ide/eclipse";
+  private static final String BASE_DOCS_URL = "https://docs.sonarsource.com/sonarqube-for-eclipse";
   public static final String FOCUS_ON_NEW_CODE = BASE_DOCS_URL + "/using/new-code/";
   public static final String CONNECTED_MODE_LINK = BASE_DOCS_URL + "/team-features/connected-mode/";
   public static final String CONNECTED_MODE_BENEFITS = CONNECTED_MODE_LINK + "#benefits";

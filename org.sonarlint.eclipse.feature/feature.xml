@@ -6,11 +6,11 @@
       provider-name="%provider_name"
       plugin="org.sonarlint.eclipse.ui">
 
-   <description url="https://docs.sonarsource.com/sonarqube-for-ide/eclipse/">
+   <description url="https://docs.sonarsource.com/sonarqube-for-eclipse/">
       %description
    </description>
 
-   <copyright url="https://docs.sonarsource.com/sonarqube-for-ide/eclipse/license/">
+   <copyright url="https://docs.sonarsource.com/sonarqube-for-eclipse/license/">
       %copyright
    </copyright>
 

@@ -6,7 +6,7 @@ SonarQube for IDE ensures you deliver projects with [integrated code quality and
 Installing and using
 --------------------
 
-See https://docs.sonarsource.com/sonarqube-for-ide/eclipse/getting-started/installation/ and https://marketplace.eclipse.org/content/sonarlint
+See https://docs.sonarsource.com/sonarqube-for-eclipse/getting-started/installation/ and https://marketplace.eclipse.org/content/sonarlint
 
 For offline installation and older versions see the update site archive at https://binaries.sonarsource.com/?prefix=SonarLint-for-Eclipse/releases/
 
