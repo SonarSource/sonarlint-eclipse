@@ -51,25 +51,17 @@ jobs:
       - name: Setup DigiCert Client Tools
         uses: SonarSource/ci-github-actions/code-signing@v1
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
         with:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
           artifactory-reader-role: private-reader
       - name: Custom versioning
-        run: |
-          git checkout -f
-          echo "Override set_project_version to rely on Tycho and overcome limitation of parent action"
-          maven_expression() {
-            mvn -q -N -Dtycho.mode=maven help:evaluate \
-              -Dexpression="$1" -DforceStdout
-          }
-          export -f maven_expression
-          set_project_version() {
-            bash .cirrus/set_maven_build_version_github_action "$BUILD_NUMBER"
-          }
-          set_project_version
+        run: .cirrus/set_maven_build_version_github_action
       - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
         with:
-          maven-opts: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
       - name: Upload site artifacts
