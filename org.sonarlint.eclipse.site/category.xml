@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <description url="https://docs.sonarsource.com/sonarqube-for-ide/eclipse/">
+   <description url="https://docs.sonarsource.com/sonarqube-for-eclipse/">
       SonarLint for Eclipse
    </description>
    <feature id="org.sonarlint.eclipse.feature" version="0.0.0">

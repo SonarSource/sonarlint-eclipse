@@ -17,7 +17,7 @@
 
   <name>SonarLint for Eclipse</name>
   <description></description>
-  <url>https://docs.sonarsource.com/sonarqube-for-ide/eclipse</url>
+  <url>https://docs.sonarsource.com/sonarqube-for-eclipse</url>
   <inceptionYear>2015</inceptionYear>
   <organization>
     <name>SonarSource</name>

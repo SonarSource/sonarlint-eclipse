@@ -9,7 +9,7 @@
       <!-- 1) Investigating issues, getting started with SonarLint -->
       <link style-id="content-link"
             label="Investigating issues"
-            url="http://org.eclipse.ui.intro/openBrowser?url=https://docs.sonarsource.com/sonarqube-for-ide/eclipse/using-sonarlint/investigating-issues/"
+            url="http://org.eclipse.ui.intro/openBrowser?url=https://docs.sonarsource.com/sonarqube-for-eclipse/using-sonarlint/investigating-issues/"
             id="investigatingIssues">
         <text>Learn how to investigate issues found by SonarQube for Eclipse</text>
       </link>
@@ -17,7 +17,7 @@
       <!-- 2) Learn about Connected Mode, setting it up -->
       <link style-id="content-link"
             label="Connected Mode"
-            url="http://org.eclipse.ui.intro/openBrowser?url=https://docs.sonarsource.com/sonarqube-for-ide/eclipse/team-features/connected-mode/"
+            url="http://org.eclipse.ui.intro/openBrowser?url=https://docs.sonarsource.com/sonarqube-for-eclipse/team-features/connected-mode/"
             id="connectedMode">
         <text>Learn how to leverage Connected Mode to bring even more benefits to your experience</text>
       </link>
@@ -25,7 +25,7 @@
       <!-- 3) Troubleshooting and how to gather necessary information for the Sonar Community Forum -->
       <link style-id="content-link"
             label="Troubleshooting"
-            url="http://org.eclipse.ui.intro/openBrowser?url=https://docs.sonarsource.com/sonarqube-for-ide/eclipse/troubleshooting/"
+            url="http://org.eclipse.ui.intro/openBrowser?url=https://docs.sonarsource.com/sonarqube-for-eclipse/troubleshooting/"
             id="troubleshooting">
         <text>Learn how to troubleshoot issues related to SonarQube for Eclipse</text>
       </link>
