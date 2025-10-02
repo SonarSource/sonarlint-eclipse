@@ -134,7 +134,7 @@ jobs:
           metacity --sm-disable --replace &
           sleep 10
           # Execute tests with coverage
-          mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+          mvn -X -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
             -Pcoverage \
             -Declipse.p2.mirrors=false \
             -Djacoco.append=true \
