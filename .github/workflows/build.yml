@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: github-ubuntu-latest-s
-    name: Build
+    name: Build Project
     permissions:
       id-token: write
       contents: write
@@ -72,7 +72,6 @@ jobs:
           path: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
 
   validate:
-    needs: [ build ]
     runs-on: github-ubuntu-latest-s
     name: Validate
     permissions:
@@ -111,6 +110,20 @@ jobs:
 
           java -version
           mvn -version
+      - uses: SonarSource/ci-github-actions/get-build-number@v1
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
+          artifactory-reader-role: private-reader
+      - name: Custom versioning
+        run: .cirrus/set_maven_build_version_github_action
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        with:
+          artifactory-reader-role: private-reader
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
       - name: Run unit tests with Xvfb
         shell: bash
         env:
