@@ -20,33 +20,7 @@ jobs:
           version: 2025.9.12
       - name: Setup Maven Toolchains
         shell: bash
-        run: |
-          # Find installed Java versions
-          JAVA_11_HOME=$( mise where java@11)
-          JAVA_17_HOME=$( mise where java@17)
-          JAVA_21_HOME=$( mise where java@21)
-          
-          # Export environment variables for toolchains
-          echo "JAVA_HOME_11_X64=$JAVA_11_HOME" >> "$GITHUB_ENV"
-          echo "JAVA_HOME_17_X64=$JAVA_17_HOME" >> "$GITHUB_ENV"
-          echo "JAVA_HOME_21_X64=$JAVA_21_HOME" >> "$GITHUB_ENV"
-          
-          # Copy toolchains.xml to Maven config directory
-          mkdir -p "$HOME/.m2"
-          cp .cirrus/toolchains.xml "$HOME/.m2/toolchains.xml"
-          
-          echo "Maven toolchains configured:"
-          echo "  JavaSE-11: $JAVA_11_HOME"
-          echo "  JavaSE-17: $JAVA_17_HOME"
-          echo "  JavaSE-21: $JAVA_21_HOME"
-
-          # Ensure Maven/Tycho runtime uses Java 17 (needed by Tycho plugins compiled for 17)
-          echo "JAVA_HOME=$JAVA_17_HOME" >> "$GITHUB_ENV"
-          echo "$JAVA_17_HOME/bin" >> "$GITHUB_PATH"
-          
-          # Sanity checks
-          java -version
-          mvn -version
+        run: .github/workflows/setup-maven-toolchains.sh
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - name: Setup DigiCert Client Tools
         uses: SonarSource/ci-github-actions/code-signing@v1
@@ -89,27 +63,7 @@ jobs:
           sudo apt-get install -y xvfb metacity dbus-x11
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: |
-          # Resolve Java homes from mise
-          JAVA_11_HOME=$( mise where java@11)
-          JAVA_17_HOME=$( mise where java@17)
-          JAVA_21_HOME=$( mise where java@21)
-
-          # Export toolchains envs
-          echo "JAVA_HOME_11_X64=$JAVA_11_HOME" >> "$GITHUB_ENV"
-          echo "JAVA_HOME_17_X64=$JAVA_17_HOME" >> "$GITHUB_ENV"
-          echo "JAVA_HOME_21_X64=$JAVA_21_HOME" >> "$GITHUB_ENV"
-
-          # Make Maven/Tycho runtime use Java 17
-          echo "JAVA_HOME=$JAVA_17_HOME" >> "$GITHUB_ENV"
-          echo "$JAVA_17_HOME/bin" >> "$GITHUB_PATH"
-
-          # Configure Maven toolchains
-          mkdir -p "$HOME/.m2"
-          cp .cirrus/toolchains.xml "$HOME/.m2/toolchains.xml"
-
-          java -version
-          mvn -version
+        run: .github/workflows/setup-maven-toolchains.sh
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
         env:
