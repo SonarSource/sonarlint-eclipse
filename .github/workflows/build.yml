@@ -270,7 +270,7 @@ jobs:
         if: always() && !cancelled()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: jacoco-it-${{ matrix.QA_CATEGORY }}
+          name: jacoco-it-${{ matrix.QA_CATEGORY }}-coverage
           path: ${{ github.workspace }}/it-coverage-${{ matrix.QA_CATEGORY }}.exec
 
       - name: Upload IT logs
