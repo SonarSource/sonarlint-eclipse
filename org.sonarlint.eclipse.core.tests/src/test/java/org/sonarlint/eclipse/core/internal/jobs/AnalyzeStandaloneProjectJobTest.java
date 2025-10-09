@@ -62,11 +62,12 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
+import org.junit.Ignore;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-@Disabled("Started failing, unrelated to migration")
+@Ignore("Started failing, unrelated to migration")
 public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   private static LogListener listener;
