@@ -111,6 +111,23 @@ jobs:
           name: failure-logs
           path: 'Xvfb.out,**/target/surefire-reports/TEST-*.xml'
 
+      - name: Debug - Tree view of workspace
+        shell: bash
+        run: |
+          echo "=== Tree view of GITHUB_WORKSPACE ==="
+          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
+
+      - name: Generate QA test report on failure
+        if: failure()
+        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
+        with:
+          name: QA Validate Test Report
+          reporter: java-junit
+          path: '**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/*.xml'
+          list-suites: failed
+          list-tests: failed
+          fail-on-empty: false
+
   qa_connectedModeSonarQube:
     needs: [build]
     runs-on: github-ubuntu-latest-m
@@ -250,3 +267,20 @@ jobs:
         with:
           name: failure-${{ matrix.QA_CATEGORY }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+
+      - name: Debug - Tree view of workspace
+        shell: bash
+        run: |
+          echo "=== Tree view of GITHUB_WORKSPACE ==="
+          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
+
+      - name: Generate QA test report on failure
+        if: failure()
+        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
+        with:
+          name: QA ${{ matrix.QA_CATEGORY }} Test Report
+          reporter: java-junit
+          path: '**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/*.xml'
+          list-suites: failed
+          list-tests: failed
+          fail-on-empty: false
