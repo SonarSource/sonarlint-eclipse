@@ -56,11 +56,20 @@ jobs:
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
           version: 2025.9.12
-      - name: Install UI test dependencies (Xvfb, metacity)
+      - name: Install UI test dependencies (Xvfb, metacity, WebKit)
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb metacity dbus-x11
+          sudo apt-get install -y \
+            build-essential \
+            dbus-x11 \
+            ffmpeg \
+            gettext-base \
+            libwebkit2gtk-4.* \
+            metacity \
+            xvfb
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
         run: .github/workflows/setup-maven-toolchains.sh
@@ -112,6 +121,7 @@ jobs:
           path: 'Xvfb.out,**/target/surefire-reports/TEST-*.xml'
 
       - name: Debug - Tree view of workspace
+        if: always()
         shell: bash
         run: |
           echo "=== Tree view of GITHUB_WORKSPACE ==="
@@ -159,7 +169,16 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb metacity dbus-x11 ffmpeg unzip
+          sudo apt-get install -y \
+          build-essential \
+          dbus-x11 \
+          ffmpeg \
+          gettext-base \
+          libwebkit2gtk-4.* \
+          metacity \
+          xvfb
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
@@ -269,6 +288,7 @@ jobs:
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
 
       - name: Debug - Tree view of workspace
+        if: always()
         shell: bash
         run: |
           echo "=== Tree view of GITHUB_WORKSPACE ==="
