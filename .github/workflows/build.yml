@@ -796,3 +796,103 @@ jobs:
           list-suites: failed
           list-tests: failed
           fail-on-empty: false
+
+  sonarqube:
+    needs:
+      - validate
+      - qa_connectedModeSonarQube
+      - qa_connectedModeSonarCloud
+      - qa_standaloneMode
+      - qa_cdtIntegration
+    runs-on: github-ubuntu-latest-s
+    name: SonarQube Analysis
+    permissions:
+      id-token: write
+      contents: write
+    env:
+      DEPLOY_PULL_REQUEST: false
+      DISPLAY: :10
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+        with:
+          version: 2025.9.12
+
+      - name: Setup Maven Toolchains (JDK 11/17/21)
+        shell: bash
+        run: .github/workflows/setup-maven-toolchains.sh
+
+      - uses: SonarSource/ci-github-actions/get-build-number@v1
+
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          artifactory-reader-role: private-reader
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true
+
+      - name: Download IT coverage artifacts
+        uses: actions/download-artifact@v4.1.8
+        with:
+          pattern: jacoco-it-*
+          path: coverage-artifacts
+          merge-multiple: true
+
+      - name: Download UT coverage
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: ut-coverage
+          path: coverage-artifacts
+
+      - name: Prepare coverage files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p org.sonarlint.eclipse.core.tests/target/
+          find coverage-artifacts -type f -name '*.exec' -exec cp {} org.sonarlint.eclipse.core.tests/target/ \;
+          echo "Prepared coverage exec files in org.sonarlint.eclipse.core.tests/target/"
+          ls -la org.sonarlint.eclipse.core.tests/target/*.exec || true
+
+      - name: Install UI deps (Xvfb, metacity)
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb metacity dbus-x11
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Start Xvfb
+        shell: bash
+        run: |
+          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
+          metacity --sm-disable --replace &
+          sleep 10
+
+      - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
+        with:
+          maven-args: |
+            -P-deploy-sonarsource,-release,-sign
+            -Declipse.p2.mirrors=false
+            -Dmaven.install.skip=true
+            -DskipTests
+            -Dmaven.deploy.skip=true
+            -Pcoverage
+            -Djacoco.append=true
+            -Dsonar.coverage.jacoco.xmlReportPaths=${GITHUB_WORKSPACE}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+          artifactory-reader-role: private-reader
+
+      - name: Stop Xvfb
+        if: always()
+        shell: bash
+        run: pkill -f Xvfb || true
+
+      - name: Upload Xvfb logs on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: xvfb-logs-sonarqube
+          path: Xvfb.out
