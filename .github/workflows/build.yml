@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: github-ubuntu-latest-s
+    runs-on: github-ubuntu-latest-m
     name: Build Project
     permissions:
       id-token: write
@@ -46,7 +46,7 @@ jobs:
           path: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
 
   validate:
-    runs-on: github-ubuntu-latest-m
+    runs-on: github-ubuntu-latest-l
     name: Validate
     permissions:
       id-token: write
@@ -140,7 +140,7 @@ jobs:
 
   qa_connectedModeSonarQube:
     needs: [build]
-    runs-on: github-ubuntu-latest-m
+    runs-on: github-ubuntu-latest-l
     name: QA Connected Mode SonarQube
     permissions:
       id-token: write
@@ -307,7 +307,7 @@ jobs:
 
   qa_connectedModeSonarCloud:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-m
+    runs-on: github-ubuntu-latest-l
     name: QA Connected Mode SonarCloud
     permissions:
       id-token: write
@@ -474,7 +474,7 @@ jobs:
 
   qa_standaloneMode:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-m
+    runs-on: github-ubuntu-latest-l
     name: QA Standalone Mode
     permissions:
       id-token: write
@@ -636,7 +636,7 @@ jobs:
 
   qa_cdtIntegration:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-m
+    runs-on: github-ubuntu-latest-l
     name: QA CDT Integration
     permissions:
       id-token: write
@@ -804,7 +804,7 @@ jobs:
       - qa_connectedModeSonarCloud
       - qa_standaloneMode
       - qa_cdtIntegration
-    runs-on: github-ubuntu-latest-s
+    runs-on: github-ubuntu-latest-m
     name: SonarQube Analysis
     permissions:
       id-token: write
