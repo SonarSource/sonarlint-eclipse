@@ -798,12 +798,6 @@ jobs:
           fail-on-empty: false
 
   sonarqube:
-    needs:
-      - validate
-      - qa_connectedModeSonarQube
-      - qa_connectedModeSonarCloud
-      - qa_standaloneMode
-      - qa_cdtIntegration
     runs-on: github-ubuntu-latest-m
     name: SonarQube Analysis
     permissions:
