@@ -867,7 +867,16 @@ jobs:
           metacity --sm-disable --replace &
           sleep 10
 
+      - name: Vault (GitHub token)
+        id: secrets-gh
+        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        with:
+          secrets: |
+            development/github/token/licenses-ro token | GITHUB_TOKEN;
+
       - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
+        env:
+          GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
         with:
           maven-args: |
             -P-deploy-sonarsource,-release,-sign
@@ -879,6 +888,7 @@ jobs:
             -Djacoco.append=true
             -Dsonar.coverage.jacoco.xmlReportPaths=${GITHUB_WORKSPACE}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
+          artifactory-deployer-role: qa-deployer
 
       - name: Stop Xvfb
         if: always()
