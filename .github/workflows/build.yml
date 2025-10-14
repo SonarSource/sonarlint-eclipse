@@ -873,7 +873,8 @@ jobs:
         with:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
-
+      - name: Custom versioning
+        run: .cirrus/set_maven_build_version_github_action
       - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
         env:
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
