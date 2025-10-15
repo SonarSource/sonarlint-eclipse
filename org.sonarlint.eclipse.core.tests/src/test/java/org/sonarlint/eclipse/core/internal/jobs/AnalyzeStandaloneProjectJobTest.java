@@ -162,7 +162,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
         }
       }
     });
-    assertThat(allProjectsReady.await(60, TimeUnit.SECONDS)).isTrue();
+    assertThat(allProjectsReady.await(90, TimeUnit.SECONDS)).isTrue();
   }
 
   @AfterClass

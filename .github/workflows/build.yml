@@ -50,7 +50,7 @@ jobs:
 
   validate:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-m
+    runs-on: github-ubuntu-latest-s
     name: Validate
     permissions:
       id-token: write
@@ -60,7 +60,7 @@ jobs:
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
           version: 2025.9.12
-      - name: Install UI test dependencies (Xvfb, metacity)
+      - name: Install Validate Dependencies
         shell: bash
         run: |
           sudo apt-get update
@@ -75,7 +75,7 @@ jobs:
           PROJECT_VERSION: skip
         with:
           artifactory-reader-role: private-reader
-          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
       - name: Run unit tests with Xvfb
         shell: bash
         env:
@@ -134,7 +134,7 @@ jobs:
 
   qa_connectedModeSonarQube:
     needs: [build]
-    runs-on: github-ubuntu-latest-l
+    runs-on: github-ubuntu-latest-m
     name: QA Connected Mode SonarQube
     permissions:
       id-token: write
@@ -301,7 +301,7 @@ jobs:
 
   qa_connectedModeSonarCloud:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-l
+    runs-on: github-ubuntu-latest-m
     name: QA Connected Mode SonarCloud
     permissions:
       id-token: write
@@ -468,7 +468,7 @@ jobs:
 
   qa_standaloneMode:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-l
+    runs-on: github-ubuntu-latest-m
     name: QA Standalone Mode
     permissions:
       id-token: write
@@ -630,7 +630,7 @@ jobs:
 
   qa_cdtIntegration:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-l
+    runs-on: github-ubuntu-latest-m
     name: QA CDT Integration
     permissions:
       id-token: write
