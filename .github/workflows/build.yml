@@ -49,7 +49,7 @@ jobs:
           path: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
 
   validate:
-    runs-on: github-ubuntu-latest-s
+    runs-on: github-ubuntu-latest-m
     name: Validate
     permissions:
       id-token: write
