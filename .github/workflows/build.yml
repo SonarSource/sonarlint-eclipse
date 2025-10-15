@@ -168,6 +168,23 @@ jobs:
         with:
           version: 2025.9.12
 
+      - name: Compute month key
+        id: month
+        shell: bash
+        run: |
+          THIS_MONTH="$(date +%Y-%m)"
+          echo "month=${THIS_MONTH}" >> "$GITHUB_OUTPUT"
+          ORCHESTRATOR_HOME="${GITHUB_WORKSPACE}/orchestrator/${THIS_MONTH}"
+          echo "ORCHESTRATOR_HOME=${ORCHESTRATOR_HOME}" >> "$GITHUB_ENV"
+          echo "Create dir ${ORCHESTRATOR_HOME} if needed"
+          mkdir -p "${ORCHESTRATOR_HOME}"
+      - uses: SonarSource/ci-github-actions/cache@v1
+        with:
+          path: ${{ github.workspace }}/orchestrator/${{ steps.month.outputs.month }}
+          key: cache-${{ runner.os }}-${{ steps.month.outputs.month }}
+          restore-keys: |
+            cache-${{ runner.os }}
+
       - name: Install UI deps (Xvfb, metacity, ffmpeg)
         shell: bash
         run: |
@@ -905,6 +922,38 @@ jobs:
         with:
           name: xvfb-logs-sonarqube
           path: Xvfb.out
+
+  inspect-orchestrator-cache:
+    needs: [ qa_connectedModeSonarQube ]
+    runs-on: github-ubuntu-latest-s
+    name: Inspect Orchestrator Cache
+    permissions:
+      contents: read
+    steps:
+      - name: Compute month key
+        id: month
+        shell: bash
+        run: |
+          THIS_MONTH="$(date +%Y-%m)"
+          echo "month=${THIS_MONTH}" >> "$GITHUB_OUTPUT"
+          ORCHESTRATOR_HOME="${GITHUB_WORKSPACE}/orchestrator/${THIS_MONTH}"
+          echo "ORCHESTRATOR_HOME=${ORCHESTRATOR_HOME}" >> "$GITHUB_ENV"
+          echo "Create dir ${ORCHESTRATOR_HOME} if needed"
+          mkdir -p "${ORCHESTRATOR_HOME}"
+      - uses: SonarSource/ci-github-actions/cache@v1
+        with:
+          path: ${{ github.workspace }}/orchestrator/${{ steps.month.outputs.month }}
+          key: cache-${{ runner.os }}-${{ steps.month.outputs.month }}
+          restore-keys: |
+            cache-${{ runner.os }}
+      - name: Inspect cache directory
+        shell: bash
+        run: |
+          echo "Inspecting cache ${ORCHESTRATOR_HOME}..."
+          cd "${ORCHESTRATOR_HOME}"
+          ls -l
+          find .
+          echo "Inspecting cache done."
 
   promote:
     needs:
