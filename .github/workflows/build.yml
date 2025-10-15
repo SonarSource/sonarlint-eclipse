@@ -49,6 +49,7 @@ jobs:
           path: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
 
   validate:
+    needs: [ build ]
     runs-on: github-ubuntu-latest-m
     name: Validate
     permissions:
@@ -75,8 +76,6 @@ jobs:
         with:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
           artifactory-reader-role: private-reader
-      - name: Custom versioning
-        run: .cirrus/set_maven_build_version_github_action
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
         with:
           artifactory-reader-role: private-reader
