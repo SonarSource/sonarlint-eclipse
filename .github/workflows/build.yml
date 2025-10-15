@@ -47,9 +47,8 @@ jobs:
         with:
           name: site-zip
           path: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
-
   validate:
-    runs-on: github-ubuntu-latest-l
+    runs-on: github-ubuntu-latest-s
     name: Validate
     permissions:
       id-token: write
@@ -59,28 +58,45 @@ jobs:
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
           version: 2025.9.12
-      - name: Install UI test dependencies (Xvfb, metacity, WebKit)
+      - name: Install UI test dependencies (Xvfb, metacity)
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            dbus-x11 \
-            ffmpeg \
-            gettext-base \
-            libwebkit2gtk-4.* \
-            metacity \
-            xvfb
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
+          sudo apt-get install -y xvfb metacity dbus-x11
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: |
+          # Resolve Java homes from mise
+          JAVA_11_HOME=$( mise where java@11)
+          JAVA_17_HOME=$( mise where java@17)
+          JAVA_21_HOME=$( mise where java@21)
+          
+          # Export toolchains envs
+          echo "JAVA_HOME_11_X64=$JAVA_11_HOME" >> "$GITHUB_ENV"
+          echo "JAVA_HOME_17_X64=$JAVA_17_HOME" >> "$GITHUB_ENV"
+          echo "JAVA_HOME_21_X64=$JAVA_21_HOME" >> "$GITHUB_ENV"
+          
+          # Make Maven/Tycho runtime use Java 17
+          echo "JAVA_HOME=$JAVA_17_HOME" >> "$GITHUB_ENV"
+          echo "$JAVA_17_HOME/bin" >> "$GITHUB_PATH"
+          
+          # Configure Maven toolchains
+          mkdir -p "$HOME/.m2"
+          cp .cirrus/toolchains.xml "$HOME/.m2/toolchains.xml"
+          
+          java -version
+          mvn -version
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
+        with:
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
+          artifactory-reader-role: private-reader
+      - name: Custom versioning
+        run: .cirrus/set_maven_build_version_github_action
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
@@ -94,12 +110,11 @@ jobs:
           metacity --sm-disable --replace &
           sleep 10
           # Execute tests with coverage
-          mvn -X -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+          mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
             -Pcoverage \
             -Declipse.p2.mirrors=false \
             -Djacoco.append=true \
             -Djacoco.destFile=${GITHUB_WORKSPACE}/ut-coverage.exec
-          ls -la ${GITHUB_WORKSPACE}/ut-coverage.exec
 
       - name: Upload UT coverage
         if: always() && !cancelled()
@@ -114,33 +129,112 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: mvn-test-logs
-          path: 'org.sonarlint.eclipse.core.tests/target/work/configuration/*.log,org.sonarlint.eclipse.core.tests/target/work/data/.metadata/.log'
+          path: |
+            org.sonarlint.eclipse.core.tests/target/work/configuration/*.log
+            org.sonarlint.eclipse.core.tests/target/work/data/.metadata/.log
 
       - name: Upload Xvfb logs and JUnit XML on failure
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: failure-logs
-          path: 'Xvfb.out,**/target/surefire-reports/TEST-*.xml'
+          path: |
+            Xvfb.out
+            **/target/surefire-reports/TEST-*.xml
 
-      - name: Debug - Tree view of workspace
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Tree view of GITHUB_WORKSPACE ==="
-          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
-
-      - name: Generate QA test report on failure
-        if: failure()
-        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
-        with:
-          name: QA Validate Test Report
-          reporter: java-junit
-          path: '**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/*.xml'
-          list-suites: failed
-          list-tests: failed
-          fail-on-empty: false
-
+  #validate:
+  #  runs-on: github-ubuntu-latest-l
+  #  name: Validate
+  #  permissions:
+  #    id-token: write
+  #    contents: write
+  #  steps:
+  #    - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+  #    - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+  #      with:
+  #        version: 2025.9.12
+  #    - name: Install UI test dependencies (Xvfb, metacity, WebKit)
+  #      shell: bash
+  #      run: |
+  #        sudo apt-get update
+  #        sudo apt-get install -y \
+  #          build-essential \
+  #          dbus-x11 \
+  #          ffmpeg \
+  #          gettext-base \
+  #          libwebkit2gtk-4.* \
+  #          metacity \
+  #          xvfb
+  #        sudo apt-get clean
+  #        sudo rm -rf /var/lib/apt/lists/*
+  #    - name: Setup Maven Toolchains (JDK 11/17/21)
+  #      shell: bash
+  #      run: .github/workflows/setup-maven-toolchains.sh
+  #    - uses: SonarSource/ci-github-actions/get-build-number@v1
+  #    - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+  #      env:
+  #        CURRENT_VERSION: skip
+  #        PROJECT_VERSION: skip
+  #      with:
+  #        artifactory-reader-role: private-reader
+  #        common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
+  #    - name: Run unit tests with Xvfb
+  #      shell: bash
+  #      env:
+  #        DISPLAY: :10
+  #      run: |
+  #        # Start X server and window manager
+  #        Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
+  #        metacity --sm-disable --replace &
+  #        sleep 10
+  #        # Execute tests with coverage
+  #        mvn -X -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+  #          -Pcoverage \
+  #          -Declipse.p2.mirrors=false \
+  #          -Djacoco.append=true \
+  #          -Djacoco.destFile=${GITHUB_WORKSPACE}/ut-coverage.exec
+  #        ls -la ${GITHUB_WORKSPACE}/ut-coverage.exec
+#
+  #    - name: Upload UT coverage
+  #      if: always() && !cancelled()
+  #      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #      with:
+  #        name: ut-coverage
+  #        path: |
+  #          ${{ github.workspace }}/ut-coverage*.exec
+#
+  #    - name: Upload Maven test logs
+  #      if: always() && !cancelled()
+  #      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #      with:
+  #        name: mvn-test-logs
+  #        path: 'org.sonarlint.eclipse.core.tests/target/work/configuration/*.log,org.sonarlint.eclipse.core.tests/target/work/data/.metadata/.log'
+#
+  #    - name: Upload Xvfb logs and JUnit XML on failure
+  #      if: failure()
+  #      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #      with:
+  #        name: failure-logs
+  #        path: 'Xvfb.out,**/target/surefire-reports/TEST-*.xml'
+#
+  #    - name: Debug - Tree view of workspace
+  #      if: always()
+  #      shell: bash
+  #      run: |
+  #        echo "=== Tree view of GITHUB_WORKSPACE ==="
+  #        tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
+#
+  #    - name: Generate QA test report on failure
+  #      if: failure()
+  #      uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
+  #      with:
+  #        name: QA Validate Test Report
+  #        reporter: java-junit
+  #        path: '**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/*.xml'
+  #        list-suites: failed
+  #        list-tests: failed
+  #        fail-on-empty: false
+#
   qa_connectedModeSonarQube:
     needs: [build]
     runs-on: github-ubuntu-latest-l
