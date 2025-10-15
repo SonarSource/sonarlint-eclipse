@@ -8,12 +8,15 @@ on:
 
 jobs:
   build:
+    outputs:
+      project-version: ${{ steps.version.outputs.project-version }}
     runs-on: github-ubuntu-latest-m
     name: Build Project
     permissions:
       id-token: write
       contents: write
     steps:
+      - id: version
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
@@ -902,3 +905,72 @@ jobs:
         with:
           name: xvfb-logs-sonarqube
           path: Xvfb.out
+
+  promote:
+    needs:
+      - validate
+      - sonarqube
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/branch-')
+    runs-on: github-ubuntu-latest-s
+    name: Promote
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: SonarSource/ci-github-actions/promote@v1
+        env:
+          with:
+            promote-pull-request: true
+
+    dogfood:
+      needs:
+        - promote
+      if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+      runs-on: github-ubuntu-latest-s
+      name: Publish Dogfood Site
+      permissions:
+        id-token: write
+        contents: write
+      steps:
+        - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+        - name: Download site artifact
+          uses: actions/download-artifact@v4.1.8
+          with:
+            name: site-zip
+            path: site-artifact
+
+        - name: Vault (AWS and Artifactory credentials)
+          id: secrets
+          uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+          with:
+            secrets: |
+              development/aws/sts/downloads access_key | AWS_ACCESS_KEY_ID;
+              development/aws/sts/downloads secret_key | AWS_SECRET_ACCESS_KEY;
+              development/aws/sts/downloads security_token | AWS_SESSION_TOKEN;
+              development/artifactory/token/${{ github.repository }}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
+              development/kv/data/repox data.url | ARTIFACTORY_URL;
+
+        - name: Install UI test dependencies (Xvfb, metacity, WebKit)
+          shell: bash
+          run: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+            unzip awscliv2.zip && \
+            ./aws/install && \
+            rm awscliv2.zip
+
+        - name: Publish dogfood site to S3
+          shell: bash
+          env:
+            AWS_ACCESS_KEY_ID: ${{ fromJSON(steps.secrets.outputs.vault).AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ fromJSON(steps.secrets.outputs.vault).AWS_SECRET_ACCESS_KEY }}
+            AWS_SESSION_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).AWS_SESSION_TOKEN }}
+            AWS_DEFAULT_REGION: eu-central-1
+            ARTIFACTORY_ACCESS_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_ACCESS_TOKEN }}
+            ARTIFACTORY_URL: ${{ fromJSON(steps.secrets.outputs.vault).ARTIFACTORY_URL }}
+            GITHUB_RUN_ID: ${{ github.run_id }}
+            PROJECT_VERSION: ${{ needs.build.outputs.project-version }}
+          run: |
+            chmod +x .github/workflows/publish-dogfood-site.sh
+            .github/workflows/publish-dogfood-site.sh
