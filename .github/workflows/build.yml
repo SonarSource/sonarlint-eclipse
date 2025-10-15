@@ -70,13 +70,6 @@ jobs:
         run: .github/workflows/setup-maven-toolchains.sh
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
-        env:
-          CURRENT_VERSION: skip
-          PROJECT_VERSION: skip
-        with:
-          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
-          artifactory-reader-role: private-reader
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
