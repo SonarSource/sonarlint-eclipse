@@ -50,7 +50,7 @@ jobs:
 
   validate:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-s
+    runs-on: github-ubuntu-latest-m
     name: Validate
     permissions:
       id-token: write
@@ -64,7 +64,16 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb metacity dbus-x11
+          sudo apt-get install -y \
+          build-essential \
+          dbus-x11 \
+          ffmpeg \
+          gettext-base \
+          libwebkit2gtk-4.* \
+          metacity \
+          xvfb
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
         run: .github/workflows/setup-maven-toolchains.sh
