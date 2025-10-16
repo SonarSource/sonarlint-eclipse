@@ -1,0 +1,936 @@
+name: Build
+on:
+  schedule:
+    # Run the workflow every day at 04:00 UTC
+    - cron: '0 4 * * *'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    outputs:
+      project-version: ${{ steps.version.outputs.project-version }}
+    runs-on: github-ubuntu-latest-m
+    name: Build Project
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+        with:
+          version: 2025.9.12
+      - name: Setup Maven Toolchains
+        shell: bash
+        run: .github/workflows/setup-maven-toolchains.sh
+      - uses: SonarSource/ci-github-actions/get-build-number@v1
+      - name: Setup DigiCert Client Tools
+        uses: SonarSource/ci-github-actions/code-signing@v1
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
+          artifactory-reader-role: private-reader
+      - name: Custom versioning
+        id: version
+        run: .cirrus/set_maven_build_version_github_action
+      - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
+        with:
+          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+          artifactory-reader-role: private-reader
+          artifactory-deployer-role: qa-deployer
+      - name: Upload site artifacts
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: site-zip
+          path: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
+
+  validate:
+    needs: [ build ]
+    runs-on: github-ubuntu-latest-m
+    name: Validate
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+        with:
+          version: 2025.9.12
+      - name: Install Validate Dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          build-essential \
+          dbus-x11 \
+          ffmpeg \
+          gettext-base \
+          libwebkit2gtk-4.* \
+          metacity \
+          xvfb
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+      - name: Setup Maven Toolchains (JDK 11/17/21)
+        shell: bash
+        run: .github/workflows/setup-maven-toolchains.sh
+      - uses: SonarSource/ci-github-actions/get-build-number@v1
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          artifactory-reader-role: private-reader
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
+      - name: Run unit tests with Xvfb
+        shell: bash
+        env:
+          DISPLAY: :10
+        run: |
+          # Start X server and window manager
+          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
+          metacity --sm-disable --replace &
+          sleep 10
+          # Execute tests with coverage
+          mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+            -Pcoverage \
+            -Declipse.p2.mirrors=false \
+            -Djacoco.append=true \
+            -Djacoco.destFile=${GITHUB_WORKSPACE}/ut-coverage.exec
+
+      - name: Upload UT coverage
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ut-coverage
+          path: |
+            ${{ github.workspace }}/ut-coverage*.exec
+
+      - name: Upload Maven test logs
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mvn-test-logs
+          path: 'org.sonarlint.eclipse.core.tests/target/work/configuration/*.log,org.sonarlint.eclipse.core.tests/target/work/data/.metadata/.log'
+
+      - name: Upload Xvfb logs and JUnit XML on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: failure-logs
+          path: 'Xvfb.out,**/target/surefire-reports/TEST-*.xml'
+
+      - name: Debug - Tree view of workspace
+        if: always()
+        shell: bash
+        run: |
+          echo "=== Tree view of GITHUB_WORKSPACE ==="
+          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
+
+      - name: Generate QA test report on failure
+        if: failure()
+        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
+        with:
+          name: QA Validate Test Report
+          reporter: java-junit
+          path: '**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/*.xml'
+          list-suites: failed
+          list-tests: failed
+          fail-on-empty: false
+
+  qa_connectedModeSonarQube:
+    needs: [build]
+    runs-on: github-ubuntu-latest-m
+    name: QA Connected Mode SonarQube
+    permissions:
+      id-token: write
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - SQ_VERSION: 'LATEST_RELEASE[9.9]'
+            QA_CATEGORY: 'LATEST_RELEASE_99'
+          - SQ_VERSION: 'LATEST_RELEASE'
+            QA_CATEGORY: 'LATEST_RELEASE'
+          - SQ_VERSION: 'DEV'
+            QA_CATEGORY: 'DEV'
+    env:
+      DISPLAY: :10
+      MAVEN_OPTS: -Xmx3072m
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+        with:
+          version: 2025.9.12
+
+      - name: Compute month key
+        id: month
+        shell: bash
+        run: |
+          THIS_MONTH="$(date +%Y-%m)"
+          echo "month=${THIS_MONTH}" >> "$GITHUB_OUTPUT"
+          ORCHESTRATOR_HOME="${GITHUB_WORKSPACE}/orchestrator/${THIS_MONTH}"
+          echo "ORCHESTRATOR_HOME=${ORCHESTRATOR_HOME}" >> "$GITHUB_ENV"
+          echo "Create dir ${ORCHESTRATOR_HOME} if needed"
+          mkdir -p "${ORCHESTRATOR_HOME}"
+      - uses: SonarSource/ci-github-actions/cache@v1
+        with:
+          path: ${{ github.workspace }}/orchestrator/${{ steps.month.outputs.month }}
+          key: cache-${{ runner.os }}-${{ steps.month.outputs.month }}
+          restore-keys: |
+            cache-${{ runner.os }}
+
+      - name: Install UI deps (Xvfb, metacity, ffmpeg)
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          build-essential \
+          dbus-x11 \
+          ffmpeg \
+          gettext-base \
+          libwebkit2gtk-4.* \
+          metacity \
+          xvfb
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Setup Maven Toolchains (JDK 11/17/21)
+        shell: bash
+        run: .github/workflows/setup-maven-toolchains.sh
+      - uses: SonarSource/ci-github-actions/get-build-number@v1
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          artifactory-reader-role: private-reader
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
+
+      - name: Download site artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: site-zip
+          path: site-artifact
+
+      - name: Unpack site and detect P2 repo dir
+        id: p2
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/staged-repository"
+          ZIP=$(ls -1 site-artifact/*.zip | head -n1)
+          echo "Unzipping $ZIP"
+          unzip -q "$ZIP" -d "$GITHUB_WORKSPACE/staged-repository"
+          P2_DIR=$(find "$GITHUB_WORKSPACE/staged-repository" -type f \( -name 'artifacts.jar' -o -name 'artifacts.xml*' \) -printf '%h\n' | head -n1)
+          if [ -z "$P2_DIR" ]; then
+            echo "::error::Failed to locate P2 repository in unzipped site"
+            exit 1
+          fi
+          echo "P2_DIR=$P2_DIR" | tee -a "$GITHUB_ENV"
+
+      - name: Vault (GitHub token)
+        id: secrets-gh
+        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        with:
+          secrets: |
+            development/github/token/licenses-ro token | GITHUB_TOKEN;
+
+      - name: Start Xvfb and recording
+        shell: bash
+        run: |
+          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
+          metacity --sm-disable --replace &
+          sleep 10
+          echo 'Recording tests on video'
+          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_${{ matrix.QA_CATEGORY }}.mp4" &
+
+      - name: Run ITs (Connected Mode with SonarQube) with Xvfb
+        shell: bash
+        working-directory: its
+        env:
+          SQ_VERSION: ${{ matrix.SQ_VERSION }}
+          QA_CATEGORY: ${{ matrix.QA_CATEGORY }}
+          GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "Run ITs on Eclipse latest Java 17 target and Server ${SQ_VERSION}"
+          mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+            -P coverage,\!standaloneMode,\!connectedModeSc,\!cdtIntegration \
+            -Declipse.p2.mirrors=false \
+            -Dtarget.platform=latest-java-17_e431 \
+            -Dtycho.localArtifacts=ignore \
+            -Dsonarlint-eclipse.p2.url="file://${P2_DIR}" \
+            -Dsonar.runtimeVersion=${SQ_VERSION} \
+            -Djacoco.append=true \
+            -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
+          mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-${QA_CATEGORY}.exec
+
+      - name: Stop recording and Xvfb
+        if: always()
+        shell: bash
+        run: |
+          pkill -SIGINT -f ffmpeg || true
+          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
+          pkill -f Xvfb || true
+
+      - name: Upload video
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: recording-${{ matrix.QA_CATEGORY }}
+          path: ${{ github.workspace }}/recording_${{ matrix.QA_CATEGORY }}.mp4
+
+      - name: Upload IT coverage
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: jacoco-it-${{ matrix.QA_CATEGORY }}-coverage
+          path: ${{ github.workspace }}/it-coverage-${{ matrix.QA_CATEGORY }}.exec
+
+      - name: Upload IT logs
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mvn-it-logs-${{ matrix.QA_CATEGORY }}
+          path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: failure-${{ matrix.QA_CATEGORY }}
+          path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+
+      - name: Debug - Tree view of workspace
+        if: always()
+        shell: bash
+        run: |
+          echo "=== Tree view of GITHUB_WORKSPACE ==="
+          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
+
+      - name: Generate QA test report on failure
+        if: failure()
+        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
+        with:
+          name: QA ${{ matrix.QA_CATEGORY }} Test Report
+          reporter: java-junit
+          path: '**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/*.xml'
+          list-suites: failed
+          list-tests: failed
+          fail-on-empty: false
+
+  qa_connectedModeSonarCloud:
+    needs: [ build ]
+    runs-on: github-ubuntu-latest-m
+    name: QA Connected Mode SonarCloud
+    permissions:
+      id-token: write
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - SQC_REGION: 'EU'
+          - SQC_REGION: 'US'
+    env:
+      DISPLAY: :10
+      MAVEN_OPTS: -Xmx3072m
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+        with:
+          version: 2025.9.12
+
+      - name: Install UI deps (Xvfb, metacity, ffmpeg)
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          build-essential \
+          dbus-x11 \
+          ffmpeg \
+          gettext-base \
+          libwebkit2gtk-4.* \
+          metacity \
+          xvfb
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Setup Maven Toolchains (JDK 11/17/21)
+        shell: bash
+        run: .github/workflows/setup-maven-toolchains.sh
+
+      - uses: SonarSource/ci-github-actions/get-build-number@v1
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          artifactory-reader-role: private-reader
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
+
+      - name: Download site artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: site-zip
+          path: site-artifact
+
+      - name: Unpack site and detect P2 repo dir
+        id: p2
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/staged-repository"
+          ZIP=$(ls -1 site-artifact/*.zip | head -n1)
+          echo "Unzipping $ZIP"
+          unzip -q "$ZIP" -d "$GITHUB_WORKSPACE/staged-repository"
+          P2_DIR=$(find "$GITHUB_WORKSPACE/staged-repository" -type f \( -name 'artifacts.jar' -o -name 'artifacts.xml*' \) -printf '%h\n' | head -n1)
+          if [ -z "$P2_DIR" ]; then
+            echo "::error::Failed to locate P2 repository in unzipped site"
+            exit 1
+          fi
+          echo "P2_DIR=$P2_DIR" | tee -a "$GITHUB_ENV"
+
+      - name: Vault (SonarCloud and GitHub tokens)
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        with:
+          secrets: |
+            development/github/token/licenses-ro token | GITHUB_TOKEN;
+            development/team/sonarlint/kv/data/sonarcloud-it token | SONARCLOUD_IT_TOKEN;
+            development/team/sonarlint/kv/data/sonarcloud-it-US token | SONARCLOUD_IT_TOKEN_US;
+
+      - name: Start Xvfb and recording
+        shell: bash
+        run: |
+          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
+          metacity --sm-disable --replace &
+          sleep 10
+          echo 'Recording tests on video'
+          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_${{ matrix.SQC_REGION }}.mp4" &
+
+      - name: Run ITs (Connected Mode with SonarCloud)
+        shell: bash
+        working-directory: its
+        env:
+          SQC_REGION: ${{ matrix.SQC_REGION }}
+          GITHUB_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).GITHUB_TOKEN }}
+          SONARCLOUD_IT_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).SONARCLOUD_IT_TOKEN }}
+          SONARCLOUD_IT_TOKEN_US: ${{ fromJSON(steps.secrets.outputs.vault).SONARCLOUD_IT_TOKEN_US }}
+        run: |
+          set -euo pipefail
+          echo "Run ITs on Eclipse latest Java 21 target with SonarCloud ${SQC_REGION}"
+          mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+            -P coverage,\!standaloneMode,\!connectedModeSq,\!cdtIntegration \
+            -Declipse.p2.mirrors=false \
+            -Dtarget.platform=latest-java-21 \
+            -Dtycho.localArtifacts=ignore \
+            -Dsonarlint-eclipse.p2.url="file://${P2_DIR}" \
+            -Dsonar.region=${SQC_REGION} \
+            -Djacoco.append=true \
+            -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
+          mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-sc-${SQC_REGION}.exec
+
+      - name: Stop recording and Xvfb
+        if: always()
+        shell: bash
+        run: |
+          pkill -SIGINT -f ffmpeg || true
+          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
+          pkill -f Xvfb || true
+
+      - name: Upload video
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: recording-${{ matrix.SQC_REGION }}
+          path: ${{ github.workspace }}/recording_${{ matrix.SQC_REGION }}.mp4
+
+      - name: Upload IT coverage
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: jacoco-it-sc-${{ matrix.SQC_REGION }}-coverage
+          path: ${{ github.workspace }}/it-coverage-sc-${{ matrix.SQC_REGION }}.exec
+
+      - name: Upload IT logs
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mvn-it-logs-sc-${{ matrix.SQC_REGION }}
+          path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: failure-sc-${{ matrix.SQC_REGION }}
+          path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+
+      - name: Debug - Tree view of workspace
+        if: always()
+        shell: bash
+        run: |
+          echo "=== Tree view of GITHUB_WORKSPACE ==="
+          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
+
+      - name: Generate QA test report on failure
+        if: failure()
+        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
+        with:
+          name: QA SC ${{ matrix.SQC_REGION }} Test Report
+          reporter: java-junit
+          path: '**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/*.xml'
+          list-suites: failed
+          list-tests: failed
+          fail-on-empty: false
+
+  qa_standaloneMode:
+    needs: [ build ]
+    runs-on: github-ubuntu-latest-m
+    name: QA Standalone Mode
+    permissions:
+      id-token: write
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - TARGET_PLATFORM: 'oldest-java-11_e417'
+          - TARGET_PLATFORM: 'latest-java-21'
+    env:
+      DISPLAY: :10
+      MAVEN_OPTS: -Xmx3072m
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+        with:
+          version: 2025.9.12
+
+      - name: Install UI deps (Xvfb, metacity, ffmpeg)
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          build-essential \
+          dbus-x11 \
+          ffmpeg \
+          gettext-base \
+          libwebkit2gtk-4.* \
+          metacity \
+          xvfb
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Setup Maven Toolchains (JDK 11/17/21)
+        shell: bash
+        run: .github/workflows/setup-maven-toolchains.sh
+
+      - uses: SonarSource/ci-github-actions/get-build-number@v1
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          artifactory-reader-role: private-reader
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
+
+      - name: Download site artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: site-zip
+          path: site-artifact
+
+      - name: Unpack site and detect P2 repo dir
+        id: p2
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/staged-repository"
+          ZIP=$(ls -1 site-artifact/*.zip | head -n1)
+          echo "Unzipping $ZIP"
+          unzip -q "$ZIP" -d "$GITHUB_WORKSPACE/staged-repository"
+          P2_DIR=$(find "$GITHUB_WORKSPACE/staged-repository" -type f \( -name 'artifacts.jar' -o -name 'artifacts.xml*' \) -printf '%h\n' | head -n1)
+          if [ -z "$P2_DIR" ]; then
+            echo "::error::Failed to locate P2 repository in unzipped site"
+            exit 1
+          fi
+          echo "P2_DIR=$P2_DIR" | tee -a "$GITHUB_ENV"
+
+      - name: Vault (GitHub token)
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        with:
+          secrets: |
+            development/github/token/licenses-ro token | GITHUB_TOKEN;
+
+      - name: Start Xvfb and recording
+        shell: bash
+        run: |
+          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
+          metacity --sm-disable --replace &
+          sleep 10
+          echo 'Recording tests on video'
+          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_${{ matrix.TARGET_PLATFORM }}.mp4" &
+
+      - name: Run ITs (Standalone Mode)
+        shell: bash
+        working-directory: its
+        env:
+          TARGET_PLATFORM: ${{ matrix.TARGET_PLATFORM }}
+          GITHUB_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "Run ITs for Standalone Mode on Eclipse ${TARGET_PLATFORM}"
+          mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+            -P coverage,\!connectedModeSq,\!connectedModeSc,\!cdtIntegration \
+            -Declipse.p2.mirrors=false \
+            -Dtarget.platform=${TARGET_PLATFORM} \
+            -Dtycho.localArtifacts=ignore \
+            -Dsonarlint-eclipse.p2.url="file://${P2_DIR}" \
+            -Djacoco.append=true \
+            -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
+          mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-${TARGET_PLATFORM}.exec
+
+      - name: Stop recording and Xvfb
+        if: always()
+        shell: bash
+        run: |
+          pkill -SIGINT -f ffmpeg || true
+          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
+          pkill -f Xvfb || true
+
+      - name: Upload video
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: recording-${{ matrix.TARGET_PLATFORM }}
+          path: ${{ github.workspace }}/recording_${{ matrix.TARGET_PLATFORM }}.mp4
+
+      - name: Upload IT coverage
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: jacoco-it-${{ matrix.TARGET_PLATFORM }}-coverage
+          path: ${{ github.workspace }}/it-coverage-${{ matrix.TARGET_PLATFORM }}.exec
+
+      - name: Upload IT logs
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mvn-it-logs-${{ matrix.TARGET_PLATFORM }}
+          path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: failure-${{ matrix.TARGET_PLATFORM }}
+          path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+
+      - name: Debug - Tree view of workspace
+        if: always()
+        shell: bash
+        run: |
+          echo "=== Tree view of GITHUB_WORKSPACE ==="
+          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
+
+      - name: Generate QA test report on failure
+        if: failure()
+        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
+        with:
+          name: QA Standalone ${{ matrix.TARGET_PLATFORM }} Test Report
+          reporter: java-junit
+          path: '**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/*.xml'
+          list-suites: failed
+          list-tests: failed
+          fail-on-empty: false
+
+  qa_cdtIntegration:
+    needs: [ build ]
+    runs-on: github-ubuntu-latest-m
+    name: QA CDT Integration
+    permissions:
+      id-token: write
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - TARGET_PLATFORM: 'oldest-java-11_e417'
+          - TARGET_PLATFORM: 'latest-java-17_e431'
+          - TARGET_PLATFORM: 'latest-java-21'
+    env:
+      DISPLAY: :10
+      MAVEN_OPTS: -Xmx3072m
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+        with:
+          version: 2025.9.12
+
+      - name: Install UI deps (Xvfb, metacity, ffmpeg)
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          build-essential \
+          dbus-x11 \
+          ffmpeg \
+          gettext-base \
+          libwebkit2gtk-4.* \
+          metacity \
+          xvfb
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Setup Maven Toolchains (JDK 11/17/21)
+        shell: bash
+        run: .github/workflows/setup-maven-toolchains.sh
+
+      - uses: SonarSource/ci-github-actions/get-build-number@v1
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          artifactory-reader-role: private-reader
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
+
+      - name: Download site artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: site-zip
+          path: site-artifact
+
+      - name: Unpack site and detect P2 repo dir
+        id: p2
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/staged-repository"
+          ZIP=$(ls -1 site-artifact/*.zip | head -n1)
+          echo "Unzipping $ZIP"
+          unzip -q "$ZIP" -d "$GITHUB_WORKSPACE/staged-repository"
+          P2_DIR=$(find "$GITHUB_WORKSPACE/staged-repository" -type f \( -name 'artifacts.jar' -o -name 'artifacts.xml*' \) -printf '%h\n' | head -n1)
+          if [ -z "$P2_DIR" ]; then
+            echo "::error::Failed to locate P2 repository in unzipped site"
+            exit 1
+          fi
+          echo "P2_DIR=$P2_DIR" | tee -a "$GITHUB_ENV"
+
+      - name: Vault (GitHub token)
+        id: secrets
+        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        with:
+          secrets: |
+            development/github/token/licenses-ro token | GITHUB_TOKEN;
+
+      - name: Start Xvfb and recording
+        shell: bash
+        run: |
+          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
+          metacity --sm-disable --replace &
+          sleep 10
+          echo 'Recording tests on video'
+          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_cdt_${{ matrix.TARGET_PLATFORM }}.mp4" &
+
+      - name: Run ITs (CDT Integration)
+        shell: bash
+        working-directory: its
+        env:
+          TARGET_PLATFORM: ${{ matrix.TARGET_PLATFORM }}
+          GITHUB_TOKEN: ${{ fromJSON(steps.secrets.outputs.vault).GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "Run ITs for CDT Integration on Eclipse ${TARGET_PLATFORM}"
+          mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+            -P coverage,\!standaloneMode,\!connectedModeSq,\!connectedModeSc \
+            -Declipse.p2.mirrors=false \
+            -Dtarget.platform=${TARGET_PLATFORM} \
+            -Dtycho.localArtifacts=ignore \
+            -Dsonarlint-eclipse.p2.url="file://${P2_DIR}" \
+            -Djacoco.append=true \
+            -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
+          mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-cdt-${TARGET_PLATFORM}.exec
+
+      - name: Stop recording and Xvfb
+        if: always()
+        shell: bash
+        run: |
+          pkill -SIGINT -f ffmpeg || true
+          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
+          pkill -f Xvfb || true
+
+      - name: Upload video
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: recording-cdt-${{ matrix.TARGET_PLATFORM }}
+          path: ${{ github.workspace }}/recording_cdt_${{ matrix.TARGET_PLATFORM }}.mp4
+
+      - name: Upload IT coverage
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: jacoco-it-cdt-${{ matrix.TARGET_PLATFORM }}-coverage
+          path: ${{ github.workspace }}/it-coverage-cdt-${{ matrix.TARGET_PLATFORM }}.exec
+
+      - name: Upload IT logs
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mvn-it-logs-cdt-${{ matrix.TARGET_PLATFORM }}
+          path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: failure-cdt-${{ matrix.TARGET_PLATFORM }}
+          path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+
+      - name: Debug - Tree view of workspace
+        if: always()
+        shell: bash
+        run: |
+          echo "=== Tree view of GITHUB_WORKSPACE ==="
+          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
+
+      - name: Generate QA test report on failure
+        if: failure()
+        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
+        with:
+          name: QA CDT ${{ matrix.TARGET_PLATFORM }} Test Report
+          reporter: java-junit
+          path: '**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/*.xml'
+          list-suites: failed
+          list-tests: failed
+          fail-on-empty: false
+
+  sonarqube:
+    needs: [validate, qa_connectedModeSonarCloud, qa_connectedModeSonarQube, qa_standaloneMode, qa_cdtIntegration]
+    runs-on: github-ubuntu-latest-m
+    name: SonarQube Analysis
+    permissions:
+      id-token: write
+      contents: write
+    env:
+      DEPLOY_PULL_REQUEST: false
+      DISPLAY: :10
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+        with:
+          version: 2025.9.12
+
+      - name: Setup Maven Toolchains (JDK 11/17/21)
+        shell: bash
+        run: .github/workflows/setup-maven-toolchains.sh
+
+      - uses: SonarSource/ci-github-actions/get-build-number@v1
+
+      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          artifactory-reader-role: private-reader
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true
+
+      - name: Download IT coverage artifacts
+        uses: actions/download-artifact@v4.1.8
+        with:
+          pattern: jacoco-it-*
+          path: coverage-artifacts
+          merge-multiple: true
+
+      - name: Download UT coverage
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: ut-coverage
+          path: coverage-artifacts
+
+      - name: Prepare coverage files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p org.sonarlint.eclipse.core.tests/target/
+          find coverage-artifacts -type f -name '*.exec' -exec cp {} org.sonarlint.eclipse.core.tests/target/ \;
+          echo "Prepared coverage exec files in org.sonarlint.eclipse.core.tests/target/"
+          ls -la org.sonarlint.eclipse.core.tests/target/*.exec || true
+
+      - name: Install UI deps (Xvfb, metacity)
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb metacity dbus-x11
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Start Xvfb
+        shell: bash
+        run: |
+          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
+          metacity --sm-disable --replace &
+          sleep 10
+
+      - name: Vault (GitHub token)
+        id: secrets-gh
+        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        with:
+          secrets: |
+            development/github/token/licenses-ro token | GITHUB_TOKEN;
+      - name: Custom versioning
+        run: .cirrus/set_maven_build_version_github_action
+      - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
+        env:
+          GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
+        with:
+          maven-args: |
+            -P-deploy-sonarsource,-release,-sign
+            -Declipse.p2.mirrors=false
+            -Dmaven.install.skip=true
+            -DskipTests
+            -Dmaven.deploy.skip=true
+            -Pcoverage
+            -Djacoco.append=true
+            -Dsonar.coverage.jacoco.xmlReportPaths=${GITHUB_WORKSPACE}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+          run-shadow-scans: true
+          artifactory-reader-role: private-reader
+          artifactory-deployer-role: qa-deployer
+
+      - name: Run IRIS sync
+        uses: SonarSource/unified-dogfooding-actions/run-iris@v1
+        with:
+          primary_project_key: "org.sonarsource.sonarlint.eclipse:sonarlint-eclipse-parent"
+          primary_platform: "Next"
+          shadow1_project_key: "org.sonarsource.sonarlint.eclipse:sonarlint-eclipse-parent"
+          shadow1_platform: "SQC-EU"
+          shadow2_project_key: "org.sonarsource.sonarlint.eclipse:sonarlint-eclipse-parent"
+          shadow2_platform: "SQC-US"
+
+      - name: Stop Xvfb
+        if: always()
+        shell: bash
+        run: pkill -f Xvfb || true
+
+      - name: Upload Xvfb logs on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: xvfb-logs-sonarqube
+          path: Xvfb.out
+
