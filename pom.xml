@@ -85,6 +85,7 @@
     <sonar.exclusions>**/.tycho-consumer-pom.xml</sonar.exclusions>
     <sonar.sca.mavenOptions>-Dtycho.target.eager=true</sonar.sca.mavenOptions>
     <sonar.sca.exclusions>org.sonarlint.core.tests/testdata,its/projects</sonar.sca.exclusions>
+    <sonar.organization>sonarsource</sonar.organization>
 
     <!-- Global properties -->
     <jarsigner.skip>true</jarsigner.skip>
