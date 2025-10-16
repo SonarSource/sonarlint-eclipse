@@ -892,7 +892,7 @@ jobs:
             -Dmaven.deploy.skip=true
             -Pcoverage
             -Djacoco.append=true
-            -Dsonar.coverage.jacoco.xmlReportPaths=${GITHUB_WORKSPACE}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           run-shadow-scans: true
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
