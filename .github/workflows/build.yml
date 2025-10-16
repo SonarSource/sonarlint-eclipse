@@ -41,6 +41,7 @@ jobs:
           maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
+          deploy-pull-request: true
       - name: Upload site artifacts
         if: always() && !cancelled()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
