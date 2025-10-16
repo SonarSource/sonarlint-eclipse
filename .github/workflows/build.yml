@@ -873,21 +873,6 @@ jobs:
           echo "Prepared coverage exec files in org.sonarlint.eclipse.core.tests/target/"
           ls -la org.sonarlint.eclipse.core.tests/target/*.exec || true
 
-      - name: Install UI deps (Xvfb, metacity)
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb metacity dbus-x11
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
-
-      - name: Start Xvfb
-        shell: bash
-        run: |
-          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
-          metacity --sm-disable --replace &
-          sleep 10
-
       - name: Vault (GitHub token)
         id: secrets-gh
         uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
@@ -911,18 +896,6 @@ jobs:
             -Dsonar.coverage.jacoco.xmlReportPaths=${GITHUB_WORKSPACE}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
-
-      - name: Stop Xvfb
-        if: always()
-        shell: bash
-        run: pkill -f Xvfb || true
-
-      - name: Upload Xvfb logs on failure
-        if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: xvfb-logs-sonarqube
-          path: Xvfb.out
 
   inspect-orchestrator-cache:
     needs: [ qa_connectedModeSonarQube ]
