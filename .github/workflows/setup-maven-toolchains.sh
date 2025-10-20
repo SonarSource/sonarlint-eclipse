@@ -17,7 +17,7 @@ echo "$JAVA_17_HOME/bin" >> "$GITHUB_PATH"
 
 # Configure Maven toolchains
 mkdir -p "$HOME/.m2"
-cp .cirrus/toolchains.xml "$HOME/.m2/toolchains.xml"
+cp .github/scripts/toolchains.xml "$HOME/.m2/toolchains.xml"
 
 java -version
 mvn -version

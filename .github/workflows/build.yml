@@ -1,10 +1,16 @@
 name: Build
 on:
-  schedule:
-    # Run the workflow every day at 04:00 UTC
-    - cron: '0 4 * * *'
+  push:
+    branches:
+      - master
+      - dogfood-on-*
+      - branch-*
   pull_request:
   workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: write
 
 jobs:
   build:
@@ -12,20 +18,22 @@ jobs:
       project-version: ${{ steps.version.outputs.project-version }}
     runs-on: github-ubuntu-latest-m
     name: Build Project
-    permissions:
-      id-token: write
-      contents: write
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
           version: 2025.9.12
+
       - name: Setup Maven Toolchains
         shell: bash
         run: .github/workflows/setup-maven-toolchains.sh
+
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+
       - name: Setup DigiCert Client Tools
         uses: SonarSource/ci-github-actions/code-signing@v1
+
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
         env:
           CURRENT_VERSION: skip
@@ -33,17 +41,20 @@ jobs:
         with:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
           artifactory-reader-role: private-reader
+
       - name: Custom versioning
         id: version
-        run: .cirrus/set_maven_build_version_github_action
+        run: .github/scripts/set_maven_build_version.sh
+
       - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
         with:
-          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
           deploy-pull-request: true
+
       - name: Upload site artifacts
-        if: always() && !cancelled()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: site-zip
@@ -53,14 +64,13 @@ jobs:
     needs: [ build ]
     runs-on: github-ubuntu-latest-m
     name: Validate
-    permissions:
-      id-token: write
-      contents: write
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
           version: 2025.9.12
+
       - name: Install Validate Dependencies
         shell: bash
         run: |
@@ -75,10 +85,13 @@ jobs:
           xvfb
           sudo apt-get clean
           sudo rm -rf /var/lib/apt/lists/*
+
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
         run: .github/workflows/setup-maven-toolchains.sh
+
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
         env:
           CURRENT_VERSION: skip
@@ -86,6 +99,7 @@ jobs:
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
+
       - name: Run unit tests with Xvfb
         shell: bash
         env:
@@ -124,13 +138,6 @@ jobs:
           name: failure-logs
           path: 'Xvfb.out,**/target/surefire-reports/TEST-*.xml'
 
-      - name: Debug - Tree view of workspace
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Tree view of GITHUB_WORKSPACE ==="
-          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
-
       - name: Generate QA test report on failure
         if: failure()
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
@@ -146,9 +153,6 @@ jobs:
     needs: [build]
     runs-on: github-ubuntu-latest-m
     name: QA Connected Mode SonarQube
-    permissions:
-      id-token: write
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -179,6 +183,7 @@ jobs:
           echo "ORCHESTRATOR_HOME=${ORCHESTRATOR_HOME}" >> "$GITHUB_ENV"
           echo "Create dir ${ORCHESTRATOR_HOME} if needed"
           mkdir -p "${ORCHESTRATOR_HOME}"
+
       - uses: SonarSource/ci-github-actions/cache@v1
         with:
           path: ${{ github.workspace }}/orchestrator/${{ steps.month.outputs.month }}
@@ -204,7 +209,9 @@ jobs:
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
         run: .github/workflows/setup-maven-toolchains.sh
+
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
         env:
           CURRENT_VERSION: skip
@@ -233,7 +240,7 @@ jobs:
             echo "::error::Failed to locate P2 repository in unzipped site"
             exit 1
           fi
-          echo "P2_DIR=$P2_DIR" | tee -a "$GITHUB_ENV"
+          echo "P2_DIR=$P2_DIR" >> "$GITHUB_ENV"
 
       - name: Vault (GitHub token)
         id: secrets-gh
@@ -308,13 +315,6 @@ jobs:
           name: failure-${{ matrix.QA_CATEGORY }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
 
-      - name: Debug - Tree view of workspace
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Tree view of GITHUB_WORKSPACE ==="
-          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
-
       - name: Generate QA test report on failure
         if: failure()
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
@@ -330,9 +330,6 @@ jobs:
     needs: [ build ]
     runs-on: github-ubuntu-latest-m
     name: QA Connected Mode SonarCloud
-    permissions:
-      id-token: write
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -342,6 +339,7 @@ jobs:
     env:
       DISPLAY: :10
       MAVEN_OPTS: -Xmx3072m
+
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
@@ -369,6 +367,7 @@ jobs:
         run: .github/workflows/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
         env:
           CURRENT_VERSION: skip
@@ -475,13 +474,6 @@ jobs:
           name: failure-sc-${{ matrix.SQC_REGION }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
 
-      - name: Debug - Tree view of workspace
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Tree view of GITHUB_WORKSPACE ==="
-          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
-
       - name: Generate QA test report on failure
         if: failure()
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
@@ -497,9 +489,6 @@ jobs:
     needs: [ build ]
     runs-on: github-ubuntu-latest-m
     name: QA Standalone Mode
-    permissions:
-      id-token: write
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -509,6 +498,7 @@ jobs:
     env:
       DISPLAY: :10
       MAVEN_OPTS: -Xmx3072m
+
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
@@ -637,13 +627,6 @@ jobs:
           name: failure-${{ matrix.TARGET_PLATFORM }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
 
-      - name: Debug - Tree view of workspace
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Tree view of GITHUB_WORKSPACE ==="
-          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
-
       - name: Generate QA test report on failure
         if: failure()
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
@@ -659,9 +642,6 @@ jobs:
     needs: [ build ]
     runs-on: github-ubuntu-latest-m
     name: QA CDT Integration
-    permissions:
-      id-token: write
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -672,6 +652,7 @@ jobs:
     env:
       DISPLAY: :10
       MAVEN_OPTS: -Xmx3072m
+
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
@@ -699,6 +680,7 @@ jobs:
         run: .github/workflows/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+
       - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
         env:
           CURRENT_VERSION: skip
@@ -800,13 +782,6 @@ jobs:
           name: failure-cdt-${{ matrix.TARGET_PLATFORM }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
 
-      - name: Debug - Tree view of workspace
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Tree view of GITHUB_WORKSPACE ==="
-          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
-
       - name: Generate QA test report on failure
         if: failure()
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
@@ -822,9 +797,6 @@ jobs:
     needs: [validate, qa_connectedModeSonarCloud, qa_connectedModeSonarQube, qa_standaloneMode, qa_cdtIntegration]
     runs-on: github-ubuntu-latest-m
     name: SonarQube Analysis
-    permissions:
-      id-token: write
-      contents: write
     env:
       DEPLOY_PULL_REQUEST: false
       DISPLAY: :10
@@ -880,7 +852,7 @@ jobs:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
       - name: Custom versioning
-        run: .cirrus/set_maven_build_version_github_action
+        run: .github/scripts/set_maven_build_version.sh
       - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
         env:
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
@@ -903,6 +875,7 @@ jobs:
     name: Inspect Orchestrator Cache
     permissions:
       contents: read
+
     steps:
       - name: Compute month key
         id: month
@@ -914,12 +887,14 @@ jobs:
           echo "ORCHESTRATOR_HOME=${ORCHESTRATOR_HOME}" >> "$GITHUB_ENV"
           echo "Create dir ${ORCHESTRATOR_HOME} if needed"
           mkdir -p "${ORCHESTRATOR_HOME}"
+
       - uses: SonarSource/ci-github-actions/cache@v1
         with:
           path: ${{ github.workspace }}/orchestrator/${{ steps.month.outputs.month }}
           key: cache-${{ runner.os }}-${{ steps.month.outputs.month }}
           restore-keys: |
             cache-${{ runner.os }}
+
       - name: Inspect cache directory
         shell: bash
         run: |
@@ -933,14 +908,13 @@ jobs:
     needs:
       - validate
       - sonarqube
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/branch-')
+    if: github.event_name == 'pull_request' || github.ref_name == 'master' || startsWith(github.ref_name, 'branch-')
     runs-on: github-ubuntu-latest-s
     name: Promote
-    permissions:
-      id-token: write
-      contents: write
+
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
       - uses: SonarSource/ci-github-actions/promote@v1
         with:
           promote-pull-request: true
@@ -948,12 +922,10 @@ jobs:
   dogfood:
     needs:
       - promote
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'pull_request' || github.ref_name == 'master' || startsWith(github.ref_name, 'branch-')
     runs-on: github-ubuntu-latest-s
     name: Publish Dogfood Site
-    permissions:
-      id-token: write
-      contents: write
+
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
@@ -994,5 +966,5 @@ jobs:
           GITHUB_RUN_ID: ${{ github.run_id }}
           PROJECT_VERSION: ${{ needs.build.outputs.project-version }}
         run: |
-          chmod +x .github/workflows/publish-dogfood-site.sh
-          .github/workflows/publish-dogfood-site.sh
+          chmod +x .github/scripts/publish-dogfood-site.sh
+          .github/scripts/publish-dogfood-site.sh

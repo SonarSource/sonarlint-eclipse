@@ -34,10 +34,10 @@ jobs:
           artifactory-reader-role: private-reader
       - name: Custom versioning
         id: version
-        run: .cirrus/set_maven_build_version_github_action
+        run: .github/scripts/set_maven_build_version.sh
       - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
         with:
-          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=${CIRRUS_WORKING_DIR}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
       - name: Upload site artifacts
@@ -878,7 +878,7 @@ jobs:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
       - name: Custom versioning
-        run: .cirrus/set_maven_build_version_github_action
+        run: .github/scripts/set_maven_build_version.sh
       - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
         env:
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}

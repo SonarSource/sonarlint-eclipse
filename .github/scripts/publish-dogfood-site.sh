@@ -30,9 +30,9 @@ unzip -q "$dogfood_site_dir.zip" -d "$dogfood_site_dir/$PROJECT_VERSION"
 NOW=$(date -u +"%s%3N")
 export NOW BINARIES_URL VERSION_BUCKET_KEY
 # shellcheck disable=SC2016
-envsubst '$NOW,$BINARIES_URL,$VERSION_BUCKET_KEY' <"site-resources/compositeContent.xml" >"$dogfood_site_dir/compositeContent.xml"
+envsubst '$NOW,$BINARIES_URL,$VERSION_BUCKET_KEY' <"compositeContent.xml" >"$dogfood_site_dir/compositeContent.xml"
 # shellcheck disable=SC2016
-envsubst '$NOW,$BINARIES_URL,$VERSION_BUCKET_KEY' <"site-resources/compositeArtifacts.xml" >"$dogfood_site_dir/compositeArtifacts.xml"
+envsubst '$NOW,$BINARIES_URL,$VERSION_BUCKET_KEY' <"compositeArtifacts.xml" >"$dogfood_site_dir/compositeArtifacts.xml"
 
 echo "Upload from $dogfood_site_dir to s3://$S3_BUCKET/$ROOT_BUCKET_KEY/..."
 aws s3 sync "$@" --delete "$dogfood_site_dir" "s3://$S3_BUCKET/$ROOT_BUCKET_KEY/"

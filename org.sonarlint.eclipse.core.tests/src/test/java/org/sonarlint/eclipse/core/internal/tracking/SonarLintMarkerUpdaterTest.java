@@ -64,6 +64,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+//TODO SLE-1312 Investigate and fix flaky tests
 @Ignore("Flaky Tests")
 public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
@@ -153,7 +154,6 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
   }
 
   @Test
-  @Ignore("TODO: Enable later, flaky!")
   public void test_marker_of_ordinary_trackable() throws Exception {
     var issue = newMockRaisedIssueDto();
 
