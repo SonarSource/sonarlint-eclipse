@@ -25,7 +25,7 @@ jobs:
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - name: Setup DigiCert Client Tools
         uses: SonarSource/ci-github-actions/code-signing@v1
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -35,7 +35,7 @@ jobs:
       - name: Custom versioning
         id: version
         run: .github/scripts/set_maven_build_version.sh
-      - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/build-maven@v1 # dogfood
         with:
           maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
@@ -77,7 +77,7 @@ jobs:
         shell: bash
         run: .github/workflows/setup-maven-toolchains.sh
       - uses: SonarSource/ci-github-actions/get-build-number@v1
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -203,7 +203,7 @@ jobs:
         shell: bash
         run: .github/workflows/setup-maven-toolchains.sh
       - uses: SonarSource/ci-github-actions/get-build-number@v1
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -367,7 +367,7 @@ jobs:
         run: .github/workflows/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -534,7 +534,7 @@ jobs:
         run: .github/workflows/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -697,7 +697,7 @@ jobs:
         run: .github/workflows/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -841,7 +841,7 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -879,7 +879,7 @@ jobs:
             development/github/token/licenses-ro token | GITHUB_TOKEN;
       - name: Custom versioning
         run: .github/scripts/set_maven_build_version.sh
-      - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/build-maven@v1 # dogfood
         env:
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
         with:

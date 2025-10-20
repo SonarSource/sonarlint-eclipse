@@ -34,7 +34,7 @@ jobs:
       - name: Setup DigiCert Client Tools
         uses: SonarSource/ci-github-actions/code-signing@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -46,12 +46,14 @@ jobs:
         id: version
         run: .github/scripts/set_maven_build_version.sh
 
-      - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/build-maven@v1 # dogfood
         with:
           maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
           deploy-pull-request: true
+        env:
+          MAVEN_OPTS: -XX:-UseContainerSupport
 
       - name: Upload site artifacts
         if: ${{ !cancelled() }}
@@ -92,10 +94,11 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
+          MAVEN_OPTS: -XX:-UseContainerSupport
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
@@ -212,10 +215,11 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
+          MAVEN_OPTS: -XX:-UseContainerSupport
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
@@ -368,10 +372,11 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
+          MAVEN_OPTS: -XX:-UseContainerSupport
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
@@ -526,10 +531,11 @@ jobs:
         run: .github/workflows/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
+          MAVEN_OPTS: -XX:-UseContainerSupport
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
@@ -681,10 +687,11 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
+          MAVEN_OPTS: -XX:-UseContainerSupport
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
@@ -815,7 +822,7 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -853,9 +860,10 @@ jobs:
             development/github/token/licenses-ro token | GITHUB_TOKEN;
       - name: Custom versioning
         run: .github/scripts/set_maven_build_version.sh
-      - uses: SonarSource/ci-github-actions/build-maven@master # dogfood
+      - uses: SonarSource/ci-github-actions/build-maven@v1 # dogfood
         env:
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
+          MAVEN_OPTS: -XX:-UseContainerSupport
         with:
           maven-args: |
             -P-deploy-sonarsource,-release,-sign
