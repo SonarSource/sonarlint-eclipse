@@ -27,7 +27,7 @@ jobs:
 
       - name: Setup Maven Toolchains
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
@@ -90,7 +90,7 @@ jobs:
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
@@ -211,7 +211,7 @@ jobs:
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
@@ -368,7 +368,7 @@ jobs:
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
@@ -528,7 +528,7 @@ jobs:
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
@@ -683,7 +683,7 @@ jobs:
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
@@ -818,7 +818,7 @@ jobs:
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 

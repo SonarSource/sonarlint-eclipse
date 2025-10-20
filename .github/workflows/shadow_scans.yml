@@ -21,7 +21,7 @@ jobs:
           version: 2025.9.12
       - name: Setup Maven Toolchains
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - name: Setup DigiCert Client Tools
         uses: SonarSource/ci-github-actions/code-signing@v1
@@ -75,7 +75,7 @@ jobs:
           sudo rm -rf /var/lib/apt/lists/*
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
@@ -201,7 +201,7 @@ jobs:
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
@@ -364,7 +364,7 @@ jobs:
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
@@ -531,7 +531,7 @@ jobs:
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
@@ -694,7 +694,7 @@ jobs:
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
@@ -837,7 +837,7 @@ jobs:
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
-        run: .github/workflows/setup-maven-toolchains.sh
+        run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
