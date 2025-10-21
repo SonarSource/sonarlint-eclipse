@@ -148,9 +148,9 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
       String detectedNodeJs;
       try {
-        var nodeJs = SonarLintBackendService.get().getBackend().getAnalysisService().getGlobalStandaloneConfiguration()
+        var nodeJs = SonarLintBackendService.get().getBackend().getAnalysisService().getAutoDetectedNodeJs()
           .join()
-          .getNodeJsDetails();
+          .getDetails();
         if (nodeJs != null) {
           detectedNodeJs = nodeJs.getPath().toString();
         } else {
