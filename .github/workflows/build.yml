@@ -930,7 +930,7 @@ jobs:
   dogfood:
     needs:
       - promote
-    if: github.event_name == 'pull_request' || github.ref_name == 'master' || startsWith(github.ref_name, 'branch-')
+    if: github.event_name != 'pull_request' || github.ref_name == 'master' || startsWith(github.ref_name, 'branch-')
     runs-on: github-ubuntu-latest-s
     name: Publish Dogfood Site
 
