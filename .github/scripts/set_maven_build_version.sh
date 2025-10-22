@@ -14,7 +14,7 @@ set -euo pipefail
 : "${GITHUB_OUTPUT:?}" "${GITHUB_ENV:?}"
 
 get_current_version() {
-  if ! mvn -q -N -Dtycho.mode=maven help:evaluate -Dexpression="project.version" -DforceStdout; then
+  if ! mvn -q -N -Dtycho.mode=maven help:evaluate -Dexpression="project.version" -DforceStdout 2>/dev/null; then
     echo "Failed to read project.version" >&2
     mvn -X -N -Dtycho.mode=maven help:evaluate -Dexpression="project.version" -DforceStdout
     return 1
