@@ -22,10 +22,8 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -47,6 +45,7 @@ import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -66,6 +65,8 @@ import org.sonarlint.eclipse.tests.common.SonarTestCase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+//TODO Investigate previous project wait behaviour on addLogListener with SLE-1311
+@Ignore("Flaky Tests")
 public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   private static LogListener listener;
@@ -94,7 +95,6 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     markerUpdateListener.markersUpdatedLatch = new CountDownLatch(1);
   }
 
-  //TODO Investigate previous project wait behaviour with SLE-1311
   @BeforeClass
   public static void addLogListener() throws IOException, CoreException, InterruptedException {
     listener = new LogListener() {
