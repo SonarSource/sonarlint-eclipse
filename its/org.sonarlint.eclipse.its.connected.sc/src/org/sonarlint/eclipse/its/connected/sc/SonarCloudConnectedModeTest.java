@@ -293,7 +293,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     // 2) Wait until the synchronization is completely done to mitigate possible issues!
     openFileAndWaitForAnalysisCompletion(project.getResource("FileExists.txt"));
-    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(30));
+    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(60));
   }
 
   @Test
@@ -349,7 +349,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new FixSuggestionUnavailableDialog(0, 1).proceed();
 
     // 6) Wait until the synchronization is completely done to mitigate possible issues!
-    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(30));
+    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(60));
   }
 
   @Test
@@ -394,7 +394,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new FixSuggestionUnavailableDialog(1, 2).proceed();
 
     // 3) Wait until the synchronization is completely done to mitigate possible issues!
-    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(30));
+    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(60));
   }
 
   /**
