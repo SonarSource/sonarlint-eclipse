@@ -6,26 +6,32 @@ on:
   workflow_dispatch:
   pull_request:
 
+permissions:
+  id-token: write
+  contents: write
+
 jobs:
   build:
     outputs:
       project-version: ${{ steps.version.outputs.project-version }}
     runs-on: github-ubuntu-latest-m
     name: Build Project
-    permissions:
-      id-token: write
-      contents: write
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
           version: 2025.9.12
+
       - name: Setup Maven Toolchains
         shell: bash
         run: .github/scripts/setup-maven-toolchains.sh
+
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+
       - name: Setup DigiCert Client Tools
         uses: SonarSource/ci-github-actions/code-signing@v1
+
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
@@ -33,16 +39,19 @@ jobs:
         with:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
           artifactory-reader-role: private-reader
+
       - name: Custom versioning
         id: version
         run: .github/scripts/set_maven_build_version.sh
       - uses: SonarSource/ci-github-actions/build-maven@v1 # dogfood
         with:
-          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+          sonar-platform: none
+          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
+
       - name: Upload site artifacts
-        if: always() && !cancelled()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: site-zip
@@ -52,32 +61,23 @@ jobs:
     needs: [ build ]
     runs-on: github-ubuntu-latest-m
     name: Validate
-    permissions:
-      id-token: write
-      contents: write
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
           version: 2025.9.12
+
       - name: Install Validate Dependencies
         shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-          build-essential \
-          dbus-x11 \
-          ffmpeg \
-          gettext-base \
-          libwebkit2gtk-4.* \
-          metacity \
-          xvfb
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
+        run: .github/scripts/install-dependencies.sh
+
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
         run: .github/scripts/setup-maven-toolchains.sh
+
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
@@ -123,13 +123,6 @@ jobs:
           name: failure-logs
           path: 'Xvfb.out,**/target/surefire-reports/TEST-*.xml'
 
-      - name: Debug - Tree view of workspace
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Tree view of GITHUB_WORKSPACE ==="
-          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
-
       - name: Generate QA test report on failure
         if: failure()
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
@@ -145,9 +138,6 @@ jobs:
     needs: [build]
     runs-on: github-ubuntu-latest-m
     name: QA Connected Mode SonarQube
-    permissions:
-      id-token: write
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -178,6 +168,7 @@ jobs:
           echo "ORCHESTRATOR_HOME=${ORCHESTRATOR_HOME}" >> "$GITHUB_ENV"
           echo "Create dir ${ORCHESTRATOR_HOME} if needed"
           mkdir -p "${ORCHESTRATOR_HOME}"
+
       - uses: SonarSource/ci-github-actions/cache@v1
         with:
           path: ${{ github.workspace }}/orchestrator/${{ steps.month.outputs.month }}
@@ -187,23 +178,14 @@ jobs:
 
       - name: Install UI deps (Xvfb, metacity, ffmpeg)
         shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-          build-essential \
-          dbus-x11 \
-          ffmpeg \
-          gettext-base \
-          libwebkit2gtk-4.* \
-          metacity \
-          xvfb
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
+        run: .github/scripts/install-dependencies.sh
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
         run: .github/scripts/setup-maven-toolchains.sh
+
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
@@ -221,18 +203,7 @@ jobs:
       - name: Unpack site and detect P2 repo dir
         id: p2
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE/staged-repository"
-          ZIP=$(ls -1 site-artifact/*.zip | head -n1)
-          echo "Unzipping $ZIP"
-          unzip -q "$ZIP" -d "$GITHUB_WORKSPACE/staged-repository"
-          P2_DIR=$(find "$GITHUB_WORKSPACE/staged-repository" -type f \( -name 'artifacts.jar' -o -name 'artifacts.xml*' \) -printf '%h\n' | head -n1)
-          if [ -z "$P2_DIR" ]; then
-            echo "::error::Failed to locate P2 repository in unzipped site"
-            exit 1
-          fi
-          echo "P2_DIR=$P2_DIR" | tee -a "$GITHUB_ENV"
+        run: .github/scripts/unpack-p2-repository.sh
 
       - name: Vault (GitHub token)
         id: secrets-gh
@@ -307,13 +278,6 @@ jobs:
           name: failure-${{ matrix.QA_CATEGORY }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
 
-      - name: Debug - Tree view of workspace
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Tree view of GITHUB_WORKSPACE ==="
-          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
-
       - name: Generate QA test report on failure
         if: failure()
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
@@ -329,9 +293,6 @@ jobs:
     needs: [ build ]
     runs-on: github-ubuntu-latest-m
     name: QA Connected Mode SonarCloud
-    permissions:
-      id-token: write
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -350,24 +311,14 @@ jobs:
 
       - name: Install UI deps (Xvfb, metacity, ffmpeg)
         shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-          build-essential \
-          dbus-x11 \
-          ffmpeg \
-          gettext-base \
-          libwebkit2gtk-4.* \
-          metacity \
-          xvfb
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
+        run: .github/scripts/install-dependencies.sh
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
         run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
@@ -385,18 +336,7 @@ jobs:
       - name: Unpack site and detect P2 repo dir
         id: p2
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE/staged-repository"
-          ZIP=$(ls -1 site-artifact/*.zip | head -n1)
-          echo "Unzipping $ZIP"
-          unzip -q "$ZIP" -d "$GITHUB_WORKSPACE/staged-repository"
-          P2_DIR=$(find "$GITHUB_WORKSPACE/staged-repository" -type f \( -name 'artifacts.jar' -o -name 'artifacts.xml*' \) -printf '%h\n' | head -n1)
-          if [ -z "$P2_DIR" ]; then
-            echo "::error::Failed to locate P2 repository in unzipped site"
-            exit 1
-          fi
-          echo "P2_DIR=$P2_DIR" | tee -a "$GITHUB_ENV"
+        run: .github/scripts/unpack-p2-repository.sh
 
       - name: Vault (SonarCloud and GitHub tokens)
         id: secrets
@@ -474,13 +414,6 @@ jobs:
           name: failure-sc-${{ matrix.SQC_REGION }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
 
-      - name: Debug - Tree view of workspace
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Tree view of GITHUB_WORKSPACE ==="
-          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
-
       - name: Generate QA test report on failure
         if: failure()
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
@@ -496,9 +429,6 @@ jobs:
     needs: [ build ]
     runs-on: github-ubuntu-latest-m
     name: QA Standalone Mode
-    permissions:
-      id-token: write
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -517,24 +447,14 @@ jobs:
 
       - name: Install UI deps (Xvfb, metacity, ffmpeg)
         shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-          build-essential \
-          dbus-x11 \
-          ffmpeg \
-          gettext-base \
-          libwebkit2gtk-4.* \
-          metacity \
-          xvfb
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
+        run: .github/scripts/install-dependencies.sh
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
         run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
@@ -552,18 +472,7 @@ jobs:
       - name: Unpack site and detect P2 repo dir
         id: p2
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE/staged-repository"
-          ZIP=$(ls -1 site-artifact/*.zip | head -n1)
-          echo "Unzipping $ZIP"
-          unzip -q "$ZIP" -d "$GITHUB_WORKSPACE/staged-repository"
-          P2_DIR=$(find "$GITHUB_WORKSPACE/staged-repository" -type f \( -name 'artifacts.jar' -o -name 'artifacts.xml*' \) -printf '%h\n' | head -n1)
-          if [ -z "$P2_DIR" ]; then
-            echo "::error::Failed to locate P2 repository in unzipped site"
-            exit 1
-          fi
-          echo "P2_DIR=$P2_DIR" | tee -a "$GITHUB_ENV"
+        run: .github/scripts/unpack-p2-repository.sh
 
       - name: Vault (GitHub token)
         id: secrets
@@ -636,13 +545,6 @@ jobs:
           name: failure-${{ matrix.TARGET_PLATFORM }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
 
-      - name: Debug - Tree view of workspace
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Tree view of GITHUB_WORKSPACE ==="
-          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
-
       - name: Generate QA test report on failure
         if: failure()
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
@@ -658,9 +560,6 @@ jobs:
     needs: [ build ]
     runs-on: github-ubuntu-latest-m
     name: QA CDT Integration
-    permissions:
-      id-token: write
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -680,24 +579,14 @@ jobs:
 
       - name: Install UI deps (Xvfb, metacity, ffmpeg)
         shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-          build-essential \
-          dbus-x11 \
-          ffmpeg \
-          gettext-base \
-          libwebkit2gtk-4.* \
-          metacity \
-          xvfb
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
+        run: .github/scripts/install-dependencies.sh
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
         run: .github/scripts/setup-maven-toolchains.sh
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
+
       - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
         env:
           CURRENT_VERSION: skip
@@ -715,18 +604,7 @@ jobs:
       - name: Unpack site and detect P2 repo dir
         id: p2
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$GITHUB_WORKSPACE/staged-repository"
-          ZIP=$(ls -1 site-artifact/*.zip | head -n1)
-          echo "Unzipping $ZIP"
-          unzip -q "$ZIP" -d "$GITHUB_WORKSPACE/staged-repository"
-          P2_DIR=$(find "$GITHUB_WORKSPACE/staged-repository" -type f \( -name 'artifacts.jar' -o -name 'artifacts.xml*' \) -printf '%h\n' | head -n1)
-          if [ -z "$P2_DIR" ]; then
-            echo "::error::Failed to locate P2 repository in unzipped site"
-            exit 1
-          fi
-          echo "P2_DIR=$P2_DIR" | tee -a "$GITHUB_ENV"
+        run: .github/scripts/unpack-p2-repository.sh
 
       - name: Vault (GitHub token)
         id: secrets
@@ -799,13 +677,6 @@ jobs:
           name: failure-cdt-${{ matrix.TARGET_PLATFORM }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
 
-      - name: Debug - Tree view of workspace
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Tree view of GITHUB_WORKSPACE ==="
-          tree -a "$GITHUB_WORKSPACE" || find "$GITHUB_WORKSPACE" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
-
       - name: Generate QA test report on failure
         if: failure()
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
@@ -821,9 +692,6 @@ jobs:
     needs: [validate, qa_connectedModeSonarCloud, qa_connectedModeSonarQube, qa_standaloneMode, qa_cdtIntegration]
     runs-on: github-ubuntu-latest-m
     name: SonarQube Analysis
-    permissions:
-      id-token: write
-      contents: write
     env:
       DEPLOY_PULL_REQUEST: false
       DISPLAY: :10
@@ -892,7 +760,7 @@ jobs:
             -Dmaven.deploy.skip=true
             -Pcoverage
             -Djacoco.append=true
-            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           run-shadow-scans: true
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
