@@ -16,7 +16,7 @@ jobs:
     runs-on: github-ubuntu-latest-m
     name: Build Project
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@v5
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
@@ -31,7 +31,7 @@ jobs:
       - name: Setup DigiCert Client Tools
         uses: SonarSource/ci-github-actions/code-signing@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -39,10 +39,10 @@ jobs:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
           artifactory-reader-role: private-reader
 
-      - name: Custom versioning
+      - name: Set project version
         id: version
         run: .github/scripts/set_maven_build_version.sh
-      - uses: SonarSource/ci-github-actions/build-maven@v1 # dogfood
+      - uses: SonarSource/ci-github-actions/build-maven@v1
         with:
           sonar-platform: none
           maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true
@@ -51,7 +51,7 @@ jobs:
 
       - name: Upload site artifacts
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: site-zip
           path: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
@@ -61,7 +61,7 @@ jobs:
     runs-on: github-ubuntu-latest-m
     name: Validate
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@v5
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
@@ -77,7 +77,7 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -102,7 +102,7 @@ jobs:
 
       - name: Upload UT coverage
         if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: ut-coverage
           path: |
@@ -110,14 +110,14 @@ jobs:
 
       - name: Upload Maven test logs
         if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: mvn-test-logs
           path: 'org.sonarlint.eclipse.core.tests/target/work/configuration/*.log,org.sonarlint.eclipse.core.tests/target/work/data/.metadata/.log'
 
       - name: Upload Xvfb logs and JUnit XML on failure
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: failure-logs
           path: 'Xvfb.out,**/target/surefire-reports/TEST-*.xml'
@@ -151,7 +151,7 @@ jobs:
       DISPLAY: :10
       MAVEN_OPTS: -Xmx3072m
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@v5
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
@@ -185,7 +185,7 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -250,29 +250,29 @@ jobs:
           pkill -f Xvfb || true
 
       - name: Upload video
-        if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        uses: actions/upload-artifact@4
         with:
           name: recording-${{ matrix.QA_CATEGORY }}
           path: ${{ github.workspace }}/recording_${{ matrix.QA_CATEGORY }}.mp4
 
       - name: Upload IT coverage
         if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: jacoco-it-${{ matrix.QA_CATEGORY }}-coverage
           path: ${{ github.workspace }}/it-coverage-${{ matrix.QA_CATEGORY }}.exec
 
       - name: Upload IT logs
         if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: mvn-it-logs-${{ matrix.QA_CATEGORY }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
       - name: Upload failure diagnostics
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: failure-${{ matrix.QA_CATEGORY }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
@@ -302,7 +302,7 @@ jobs:
       DISPLAY: :10
       MAVEN_OPTS: -Xmx3072m
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@v5
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
@@ -318,7 +318,7 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -386,29 +386,29 @@ jobs:
           pkill -f Xvfb || true
 
       - name: Upload video
-        if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        uses: actions/upload-artifact@4
         with:
           name: recording-${{ matrix.SQC_REGION }}
           path: ${{ github.workspace }}/recording_${{ matrix.SQC_REGION }}.mp4
 
       - name: Upload IT coverage
         if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: jacoco-it-sc-${{ matrix.SQC_REGION }}-coverage
           path: ${{ github.workspace }}/it-coverage-sc-${{ matrix.SQC_REGION }}.exec
 
       - name: Upload IT logs
         if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: mvn-it-logs-sc-${{ matrix.SQC_REGION }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
       - name: Upload failure diagnostics
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: failure-sc-${{ matrix.SQC_REGION }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
@@ -438,7 +438,7 @@ jobs:
       DISPLAY: :10
       MAVEN_OPTS: -Xmx3072m
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@v5
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
@@ -454,7 +454,7 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -517,29 +517,29 @@ jobs:
           pkill -f Xvfb || true
 
       - name: Upload video
-        if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        uses: actions/upload-artifact@4
         with:
           name: recording-${{ matrix.TARGET_PLATFORM }}
           path: ${{ github.workspace }}/recording_${{ matrix.TARGET_PLATFORM }}.mp4
 
       - name: Upload IT coverage
         if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: jacoco-it-${{ matrix.TARGET_PLATFORM }}-coverage
           path: ${{ github.workspace }}/it-coverage-${{ matrix.TARGET_PLATFORM }}.exec
 
       - name: Upload IT logs
         if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: mvn-it-logs-${{ matrix.TARGET_PLATFORM }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
       - name: Upload failure diagnostics
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: failure-${{ matrix.TARGET_PLATFORM }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
@@ -570,7 +570,7 @@ jobs:
       DISPLAY: :10
       MAVEN_OPTS: -Xmx3072m
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@v5
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
@@ -586,7 +586,7 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -649,29 +649,29 @@ jobs:
           pkill -f Xvfb || true
 
       - name: Upload video
-        if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        uses: actions/upload-artifact@4
         with:
           name: recording-cdt-${{ matrix.TARGET_PLATFORM }}
           path: ${{ github.workspace }}/recording_cdt_${{ matrix.TARGET_PLATFORM }}.mp4
 
       - name: Upload IT coverage
         if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: jacoco-it-cdt-${{ matrix.TARGET_PLATFORM }}-coverage
           path: ${{ github.workspace }}/it-coverage-cdt-${{ matrix.TARGET_PLATFORM }}.exec
 
       - name: Upload IT logs
         if: always() && !cancelled()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: mvn-it-logs-cdt-${{ matrix.TARGET_PLATFORM }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
       - name: Upload failure diagnostics
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@4
         with:
           name: failure-cdt-${{ matrix.TARGET_PLATFORM }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
@@ -695,7 +695,7 @@ jobs:
       DEPLOY_PULL_REQUEST: false
       DISPLAY: :10
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -709,7 +709,7 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - uses: SonarSource/ci-github-actions/config-maven@v1 # dogfood
+      - uses: SonarSource/ci-github-actions/config-maven@v1
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
@@ -745,9 +745,9 @@ jobs:
         with:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
-      - name: Custom versioning
+      - name: Set project version
         run: .github/scripts/set_maven_build_version.sh
-      - uses: SonarSource/ci-github-actions/build-maven@v1 # dogfood
+      - uses: SonarSource/ci-github-actions/build-maven@v1
         env:
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
         with:
