@@ -100,49 +100,49 @@ consistency_task:
     slack_notification_script: |
       source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
-#build_task:
-#  # name: "Build and stage to repox"
-#  depends_on:
-#    - consistency
-#  <<: *ONLY_IF
-#  eks_container:
-#    <<: *BUILDER_CONTAINER_DEFINITION
-#    cpu: 4
-#    memory: 8G
-#    type: m6a.large
-#  env:
-#    ARTIFACTORY_DEPLOY_REPO: sonarsource-public-qa
-#    ARTIFACTORY_DEPLOY_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer
-#    ARTIFACTORY_DEPLOY_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer access_token]
-#    SIGN_KEY: VAULT[development/kv/data/sign data.key]
-#    PGP_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
-#    DEPLOY_PULL_REQUEST: true
-#    SM_API_KEY: VAULT[development/kv/data/sign/2023-2025 data.apikey]
-#    SM_CERT: VAULT[development/kv/data/sign/2023-2025 data.cert]
-#    SM_CERT_FP: VAULT[development/kv/data/sign/2023-2025 data.cert_fp]
-#    SM_CLIENT_CERT_FILE_BASE64: VAULT[development/kv/data/sign/2023-2025 data.client_cert_file_base64]
-#    SM_CLIENT_CERT_FILE: ${CIRRUS_WORKING_DIR}/Certificate.pkcs12.p12
-#    SM_CLIENT_CERT_PASSWORD: VAULT[development/kv/data/sign/2023-2025 data.client_cert_password]
-#    SM_HOST: VAULT[development/kv/data/sign/2023-2025 data.host]
-#  codesigning_file:
-#    path: ${SM_CLIENT_CERT_FILE}.b64
-#    variable_name: SM_CLIENT_CERT_FILE_BASE64
-#  <<: *SETUP_MAVEN_CACHE
-#  build_script: |
-#    base64 --decode "${SM_CLIENT_CERT_FILE}.b64" > "${SM_CLIENT_CERT_FILE}"
-#    source cirrus-env BUILD-PRIVATE
-#    .cirrus/regular_mvn_build_deploy_analyze \
-#      -Declipse.p2.mirrors=false \
-#      -Dmaven.test.skip=true \
-#      -Dsonar.skip=true \
-#      -Dcyclonedx.skip=false
-#  site_artifacts:
-#    paths: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
-#    type: application/zip
-#  cleanup_before_cache_script: cleanup_maven_repository
-#  on_failure:
-#    slack_notification_script: |
-#      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
+build_task:
+  # name: "Build and stage to repox"
+  depends_on:
+    - consistency
+  <<: *ONLY_IF
+  eks_container:
+    <<: *BUILDER_CONTAINER_DEFINITION
+    cpu: 4
+    memory: 8G
+    type: m6a.large
+  env:
+    ARTIFACTORY_DEPLOY_REPO: sonarsource-public-qa
+    ARTIFACTORY_DEPLOY_USERNAME: vault-${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer
+    ARTIFACTORY_DEPLOY_PASSWORD: VAULT[development/artifactory/token/${CIRRUS_REPO_OWNER}-${CIRRUS_REPO_NAME}-qa-deployer access_token]
+    SIGN_KEY: VAULT[development/kv/data/sign data.key]
+    PGP_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
+    DEPLOY_PULL_REQUEST: true
+    SM_API_KEY: VAULT[development/kv/data/sign/2023-2025 data.apikey]
+    SM_CERT: VAULT[development/kv/data/sign/2023-2025 data.cert]
+    SM_CERT_FP: VAULT[development/kv/data/sign/2023-2025 data.cert_fp]
+    SM_CLIENT_CERT_FILE_BASE64: VAULT[development/kv/data/sign/2023-2025 data.client_cert_file_base64]
+    SM_CLIENT_CERT_FILE: ${CIRRUS_WORKING_DIR}/Certificate.pkcs12.p12
+    SM_CLIENT_CERT_PASSWORD: VAULT[development/kv/data/sign/2023-2025 data.client_cert_password]
+    SM_HOST: VAULT[development/kv/data/sign/2023-2025 data.host]
+  codesigning_file:
+    path: ${SM_CLIENT_CERT_FILE}.b64
+    variable_name: SM_CLIENT_CERT_FILE_BASE64
+  <<: *SETUP_MAVEN_CACHE
+  build_script: |
+    base64 --decode "${SM_CLIENT_CERT_FILE}.b64" > "${SM_CLIENT_CERT_FILE}"
+    source cirrus-env BUILD-PRIVATE
+    .cirrus/regular_mvn_build_deploy_analyze \
+      -Declipse.p2.mirrors=false \
+      -Dmaven.test.skip=true \
+      -Dsonar.skip=true \
+      -Dcyclonedx.skip=false
+  site_artifacts:
+    paths: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
+    type: application/zip
+  cleanup_before_cache_script: cleanup_maven_repository
+  on_failure:
+    slack_notification_script: |
+      source slack-failure-notification "Cirrus CI build failure on pipeline: $CIRRUS_PIPELINE_NAME"
 
 validate_task:
   # name: "Run unit tests on Linux"
