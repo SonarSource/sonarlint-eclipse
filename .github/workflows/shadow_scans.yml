@@ -4,6 +4,7 @@ on:
     # Run the workflow every day at 04:00 UTC
     - cron: '0 4 * * *'
   workflow_dispatch:
+  pull_request:
 
 permissions:
   id-token: write
@@ -51,7 +52,7 @@ jobs:
 
       - name: Upload site artifacts
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: site-zip
           path: org.sonarlint.eclipse.site/target/org.sonarlint.eclipse.site-*.zip
@@ -102,7 +103,7 @@ jobs:
 
       - name: Upload UT coverage
         if: always() && !cancelled()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: ut-coverage
           path: |
@@ -110,14 +111,14 @@ jobs:
 
       - name: Upload Maven test logs
         if: always() && !cancelled()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: mvn-test-logs
           path: 'org.sonarlint.eclipse.core.tests/target/work/configuration/*.log,org.sonarlint.eclipse.core.tests/target/work/data/.metadata/.log'
 
       - name: Upload Xvfb logs and JUnit XML on failure
         if: failure()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: failure-logs
           path: 'Xvfb.out,**/target/surefire-reports/TEST-*.xml'
@@ -251,28 +252,28 @@ jobs:
 
       - name: Upload video
         if: failure()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: recording-${{ matrix.QA_CATEGORY }}
           path: ${{ github.workspace }}/recording_${{ matrix.QA_CATEGORY }}.mp4
 
       - name: Upload IT coverage
         if: always() && !cancelled()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-it-${{ matrix.QA_CATEGORY }}-coverage
           path: ${{ github.workspace }}/it-coverage-${{ matrix.QA_CATEGORY }}.exec
 
       - name: Upload IT logs
         if: always() && !cancelled()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: mvn-it-logs-${{ matrix.QA_CATEGORY }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
       - name: Upload failure diagnostics
         if: failure()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: failure-${{ matrix.QA_CATEGORY }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
@@ -387,28 +388,28 @@ jobs:
 
       - name: Upload video
         if: failure()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: recording-${{ matrix.SQC_REGION }}
           path: ${{ github.workspace }}/recording_${{ matrix.SQC_REGION }}.mp4
 
       - name: Upload IT coverage
         if: always() && !cancelled()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-it-sc-${{ matrix.SQC_REGION }}-coverage
           path: ${{ github.workspace }}/it-coverage-sc-${{ matrix.SQC_REGION }}.exec
 
       - name: Upload IT logs
         if: always() && !cancelled()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: mvn-it-logs-sc-${{ matrix.SQC_REGION }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
       - name: Upload failure diagnostics
         if: failure()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: failure-sc-${{ matrix.SQC_REGION }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
@@ -518,28 +519,28 @@ jobs:
 
       - name: Upload video
         if: failure()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: recording-${{ matrix.TARGET_PLATFORM }}
           path: ${{ github.workspace }}/recording_${{ matrix.TARGET_PLATFORM }}.mp4
 
       - name: Upload IT coverage
         if: always() && !cancelled()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-it-${{ matrix.TARGET_PLATFORM }}-coverage
           path: ${{ github.workspace }}/it-coverage-${{ matrix.TARGET_PLATFORM }}.exec
 
       - name: Upload IT logs
         if: always() && !cancelled()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: mvn-it-logs-${{ matrix.TARGET_PLATFORM }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
       - name: Upload failure diagnostics
         if: failure()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: failure-${{ matrix.TARGET_PLATFORM }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
@@ -650,28 +651,28 @@ jobs:
 
       - name: Upload video
         if: failure()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: recording-cdt-${{ matrix.TARGET_PLATFORM }}
           path: ${{ github.workspace }}/recording_cdt_${{ matrix.TARGET_PLATFORM }}.mp4
 
       - name: Upload IT coverage
         if: always() && !cancelled()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-it-cdt-${{ matrix.TARGET_PLATFORM }}-coverage
           path: ${{ github.workspace }}/it-coverage-cdt-${{ matrix.TARGET_PLATFORM }}.exec
 
       - name: Upload IT logs
         if: always() && !cancelled()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: mvn-it-logs-cdt-${{ matrix.TARGET_PLATFORM }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
       - name: Upload failure diagnostics
         if: failure()
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: failure-cdt-${{ matrix.TARGET_PLATFORM }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
