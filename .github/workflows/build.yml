@@ -934,7 +934,7 @@ jobs:
   dogfood:
     needs:
       - promote
-    if: github.event_name != 'pull_request' || github.ref_name == 'master' || startsWith(github.ref_name, 'branch-')
+    if: github.event_name == 'pull_request' || github.ref_name == 'master' || startsWith(github.ref_name, 'branch-')
     runs-on: github-ubuntu-latest-s
     name: Publish Dogfood Site
 
@@ -955,7 +955,7 @@ jobs:
             development/aws/sts/downloads access_key | AWS_ACCESS_KEY_ID;
             development/aws/sts/downloads secret_key | AWS_SECRET_ACCESS_KEY;
             development/aws/sts/downloads security_token | AWS_SESSION_TOKEN;
-            development/artifactory/token/${{ github.repository }}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
+            development/artifactory/token/{REPO_OWNER_NAME_DASH}-private-reader access_token | ARTIFACTORY_ACCESS_TOKEN;
             development/kv/data/repox data.url | ARTIFACTORY_URL;
 
       - name: Install AWS CLI
