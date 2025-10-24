@@ -96,7 +96,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
   }
 
   @BeforeClass
-  public static void addLogListener() throws IOException, CoreException, InterruptedException {
+  public static void addLogListener() throws IOException, CoreException {
     listener = new LogListener() {
 
       @Override
