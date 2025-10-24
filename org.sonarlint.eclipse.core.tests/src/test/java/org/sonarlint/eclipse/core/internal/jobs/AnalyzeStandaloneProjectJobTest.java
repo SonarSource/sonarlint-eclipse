@@ -95,6 +95,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
     markerUpdateListener.markersUpdatedLatch = new CountDownLatch(1);
   }
 
+  //TODO Investigate previous project wait behaviour with SLE-1311
   @BeforeClass
   public static void addLogListener() throws IOException, CoreException {
     listener = new LogListener() {
