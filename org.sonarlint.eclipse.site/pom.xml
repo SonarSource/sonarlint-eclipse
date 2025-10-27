@@ -58,7 +58,7 @@
         </executions>
         <configuration>          
           <keystore>NONE</keystore>
-          <alias>key_525594307</alias>
+          <alias>key_1361216169</alias>
           <storepass>none</storepass>
           <providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
           <storetype>PKCS11</storetype>

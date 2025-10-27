@@ -1,4 +1,4 @@
-name: Build
+name: Shadow Scans
 on:
   schedule:
     # Run the workflow every day at 04:00 UTC
