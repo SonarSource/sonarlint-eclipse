@@ -117,13 +117,13 @@ build_task:
     SIGN_KEY: VAULT[development/kv/data/sign data.key]
     PGP_PASSPHRASE: VAULT[development/kv/data/sign data.passphrase]
     DEPLOY_PULL_REQUEST: true
-    SM_API_KEY: VAULT[development/kv/data/sign/2023-2025 data.apikey]
-    SM_CERT: VAULT[development/kv/data/sign/2023-2025 data.cert]
-    SM_CERT_FP: VAULT[development/kv/data/sign/2023-2025 data.cert_fp]
-    SM_CLIENT_CERT_FILE_BASE64: VAULT[development/kv/data/sign/2023-2025 data.client_cert_file_base64]
+    SM_API_KEY: VAULT[development/kv/data/sign/digicert data.apikey]
+    SM_CERT: VAULT[development/kv/data/sign/digicert data.cert]
+    SM_CERT_FP: VAULT[development/kv/data/sign/digicert data.cert_fp]
+    SM_CLIENT_CERT_FILE_BASE64: VAULT[development/kv/data/sign/digicert data.client_cert_file_base64]
     SM_CLIENT_CERT_FILE: ${CIRRUS_WORKING_DIR}/Certificate.pkcs12.p12
-    SM_CLIENT_CERT_PASSWORD: VAULT[development/kv/data/sign/2023-2025 data.client_cert_password]
-    SM_HOST: VAULT[development/kv/data/sign/2023-2025 data.host]
+    SM_CLIENT_CERT_PASSWORD: VAULT[development/kv/data/sign/digicert data.client_cert_password]
+    SM_HOST: VAULT[development/kv/data/sign/digicert data.host]
   codesigning_file:
     path: ${SM_CLIENT_CERT_FILE}.b64
     variable_name: SM_CLIENT_CERT_FILE_BASE64
