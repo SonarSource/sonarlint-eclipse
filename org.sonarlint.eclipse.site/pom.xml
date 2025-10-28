@@ -62,10 +62,10 @@
           <storepass>none</storepass>
           <providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
           <storetype>PKCS11</storetype>
-          <providerArg>/usr/local/share/smtools/pkcs11properties.cfg</providerArg>
+          <providerArg>${env.SMTOOLS_PATH}/pkcs11properties.cfg</providerArg>
           <tsa>http://timestamp.digicert.com</tsa>
           <certs>true</certs>
-          <verbose>false</verbose>
+          <verbose>true</verbose>
           <skip>${jarsigner.skip}</skip>
           <archiveDirectory>${project.build.directory}/repository/</archiveDirectory>
           <includes>
