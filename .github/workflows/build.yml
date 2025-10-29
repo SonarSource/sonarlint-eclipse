@@ -17,6 +17,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  consistency_check:
+    runs-on: github-ubuntu-latest-s
+    name: SLCORE Consistency
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Maven Toolchains
+        shell: bash
+        run: .github/scripts/check-slcore-consistency.sh
+
   build:
     outputs:
       project-version: ${{ steps.version.outputs.project-version }}
