@@ -4,7 +4,6 @@ on:
     # Run the workflow every day at 04:00 UTC
     - cron: '0 4 * * *'
   workflow_dispatch:
-  pull_request:
 
 permissions:
   id-token: write
