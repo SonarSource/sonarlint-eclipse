@@ -226,19 +226,14 @@ jobs:
 
       - name: Vault (GitHub token)
         id: secrets-gh
-        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        uses: SonarSource/vault-action-wrapper@v3
         with:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
 
       - name: Start Xvfb and recording
         shell: bash
-        run: |
-          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
-          metacity --sm-disable --replace &
-          sleep 10
-          echo 'Recording tests on video'
-          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_${{ matrix.QA_CATEGORY }}.mp4" &
+        run: .github/scripts/start-xvfb-recording.sh "recording_${{ matrix.QA_CATEGORY }}"
 
       - name: Run ITs (Connected Mode with SonarQube) with Xvfb
         shell: bash
@@ -264,10 +259,7 @@ jobs:
       - name: Stop recording and Xvfb
         if: always()
         shell: bash
-        run: |
-          pkill -SIGINT -f ffmpeg || true
-          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
-          pkill -f Xvfb || true
+        run: .github/scripts/stop-xvfb-recording.sh
 
       - name: Upload video
         if: ${{ !cancelled() }}
@@ -371,7 +363,7 @@ jobs:
 
       - name: Vault (SonarCloud and GitHub tokens)
         id: secrets
-        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        uses: SonarSource/vault-action-wrapper@v3
         with:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
@@ -380,12 +372,7 @@ jobs:
 
       - name: Start Xvfb and recording
         shell: bash
-        run: |
-          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
-          metacity --sm-disable --replace &
-          sleep 10
-          echo 'Recording tests on video'
-          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_${{ matrix.SQC_REGION }}.mp4" &
+        run: .github/scripts/start-xvfb-recording.sh "recording_${{ matrix.SQC_REGION }}"
 
       - name: Run ITs (Connected Mode with SonarCloud)
         shell: bash
@@ -412,10 +399,7 @@ jobs:
       - name: Stop recording and Xvfb
         if: always()
         shell: bash
-        run: |
-          pkill -SIGINT -f ffmpeg || true
-          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
-          pkill -f Xvfb || true
+        run: .github/scripts/stop-xvfb-recording.sh
 
       - name: Upload video
         if: ${{ !cancelled() }}
@@ -519,19 +503,14 @@ jobs:
 
       - name: Vault (GitHub token)
         id: secrets
-        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        uses: SonarSource/vault-action-wrapper@v3
         with:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
 
       - name: Start Xvfb and recording
         shell: bash
-        run: |
-          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
-          metacity --sm-disable --replace &
-          sleep 10
-          echo 'Recording tests on video'
-          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_${{ matrix.TARGET_PLATFORM }}.mp4" &
+        run: .github/scripts/start-xvfb-recording.sh "recording_${{ matrix.TARGET_PLATFORM }}"
 
       - name: Run ITs (Standalone Mode)
         shell: bash
@@ -555,10 +534,7 @@ jobs:
       - name: Stop recording and Xvfb
         if: always()
         shell: bash
-        run: |
-          pkill -SIGINT -f ffmpeg || true
-          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
-          pkill -f Xvfb || true
+        run: .github/scripts/stop-xvfb-recording.sh
 
       - name: Upload video
         if: ${{ !cancelled() }}
@@ -659,23 +635,18 @@ jobs:
             echo "::error::Failed to locate P2 repository in unzipped site"
             exit 1
           fi
-          echo "P2_DIR=$P2_DIR" | tee -a "$GITHUB_ENV"
+          echo "P2_DIR=$P2_DIR" >> "$GITHUB_ENV"
 
       - name: Vault (GitHub token)
         id: secrets
-        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        uses: SonarSource/vault-action-wrapper@v3
         with:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
 
       - name: Start Xvfb and recording
         shell: bash
-        run: |
-          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
-          metacity --sm-disable --replace &
-          sleep 10
-          echo 'Recording tests on video'
-          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_cdt_${{ matrix.TARGET_PLATFORM }}.mp4" &
+        run: .github/scripts/start-xvfb-recording.sh "recording_cdt_${{ matrix.TARGET_PLATFORM }}"
 
       - name: Run ITs (CDT Integration)
         shell: bash
@@ -699,10 +670,7 @@ jobs:
       - name: Stop recording and Xvfb
         if: always()
         shell: bash
-        run: |
-          pkill -SIGINT -f ffmpeg || true
-          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
-          pkill -f Xvfb || true
+        run: .github/scripts/stop-xvfb-recording.sh
 
       - name: Upload video
         if: ${{ !cancelled() }}
@@ -797,7 +765,7 @@ jobs:
 
       - name: Vault (GitHub token)
         id: secrets-gh
-        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        uses: SonarSource/vault-action-wrapper@v3
         with:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
@@ -896,7 +864,7 @@ jobs:
 
       - name: Vault (AWS and Artifactory credentials)
         id: secrets
-        uses: SonarSource/vault-action-wrapper@320bd31b03e5dacaac6be51bbbb15adf7caccc32 # 3.1.0
+        uses: SonarSource/vault-action-wrapper@v3
         with:
           secrets: |
             development/aws/sts/downloads access_key | AWS_ACCESS_KEY_ID;

@@ -211,15 +211,6 @@ jobs:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
 
-      - name: Start Xvfb and recording
-        shell: bash
-        run: |
-          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
-          metacity --sm-disable --replace &
-          sleep 10
-          echo 'Recording tests on video'
-          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_${{ matrix.QA_CATEGORY }}.mp4" &
-
       - name: Run ITs (Connected Mode with SonarQube) with Xvfb
         shell: bash
         working-directory: its
@@ -240,14 +231,6 @@ jobs:
             -Djacoco.append=true \
             -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
           mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-${QA_CATEGORY}.exec
-
-      - name: Stop recording and Xvfb
-        if: always()
-        shell: bash
-        run: |
-          pkill -SIGINT -f ffmpeg || true
-          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
-          pkill -f Xvfb || true
 
       - name: Upload video
         if: failure()
@@ -346,15 +329,6 @@ jobs:
             development/team/sonarlint/kv/data/sonarcloud-it token | SONARCLOUD_IT_TOKEN;
             development/team/sonarlint/kv/data/sonarcloud-it-US token | SONARCLOUD_IT_TOKEN_US;
 
-      - name: Start Xvfb and recording
-        shell: bash
-        run: |
-          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
-          metacity --sm-disable --replace &
-          sleep 10
-          echo 'Recording tests on video'
-          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_${{ matrix.SQC_REGION }}.mp4" &
-
       - name: Run ITs (Connected Mode with SonarCloud)
         shell: bash
         working-directory: its
@@ -376,14 +350,6 @@ jobs:
             -Djacoco.append=true \
             -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
           mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-sc-${SQC_REGION}.exec
-
-      - name: Stop recording and Xvfb
-        if: always()
-        shell: bash
-        run: |
-          pkill -SIGINT -f ffmpeg || true
-          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
-          pkill -f Xvfb || true
 
       - name: Upload video
         if: failure()
@@ -480,15 +446,6 @@ jobs:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
 
-      - name: Start Xvfb and recording
-        shell: bash
-        run: |
-          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
-          metacity --sm-disable --replace &
-          sleep 10
-          echo 'Recording tests on video'
-          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_${{ matrix.TARGET_PLATFORM }}.mp4" &
-
       - name: Run ITs (Standalone Mode)
         shell: bash
         working-directory: its
@@ -507,14 +464,6 @@ jobs:
             -Djacoco.append=true \
             -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
           mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-${TARGET_PLATFORM}.exec
-
-      - name: Stop recording and Xvfb
-        if: always()
-        shell: bash
-        run: |
-          pkill -SIGINT -f ffmpeg || true
-          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
-          pkill -f Xvfb || true
 
       - name: Upload video
         if: failure()
@@ -612,15 +561,6 @@ jobs:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
 
-      - name: Start Xvfb and recording
-        shell: bash
-        run: |
-          Xvfb :10 -screen 0 1920x1080x24 > Xvfb.out 2>&1 &
-          metacity --sm-disable --replace &
-          sleep 10
-          echo 'Recording tests on video'
-          ffmpeg -loglevel warning -f x11grab -video_size 1920x1080 -i ${DISPLAY} -codec:v libx264 -r 12 "$GITHUB_WORKSPACE/recording_cdt_${{ matrix.TARGET_PLATFORM }}.mp4" &
-
       - name: Run ITs (CDT Integration)
         shell: bash
         working-directory: its
@@ -639,14 +579,6 @@ jobs:
             -Djacoco.append=true \
             -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
           mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-cdt-${TARGET_PLATFORM}.exec
-
-      - name: Stop recording and Xvfb
-        if: always()
-        shell: bash
-        run: |
-          pkill -SIGINT -f ffmpeg || true
-          for i in $(seq 1 30); do pgrep ffmpeg >/dev/null || break; sleep 1; done
-          pkill -f Xvfb || true
 
       - name: Upload video
         if: failure()
