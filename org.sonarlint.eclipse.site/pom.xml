@@ -65,7 +65,7 @@
           <providerArg>${env.SMTOOLS_PATH}/pkcs11properties.cfg</providerArg>
           <tsa>http://timestamp.digicert.com</tsa>
           <certs>true</certs>
-          <verbose>true</verbose>
+          <verbose>false</verbose>
           <skip>${jarsigner.skip}</skip>
           <archiveDirectory>${project.build.directory}/repository/</archiveDirectory>
           <includes>

@@ -4,6 +4,7 @@ on:
     # Run the workflow every day at 04:00 UTC
     - cron: '0 4 * * *'
   workflow_dispatch:
+  pull_request:
 
 permissions:
   id-token: write
@@ -211,6 +212,10 @@ jobs:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
 
+      - name: Start Xvfb and recording
+        shell: bash
+        run: .github/scripts/start-xvfb-recording.sh "recording_${{ matrix.QA_CATEGORY }}"
+
       - name: Run ITs (Connected Mode with SonarQube) with Xvfb
         shell: bash
         working-directory: its
@@ -231,6 +236,11 @@ jobs:
             -Djacoco.append=true \
             -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
           mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-${QA_CATEGORY}.exec
+
+      - name: Stop recording and Xvfb
+        if: always()
+        shell: bash
+        run: .github/scripts/stop-xvfb-recording.sh
 
       - name: Upload video
         if: failure()
@@ -329,6 +339,10 @@ jobs:
             development/team/sonarlint/kv/data/sonarcloud-it token | SONARCLOUD_IT_TOKEN;
             development/team/sonarlint/kv/data/sonarcloud-it-US token | SONARCLOUD_IT_TOKEN_US;
 
+      - name: Start Xvfb and recording
+        shell: bash
+        run: .github/scripts/start-xvfb-recording.sh "recording_${{ matrix.SQC_REGION }}"
+
       - name: Run ITs (Connected Mode with SonarCloud)
         shell: bash
         working-directory: its
@@ -350,6 +364,11 @@ jobs:
             -Djacoco.append=true \
             -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
           mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-sc-${SQC_REGION}.exec
+
+      - name: Stop recording and Xvfb
+        if: always()
+        shell: bash
+        run: .github/scripts/stop-xvfb-recording.sh
 
       - name: Upload video
         if: failure()
@@ -446,6 +465,10 @@ jobs:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
 
+      - name: Start Xvfb and recording
+        shell: bash
+        run: .github/scripts/start-xvfb-recording.sh "recording_${{ matrix.TARGET_PLATFORM }}"
+
       - name: Run ITs (Standalone Mode)
         shell: bash
         working-directory: its
@@ -464,6 +487,11 @@ jobs:
             -Djacoco.append=true \
             -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
           mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-${TARGET_PLATFORM}.exec
+
+      - name: Stop recording and Xvfb
+        if: always()
+        shell: bash
+        run: .github/scripts/stop-xvfb-recording.sh
 
       - name: Upload video
         if: failure()
@@ -561,6 +589,10 @@ jobs:
           secrets: |
             development/github/token/licenses-ro token | GITHUB_TOKEN;
 
+      - name: Start Xvfb and recording
+        shell: bash
+        run: .github/scripts/start-xvfb-recording.sh "recording_cdt_${{ matrix.TARGET_PLATFORM }}"
+
       - name: Run ITs (CDT Integration)
         shell: bash
         working-directory: its
@@ -579,6 +611,11 @@ jobs:
             -Djacoco.append=true \
             -Djacoco.destFile=${GITHUB_WORKSPACE}/it-coverage.exec
           mv ${GITHUB_WORKSPACE}/it-coverage.exec ${GITHUB_WORKSPACE}/it-coverage-cdt-${TARGET_PLATFORM}.exec
+
+      - name: Stop recording and Xvfb
+        if: always()
+        shell: bash
+        run: .github/scripts/stop-xvfb-recording.sh
 
       - name: Upload video
         if: failure()
