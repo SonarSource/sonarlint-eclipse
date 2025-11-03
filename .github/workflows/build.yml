@@ -53,7 +53,7 @@ jobs:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
         with:
-          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
           artifactory-reader-role: private-reader
 
       - name: Set project version
@@ -62,7 +62,7 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/build-maven@v1
         with:
-          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dcyclonedx.skip=false -DskipTests -Dmaven.deploy.skip=true -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+          maven-args: -Declipse.p2.mirrors=false -Dcyclonedx.skip=false -DskipTests -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
           deploy-pull-request: true
