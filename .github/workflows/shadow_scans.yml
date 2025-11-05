@@ -28,9 +28,6 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - name: Setup DigiCert Client Tools
-        uses: SonarSource/ci-github-actions/code-signing@v1
-
       - uses: SonarSource/ci-github-actions/config-maven@v1
         env:
           CURRENT_VERSION: skip
