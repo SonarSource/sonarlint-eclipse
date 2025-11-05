@@ -42,7 +42,7 @@ jobs:
       - uses: SonarSource/ci-github-actions/build-maven@v1
         with:
           sonar-platform: none
-          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true
+          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true -P-sign
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
 
