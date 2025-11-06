@@ -88,7 +88,7 @@
     <sonar.organization>sonarsource</sonar.organization>
 
     <!-- Global properties -->
-    <jarsigner.skip>true</jarsigner.skip>
+    <!-- <jarsigner.skip>false</jarsigner.skip> -->
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
     <artifactsToPublish>${project.groupId}:org.sonarlint.eclipse.site:zip,${project.groupId}:sonarlint-eclipse-parent:json:cyclonedx</artifactsToPublish>
