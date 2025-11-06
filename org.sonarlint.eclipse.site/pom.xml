@@ -48,34 +48,48 @@
               <goal>sign</goal>
             </goals>
             <phase>prepare-package</phase>
+            <configuration>
+              <keystore>NONE</keystore>
+              <alias>key_1361216169</alias>
+              <storepass>none</storepass>
+              <providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
+              <storetype>PKCS11</storetype>
+              <providerArg>${env.SMTOOLS_PATH}/pkcs11properties.cfg</providerArg>
+              <tsa>http://timestamp.digicert.com</tsa>
+              <certs>true</certs>
+              <verbose>false</verbose>
+              <skip>${jarsigner.skip}</skip>
+              <archiveDirectory>${project.build.directory}/repository/</archiveDirectory>
+              <includes>
+                <include>features/*</include>
+                <include>plugins/org.sonarlint.*</include>
+                <include>plugins/org.sonarsource.*</include>
+              </includes>
+              <processAttachedArtifacts>false</processAttachedArtifacts>
+              <processMainArtifact>false</processMainArtifact>
+            </configuration>
           </execution>
           <execution>
             <id>verify</id>
             <goals>
               <goal>verify</goal>
             </goals>
+            <configuration>
+              <!-- Verify goal doesn't need keystore/alias - it only checks existing signatures -->
+              <certs>true</certs>
+              <verbose>false</verbose>
+              <skip>${jarsigner.skip}</skip>
+              <archiveDirectory>${project.build.directory}/repository/</archiveDirectory>
+              <includes>
+                <include>features/*</include>
+                <include>plugins/org.sonarlint.*</include>
+                <include>plugins/org.sonarsource.*</include>
+              </includes>
+              <processAttachedArtifacts>false</processAttachedArtifacts>
+              <processMainArtifact>false</processMainArtifact>
+            </configuration>
           </execution>
         </executions>
-        <configuration>          
-          <keystore>NONE</keystore>
-          <alias>key_1361216169</alias>
-          <storepass>none</storepass>
-          <providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
-          <storetype>PKCS11</storetype>
-          <providerArg>${env.SMTOOLS_PATH}/pkcs11properties.cfg</providerArg>
-          <tsa>http://timestamp.digicert.com</tsa>
-          <certs>true</certs>
-          <verbose>false</verbose>
-          <skip>${jarsigner.skip}</skip>
-          <archiveDirectory>${project.build.directory}/repository/</archiveDirectory>
-          <includes>
-            <include>features/*</include>
-            <include>plugins/org.sonarlint.*</include>
-            <include>plugins/org.sonarsource.*</include>
-          </includes>
-          <processAttachedArtifacts>false</processAttachedArtifacts>
-          <processMainArtifact>false</processMainArtifact>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.eclipse.tycho</groupId>

@@ -62,7 +62,7 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/build-maven@v1
         with:
-          maven-args: -Declipse.p2.mirrors=false -Dcyclonedx.skip=false -Dmaven.install.skip=true -DskipTests -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
+          maven-args: -Declipse.p2.mirrors=false -Dcyclonedx.skip=false -DskipTests -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
           deploy-pull-request: true
