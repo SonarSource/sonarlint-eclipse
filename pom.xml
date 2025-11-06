@@ -87,8 +87,7 @@
     <sonar.sca.exclusions>org.sonarlint.core.tests/testdata,its/projects</sonar.sca.exclusions>
     <sonar.organization>sonarsource</sonar.organization>
 
-    <!-- Global properties -->
-    <!-- <jarsigner.skip>false</jarsigner.skip> -->
+    <jarsigner.skip>true</jarsigner.skip>
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
     <artifactsToPublish>${project.groupId}:org.sonarlint.eclipse.site:zip,${project.groupId}:sonarlint-eclipse-parent:json:cyclonedx</artifactsToPublish>
