@@ -37,16 +37,17 @@ jobs:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
         with:
-          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false --batch-mode --no-transfer-progress --errors --fail-at-end
           artifactory-reader-role: private-reader
 
       - name: Set project version
         id: version
         run: .github/scripts/set_maven_build_version.sh
+
       - uses: SonarSource/ci-github-actions/build-maven@v1
         with:
           sonar-platform: none
-          maven-args: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -DskipTests -Dmaven.deploy.skip=true
+          maven-args: -Declipse.p2.mirrors=false -Dcyclonedx.skip=false -DskipTests -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           artifactory-reader-role: private-reader
           artifactory-deployer-role: qa-deployer
 
@@ -84,7 +85,7 @@ jobs:
           PROJECT_VERSION: skip
         with:
           artifactory-reader-role: private-reader
-          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false --batch-mode --no-transfer-progress --errors --fail-at-end
       - name: Run unit tests with Xvfb
         shell: bash
         env:
@@ -192,7 +193,7 @@ jobs:
           PROJECT_VERSION: skip
         with:
           artifactory-reader-role: private-reader
-          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
@@ -317,7 +318,7 @@ jobs:
           PROJECT_VERSION: skip
         with:
           artifactory-reader-role: private-reader
-          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
@@ -445,7 +446,7 @@ jobs:
           PROJECT_VERSION: skip
         with:
           artifactory-reader-role: private-reader
-          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
@@ -569,7 +570,7 @@ jobs:
           PROJECT_VERSION: skip
         with:
           artifactory-reader-role: private-reader
-          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
@@ -684,7 +685,7 @@ jobs:
           PROJECT_VERSION: skip
         with:
           artifactory-reader-role: private-reader
-          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true
+          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
       - name: Download IT coverage artifacts
         uses: actions/download-artifact@v4.1.8
