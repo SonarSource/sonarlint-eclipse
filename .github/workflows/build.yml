@@ -137,12 +137,21 @@ jobs:
           name: mvn-test-logs
           path: 'org.sonarlint.eclipse.core.tests/target/work/configuration/*.log,org.sonarlint.eclipse.core.tests/target/work/data/.metadata/.log'
 
-      - name: Upload Xvfb logs and JUnit XML on failure
+      - name: Upload Xvfb logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: failure-logs
-          path: 'Xvfb.out,**/target/surefire-reports/TEST-*.xml'
+          name: failure-xvfb-logs
+          path: Xvfb.out
+
+      - name: Upload JUnit XML logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-xvfb-logs
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
 
       - name: Generate QA test report on failure
         if: failure()
@@ -295,12 +304,21 @@ jobs:
           name: mvn-it-logs-${{ matrix.QA_CATEGORY }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
-      - name: Upload failure diagnostics
+      - name: Upload Xvfb logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: failure-${{ matrix.QA_CATEGORY }}
-          path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+          name: failure-xvfb-${{ matrix.QA_CATEGORY }}
+          path: Xvfb.out
+
+      - name: Upload JUnit XML logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-junit-${{ matrix.QA_CATEGORY }}
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
 
       - name: Generate QA test report on failure
         if: failure()
@@ -435,12 +453,21 @@ jobs:
           name: mvn-it-logs-sc-${{ matrix.SQC_REGION }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
-      - name: Upload failure diagnostics
+      - name: Upload Xvfb logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: failure-sc-${{ matrix.SQC_REGION }}
-          path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+          name: failure-xvfb-${{ matrix.SQC_REGION }}
+          path: Xvfb.out
+
+      - name: Upload JUnit XML logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-junit-${{ matrix.SQC_REGION }}
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
 
       - name: Generate QA test report on failure
         if: failure()
@@ -570,12 +597,21 @@ jobs:
           name: mvn-it-logs-${{ matrix.TARGET_PLATFORM }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
-      - name: Upload failure diagnostics
+      - name: Upload Xvfb logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: failure-${{ matrix.TARGET_PLATFORM }}
-          path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+          name: failure-xvfb-${{ matrix.TARGET_PLATFORM }}
+          path: Xvfb.out
+
+      - name: Upload JUnit XML logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-junit-${{ matrix.TARGET_PLATFORM }}
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
 
       - name: Generate QA test report on failure
         if: failure()
@@ -712,6 +748,22 @@ jobs:
         with:
           name: failure-cdt-${{ matrix.TARGET_PLATFORM }}
           path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+
+      - name: Upload Xvfb logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-xvfb-cdt-${{ matrix.TARGET_PLATFORM }}
+          path: Xvfb.out
+
+      - name: Upload JUnit XML logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-junit-cdt-${{ matrix.TARGET_PLATFORM }}
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
 
       - name: Generate QA test report on failure
         if: failure()
