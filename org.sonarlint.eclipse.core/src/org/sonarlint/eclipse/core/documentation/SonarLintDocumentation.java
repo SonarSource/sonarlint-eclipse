@@ -23,11 +23,11 @@ public class SonarLintDocumentation {
 
   private static final String BASE_DOCS_URL = "https://docs.sonarsource.com/sonarqube-for-eclipse";
   public static final String FOCUS_ON_NEW_CODE = BASE_DOCS_URL + "/using/new-code/";
-  public static final String CONNECTED_MODE_LINK = BASE_DOCS_URL + "/team-features/connected-mode/";
+  public static final String CONNECTED_MODE_LINK = BASE_DOCS_URL + "/connect-your-ide/connected-mode/";
   public static final String CONNECTED_MODE_BENEFITS = CONNECTED_MODE_LINK + "#benefits";
-  public static final String CONNECTED_MODE_SETUP_LINK = BASE_DOCS_URL + "/team-features/connected-mode-setup/";
+  public static final String CONNECTED_MODE_SETUP_LINK = BASE_DOCS_URL + "/connect-your-ide/connected-mode-setup/";
   public static final String CONNECTED_MODE_SHARING = CONNECTED_MODE_SETUP_LINK + "#reuse-the-binding-configuration";
-  public static final String VERSION_SUPPORT_POLICY = CONNECTED_MODE_SETUP_LINK + "#sonarlint-sonarqube-version-support-policy";
+  public static final String VERSION_SUPPORT_POLICY = CONNECTED_MODE_SETUP_LINK + "#sonarqube-for-ide-sonarqube-version-support-policy";
   public static final String BRANCH_AWARENESS = CONNECTED_MODE_LINK + "#branch-awareness";
   public static final String SECURITY_HOTSPOTS_LINK = BASE_DOCS_URL + "/using/security-hotspots/";
   public static final String TAINT_VULNERABILITIES_LINK = BASE_DOCS_URL + "/using/taint-vulnerabilities/";
@@ -39,8 +39,8 @@ public class SonarLintDocumentation {
   public static final String FILE_EXCLUSIONS = BASE_DOCS_URL + "/using/file-exclusions/";
   public static final String RULES = BASE_DOCS_URL + "/using/rules/";
   public static final String RULES_SELECTION = RULES + "#rule-selection";
-  public static final String TROUBLESHOOTING_LINK = BASE_DOCS_URL + "/troubleshooting/";
-  public static final String ADVANCED_CONFIGURATION = BASE_DOCS_URL + "/team-features/advanced-configuration/";
+  public static final String TROUBLESHOOTING_LINK = BASE_DOCS_URL + "/resources/troubleshooting/";
+  public static final String ADVANCED_CONFIGURATION = BASE_DOCS_URL + "/connect-your-ide/advanced-configuration/";
   public static final String PROVIDE_JAVA_RUNTIME_LINK = ADVANCED_CONFIGURATION + "#providing-a-java-runtime";
 
   private static final String BASE_MARKETING_URL = "https://www.sonarsource.com";
