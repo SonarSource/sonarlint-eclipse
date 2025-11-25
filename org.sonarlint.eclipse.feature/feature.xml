@@ -10,7 +10,7 @@
       %description
    </description>
 
-   <copyright url="https://docs.sonarsource.com/sonarqube-for-eclipse/license/">
+   <copyright url="https://github.com/SonarSource/sonarlint-eclipse/blob/master/LICENSE.txt">
       %copyright
    </copyright>
 
