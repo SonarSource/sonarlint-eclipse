@@ -21,12 +21,11 @@ package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -115,9 +114,8 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     var gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalSpan = 2;
     newCodeHeader.setLayoutData(gd);
-    var fontData = newCodeHeader.getFont().getFontData()[0];
-    var font = new Font(parent.getShell().getDisplay(),
-      new FontData(fontData.getName(), fontData.getHeight(), SWT.BOLD));
+    // Use the banner font from JFace Font Registry (managed lifecycle, no manual disposal needed)
+    var font = JFaceResources.getBannerFont();
     newCodeHeader.setFont(font);
 
     newCodeInformation = new Link(container, SWT.NONE);
