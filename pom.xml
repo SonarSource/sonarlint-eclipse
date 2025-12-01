@@ -207,7 +207,6 @@
                   <pluginExecutionFilter>
                     <groupId>com.github.genthaler</groupId>
                     <artifactId>beanshell-maven-plugin</artifactId>
-                    <versionRange>[1.0,)</versionRange>
                     <goals>
                       <goal>run</goal>
                     </goals>
@@ -235,7 +234,6 @@
                   <pluginExecutionFilter>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <versionRange>[1.0,)</versionRange>
                     <goals>
                       <goal>clean</goal>
                     </goals>
