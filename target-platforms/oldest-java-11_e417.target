@@ -5,20 +5,20 @@
     <location type="Target" uri="file:${project_loc:/org.sonarlint.eclipse.its}/../target-platforms/commons-its.target" />
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.eclipse.cdt.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.jdt.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.platform.ide" version="0.0.0" />
-      <unit id="org.eclipse.rse.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.wst.jsdt.feature.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0" />
+      <unit id="org.eclipse.cdt.feature.group" version="10.0.0.202009071455" />
+      <unit id="org.eclipse.jdt.feature.group" version="3.18.500.v20200902-1800" />
+      <unit id="org.eclipse.m2e.feature.feature.group" version="1.16.1.20200710-1008" />
+      <unit id="org.eclipse.platform.ide" version="4.17.0.I20200902-1800" />
+      <unit id="org.eclipse.rse.feature.group" version="4.5.100.202002061858" />
+      <unit id="org.eclipse.wst.jsdt.feature.feature.group" version="2.3.100.v202008161908" />
+      <unit id="org.eclipse.mylyn.commons.feature.group" version="3.25.2.v20200813-0821" />
       <!-- Needed to build the test environment -->
-      <unit id="org.eclipse.equinox.executable.feature.group" version="0.0.0" />
-      <repository location="https://download.eclipse.org/releases/2020-09/" />
+      <unit id="org.eclipse.equinox.executable.feature.group" version="3.8.900.v20200819-0940" />
+      <repository location="https://download.eclipse.org/releases/2020-09/202009161000/" />
     </location>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.eclipse.reddeer.eclipse.feature.feature.group" version="0.0.0" />
+      <unit id="org.eclipse.reddeer.eclipse.feature.feature.group" version="4.7.1.83" />
       <repository location="https://binaries.sonarsource.com/RedDeer/releases/4.7.1.83/" />
     </location>
     
@@ -34,8 +34,8 @@
 	</location>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.eclipse.buildship.feature.group" version="0.0.0" />
-      <repository location="https://download.eclipse.org/buildship/updates/e417/releases/3.x" />
+      <unit id="org.eclipse.buildship.feature.group" version="3.1.11.v20250904-1121" />
+      <repository location="https://download.eclipse.org/buildship/updates/e417/releases/3.x/3.1.11.v20250904-1121/" />
     </location>
   </locations>
   <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17" />
