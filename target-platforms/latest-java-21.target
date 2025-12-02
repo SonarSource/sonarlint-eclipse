@@ -5,39 +5,39 @@
     <location type="Target" uri="file:${project_loc:/org.sonarlint.eclipse.its}/../target-platforms/commons-its.target" />
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.eclipse.cdt.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.jdt.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.platform.ide" version="0.0.0" />
-      <unit id="org.eclipse.rse.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.wst.jsdt.feature.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.pde.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.wildwebdeveloper.embedder.node.feature.feature.group" version="0.0.0" />
+      <unit id="org.eclipse.cdt.feature.group" version="12.2.0.202509030008" />
+      <unit id="org.eclipse.jdt.feature.group" version="3.20.300.v20250905-1111" />
+      <unit id="org.eclipse.m2e.feature.feature.group" version="2.9.1.20250811-2022" />
+      <unit id="org.eclipse.platform.ide" version="4.37.0.I20250905-0730" />
+      <unit id="org.eclipse.rse.feature.group" version="4.5.700.202408061246" />
+      <unit id="org.eclipse.wst.jsdt.feature.feature.group" version="2.4.500.v202307190318" />
+      <unit id="org.eclipse.pde.feature.group" version="3.16.400.v20250905-0730" />
+      <unit id="org.eclipse.wildwebdeveloper.embedder.node.feature.feature.group" version="1.2.1.202501211751" />
       <!-- Needed to build the test environment -->
-      <unit id="org.eclipse.equinox.executable.feature.group" version="0.0.0" />
-      <repository location="https://download.eclipse.org/releases/latest" />
+      <unit id="org.eclipse.equinox.executable.feature.group" version="3.8.3000.v20250801-0854" />
+      <repository location="https://download.eclipse.org/releases/2025-09/202509101001/" />
     </location>
 
     <!-- Workaround for missing org.json -->
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.json" version="0.0.0" />
-      <repository location="https://download.eclipse.org/releases/2022-06/" />
+      <unit id="org.json" version="1.0.0.v201011060100" />
+      <repository location="https://download.eclipse.org/releases/2022-06/202206151000/" />
     </location>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.eclipse.reddeer.eclipse.feature.feature.group" version="0.0.0" />
-      <unit id="org.eclipse.reddeer.ui.feature.feature.group" version="0.0.0" />
+      <unit id="org.eclipse.reddeer.eclipse.feature.feature.group" version="4.7.1.83" />
+      <unit id="org.eclipse.reddeer.ui.feature.feature.group" version="4.7.1.83" />
       <repository location="https://binaries.sonarsource.com/RedDeer/releases/4.7.1.83/" />
     </location>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0" />
-      <repository location="https://download.eclipse.org/mylyn/updates/release/" />
+      <unit id="org.eclipse.mylyn.commons.feature.group" version="3.26.1.v20230604-1755" />
+      <repository location="https://download.eclipse.org/mylyn/updates/release/3.26.1" />
     </location>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.eclipse.buildship.feature.group" version="0.0.0" />
-      <repository location="https://download.eclipse.org/buildship/updates/latest" />
+      <unit id="org.eclipse.buildship.feature.group" version="3.1.10.v20240802-1211" />
+      <repository location="https://download.eclipse.org/buildship/updates/e431/releases/3.x/3.1.10.v20240802-1211/" />
     </location>
   </locations>
   <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21" />
