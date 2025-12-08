@@ -4,7 +4,7 @@
   <locations>
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.slf4j.api" version="0.0.0"/>
-      <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20230531010532/repository/" />
+      <repository location="https://repox.jfrog.io/artifactory/eclipse-orbit-R20230531010532/" />
     </location>
 
     <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">

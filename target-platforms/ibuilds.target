@@ -9,12 +9,12 @@
       <unit id="org.eclipse.platform.ide" version="0.0.0" />
       <!-- Needed to build the test environment -->
       <unit id="org.eclipse.equinox.executable.feature.group" version="0.0.0" />
-      <repository location="https://download.eclipse.org/eclipse/updates/I-builds/" />
+      <repository location="https://repox.jfrog.io/artifactory/eclipse-ibuilds/" />
     </location>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0" />
-      <repository location="https://download.eclipse.org/mylyn/snapshots/weekly/" />
+      <repository location="https://repox.jfrog.io/artifactory/eclipse-mylyn-snapshots/" />
     </location>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
@@ -25,24 +25,24 @@
     <!-- Reddeer requires GEF legacy-->
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.eclipse.gef" version="0.0.0" />
-      <repository location="https://download.eclipse.org/tools/gef/updates/legacy/releases/" />
+      <repository location="https://repox.jfrog.io/artifactory/eclipse-gef-legacy/" />
     </location>
     
     <!-- https://github.com/eclipse/reddeer/issues/2154 -->
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="com.fasterxml.jackson.core.jackson-core" version="0.0.0" />
-      <repository location="https://download.eclipse.org/tools/orbit/downloads/latest-R/" />
+      <repository location="https://repox.jfrog.io/artifactory/eclipse-orbit-latest-R/" />
     </location>
     
     <!-- Workaround for missing org.json -->
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.json" version="0.0.0" />
-      <repository location="https://download.eclipse.org/releases/2022-06/" />
+      <repository location="https://repox.jfrog.io/artifactory/eclipse-releases-2022-06/" />
     </location>
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.eclipse.buildship.feature.group" version="0.0.0" />
-      <repository location="https://download.eclipse.org/buildship/updates/latest-snapshot/" />
+      <repository location="https://repox.jfrog.io/artifactory/eclipse-buildship-latest-snapshot/" />
     </location>
   </locations>
   <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21" />
