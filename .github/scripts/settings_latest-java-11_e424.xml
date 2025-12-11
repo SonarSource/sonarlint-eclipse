@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 http://maven.apache.org/xsd/settings-1.2.0.xsd">
+  <mirrors>
+    <mirror>
+      <id>sonarsource</id>
+      <mirrorOf>*,!eclipse-orbit-R20230531010532,!eclipse-buildship-e424-releases-3x,!eclipse-releases-2022-06</mirrorOf>
+      <name>Repox mirror for all repositories</name>
+      <url>${env.SONARSOURCE_REPOSITORY_URL}</url>
+    </mirror>
+  </mirrors>
+  <servers>
+    <server>
+      <id>sonarsource</id>
+      <configuration>
+        <httpHeaders>
+          <property>
+            <name>Authorization</name>
+            <value>Bearer ${env.ARTIFACTORY_ACCESS_TOKEN}</value>
+          </property>
+        </httpHeaders>
+      </configuration>
+    </server>
+    <!-- commons-build.target -->
+    <server>
+      <id>eclipse-orbit-R20230531010532</id>
+      <username>${env.ARTIFACTORY_USERNAME}</username>
+      <password>${env.ARTIFACTORY_ACCESS_TOKEN}</password>
+    </server>
+    <!-- latest-java-11_e424.target -->
+    <server>
+      <id>eclipse-buildship-e424-releases-3x</id>
+      <username>${env.ARTIFACTORY_USERNAME}</username>
+      <password>${env.ARTIFACTORY_ACCESS_TOKEN}</password>
+    </server>
+    <server>
+      <id>eclipse-releases-2022-06</id>
+      <username>${env.ARTIFACTORY_USERNAME}</username>
+      <password>${env.ARTIFACTORY_ACCESS_TOKEN}</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>sonarsource-repo</id>
+      <activation>
+        <property>
+          <name>!skip-sonarsource-repo</name>
+        </property>
+      </activation>
+      <repositories>
+        <repository>
+          <id>sonarsource</id>
+          <name>SonarSource Central Repository</name>
+          <url>${env.SONARSOURCE_REPOSITORY_URL}</url>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>interval:60</updatePolicy>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+          </snapshots>
+        </repository>
+        <!-- commons-build.target -->
+        <repository>
+          <id>eclipse-orbit-R20230531010532</id>
+          <name>SonarSource Eclipse Orbit 2023-05 Repository</name>
+          <url>${env.ARTIFACTORY_URL}/eclipse-orbit-R20230531010532</url>
+          <layout>p2</layout>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>interval:60</updatePolicy>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+          </snapshots>
+        </repository>
+        <!-- latest-java-11_e424.target -->
+        <repository>
+          <id>eclipse-buildship-e424-releases-3x</id>
+          <name>SonarSource Eclipse Buildship 4.24 Repository</name>
+          <url>${env.ARTIFACTORY_URL}/eclipse-buildship-e424-releases-3x</url>
+          <layout>p2</layout>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>interval:60</updatePolicy>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+          </snapshots>
+        </repository>
+        <repository>
+          <id>eclipse-releases-2022-06</id>
+          <name>SonarSource Eclipse 2022-06 Repository</name>
+          <url>${env.ARTIFACTORY_URL}/eclipse-releases-2022-06/202206151000</url>
+          <layout>p2</layout>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>interval:60</updatePolicy>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+          </snapshots>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>sonarsource</id>
+          <name>SonarSource Central Repository</name>
+          <url>${env.SONARSOURCE_REPOSITORY_URL}</url>
+          <releases>
+            <enabled>true</enabled>
+            <!-- no need to always check if new versions are available when executing a Maven plugin without specifying the version -->
+            <updatePolicy>interval:60</updatePolicy>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+  <pluginGroups>
+    <pluginGroup>com.gradle</pluginGroup>
+    <pluginGroup>org.sonarsource.scanner.maven</pluginGroup>
+  </pluginGroups>
+</settings>

@@ -231,7 +231,7 @@ jobs:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
       - name: Setup settings.xml
-        run: .github/scripts/setup-settings-xml.sh
+        run: .github/scripts/setup-settings-xml.sh latest-java-17_e431
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
@@ -380,7 +380,7 @@ jobs:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
       - name: Setup settings.xml
-        run: .github/scripts/setup-settings-xml.sh
+        run: .github/scripts/setup-settings-xml.sh latest-java-21
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
@@ -532,7 +532,7 @@ jobs:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
       - name: Setup settings.xml
-        run: .github/scripts/setup-settings-xml.sh
+        run: .github/scripts/setup-settings-xml.sh ${{ matrix.TARGET_PLATFORM }}
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
@@ -680,7 +680,7 @@ jobs:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
       - name: Setup settings.xml
-        run: .github/scripts/setup-settings-xml.sh
+        run: .github/scripts/setup-settings-xml.sh ${{ matrix.TARGET_PLATFORM }}
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
