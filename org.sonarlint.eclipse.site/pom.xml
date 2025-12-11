@@ -67,6 +67,7 @@
               </includes>
               <processAttachedArtifacts>false</processAttachedArtifacts>
               <processMainArtifact>false</processMainArtifact>
+              <verbose>true</verbose>
             </configuration>
           </execution>
           <execution>
