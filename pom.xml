@@ -424,7 +424,7 @@
               <storetype>PKCS11</storetype>
               <providerArg>${env.SMTOOLS_PATH}/pkcs11properties.cfg</providerArg>
               <tsa>http://timestamp.digicert.com</tsa>
-              <verbose>false</verbose>
+              <verbose>true</verbose>
             </configuration>
           </plugin>
         </plugins>
