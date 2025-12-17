@@ -55,11 +55,7 @@ public class SingleBindingSuggestionPopup extends AbstractBindingSuggestionPopup
       ProjectBindingProcess.bindProjects(bindingSuggestionDto.getConnectionId(), projectsToBind, bindingSuggestionDto.getSonarProjectKey());
 
       if (SonarLintTelemetry.isEnabled()) {
-        if (bindingSuggestionDto.isFromSharedConfiguration()) {
-          SonarLintTelemetry.addedImportedBindings();
-        } else {
-          SonarLintTelemetry.addedAutomaticBindings();
-        }
+        SonarLintTelemetry.acceptedBindingSuggestion(bindingSuggestionDto.getOrigin());
       }
 
       close();

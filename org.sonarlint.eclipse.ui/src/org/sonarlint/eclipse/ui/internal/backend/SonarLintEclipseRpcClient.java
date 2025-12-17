@@ -211,11 +211,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
         SonarLintLogger.get().debug("Successfully created binding");
 
         if (SonarLintTelemetry.isEnabled()) {
-          if (params.isFromSharedConfiguration()) {
-            SonarLintTelemetry.addedImportedBindings();
-          } else {
-            SonarLintTelemetry.addedAutomaticBindings();
-          }
+          SonarLintTelemetry.acceptedBindingSuggestion(params.getOrigin());
         }
 
         return new AssistBindingResponse(ConfigScopeSynchronizer.getConfigScopeId(job.getProject()));
@@ -454,7 +450,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
         continue;
       }
 
-      var isFromSharedConfiguration = suggestions.get(0).isFromSharedConfiguration();
+      var origin = suggestions.get(0).getOrigin();
       var eitherSuggestion = suggestions.get(0).getConnectionSuggestion();
       if (eitherSuggestion.isLeft()) {
         var suggestion = eitherSuggestion.getLeft();
@@ -467,7 +463,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
         sonarProjects.putIfAbsent(projectKey, new ArrayList<>());
 
         var projects = sonarProjects.get(projectKey);
-        projects.add(new ProjectSuggestionDto(project, isFromSharedConfiguration));
+        projects.add(new ProjectSuggestionDto(project, origin));
       } else {
         var suggestion = eitherSuggestion.getRight();
         var organization = suggestion.getOrganization();
@@ -481,7 +477,7 @@ public class SonarLintEclipseRpcClient extends SonarLintEclipseHeadlessRpcClient
         sonarProjects.putIfAbsent(projectKey, new ArrayList<>());
 
         var projects = sonarProjects.get(projectKey);
-        projects.add(new ProjectSuggestionDto(project, isFromSharedConfiguration));
+        projects.add(new ProjectSuggestionDto(project, origin));
       }
     }
 

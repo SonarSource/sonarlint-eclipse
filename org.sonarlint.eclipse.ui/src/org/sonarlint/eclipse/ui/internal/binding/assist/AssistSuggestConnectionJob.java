@@ -154,11 +154,8 @@ public class AssistSuggestConnectionJob extends AbstractAssistCreatingConnection
   private static void invokeTelemetryAfterSuccess(List<ProjectSuggestionDto> projectSuggestions) {
     if (SonarLintTelemetry.isEnabled()) {
       for (var projectSuggestion : projectSuggestions) {
-        if (projectSuggestion.getIsFromSharedConfiguration()) {
-          SonarLintTelemetry.addedImportedBindings();
-        } else {
-          SonarLintTelemetry.addedAutomaticBindings();
-        }
+        SonarLintTelemetry.acceptedBindingSuggestion(
+          projectSuggestion.getOrigin());
       }
     }
   }

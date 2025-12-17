@@ -20,22 +20,23 @@
 package org.sonarlint.eclipse.ui.internal.binding;
 
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.config.binding.BindingSuggestionOrigin;
 
-/** Pairing the information of a project and whether its suggestion is coming from shared configuration or not */
+/** Pairing of the information of a project and the suggestion origin */
 public class ProjectSuggestionDto {
   private final ISonarLintProject project;
-  private final boolean isFromSharedConfiguration;
+  private final BindingSuggestionOrigin origin;
 
-  public ProjectSuggestionDto(ISonarLintProject project, boolean isFromSharedConfiguration) {
+  public ProjectSuggestionDto(ISonarLintProject project, BindingSuggestionOrigin origin) {
     this.project = project;
-    this.isFromSharedConfiguration = isFromSharedConfiguration;
+    this.origin = origin;
   }
 
   public ISonarLintProject getProject() {
     return this.project;
   }
 
-  public boolean getIsFromSharedConfiguration() {
-    return this.isFromSharedConfiguration;
+  public BindingSuggestionOrigin getOrigin() {
+    return origin;
   }
 }
