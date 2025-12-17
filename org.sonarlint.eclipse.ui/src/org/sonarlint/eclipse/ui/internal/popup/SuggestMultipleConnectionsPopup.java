@@ -95,7 +95,7 @@ public class SuggestMultipleConnectionsPopup extends AbstractSonarLintPopup {
       // from the dialog response we have to get back the actual connection suggestion
       var suggestion = dialog.getSuggestionFromElement(selection);
 
-      var isFromSharedConnectedMode = suggestion.isFromSharedConfiguration();
+      var origin = suggestion.getOrigin();
       var isSonarQube = suggestion.getConnectionSuggestion().isLeft();
       var projectKey = isSonarQube
         ? suggestion.getConnectionSuggestion().getLeft().getProjectKey()
@@ -110,7 +110,7 @@ public class SuggestMultipleConnectionsPopup extends AbstractSonarLintPopup {
       }
 
       var projectMapping = new HashMap<String, List<ProjectSuggestionDto>>();
-      projectMapping.put(projectKey, List.of(new ProjectSuggestionDto(project, isFromSharedConnectedMode)));
+      projectMapping.put(projectKey, List.of(new ProjectSuggestionDto(project, origin)));
 
       var job = new AssistSuggestConnectionJob(serverUrlOrOrganization, projectMapping, region);
       job.schedule();
