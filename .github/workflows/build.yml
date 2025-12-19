@@ -180,10 +180,16 @@ jobs:
         include:
           - SQ_VERSION: 'LATEST_RELEASE[9.9]'
             QA_CATEGORY: 'LATEST_RELEASE_99'
+            JAVA_VERSION: '17'
+            TARGET_PLATFORM: 'latest-java-17_e431'
           - SQ_VERSION: 'LATEST_RELEASE'
             QA_CATEGORY: 'LATEST_RELEASE'
+            JAVA_VERSION: '21'
+            TARGET_PLATFORM: 'latest-java-21'
           - SQ_VERSION: 'DEV'
             QA_CATEGORY: 'DEV'
+            JAVA_VERSION: '21'
+            TARGET_PLATFORM: 'latest-java-21'
     env:
       DISPLAY: :10
       MAVEN_OPTS: -Xmx3072m
@@ -193,6 +199,9 @@ jobs:
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
           version: 2025.9.12
+
+      - name: Select Java ${{ matrix.JAVA_VERSION }}
+        run: mise use java@${{ matrix.JAVA_VERSION }}
 
       - name: Compute month key
         id: month
@@ -231,7 +240,7 @@ jobs:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
       - name: Setup settings.xml
-        run: .github/scripts/setup-settings-xml.sh latest-java-17_e431
+        run: .github/scripts/setup-settings-xml.sh ${{ matrix.TARGET_PLATFORM }}
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
@@ -272,14 +281,16 @@ jobs:
         env:
           SQ_VERSION: ${{ matrix.SQ_VERSION }}
           QA_CATEGORY: ${{ matrix.QA_CATEGORY }}
+          JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
+          TARGET_PLATFORM: ${{ matrix.TARGET_PLATFORM }}
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          echo "Run ITs on Eclipse latest Java 17 target and Server ${SQ_VERSION}"
+          echo "Run ITs on Eclipse latest Java ${JAVA_VERSION} target and Server ${SQ_VERSION}"
           mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
             -P coverage,\!standaloneMode,\!connectedModeSc,\!cdtIntegration \
             -Declipse.p2.mirrors=false \
-            -Dtarget.platform=latest-java-17_e431 \
+            -Dtarget.platform=${TARGET_PLATFORM} \
             -Dtycho.localArtifacts=ignore \
             -Dsonarlint-eclipse.p2.url="file://${P2_DIR}" \
             -Dsonar.runtimeVersion=${SQ_VERSION} \
