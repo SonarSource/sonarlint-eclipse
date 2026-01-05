@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonarlint.eclipse.sloop.no-arch;singleton:=true
-Bundle-Version: 11.24.0.qualifier
+Bundle-Version: 11.25.0.qualifier
 Eclipse-PlatformFilter: (& (osgi.os=win32) (osgi.arch=aarch64))
 Bundle-Vendor: %bundle_vendor
 Fragment-Host: org.sonarlint.eclipse.core
