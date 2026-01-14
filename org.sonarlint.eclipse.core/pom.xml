@@ -93,7 +93,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.php</groupId>
                   <artifactId>sonar-php-plugin</artifactId>
-                  <version>3.53.0.15220</version>
+                  <version>3.54.0.15452</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
@@ -111,13 +111,13 @@
                 <artifactItem>
                   <groupId>org.sonarsource.xml</groupId>
                   <artifactId>sonar-xml-plugin</artifactId>
-                  <version>2.14.2.7437</version>
+                  <version>2.15.0.7513</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.sonarsource.text</groupId>
                   <artifactId>sonar-text-plugin</artifactId>
-                  <version>2.36.0.10152</version>
+                  <version>2.38.0.10279</version>
                   <type>jar</type>
                 </artifactItem>
               </artifactItems>
@@ -160,7 +160,7 @@
                     <artifactItem>
                       <groupId>com.sonarsource.cpp</groupId>
                       <artifactId>sonar-cfamily-plugin</artifactId>
-                      <version>6.76.0.93913</version>
+                      <version>6.77.0.95488</version>
                       <type>jar</type>
                     </artifactItem>
                   </artifactItems>
