@@ -870,7 +870,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
         with:
-          maven-args: |
+          maven-args: >
             -P-deploy-sonarsource,-release,-sign
             -Declipse.p2.mirrors=false
             -Dmaven.install.skip=true
