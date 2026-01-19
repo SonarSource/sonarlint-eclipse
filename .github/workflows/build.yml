@@ -866,11 +866,11 @@ jobs:
       - name: Set project version
         run: .github/scripts/set_maven_build_version.sh
 
-      - uses: SonarSource/ci-github-actions/build-maven@v1
+      - uses: SonarSource/ci-github-actions/build-maven@1.3.18
         env:
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
         with:
-          maven-args: |
+          maven-args: >
             -P-deploy-sonarsource,-release,-sign
             -Declipse.p2.mirrors=false
             -Dmaven.install.skip=true
