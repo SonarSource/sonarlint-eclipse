@@ -64,9 +64,9 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
     var text = new Link(composite, SWT.NONE);
     var textGd = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
     text.setLayoutData(textGd);
-    text.setText("By sharing anonymous SonarQube for Eclipse usage statistics, you help us understand how it is used so "
-      + "we can improve the plugin to work even better for you.\nWe don't collect source code, IP addresses, or any personally identifying "
-      + "information. And we don't share the data with anyone else.\nSee a <a href=\"#\">sample of the data.</a>");
+    text.setText("By sharing anonymous SonarQube for Eclipse usage statistics and error data, you help us understand how SonarQube for Eclipse is used so "
+      + "we can improve the plugin to work even better for you.\nThis data is aggregated and does not contain source code, IP addresses, or any personally identifying "
+      + "information. And we don't share the data with anyone else. Uncheck this box to opt-out of this collection.\nSee a <a href=\"#\">sample of the data.</a>");
     
     var sampleDataGd = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
     var sampleDataLink = new Link(composite, SWT.UNDERLINE_LINK);
@@ -149,7 +149,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
       "}");
 
     enabledBtn = new Button(composite, SWT.CHECK);
-    enabledBtn.setText("Share anonymous SonarQube for Eclipse statistics");
+    enabledBtn.setText("Share anonymous SonarQube for IDE usage data");
     enabledBtn.setSelection(SonarLintTelemetry.isEnabled());
     var layoutData = new GridData();
     layoutData.horizontalSpan = 2;
