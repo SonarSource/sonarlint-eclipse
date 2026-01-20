@@ -866,7 +866,7 @@ jobs:
       - name: Set project version
         run: .github/scripts/set_maven_build_version.sh
 
-      - uses: SonarSource/ci-github-actions/build-maven@v1
+      - uses: SonarSource/ci-github-actions/build-maven@c86cc657b13bf2e89567e51a7454a6ede8204c69 #v1.3.17
         env:
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
         with:
