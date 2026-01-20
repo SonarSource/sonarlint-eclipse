@@ -65,8 +65,12 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
     var textGd = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
     text.setLayoutData(textGd);
     text.setText("By sharing anonymous SonarQube for Eclipse usage statistics and error data, you help us understand how SonarQube for Eclipse is used so "
-      + "we can improve the plugin. This data is aggregated and does not contain source code, IP addresses, or any personally identifying "
-      + "information. We utilize Sentry for crash tracking. Uncheck this box to opt-out of this collection.\nSee a <a href=\"#\">sample of the data.</a>");
+      + "we can improve the plugin to work even better for you.");
+
+    var textContinuation = new Link(composite, SWT.NONE);
+    textContinuation.setLayoutData(textGd);
+    textContinuation.setText("This data is aggregated and does not contain source code, IP addresses, or any personally identifying "
+      + "information. We utilize Sentry for crash tracking. Uncheck this box to opt-out of this collection.");
     
     var sampleDataGd = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
     var sampleDataLink = new Link(composite, SWT.UNDERLINE_LINK);
