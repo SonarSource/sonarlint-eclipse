@@ -866,7 +866,7 @@ jobs:
       - name: Set project version
         run: .github/scripts/set_maven_build_version.sh
 
-      - uses: SonarSource/ci-github-actions/build-maven@c86cc657b13bf2e89567e51a7454a6ede8204c69 #v1.3.17
+      - uses: SonarSource/ci-github-actions/build-maven@v1
         env:
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
         with:
@@ -980,7 +980,7 @@ jobs:
         run: |
           chmod +x .github/scripts/publish-dogfood-site.sh
           .github/scripts/publish-dogfood-site.sh
-          
+
 
   notify:
     runs-on: github-ubuntu-latest-s # Public GH runner is required, runners starting with sonar-* do not support this action
