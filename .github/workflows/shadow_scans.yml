@@ -1,8 +1,11 @@
 name: Shadow Scans
 on:
-  schedule:
-    # Run the workflow every day at 04:00 UTC
-    - cron: '0 4 * * *'
+  push:
+    branches:
+      - master
+      - dogfood-on-*
+      - branch-*
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -38,6 +41,9 @@ jobs:
         with:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false --batch-mode --no-transfer-progress --errors --fail-at-end
           artifactory-reader-role: private-reader
+
+      - name: Setup settings.xml
+        run: .github/scripts/setup-settings-xml.sh
 
       - name: Set project version
         id: version
