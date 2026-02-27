@@ -108,6 +108,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     .setServerProperty("sonar.pushevents.polling.initial.delay", "2")
     .setServerProperty("sonar.pushevents.polling.period", "1")
     .setServerProperty("sonar.pushevents.polling.last.timestamp", "1")
+    // Workaround for Elasticsearch 7.x cgroup v2 incompatibility on modern CI runners (SQ 9.9)
+    .setServerProperty("sonar.search.javaOpts", "-XX:-UseContainerSupport")
     .build();
 
   @BeforeClass
@@ -632,6 +634,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     // 3) bind to project on SonarQube / check issues exist now
     createConnectionAndBindProject(orchestrator, CUSTOM_SECRETS_PROJECT_KEY);
     shellByName("SonarQube - Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
+    // Dismiss any leftover secret notification from a previous test before triggering our own
+    shellByName("SonarQube - Secret(s) detected").ifPresent(DefaultShell::close);
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("Heresy.txt"));
     waitForMarkers(new DefaultEditor(),

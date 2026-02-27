@@ -58,6 +58,7 @@ public class SecretsTest extends AbstractSonarLintTest {
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
     waitForMarkers(new DefaultEditor(),
+      tuple("'SECRET' detected in this expression, review this potentially hard-coded secret.", 4),
       tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 4));
 
     shellByName("SonarQube - Secret(s) detected").ifPresent(shell -> {
