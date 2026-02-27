@@ -90,6 +90,8 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
     .setServerProperty("sonar.pushevents.polling.initial.delay", "2")
     .setServerProperty("sonar.pushevents.polling.period", "1")
     .setServerProperty("sonar.pushevents.polling.last.timestamp", "1")
+    // Workaround for Elasticsearch 7.x cgroup v2 incompatibility on modern CI runners (SQ 9.9)
+    .setServerProperty("sonar.search.javaOpts", "-XX:-UseContainerSupport")
     .build();
 
   @BeforeClass
