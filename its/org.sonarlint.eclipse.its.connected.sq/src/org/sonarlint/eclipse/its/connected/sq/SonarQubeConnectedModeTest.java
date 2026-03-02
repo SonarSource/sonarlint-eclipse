@@ -240,7 +240,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     waitForAnalysisReady(SECRET_JAVA_PROJECT_NAME);
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
-    waitForMarkers(new DefaultEditor(),
+    // In connected mode the server quality profile controls which rules run - assert the specific
+    // AWS rule is present regardless of whether additional rules are enabled on the server
+    waitForMarkersContaining(new DefaultEditor(),
       tuple("Make sure this AWS Secret Access Key gets revoked, changed, and removed from the code.", 4));
 
     shellByName("SonarQube - Secret(s) detected").ifPresent(shell -> {
