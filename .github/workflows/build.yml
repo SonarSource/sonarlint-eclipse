@@ -284,6 +284,9 @@ jobs:
           JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
           TARGET_PLATFORM: ${{ matrix.TARGET_PLATFORM }}
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
+          SONAR_SEARCH_JAVAADDITIONALOPTS: -XX:-UseContainerSupport
+          SONAR_WEB_JAVAADDITIONALOPTS: -XX:-UseContainerSupport
+          SONAR_CE_JAVAADDITIONALOPTS: -XX:-UseContainerSupport
         run: |
           set -euo pipefail
           echo "Run ITs on Eclipse latest Java ${JAVA_VERSION} target and Server ${SQ_VERSION}"
