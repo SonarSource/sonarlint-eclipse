@@ -295,6 +295,20 @@ public abstract class AbstractSonarLintTest {
       });
   }
 
+  /** Waiting for specific markers to appear in the editor, ignoring any additional markers */
+  protected void waitForMarkersContaining(AbstractEditor editor, Tuple... markers) {
+    var markerType = "org.sonarlint.eclipse.onTheFlyIssueAnnotationType";
+
+    Awaitility.await()
+      .atMost(20, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertThat(editor.getMarkers())
+          .filteredOn(marker -> marker.getType().equals(markerType))
+          .extracting(Marker::getText, Marker::getLineNumber)
+          .contains(markers);
+      });
+  }
+
   /** Waiting for markers to disappear in the SonarLint On-The-Fly view */
   protected void waitForNoSonarLintMarkers(OnTheFlyView view) {
     Awaitility.await()
