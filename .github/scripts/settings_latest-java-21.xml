@@ -4,7 +4,7 @@
   <mirrors>
     <mirror>
       <id>sonarsource</id>
-      <mirrorOf>*,!eclipse-releases-latest,!eclipse-releases-2022-06,!eclipse-releases-2025-12,!eclipse-mylyn-releases,!eclipse-buildship-e431-releases-3x</mirrorOf>
+      <mirrorOf>*,!eclipse-releases-latest,!eclipse-releases-2022-06,!eclipse-releases-2024-03,!eclipse-mylyn-releases,!eclipse-buildship-e431-releases-3x</mirrorOf>
       <name>Repox mirror for all repositories</name>
       <url>${env.SONARSOURCE_REPOSITORY_URL}</url>
     </mirror>
@@ -33,7 +33,7 @@
       <password>${env.ARTIFACTORY_ACCESS_TOKEN}</password>
     </server>
     <server>
-      <id>eclipse-releases-2025-12</id>
+      <id>eclipse-releases-2024-03</id>
       <username>${env.ARTIFACTORY_USERNAME}</username>
       <password>${env.ARTIFACTORY_ACCESS_TOKEN}</password>
     </server>
@@ -103,9 +103,9 @@
           </snapshots>
         </repository>
         <repository>
-          <id>eclipse-releases-2025-12</id>
-          <name>SonarSource Eclipse 2025-12 Repository</name>
-          <url>${env.ARTIFACTORY_URL}/eclipse-releases-2025-12/202512101000</url>
+          <id>eclipse-releases-2024-03</id>
+          <name>SonarSource Eclipse 2024-03 Repository</name>
+          <url>${env.ARTIFACTORY_URL}/eclipse-releases-2024-03/202403131000</url>
           <layout>p2</layout>
           <releases>
             <enabled>true</enabled>

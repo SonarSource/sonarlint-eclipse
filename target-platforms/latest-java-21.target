@@ -17,10 +17,10 @@
       <repository id="eclipse-releases-latest" location="https://repox.jfrog.io/artifactory/eclipse-releases-latest/" />
     </location>
 
-    <!-- RSE was removed from Eclipse SimRel starting with 2026-03; pin it from the last release that included it -->
+    <!-- RSE was removed from Eclipse SimRel starting with 2026-03; pin it from 2024-03 which is the last archived release known to exist in Repox -->
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.eclipse.rse.feature.group" version="4.5.700.202408061246" />
-      <repository id="eclipse-releases-2025-12" location="https://repox.jfrog.io/artifactory/eclipse-releases-2025-12/202512101000" />
+      <unit id="org.eclipse.rse.feature.group" version="4.5.600.202401151828" />
+      <repository id="eclipse-releases-2024-03" location="https://repox.jfrog.io/artifactory/eclipse-releases-2024-03/202403131000" />
     </location>
 
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
