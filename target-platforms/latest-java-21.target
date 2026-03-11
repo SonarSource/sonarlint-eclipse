@@ -18,6 +18,12 @@
       <repository id="eclipse-releases-latest" location="https://repox.jfrog.io/artifactory/eclipse-releases-latest/" />
     </location>
 
+    <!-- RSE was removed from Eclipse SimRel starting with 2026-03; pin it from the last release that included it -->
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+      <unit id="org.eclipse.rse.feature.group" version="4.5.700.202408061246" />
+      <repository id="eclipse-releases-2025-12" location="https://repox.jfrog.io/artifactory/eclipse-releases-2025-12/202512101000" />
+    </location>
+
     <!-- Workaround for missing org.json -->
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.json" version="1.0.0.v201011060100" />

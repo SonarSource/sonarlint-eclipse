@@ -33,7 +33,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Version;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.eclipse.condition.ProjectExists;
 import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
@@ -499,8 +499,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     // INFO: It is flaky when running on top of the oldest Eclipse version but works fine in the other test cases,
     // therefore it should be skipped in that particular situation!
     Assume.assumeTrue(!"oldest-java-11_e417".equals(System.getProperty("target.platform")));
-    // INFO: RSE was removed from Eclipse SimRel starting with 2026-03, skip when not installed
-    Assume.assumeTrue(Platform.getBundle("org.eclipse.rse.ui") != null);
+    // INFO: LocalFileNativesManager.isUsingNatives() was removed in Eclipse 4.39 (2026-03), breaking RSE virtual projects
+    Assume.assumeTrue(platformVersion().compareTo(new Version("4.39")) < 0);
 
     var remoteProjectDir = tempFolder.newFolder();
     FileUtils.copyDirectory(new File(projectDirectory, "java/java-simple"), remoteProjectDir);
