@@ -8,7 +8,6 @@
       <unit id="org.eclipse.cdt.feature.group" version="12.4.0.202603041756" />
       <unit id="org.eclipse.jdt.feature.group" version="3.20.500.v20260226-0420" />
       <unit id="org.eclipse.m2e.feature.feature.group" version="2.10.100.20260205-1611" />
-      <unit id="org.eclipse.mylyn.commons.feature.feature.group" version="4.10.0.v20260106-1815" />
       <unit id="org.eclipse.platform.ide" version="4.39.0.I20260226-0420" />
       <unit id="org.eclipse.wst.jsdt.feature.feature.group" version="2.4.500.v202307190318" />
       <unit id="org.eclipse.pde.feature.group" version="3.16.600.v20260226-0420" />
@@ -22,6 +21,11 @@
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
       <unit id="org.eclipse.rse.feature.group" version="4.5.700.202408061246" />
       <repository id="eclipse-releases-2025-12" location="https://repox.jfrog.io/artifactory/eclipse-releases-2025-12/202512101000" />
+    </location>
+
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+      <unit id="org.eclipse.mylyn.commons.feature.group" version="3.26.1.v20230604-1755" />
+      <repository id="eclipse-mylyn-releases" location="https://repox.jfrog.io/artifactory/eclipse-mylyn-releases/3.26.1/" />
     </location>
 
     <!-- Workaround for missing org.json -->
