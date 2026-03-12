@@ -1826,6 +1826,26 @@
               id="org.sonarlint.eclipse.ui.views.issues.IssuesView">
         </viewShortcut>
     </perspectiveExtension>
+
+    <!-- IBM Developer for z/OS main perspective -->
+    <perspectiveExtension
+        targetID="io.sloeber.product.perspective">
+        <view id="org.sonarlint.eclipse.ui.views.IssueLocationsView"
+            relative="com.ibm.tpf.connectionmgr.errorlist.zOSErrorListView"
+            relationship="stack" visible="false"/>
+        <view id="org.sonarlint.eclipse.ui.views.issues.IssuesView"
+            relative="com.ibm.tpf.connectionmgr.errorlist.zOSErrorListView"
+            relationship="stack"/>
+        <view id="org.sonarlint.eclipse.ui.ServersView"
+            relative="com.ibm.tpf.connectionmgr.errorlist.zOSErrorListView"
+            relationship="right"/>
+        <view id="org.sonarlint.eclipse.ui.views.RuleDescriptionWebView"
+            relative="org.eclipse.rse.ui.view.systemView"
+            relationship="stack" visible="false"/>
+        <viewShortcut
+              id="org.sonarlint.eclipse.ui.views.issues.IssuesView">
+        </viewShortcut>
+    </perspectiveExtension>
   </extension>
   
   <!--
