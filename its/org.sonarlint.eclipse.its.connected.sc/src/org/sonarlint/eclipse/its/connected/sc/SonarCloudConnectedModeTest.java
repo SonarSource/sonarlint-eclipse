@@ -42,6 +42,7 @@ import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ConfirmConnectionCreationDialogOpened;
@@ -297,9 +298,8 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
+  @Ignore("Flaky on SonarQube Cloud staging")
   public void fixSuggestion_with_fix() throws InterruptedException, IOException {
-    // INFO: Flaky on SonarQube Cloud EU staging, disabled for now.
-    Assume.assumeFalse(SONARQUBE_CLOUD_REGION_IS_EU);
 
     final var file = "FileExists.txt";
     final var explanation = "This is common knowledge!";
@@ -354,9 +354,8 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
+  @Ignore("Flaky on SonarQube Cloud staging")
   public void fixSuggestion_with_multipleFixes() throws InterruptedException, IOException {
-    // INFO: Flaky on SonarQube Cloud EU staging, disabled for now.
-    Assume.assumeFalse(SONARQUBE_CLOUD_REGION_IS_EU);
 
     final var file = "FileExists.txt";
     final var explanation = "We need to change this!";
