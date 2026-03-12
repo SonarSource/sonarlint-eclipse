@@ -1806,6 +1806,26 @@
               id="org.sonarlint.eclipse.ui.views.issues.IssuesView">
         </viewShortcut>
     </perspectiveExtension>
+
+    <!-- Sloeber (Arduino IDE in Eclipse) main perspective -->
+    <perspectiveExtension
+        targetID="io.sloeber.product.perspective">
+        <view id="org.sonarlint.eclipse.ui.views.IssueLocationsView"
+            relative="org.eclipse.ui.views.ContentOutline"
+            relationship="stack" visible="false"/>
+        <view id="org.sonarlint.eclipse.ui.views.issues.IssuesView"
+            relative="org.eclipse.ui.views.ProblemView"
+            relationship="stack"/>
+        <view id="org.sonarlint.eclipse.ui.ServersView"
+            relative="org.eclipse.ui.views.ProblemView"
+            relationship="right"/>
+        <view id="org.sonarlint.eclipse.ui.views.RuleDescriptionWebView"
+            relative="org.eclipse.ui.views.ContentOutline"
+            relationship="stack" visible="false"/>
+        <viewShortcut
+              id="org.sonarlint.eclipse.ui.views.issues.IssuesView">
+        </viewShortcut>
+    </perspectiveExtension>
   </extension>
   
   <!--
