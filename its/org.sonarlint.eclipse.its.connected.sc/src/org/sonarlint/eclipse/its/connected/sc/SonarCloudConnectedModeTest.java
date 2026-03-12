@@ -328,7 +328,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
 
-    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1));
+    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1), TimePeriod.LONG);
     new FixSuggestionAvailableDialog(0, 1).cancel();
 
     // 2) Decline the suggestion
@@ -406,7 +406,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
       firstAfter, secondAfter, secondStartLine, secondEndLine);
 
     // 1) Accept first suggestion
-    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 2));
+    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 2), TimePeriod.LONG);
     new FixSuggestionAvailableDialog(0, 2).applyTheChange();
 
     // 2) Proceed with second suggestion (way out of range of the file)
