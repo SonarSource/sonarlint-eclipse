@@ -1829,7 +1829,7 @@
 
     <!-- IBM Developer for z/OS main perspective -->
     <perspectiveExtension
-        targetID="io.sloeber.product.perspective">
+        targetID="com.ibm.ftt.ui.zosprojects.perspective">
         <view id="org.sonarlint.eclipse.ui.views.IssueLocationsView"
             relative="com.ibm.tpf.connectionmgr.errorlist.zOSErrorListView"
             relationship="stack" visible="false"/>
