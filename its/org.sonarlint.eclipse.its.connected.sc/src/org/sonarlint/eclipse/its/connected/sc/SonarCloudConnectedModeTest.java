@@ -310,7 +310,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     new SonarLintConsole().clear();
 
-    importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
+    var project = importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
     // 1) Cancel the suggestion (available)
     triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
@@ -321,8 +321,14 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new WaitUntil(new ProjectSelectionDialogOpened());
     new ProjectSelectionDialog().ok();
 
-    // INFO: After binding setup the first dialog requires synchronization with SC staging, which can be slow
-    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1), TimePeriod.LONG);
+    // INFO: Wait for the binding synchronization with SC staging to complete before the fix suggestion flow.
+    // Without this, SLCORE path translation may fail (server file list not yet fetched) and silently drop the request.
+    openFileAndWaitForAnalysisCompletion(project.getResource(file));
+    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(60));
+
+    triggerOpenFixSuggestionWithOneChange(firstSonarCloudProjectKey, firstSonarCloudIssueKey, file, explanation, before, after, startLine, endLine);
+
+    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 1));
     new FixSuggestionAvailableDialog(0, 1).cancel();
 
     // 2) Decline the suggestion
@@ -370,7 +376,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     new SonarLintConsole().clear();
 
-    importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
+    var project = importExistingProjectIntoWorkspace("connected-sc/" + SAMPLE_JAVA_ISSUES_PROJECT_KEY, SAMPLE_JAVA_ISSUES_PROJECT_KEY);
 
     triggerOpenFixSuggestionWithTwoChanges(
       firstSonarCloudProjectKey,
@@ -386,9 +392,21 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     new WaitUntil(new ProjectSelectionDialogOpened());
     new ProjectSelectionDialog().ok();
 
+    // INFO: Wait for the binding synchronization with SC staging to complete before the fix suggestion flow.
+    // Without this, SLCORE path translation may fail (server file list not yet fetched) and silently drop the request.
+    openFileAndWaitForAnalysisCompletion(project.getResource(file));
+    new WaitUntil(new ZeroIssuesOnProject(SAMPLE_JAVA_ISSUES_PROJECT_KEY), TimePeriod.getCustom(60));
+
+    triggerOpenFixSuggestionWithTwoChanges(
+      firstSonarCloudProjectKey,
+      firstSonarCloudIssueKey,
+      file,
+      explanation,
+      before, firstAfter, firstStartLine, firstEndLine,
+      firstAfter, secondAfter, secondStartLine, secondEndLine);
+
     // 1) Accept first suggestion
-    // INFO: After binding setup the first dialog requires synchronization with SC staging, which can be slow
-    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 2), TimePeriod.LONG);
+    new WaitUntil(new FixSuggestionAvailableDialogOpened(0, 2));
     new FixSuggestionAvailableDialog(0, 2).applyTheChange();
 
     // 2) Proceed with second suggestion (way out of range of the file)
