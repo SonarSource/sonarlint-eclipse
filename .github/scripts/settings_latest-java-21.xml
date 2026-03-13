@@ -4,7 +4,7 @@
   <mirrors>
     <mirror>
       <id>sonarsource</id>
-      <mirrorOf>*,!eclipse-releases-latest,!eclipse-releases-2022-06,!eclipse-mylyn-releases,!eclipse-buildship-e431-releases-3x</mirrorOf>
+      <mirrorOf>*,!eclipse-releases-latest,!eclipse-releases-2022-06,!eclipse-releases-2024-03,!eclipse-mylyn-releases,!eclipse-buildship-e431-releases-3x</mirrorOf>
       <name>Repox mirror for all repositories</name>
       <url>${env.SONARSOURCE_REPOSITORY_URL}</url>
     </mirror>
@@ -29,6 +29,11 @@
     </server>
     <server>
       <id>eclipse-releases-2022-06</id>
+      <username>${env.ARTIFACTORY_USERNAME}</username>
+      <password>${env.ARTIFACTORY_ACCESS_TOKEN}</password>
+    </server>
+    <server>
+      <id>eclipse-releases-2024-03</id>
       <username>${env.ARTIFACTORY_USERNAME}</username>
       <password>${env.ARTIFACTORY_ACCESS_TOKEN}</password>
     </server>
@@ -98,9 +103,24 @@
           </snapshots>
         </repository>
         <repository>
+          <id>eclipse-releases-2024-03</id>
+          <name>SonarSource Eclipse 2024-03 Repository</name>
+          <url>${env.ARTIFACTORY_URL}/eclipse-releases-2024-03/202403131000</url>
+          <layout>p2</layout>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>interval:60</updatePolicy>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+          </snapshots>
+        </repository>
+        <repository>
           <id>eclipse-mylyn-releases</id>
           <name>SonarSource Eclipse Mylyn releases Repository</name>
-          <url>${env.ARTIFACTORY_URL}/eclipse-mylyn-releases</url>
+          <url>${env.ARTIFACTORY_URL}/eclipse-mylyn-releases/3.26.1</url>
           <layout>p2</layout>
           <releases>
             <enabled>true</enabled>
