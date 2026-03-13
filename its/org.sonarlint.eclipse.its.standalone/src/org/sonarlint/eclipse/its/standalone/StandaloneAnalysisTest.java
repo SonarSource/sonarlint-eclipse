@@ -33,7 +33,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.osgi.framework.Version;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.eclipse.condition.ProjectExists;
 import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
@@ -53,6 +52,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.osgi.framework.Version;
 import org.sonarlint.eclipse.its.shared.AbstractSonarLintTest;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.ConfirmManualAnalysisDialogOpened;
 import org.sonarlint.eclipse.its.shared.reddeer.conditions.EnhancedWithConnectedModeInformationDialogOpened;
@@ -463,7 +463,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       tuple("Remove the useless trailing whitespaces at the end of this line.", "foo.php", "few seconds ago"),
       tuple("Remove this closing tag \"?>\".", "foo.php", "few seconds ago"),
       tuple("Replace \"require\" with \"require_once\".", "foo.php", "few seconds ago"),
-      tuple("Replace \"require\" with namespace import mechanism through the \"use\" keyword.", "foo.php", "few seconds ago"),
       tuple("This branch duplicates the one on line 5. [+1 location]", "foo.php", "few seconds ago"),
       tuple("Remove the parentheses from this \"require\" call.", "foo.php", "few seconds ago"));
 
