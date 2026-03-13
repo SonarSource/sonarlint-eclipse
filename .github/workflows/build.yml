@@ -16,6 +16,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  CACHE_BACKEND: s3
+
 jobs:
   consistency_check:
     runs-on: github-ubuntu-latest-s
@@ -214,7 +217,7 @@ jobs:
           echo "Create dir ${ORCHESTRATOR_HOME} if needed"
           mkdir -p "${ORCHESTRATOR_HOME}"
 
-      - uses: SonarSource/ci-github-actions/cache@v1
+      - uses: SonarSource/gh-action_cache@v1
         with:
           path: ${{ github.workspace }}/orchestrator/${{ steps.month.outputs.month }}
           key: cache-${{ runner.os }}-${{ steps.month.outputs.month }}
@@ -889,9 +892,6 @@ jobs:
     needs: [ qa_connectedModeSonarQube ]
     runs-on: github-ubuntu-latest-s
     name: Inspect Orchestrator Cache
-    permissions:
-      contents: read
-
     steps:
       - name: Compute month key
         id: month
@@ -904,7 +904,7 @@ jobs:
           echo "Create dir ${ORCHESTRATOR_HOME} if needed"
           mkdir -p "${ORCHESTRATOR_HOME}"
 
-      - uses: SonarSource/ci-github-actions/cache@v1
+      - uses: SonarSource/gh-action_cache@v1
         with:
           path: ${{ github.workspace }}/orchestrator/${{ steps.month.outputs.month }}
           key: cache-${{ runner.os }}-${{ steps.month.outputs.month }}
