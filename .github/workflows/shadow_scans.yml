@@ -91,6 +91,10 @@ jobs:
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false --batch-mode --no-transfer-progress --errors --fail-at-end
+
+      - name: Setup settings.xml
+        run: .github/scripts/setup-settings-xml.sh
+        
       - name: Run unit tests with Xvfb
         shell: bash
         env:
@@ -199,6 +203,9 @@ jobs:
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
+
+      - name: Setup settings.xml
+        run: .github/scripts/setup-settings-xml.sh
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
@@ -324,6 +331,9 @@ jobs:
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
+
+      - name: Setup settings.xml
+        run: .github/scripts/setup-settings-xml.sh
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
@@ -453,6 +463,9 @@ jobs:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
+      - name: Setup settings.xml
+        run: .github/scripts/setup-settings-xml.sh
+
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
         with:
@@ -577,6 +590,9 @@ jobs:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
+      - name: Setup settings.xml
+        run: .github/scripts/setup-settings-xml.sh
+
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
         with:
@@ -691,6 +707,9 @@ jobs:
         with:
           artifactory-reader-role: private-reader
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
+
+      - name: Setup settings.xml
+        run: .github/scripts/setup-settings-xml.sh
 
       - name: Download IT coverage artifacts
         uses: actions/download-artifact@v4.1.8
