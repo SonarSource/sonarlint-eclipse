@@ -216,7 +216,17 @@ public class SonarLintBackendService {
             SonarLintGlobalConfiguration.issuesOnlyNewCode(),
             new LanguageSpecificRequirements(new JsTsRequirementsDto(NodeJsService.getNodeJsPath(), null), null),
             false,
-            null)).join();
+            null)).get(1, TimeUnit.MINUTES);
+        } catch (TimeoutException e) {
+          SonarLintLogger.get().error("Timed out waiting for SonarLint backend initialization after 1 minute", e);
+          throw new IllegalStateException("Timed out waiting for SonarLint backend initialization", e);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          SonarLintLogger.get().error("Interrupted while waiting for SonarLint backend initialization", e);
+          throw new IllegalStateException("Interrupted while waiting for SonarLint backend initialization", e);
+        } catch (ExecutionException e) {
+          SonarLintLogger.get().error("Error during SonarQube for IDE backend initialization", e);
+          throw new IllegalStateException("Unable to initialize the SonarLint Backend", e);
         } catch (IOException e) {
           throw new IllegalStateException("Unable to initialize the SonarLint Backend", e);
         }

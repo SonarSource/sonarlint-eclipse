@@ -21,6 +21,8 @@ package org.sonarlint.eclipse.ui.internal.preferences;
 
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.preference.BooleanFieldEditor;
@@ -137,6 +139,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     private static final String NODE_JS_TOOLTIP = "SonarQube requires Node.js to analyze some languages. You can "
       + "provide an explicit path for the node executable here or leave this field blank to let SonarLint look for "
       + "it using your PATH environment variable.";
+    private static final String NODE_JS_BACKEND_NOT_RESPONDING = "Node.js not found, backend not responding";
 
     public NodeJsField(Composite parent) {
       super(SonarLintGlobalConfiguration.PREF_NODEJS_PATH, "Node.js executable path:", parent, false);
@@ -149,17 +152,24 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
       String detectedNodeJs;
       try {
         var nodeJs = SonarLintBackendService.get().getBackend().getAnalysisService().getAutoDetectedNodeJs()
-          .join()
+          .get(10, TimeUnit.SECONDS)
           .getDetails();
         if (nodeJs != null) {
           detectedNodeJs = nodeJs.getPath().toString();
         } else {
           detectedNodeJs = "Node.js not found";
         }
+      } catch (TimeoutException err) {
+        SonarLintLogger.get().debug("Timed out waiting for SonarLint backend response on Node.js", err);
+        detectedNodeJs = NODE_JS_BACKEND_NOT_RESPONDING;
+      } catch (InterruptedException err) {
+        Thread.currentThread().interrupt();
+        SonarLintLogger.get().debug("Interrupted while waiting for SonarLint backend response on Node.js", err);
+        detectedNodeJs = NODE_JS_BACKEND_NOT_RESPONDING;
       } catch (Exception err) {
         // JSON-RPC error or backend not initialized -> shouldn't impact the preference page
         SonarLintLogger.get().debug("SonarLint backend not responding on Node.js", err);
-        detectedNodeJs = "Node.js not found, backend not responding";
+        detectedNodeJs = NODE_JS_BACKEND_NOT_RESPONDING;
       }
       getTextControl().setMessage(detectedNodeJs);
     }
