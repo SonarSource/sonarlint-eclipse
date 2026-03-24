@@ -24,6 +24,8 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.preference.StringButtonFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -33,11 +35,19 @@ import org.eclipse.swt.widgets.FileDialog;
 /** This is used as a base for all path based preferences */
 public abstract class AbstractPathField extends StringButtonFieldEditor {
   private final boolean requireFolder;
+  @Nullable
+  private DialogPage containingPage;
 
   protected AbstractPathField(String preferenceName, String labelText, Composite parent, boolean requireFolder) {
     super(preferenceName, labelText, parent);
     setChangeButtonText("Browse ...");
     this.requireFolder = requireFolder;
+  }
+
+  @Override
+  public void setPage(DialogPage page) {
+    super.setPage(page);
+    containingPage = page;
   }
 
   @Override
@@ -48,6 +58,8 @@ public abstract class AbstractPathField extends StringButtonFieldEditor {
 
   @Override
   protected boolean doCheckState() {
+    clearWarningMessage();
+
     var stringValue = getStringValue();
     if (stringValue.isBlank()) {
       return true;
@@ -65,6 +77,19 @@ public abstract class AbstractPathField extends StringButtonFieldEditor {
       return false;
     }
     return checkStateFurther(path);
+  }
+
+  /** Show a non-blocking warning on the preference page (does not prevent saving) */
+  protected void setWarningMessage(String message) {
+    if (containingPage != null) {
+      containingPage.setMessage(message, IMessageProvider.WARNING);
+    }
+  }
+
+  private void clearWarningMessage() {
+    if (containingPage != null) {
+      containingPage.setMessage(null);
+    }
   }
 
   @Nullable

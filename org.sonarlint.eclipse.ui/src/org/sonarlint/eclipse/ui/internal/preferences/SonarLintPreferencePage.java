@@ -130,7 +130,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     powerUserLabel.addListener(SWT.Selection,
       e -> BrowserUtils.openExternalBrowser(SonarLintDocumentation.PROVIDE_JAVA_RUNTIME_LINK, e.display));
 
-    addField(new Java17Field(getFieldEditorParent()));
+    addField(new JreField(getFieldEditorParent()));
   }
 
   private static class NodeJsField extends AbstractPathField {
@@ -171,19 +171,18 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     }
   }
 
-  private static class Java17Field extends AbstractPathField {
-    private static final String JAVA_17_TOOLTIP = "SonarQube for Eclipse provides its own JRE to run part of the "
-      + "plug-in out of process if Eclipse is not running with a Java 17+ one that can be used. You can provide an "
-      + "explicit Java 17+ installation to be used instead, e.g. when your IDE is running on Java 16 or lower. But be "
-      + "cautious as it is your responsibility to make sure that it works correctly!";
+  private static class JreField extends AbstractPathField {
+    private static final String JRE_TOOLTIP = "SonarQube for Eclipse provides its own JRE to run part of the "
+      + "plug-in out of process if Eclipse is not running with a Java 21+ one that can be used. You can provide an "
+      + "explicit Java 21+ installation to be used instead. But be cautious as it is your responsibility to make sure that it works correctly!";
 
-    public Java17Field(Composite parent) {
-      super(SonarLintGlobalConfiguration.PREF_JAVA17_PATH, "Java 17+ installation path:", parent, true);
+    public JreField(Composite parent) {
+      super(SonarLintGlobalConfiguration.PREF_JRE_PATH, "Java 21+ installation path:", parent, true);
     }
 
     @Override
     void provideDefaultValue() {
-      getTextControl().setToolTipText(JAVA_17_TOOLTIP);
+      getTextControl().setToolTipText(JRE_TOOLTIP);
 
       var javaRuntimeInformation = JavaRuntimeUtils.getJavaRuntime();
       switch (javaRuntimeInformation.getProvider()) {
@@ -198,14 +197,24 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
       }
     }
 
-    /** INFO: For now we only check for the Java executable being present, not if actually Java 17+, we can do so in the future! */
     @Override
     boolean checkStateFurther(Path value) {
-      var exists = JavaRuntimeUtils.checkForJavaExecutable(value);
-      if (!exists) {
+      if (!JavaRuntimeUtils.checkForJavaExecutable(value)) {
         setErrorMessage("Java executable could not be found inside: " + value.resolve("bin").toString());
+        return false;
       }
-      return exists;
+      var version = JavaRuntimeUtils.getJavaMajorVersion(value);
+      if (version.isEmpty()) {
+        setWarningMessage("Cannot determine the Java version - please verify it is Java "
+          + JavaRuntimeUtils.MINIMUM_JRE_VERSION + "+");
+        return true;
+      }
+      if (version.getAsInt() < JavaRuntimeUtils.MINIMUM_JRE_VERSION) {
+        setErrorMessage("Java " + JavaRuntimeUtils.MINIMUM_JRE_VERSION + "+ is required, but the selected installation is Java "
+          + version.getAsInt());
+        return false;
+      }
+      return true;
     }
   }
 
@@ -215,7 +224,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     var issuesOnlyNewCode = SonarLintGlobalConfiguration.issuesOnlyNewCode();
     var previousTestFileGlobPatterns = SonarLintGlobalConfiguration.getTestFileGlobPatterns();
     var previousNodeJsPath = SonarLintGlobalConfiguration.getNodejsPath();
-    var previousJava17Path = SonarLintGlobalConfiguration.getJava17Path();
+    var previousJrePath = SonarLintGlobalConfiguration.getJrePath();
     var result = super.performOk();
     var anyPreferenceChanged = false;
 
@@ -232,7 +241,7 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
     if (!Objects.equals(previousNodeJsPath, SonarLintGlobalConfiguration.getNodejsPath())) {
       anyPreferenceChanged = true;
     }
-    if (!Objects.equals(previousJava17Path, SonarLintGlobalConfiguration.getJava17Path())) {
+    if (!Objects.equals(previousJrePath, SonarLintGlobalConfiguration.getJrePath())) {
       // Will be implemented with SLE-812 to restart Sloop!
     }
     if (anyPreferenceChanged) {

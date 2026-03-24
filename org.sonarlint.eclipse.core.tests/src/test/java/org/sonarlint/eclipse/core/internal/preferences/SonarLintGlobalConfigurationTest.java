@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.preferences;
 import java.util.HashMap;
 import java.util.List;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.service.prefs.BackingStoreException;
@@ -37,9 +38,12 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class SonarLintGlobalConfigurationTest extends SonarTestCase {
 
+  private static final String OLD_JRE_KEY = "java17Path";
+
   @Before
   public void clean() throws BackingStoreException {
     ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).clear();
+    InstanceScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).clear();
   }
 
   @Test
@@ -119,5 +123,60 @@ public class SonarLintGlobalConfigurationTest extends SonarTestCase {
         tuple("inactive", false, emptyMap()),
         tuple("ruleWithParams", true, expectedParams));
 
+  }
+
+  @Test
+  public void migrate_old_key_from_workspace_scope() throws BackingStoreException {
+    var workspaceNode = InstanceScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
+    workspaceNode.put(OLD_JRE_KEY, "/path/to/jre");
+
+    SonarLintGlobalConfiguration.migrateJrePathPreference();
+
+    assertThat(workspaceNode.get(SonarLintGlobalConfiguration.PREF_JRE_PATH, null)).isEqualTo("/path/to/jre");
+    assertThat(workspaceNode.get(OLD_JRE_KEY, null)).isNull();
+  }
+
+  @Test
+  public void migrate_old_key_from_application_scope() throws BackingStoreException {
+    var appNode = ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
+    appNode.put(OLD_JRE_KEY, "/path/to/jre");
+
+    SonarLintGlobalConfiguration.migrateJrePathPreference();
+
+    assertThat(appNode.get(SonarLintGlobalConfiguration.PREF_JRE_PATH, null)).isEqualTo("/path/to/jre");
+    assertThat(appNode.get(OLD_JRE_KEY, null)).isNull();
+  }
+
+  @Test
+  public void do_not_migrate_when_old_key_is_absent() throws BackingStoreException {
+    SonarLintGlobalConfiguration.migrateJrePathPreference();
+
+    assertThat(InstanceScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).get(SonarLintGlobalConfiguration.PREF_JRE_PATH, null)).isNull();
+    assertThat(ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).get(SonarLintGlobalConfiguration.PREF_JRE_PATH, null)).isNull();
+  }
+
+  @Test
+  public void do_not_migrate_when_old_key_is_blank() throws BackingStoreException {
+    var workspaceNode = InstanceScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
+    workspaceNode.put(OLD_JRE_KEY, "   ");
+
+    SonarLintGlobalConfiguration.migrateJrePathPreference();
+
+    assertThat(workspaceNode.get(SonarLintGlobalConfiguration.PREF_JRE_PATH, null)).isNull();
+  }
+
+  @Test
+  public void migrate_both_scopes_independently() throws BackingStoreException {
+    var workspaceNode = InstanceScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
+    var appNode = ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
+    workspaceNode.put(OLD_JRE_KEY, "/workspace/jre");
+    appNode.put(OLD_JRE_KEY, "/app/jre");
+
+    SonarLintGlobalConfiguration.migrateJrePathPreference();
+
+    assertThat(workspaceNode.get(SonarLintGlobalConfiguration.PREF_JRE_PATH, null)).isEqualTo("/workspace/jre");
+    assertThat(workspaceNode.get(OLD_JRE_KEY, null)).isNull();
+    assertThat(appNode.get(SonarLintGlobalConfiguration.PREF_JRE_PATH, null)).isEqualTo("/app/jre");
+    assertThat(appNode.get(OLD_JRE_KEY, null)).isNull();
   }
 }

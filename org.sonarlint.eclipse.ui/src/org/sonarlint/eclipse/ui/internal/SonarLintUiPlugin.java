@@ -51,12 +51,14 @@ import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.BundleUtils;
+import org.sonarlint.eclipse.core.internal.utils.JavaRuntimeUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.ui.internal.backend.SonarLintEclipseRpcClient;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
+import org.sonarlint.eclipse.ui.internal.popup.InvalidJrePopup;
 import org.sonarlint.eclipse.ui.internal.popup.NewerVersionAvailablePopup;
 import org.sonarlint.eclipse.ui.internal.popup.ReleaseNotesPopup;
 import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
@@ -316,6 +318,15 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
             NewerVersionAvailablePopup.displayPopupIfNotAlreadyShown(newestSonarLintVersion.toString());
             SonarLintGlobalConfiguration.setNextSonarLintVersionHintDate();
           }
+        }
+      }
+
+      // Check if the user-configured JRE path points to a version below the minimum requirement
+      var jrePath = SonarLintGlobalConfiguration.getJrePath();
+      if (jrePath != null) {
+        var version = JavaRuntimeUtils.getJavaMajorVersion(jrePath);
+        if (version.isPresent() && version.getAsInt() < JavaRuntimeUtils.MINIMUM_JRE_VERSION) {
+          Display.getDefault().asyncExec(() -> new InvalidJrePopup(version.getAsInt()).open());
         }
       }
 
