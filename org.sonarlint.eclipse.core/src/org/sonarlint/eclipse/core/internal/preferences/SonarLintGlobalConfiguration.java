@@ -86,7 +86,7 @@ public class SonarLintGlobalConfiguration {
   public static final String PREF_TEST_FILE_GLOB_PATTERNS_DEFAULT = ""; //$NON-NLS-1$
   public static final String PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES = "skipConfirmAnalyzeMultipleFiles"; //$NON-NLS-1$
   public static final String PREF_NODEJS_PATH = "nodeJsPath"; //$NON-NLS-1$
-  public static final String PREF_JAVA17_PATH = "java17Path"; //$NON-NLS-1$
+  public static final String PREF_JRE_PATH = "jrePath"; //$NON-NLS-1$
   private static final String PREF_TAINT_VULNERABILITY_DISPLAYED = "taintVulnerabilityDisplayed";
   private static final String PREF_SECRETS_EVER_DETECTED = "secretsEverDetected";
   private static final String PREF_USER_SURVEY_LAST_LINK = "userSurveyLastLink"; //$NON-NLS-1$
@@ -129,10 +129,28 @@ public class SonarLintGlobalConfiguration {
   };
 
   public static void init() {
+    migrateJrePathPreference();
     var rootNode = getApplicationLevelPreferenceNode();
     rootNode.addPreferenceChangeListener(applicationRootNodeChangeListener);
     rootNode = getWorkspaceLevelPreferenceNode();
     rootNode.addPreferenceChangeListener(workspaceRootNodeChangeListener);
+  }
+
+  /** Migrate the Java runtime path preference from the old versioned key to the version-agnostic {@link #PREF_JRE_PATH} */
+  public static void migrateJrePathPreference() {
+    var oldKey = "java17Path";
+    for (var node : new IEclipsePreferences[] {getWorkspaceLevelPreferenceNode(), getApplicationLevelPreferenceNode()}) {
+      var oldValue = node.get(oldKey, null);
+      if (oldValue != null && !oldValue.isBlank()) {
+        node.put(PREF_JRE_PATH, oldValue);
+        node.remove(oldKey);
+        try {
+          node.flush();
+        } catch (BackingStoreException e) {
+          SonarLintLogger.get().error("Could not migrate Java runtime path preference", e);
+        }
+      }
+    }
   }
 
   public static void stop() {
@@ -358,8 +376,8 @@ public class SonarLintGlobalConfiguration {
   }
 
   @Nullable
-  public static Path getJava17Path() {
-    return getPathFromPreference(PREF_JAVA17_PATH, "Invalid Java 17+ path");
+  public static Path getJrePath() {
+    return getPathFromPreference(PREF_JRE_PATH, "Invalid Java 21+ path");
   }
 
   @Nullable

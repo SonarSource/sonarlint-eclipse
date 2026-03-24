@@ -19,10 +19,12 @@
  */
 package org.sonarlint.eclipse.core.internal.utils;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.OptionalInt;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -31,7 +33,8 @@ public class JavaRuntimeUtils {
   public static final String SYSTEM_PROPERTY_ECLIPSE_VM = "eclipse.vm";
   public static final String SYSTEM_PROPERTY_JAVA_HOME = "java.home";
   public static final String SYSTEM_PROPERTY_JAVA_CLASS_VERSION = "java.class.version";
-  public static final float JAVA_17_CLASS_VERSION = 61.0f;
+  public static final int MINIMUM_JRE_VERSION = 21;
+  public static final float JAVA_21_CLASS_VERSION = 65.0f;
 
   private JavaRuntimeUtils() {
     // utility class
@@ -61,10 +64,46 @@ public class JavaRuntimeUtils {
     return Files.exists(executable);
   }
 
+  /**
+   *  Read the major Java version from the {@code release} file present in every standard JRE/JDK installation.
+   *  Handles both the legacy format ({@code "1.8.0_382"} for Java 8) and the modern format ({@code "21.0.1"}).
+   *
+   *  @param installationDirectory the root of the JRE/JDK installation
+   *  @return the major version, or empty if the file is absent or cannot be parsed
+   */
+  public static OptionalInt getJavaMajorVersion(Path installationDirectory) {
+    var releaseFile = installationDirectory.resolve("release");
+    if (!Files.exists(releaseFile)) {
+      return OptionalInt.empty();
+    }
+    try {
+      for (var line : Files.readAllLines(releaseFile)) {
+        if (line.startsWith("JAVA_VERSION=")) {
+          var version = line.substring("JAVA_VERSION=".length()).replace("\"", "");
+          if (version.startsWith("1.")) {
+            // Legacy format: "1.8.0_382" -> major is 8
+            var parts = version.split("\\.");
+            if (parts.length >= 2) {
+              return OptionalInt.of(Integer.parseInt(parts[1]));
+            }
+          } else {
+            // Modern format: "21.0.1" or "21" -> major is 21
+            var dotIndex = version.indexOf('.');
+            var majorStr = dotIndex >= 0 ? version.substring(0, dotIndex) : version;
+            return OptionalInt.of(Integer.parseInt(majorStr));
+          }
+        }
+      }
+    } catch (IOException | NumberFormatException e) {
+      SonarLintLogger.get().debug("Cannot read Java version from: " + releaseFile, e);
+    }
+    return OptionalInt.empty();
+  }
+
   /** Get the Java runtime information consumed by SonarLint out of process that matches all the criteria */
   public static JavaRuntimeInformation getJavaRuntime() {
-    // Check if user provided Java runtime, cannot check if actually Java 17+!
-    var javaPath = SonarLintGlobalConfiguration.getJava17Path();
+    // Check if user provided Java runtime
+    var javaPath = SonarLintGlobalConfiguration.getJrePath();
     if (javaPath != null && checkForJavaExecutable(javaPath)) {
       return new JavaRuntimeInformation(JavaRuntimeProvider.SELF_MANAGED, javaPath);
     }
@@ -78,7 +117,7 @@ public class JavaRuntimeUtils {
         var eclipseVmAbsolutePath = Paths.get(eclipseVm).toRealPath();
         var javaHomeAbsolutePath = Paths.get(javaHome).toRealPath();
         var javaClassVersionFloat = Float.parseFloat(javaClassVersion);
-        if (eclipseVmAbsolutePath.startsWith(javaHomeAbsolutePath) && javaClassVersionFloat >= JAVA_17_CLASS_VERSION) {
+        if (eclipseVmAbsolutePath.startsWith(javaHomeAbsolutePath) && javaClassVersionFloat >= JAVA_21_CLASS_VERSION) {
           return new JavaRuntimeInformation(JavaRuntimeProvider.ECLIPSE_MANAGED, javaHomeAbsolutePath);
         }
       }
