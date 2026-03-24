@@ -179,7 +179,7 @@ jobs:
           echo "Create dir ${ORCHESTRATOR_HOME} if needed"
           mkdir -p "${ORCHESTRATOR_HOME}"
 
-      - uses: SonarSource/gh-action_cache/cache@v1
+      - uses: SonarSource/gh-action_cache@v1
         with:
           path: ${{ github.workspace }}/orchestrator/${{ steps.month.outputs.month }}
           key: cache-${{ runner.os }}-${{ steps.month.outputs.month }}
