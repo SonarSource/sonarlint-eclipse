@@ -154,10 +154,16 @@ jobs:
         include:
           - SQ_VERSION: 'LATEST_RELEASE[9.9]'
             QA_CATEGORY: 'LATEST_RELEASE_99'
+            JAVA_VERSION: '17'
+            TARGET_PLATFORM: 'latest-java-17_e431'
           - SQ_VERSION: 'LATEST_RELEASE'
             QA_CATEGORY: 'LATEST_RELEASE'
+            JAVA_VERSION: '21'
+            TARGET_PLATFORM: 'latest-java-21'
           - SQ_VERSION: 'DEV'
             QA_CATEGORY: 'DEV'
+            JAVA_VERSION: '21'
+            TARGET_PLATFORM: 'latest-java-21'
     env:
       DISPLAY: :10
       MAVEN_OPTS: -Xmx3072m
@@ -205,7 +211,7 @@ jobs:
           common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.install.skip=true -Dsonar.skip=true --batch-mode --no-transfer-progress --errors --fail-at-end
 
       - name: Setup settings.xml
-        run: .github/scripts/setup-settings-xml.sh
+        run: .github/scripts/setup-settings-xml.sh ${{ matrix.TARGET_PLATFORM }}
 
       - name: Download site artifact
         uses: actions/download-artifact@v4.1.8
