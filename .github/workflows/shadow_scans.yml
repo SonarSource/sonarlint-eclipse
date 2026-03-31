@@ -126,12 +126,21 @@ jobs:
           name: mvn-test-logs
           path: 'org.sonarlint.eclipse.core.tests/target/work/configuration/*.log,org.sonarlint.eclipse.core.tests/target/work/data/.metadata/.log'
 
-      - name: Upload Xvfb logs and JUnit XML on failure
+      - name: Upload Xvfb logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: failure-logs
-          path: 'Xvfb.out,**/target/surefire-reports/TEST-*.xml'
+          name: failure-xvfb-logs
+          path: Xvfb.out
+
+      - name: Upload JUnit XML logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-junit-logs
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
 
       - name: Generate QA test report on failure
         if: failure()
@@ -173,6 +182,9 @@ jobs:
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
           version: 2025.9.12
+
+      - name: Select Java ${{ matrix.JAVA_VERSION }}
+        run: mise use java@${{ matrix.JAVA_VERSION }}
 
       - name: Compute month key
         id: month
@@ -241,14 +253,18 @@ jobs:
         env:
           SQ_VERSION: ${{ matrix.SQ_VERSION }}
           QA_CATEGORY: ${{ matrix.QA_CATEGORY }}
+          TARGET_PLATFORM: ${{ matrix.TARGET_PLATFORM }}
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
+          SONAR_SEARCH_JAVAADDITIONALOPTS: -XX:-UseContainerSupport
+          SONAR_WEB_JAVAADDITIONALOPTS: -XX:-UseContainerSupport
+          SONAR_CE_JAVAADDITIONALOPTS: -XX:-UseContainerSupport
         run: |
           set -euo pipefail
-          echo "Run ITs on Eclipse latest Java 17 target and Server ${SQ_VERSION}"
+          echo "Run ITs on Eclipse ${TARGET_PLATFORM} target and Server ${SQ_VERSION}"
           mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
             -P coverage,\!standaloneMode,\!connectedModeSc,\!cdtIntegration \
             -Declipse.p2.mirrors=false \
-            -Dtarget.platform=latest-java-17_e431 \
+            -Dtarget.platform=${TARGET_PLATFORM} \
             -Dtycho.localArtifacts=ignore \
             -Dsonarlint-eclipse.p2.url="file://${P2_DIR}" \
             -Dsonar.runtimeVersion=${SQ_VERSION} \
@@ -282,12 +298,21 @@ jobs:
           name: mvn-it-logs-${{ matrix.QA_CATEGORY }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
-      - name: Upload failure diagnostics
+      - name: Upload Xvfb logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: failure-${{ matrix.QA_CATEGORY }}
-          path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+          name: failure-xvfb-${{ matrix.QA_CATEGORY }}
+          path: Xvfb.out
+
+      - name: Upload JUnit XML logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-junit-${{ matrix.QA_CATEGORY }}
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
 
       - name: Generate QA test report on failure
         if: failure()
@@ -413,12 +438,21 @@ jobs:
           name: mvn-it-logs-sc-${{ matrix.SQC_REGION }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
-      - name: Upload failure diagnostics
+      - name: Upload Xvfb logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: failure-sc-${{ matrix.SQC_REGION }}
-          path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+          name: failure-xvfb-${{ matrix.SQC_REGION }}
+          path: Xvfb.out
+
+      - name: Upload JUnit XML logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-junit-${{ matrix.SQC_REGION }}
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
 
       - name: Generate QA test report on failure
         if: failure()
@@ -539,12 +573,21 @@ jobs:
           name: mvn-it-logs-${{ matrix.TARGET_PLATFORM }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
-      - name: Upload failure diagnostics
+      - name: Upload Xvfb logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: failure-${{ matrix.TARGET_PLATFORM }}
-          path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+          name: failure-xvfb-${{ matrix.TARGET_PLATFORM }}
+          path: Xvfb.out
+
+      - name: Upload JUnit XML logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-junit-${{ matrix.TARGET_PLATFORM }}
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
 
       - name: Generate QA test report on failure
         if: failure()
@@ -666,12 +709,21 @@ jobs:
           name: mvn-it-logs-cdt-${{ matrix.TARGET_PLATFORM }}
           path: 'its/**/target/work/configuration/*.log,its/**/target/work/data/.metadata/.log'
 
-      - name: Upload failure diagnostics
+      - name: Upload Xvfb logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: failure-cdt-${{ matrix.TARGET_PLATFORM }}
-          path: 'Xvfb.out,**/test-results/**/*.xml,**/target/surefire-reports/TEST-*.xml'
+          name: failure-xvfb-cdt-${{ matrix.TARGET_PLATFORM }}
+          path: Xvfb.out
+
+      - name: Upload JUnit XML logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-junit-cdt-${{ matrix.TARGET_PLATFORM }}
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
 
       - name: Generate QA test report on failure
         if: failure()
@@ -751,7 +803,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ fromJSON(steps.secrets-gh.outputs.vault).GITHUB_TOKEN }}
         with:
-          maven-args: |
+          maven-args: >
             -P-deploy-sonarsource,-release,-sign
             -Declipse.p2.mirrors=false
             -Dmaven.install.skip=true
