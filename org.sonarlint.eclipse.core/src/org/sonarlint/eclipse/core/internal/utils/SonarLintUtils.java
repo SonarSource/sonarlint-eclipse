@@ -210,28 +210,24 @@ public class SonarLintUtils {
    */
   @Nullable
   public static <T> T adapt(@Nullable Object sourceObject, Class<T> adapter, Supplier<String> trace) {
-      if (sourceObject == null) {
-          SonarLintLogger.get().traceIdeMessage(trace.get());
-          return null;
-      }
+    if (sourceObject == null) {
+      SonarLintLogger.get().traceIdeMessage(trace.get());
+      return null;
+    }
 
-      var adapted = Adapters.adapt(sourceObject, adapter);
-      if (adapted == null) {
-          SonarLintLogger.get().traceIdeMessage(trace.get() + " -> '" + sourceObject.toString() + "' could not be adapted to '"
-                  + adapter.getCanonicalName() + "'");
-      }
+    var adapted = Adapters.adapt(sourceObject, adapter);
+    if (adapted == null) {
+      SonarLintLogger.get().traceIdeMessage(trace.get() + " -> '" + sourceObject + "' could not be adapted to '"
+        + adapter.getCanonicalName() + "'");
+    }
 
-      return adapted;
+    return adapted;
   }
 
-  /**
-   *  Wrapper around {@link org.eclipse.core.runtime.Adapters#adapt(Object, Class)} in order to log debug information
-   *  which we then can use when debugging / investigating issues. Tracing is used for checking when this does not
-   *  succeed!
-   */
+  /** @see #adapt(Object, Class, Supplier) */
   @Nullable
   public static <T> T adapt(@Nullable Object sourceObject, Class<T> adapter, String trace) {
-      return adapt(sourceObject, adapter, () -> trace);
+    return adapt(sourceObject, adapter, () -> trace);
   }
 
   public static ISonarLintProject resolveProject(String configScopeId) throws ConfigScopeNotFoundException {
