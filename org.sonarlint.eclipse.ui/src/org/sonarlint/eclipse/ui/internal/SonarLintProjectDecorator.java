@@ -38,7 +38,7 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
   @Override
   public void decorate(Object element, IDecoration decoration) {
     var project = SonarLintUtils.adapt(element, ISonarLintProject.class,
-      "[SonarLintProjectDecorator#decorate] Try get project of object '" + element + "'");
+      () -> "[SonarLintProjectDecorator#decorate] Try get project of object '" + element + "'");
     if (project != null && project.isOpen()) {
       var config = SonarLintCorePlugin.loadConfig(project);
       if (!config.isAutoEnabled()) {

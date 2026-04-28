@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IProject;
@@ -208,19 +209,25 @@ public class SonarLintUtils {
    *  succeed!
    */
   @Nullable
-  public static <T> T adapt(@Nullable Object sourceObject, Class<T> adapter, String trace) {
+  public static <T> T adapt(@Nullable Object sourceObject, Class<T> adapter, Supplier<String> trace) {
     if (sourceObject == null) {
-      SonarLintLogger.get().traceIdeMessage(trace);
+      SonarLintLogger.get().traceIdeMessage(trace.get());
       return null;
     }
 
     var adapted = Adapters.adapt(sourceObject, adapter);
     if (adapted == null) {
-      SonarLintLogger.get().traceIdeMessage(trace + " -> '" + sourceObject.toString() + "' could not be adapted to '"
+      SonarLintLogger.get().traceIdeMessage(trace.get() + " -> '" + sourceObject + "' could not be adapted to '"
         + adapter.getCanonicalName() + "'");
     }
 
     return adapted;
+  }
+
+  /** @see #adapt(Object, Class, Supplier) */
+  @Nullable
+  public static <T> T adapt(@Nullable Object sourceObject, Class<T> adapter, String trace) {
+    return adapt(sourceObject, adapter, () -> trace);
   }
 
   public static ISonarLintProject resolveProject(String configScopeId) throws ConfigScopeNotFoundException {
