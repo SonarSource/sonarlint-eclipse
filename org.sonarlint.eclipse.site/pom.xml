@@ -17,77 +17,47 @@
 
   <build>
     <plugins>
-      <!-- Because of SLE-608, we want to keep signing with JDK 11 jarsigner, until we stop supporting Eclipse < 2021-06 -->
+      <!--
+        SLE-608 context: we removed the explicit JDK 11 toolchain pinning previously used with jarsigner.
+        Potential risk: this migration may affect signature compatibility for SonarLint on Eclipse versions older than 2021-06.
+      -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-toolchains-plugin</artifactId>
-        <version>${toolchains.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>toolchain</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <toolchains>
-            <jdk>
-              <version>${sonar.java.target}</version>
-            </jdk>
-          </toolchains>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jarsigner-plugin</artifactId>
-        <version>${jarsigner.version}</version>
+        <groupId>net.jsign</groupId>
+        <artifactId>jsign-maven-plugin</artifactId>
         <executions>
           <execution>
             <id>sign</id>
+            <phase>prepare-package</phase>
             <goals>
               <goal>sign</goal>
             </goals>
-            <phase>prepare-package</phase>
             <configuration>
-              <keystore>NONE</keystore>
-              <alias>key_1361216169</alias>
-              <storepass>none</storepass>
-              <providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
-              <storetype>PKCS11</storetype>
-              <providerArg>${env.SMTOOLS_PATH}/pkcs11properties.cfg</providerArg>
-              <tsa>http://timestamp.digicert.com</tsa>
-              <certs>true</certs>
-              <verbose>false</verbose>
-              <skip>${jarsigner.skip}</skip>
-              <archiveDirectory>${project.build.directory}/repository/</archiveDirectory>
-              <includes>
-                <include>features/*</include>
-                <include>plugins/org.sonarlint.*</include>
-                <include>plugins/org.sonarsource.*</include>
-              </includes>
-              <processAttachedArtifacts>false</processAttachedArtifacts>
-              <processMainArtifact>false</processMainArtifact>
-              <verbose>true</verbose>
+              <fileset>
+                <directory>${project.build.directory}/repository</directory>
+                <includes>
+                  <include>features/*</include>
+                  <include>plugins/org.sonarlint.*</include>
+                  <include>plugins/org.sonarsource.*</include>
+                </includes>
+              </fileset>
             </configuration>
           </execution>
           <execution>
-            <id>verify</id>
+            <id>verify-signature-presence</id>
+            <phase>verify</phase>
             <goals>
-              <goal>verify</goal>
+              <goal>sign</goal>
             </goals>
             <configuration>
-              <!-- Verify goal doesn't need keystore/alias - it only checks existing signatures -->
-              <certs>true</certs>
-              <verbose>false</verbose>
-              <skip>${jarsigner.skip}</skip>
-              <archiveDirectory>${project.build.directory}/repository/</archiveDirectory>
-              <includes>
-                <include>features/*</include>
-                <include>plugins/org.sonarlint.*</include>
-                <include>plugins/org.sonarsource.*</include>
-              </includes>
-              <processAttachedArtifacts>false</processAttachedArtifacts>
-              <processMainArtifact>false</processMainArtifact>
+              <command>extract</command>
+              <fileset>
+                <directory>${project.build.directory}/repository</directory>
+                <includes>
+                  <include>features/*</include>
+                  <include>plugins/org.sonarlint.*</include>
+                  <include>plugins/org.sonarsource.*</include>
+                </includes>
+              </fileset>
             </configuration>
           </execution>
         </executions>

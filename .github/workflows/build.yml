@@ -48,8 +48,10 @@ jobs:
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
-      - name: Setup DigiCert Client Tools
-        uses: SonarSource/ci-github-actions/code-signing@v1
+      - name: Setup Azure Signing
+        uses: SonarSource/gh-action_azure-artifact-signing@v1
+        with:
+          mode: setup
 
       - uses: SonarSource/ci-github-actions/config-maven@v1
         env:
@@ -99,8 +101,10 @@ jobs:
         shell: bash
         run: .github/scripts/setup-maven-toolchains.sh
 
-      - name: Setup DigiCert Client Tools
-        uses: SonarSource/ci-github-actions/code-signing@v1
+      - name: Setup Azure Signing
+        uses: SonarSource/gh-action_azure-artifact-signing@v1
+        with:
+          mode: setup
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
@@ -823,9 +827,6 @@ jobs:
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
         run: .github/scripts/setup-maven-toolchains.sh
-
-      - name: Setup DigiCert Client Tools
-        uses: SonarSource/ci-github-actions/code-signing@v1
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 

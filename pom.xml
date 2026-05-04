@@ -69,7 +69,7 @@
     <jdk.min.version>11</jdk.min.version>
 
     <!-- Maven plug-ins -->
-    <jarsigner.version>3.1.0</jarsigner.version>
+    <jsign.version>7.4</jsign.version>
     <toolchains.version>3.2.0</toolchains.version>
     <os.version>1.7.1</os.version>
 
@@ -86,8 +86,6 @@
     <sonar.sca.mavenOptions>-Dtycho.target.eager=true</sonar.sca.mavenOptions>
     <sonar.sca.exclusions>org.sonarlint.core.tests/testdata,its/projects</sonar.sca.exclusions>
     <sonar.organization>sonarsource</sonar.organization>
-
-    <jarsigner.skip>true</jarsigner.skip>
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
     <artifactsToPublish>${project.groupId}:org.sonarlint.eclipse.site:zip,${project.groupId}:sonarlint-eclipse-parent:json:cyclonedx</artifactsToPublish>
@@ -403,35 +401,22 @@
     </profile>
     <profile>
       <id>sign</id>
-      <properties>
-        <jarsigner.skip>false</jarsigner.skip>
-      </properties>
       <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jarsigner-plugin</artifactId>
-            <version>${jarsigner.version}</version>
-            <executions>
-            <execution>
-            <id>sign</id>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-            </execution>
-            </executions>
-            <configuration>
-              <keystore>NONE</keystore>
-              <alias>key_1361216169</alias>
-              <storepass>none</storepass>
-              <providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
-              <storetype>PKCS11</storetype>
-              <providerArg>${env.SMTOOLS_PATH}/pkcs11properties.cfg</providerArg>
-              <tsa>http://timestamp.digicert.com</tsa>
-              <verbose>true</verbose>
-            </configuration>
-          </plugin>
-        </plugins>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>net.jsign</groupId>
+              <artifactId>jsign-maven-plugin</artifactId>
+              <version>${jsign.version}</version>
+              <configuration>
+                <storetype>TRUSTEDSIGNING</storetype>
+                <keystore>${env.SIGNING_ENDPOINT}</keystore>
+                <storepass>env:ACCESS_TOKEN</storepass>
+                <alias>${env.SIGNING_ACCOUNT}/${env.SIGNING_PROFILE}</alias>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
       </build>
     </profile>
   </profiles>
