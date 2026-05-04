@@ -52,13 +52,14 @@ jobs:
         uses: SonarSource/gh-action_azure-artifact-signing@v1
         with:
           mode: setup
+          signing-profile: release
 
       - uses: SonarSource/ci-github-actions/config-maven@v1
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
         with:
-          common-mvn-flags: -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false --batch-mode --no-transfer-progress --errors --fail-at-end
+          common-mvn-flags: -Psign -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dsonar.skip=true -Dcyclonedx.skip=false --batch-mode --no-transfer-progress --errors --fail-at-end
           artifactory-reader-role: private-reader
 
       - name: Set project version
@@ -105,6 +106,7 @@ jobs:
         uses: SonarSource/gh-action_azure-artifact-signing@v1
         with:
           mode: setup
+          signing-profile: release
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
@@ -130,7 +132,7 @@ jobs:
           sleep 10
           # Execute tests with coverage
           mvn -B -e -V org.jacoco:jacoco-maven-plugin:prepare-agent verify \
-            -Pcoverage \
+            -Pcoverage,sign \
             -Declipse.p2.mirrors=false \
             -Djacoco.append=true \
             -Djacoco.destFile=${GITHUB_WORKSPACE}/ut-coverage.exec
@@ -832,6 +834,7 @@ jobs:
         uses: SonarSource/gh-action_azure-artifact-signing@v1
         with:
           mode: setup
+          signing-profile: release
 
       - uses: SonarSource/ci-github-actions/get-build-number@v1
 
