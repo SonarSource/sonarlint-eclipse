@@ -41,6 +41,13 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jarsigner-plugin</artifactId>
         <version>${jarsigner.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>net.jsign</groupId>
+            <artifactId>jsign</artifactId>
+            <version>${jsign.version}</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <id>sign</id>
@@ -49,12 +56,18 @@
             </goals>
             <phase>prepare-package</phase>
             <configuration>
+              <arguments>
+                <argument>-J-cp</argument>
+                <argument>-J${settings.localRepository}/net/jsign/jsign/${jsign.version}/jsign-${jsign.version}.jar</argument>
+                <argument>-J--add-modules</argument>
+                <argument>-Jjava.sql</argument>
+              </arguments>
               <keystore>NONE</keystore>
-              <alias>key_1361216169</alias>
-              <storepass>none</storepass>
-              <providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
-              <storetype>PKCS11</storetype>
-              <providerArg>${env.SMTOOLS_PATH}/pkcs11properties.cfg</providerArg>
+              <alias>${env.SIGNING_ACCOUNT}/${env.SIGNING_PROFILE}</alias>
+              <storepass>env:ACCESS_TOKEN</storepass>
+              <providerClass>net.jsign.jca.JsignJcaProvider</providerClass>
+              <storetype>TRUSTEDSIGNING</storetype>
+              <providerArg>${env.SIGNING_ENDPOINT}</providerArg>
               <tsa>http://timestamp.digicert.com</tsa>
               <certs>true</certs>
               <verbose>false</verbose>

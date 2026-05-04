@@ -70,6 +70,7 @@
 
     <!-- Maven plug-ins -->
     <jarsigner.version>3.1.0</jarsigner.version>
+    <jsign.version>7.4</jsign.version>
     <toolchains.version>3.2.0</toolchains.version>
     <os.version>1.7.1</os.version>
 
@@ -91,7 +92,7 @@
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
     <artifactsToPublish>${project.groupId}:org.sonarlint.eclipse.site:zip,${project.groupId}:sonarlint-eclipse-parent:json:cyclonedx</artifactsToPublish>
-    
+
     <cyclonedx.skip>true</cyclonedx.skip>
   </properties>
 
@@ -406,33 +407,6 @@
       <properties>
         <jarsigner.skip>false</jarsigner.skip>
       </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jarsigner-plugin</artifactId>
-            <version>${jarsigner.version}</version>
-            <executions>
-            <execution>
-            <id>sign</id>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-            </execution>
-            </executions>
-            <configuration>
-              <keystore>NONE</keystore>
-              <alias>key_1361216169</alias>
-              <storepass>none</storepass>
-              <providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
-              <storetype>PKCS11</storetype>
-              <providerArg>${env.SMTOOLS_PATH}/pkcs11properties.cfg</providerArg>
-              <tsa>http://timestamp.digicert.com</tsa>
-              <verbose>true</verbose>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>
