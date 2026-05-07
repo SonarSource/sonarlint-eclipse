@@ -187,7 +187,14 @@ public class SonarLintBackendService {
           embeddedPlugins.put("web", requireNonNull(PluginPathHelper.findEmbeddedHtmlPlugin(), "HTML plugin not found"));
           embeddedPlugins.put("xml", requireNonNull(PluginPathHelper.findEmbeddedXmlPlugin(), "XML plugin not found"));
           embeddedPlugins.put("text", requireNonNull(PluginPathHelper.findEmbeddedSecretsPlugin(), "Secrets plugin not found"));
-          embeddedPlugins.put("cpp", requireNonNull(PluginPathHelper.findEmbeddedCFamilyPlugin(), "CFamily plugin not found"));
+
+          // In forks of SonarQube for Eclipse the CFamily analyzer is not available (Maven option
+          // "-Dskip-sonarsource-repo"). In this case the plug-in would not start when it is
+          // required, we therefore keep this not strictly required.
+          var cFamilyPlugin = PluginPathHelper.findEmbeddedCFamilyPlugin();
+          if (cFamilyPlugin != null) {
+            embeddedPlugins.put("cpp", cFamilyPlugin);
+          }
 
           var sqConnections = ConnectionSynchronizer.buildSqConnectionDtos();
           var scConnections = ConnectionSynchronizer.buildScConnectionDtos();
