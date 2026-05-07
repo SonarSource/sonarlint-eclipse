@@ -25,7 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.ExtendedSonarLintImages;
 import org.sonarsource.sonarlint.core.client.utils.ImpactSeverity;
 import org.sonarsource.sonarlint.core.client.utils.SoftwareQuality;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.rules.ImpactDto;
@@ -94,7 +94,7 @@ public class RuleHeaderPanel extends AbstractRuleHeaderPanel {
 
       softwareQualityLabel.setText(sqWithLabel.getLabel());
       softwareQualityLabel.setToolTipText(tooltip);
-      impactSeverityIcon.setImage(SonarLintImages.getImpactImage(impact.getImpactSeverity()));
+      impactSeverityIcon.setImage(ExtendedSonarLintImages.getImpactImage(impact.getImpactSeverity()));
       impactSeverityIcon.setToolTipText(tooltip);
     }
   }

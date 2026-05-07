@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.ui.internal.ExtendedSonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.IssueSeverity;
 
@@ -118,13 +119,13 @@ public class IssueDescriptionField extends MarkerField {
       var highestImpact = MarkerUtils.decodeHighestImpact(
         item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_HIGHEST_IMPACT_ATTR, null));
       if (cleanCodeAttribute == null || highestImpact == null) {
-        return SonarLintImages.getIssueImage(matchingStatus,
+        return ExtendedSonarLintImages.getIssueImage(matchingStatus,
           item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, "major"),
           item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, "code_smell"),
           isResolved);
       }
 
-      return SonarLintImages.getIssueImage(matchingStatus, highestImpact.name(), isResolved);
+      return ExtendedSonarLintImages.getIssueImage(matchingStatus, highestImpact.name(), isResolved);
     } else {
       // It is no actual marker but a groupBy item which groups the headers
       var groupByTitle = item.getAttributeValue(IMarker.MESSAGE, "")
@@ -133,16 +134,16 @@ public class IssueDescriptionField extends MarkerField {
         .trim();
 
       // As we offer multiple different grouping options (severity / impacts), we have to display
-      // the correct grouping icon. 
+      // the correct grouping icon.
       if (groupByTitle.endsWith(" IMPACT")) {
-        return SonarLintImages.getIssueImage(null, groupByTitle.replace(" IMPACT", ""), false);
+        return ExtendedSonarLintImages.getIssueImage(null, groupByTitle.replace(" IMPACT", ""), false);
       } else if (IssueSeverity.BLOCKER.name().equals(groupByTitle)
         || IssueSeverity.CRITICAL.name().equals(groupByTitle)
         || IssueSeverity.MAJOR.name().equals(groupByTitle)
         || IssueSeverity.MINOR.name().equals(groupByTitle)
         || IssueSeverity.INFO.name().equals(groupByTitle)) {
-        return SonarLintImages.getIssueImage(null, groupByTitle, null, false);
-      }
+          return ExtendedSonarLintImages.getIssueImage(null, groupByTitle, null, false);
+        }
       return SonarLintImages.getNotAvailableImage();
     }
   }
