@@ -40,7 +40,7 @@ jobs:
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
-          version: 2025.9.12
+          version: 2026.5.1
 
       - name: Setup Maven Toolchains
         shell: bash
@@ -89,7 +89,7 @@ jobs:
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
-          version: 2025.9.12
+          version: 2026.5.1
 
       - name: Install Validate Dependencies
         shell: bash
@@ -201,7 +201,7 @@ jobs:
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
-          version: 2025.9.12
+          version: 2026.5.1
 
       - name: Select Java ${{ matrix.JAVA_VERSION }}
         run: mise use java@${{ matrix.JAVA_VERSION }}
@@ -376,7 +376,7 @@ jobs:
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
-          version: 2025.9.12
+          version: 2026.5.1
 
       - name: Install UI deps (Xvfb, metacity, ffmpeg)
         shell: bash
@@ -528,7 +528,7 @@ jobs:
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
-          version: 2025.9.12
+          version: 2026.5.1
 
       - name: Install UI deps (Xvfb, metacity, ffmpeg)
         shell: bash
@@ -676,7 +676,7 @@ jobs:
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
-          version: 2025.9.12
+          version: 2026.5.1
 
       - name: Install UI deps (Xvfb, metacity, ffmpeg)
         shell: bash
@@ -818,7 +818,7 @@ jobs:
 
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
         with:
-          version: 2025.9.12
+          version: 2026.5.1
 
       - name: Setup Maven Toolchains (JDK 11/17/21)
         shell: bash
