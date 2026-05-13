@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
@@ -75,7 +76,7 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
   }
 
   public static void setReportTitle(@Nullable String title) {
-    SonarLintReportView.reportDate = title != null ? LocalDateTime.now() : null;
+    SonarLintReportView.reportDate = title != null ? LocalDateTime.now(ZoneId.systemDefault()) : null;
     SonarLintReportView.reportTitle = title;
     if (instance != null) {
       var localInstance = instance;

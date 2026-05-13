@@ -529,7 +529,7 @@ public class SonarLintGlobalConfiguration {
   public static void setNextSonarLintVersionHintDate() {
     var date = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH)
       .format(Date.from(
-        LocalDate.now().plusDays(14)
+        LocalDate.now(ZoneId.systemDefault()).plusDays(14)
           .atStartOfDay()
           .atZone(ZoneId.systemDefault())
           .toInstant()));
