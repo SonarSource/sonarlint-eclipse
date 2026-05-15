@@ -5,14 +5,21 @@ on:
       version:
         description: 'Full version including build number, e.g. 1.2.3.456'
         required: true
+        type: string
+      dryRun:
+        description: 'Flag to enable the dry-run execution'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   sonar_release:
     permissions:
       id-token: write
       contents: write
-    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@95ca260926950eedcc8c69437f9f12b6f0584de4 # v7.0.1
+    uses: SonarSource/gh-action_release/.github/workflows/main.yaml@95ca260926950eedcc8c69437f9f12b6f0584de4 # 7.0.1
     with:
       version: ${{ inputs.version }}
       publishToBinaries: true
+      dryRun: ${{ inputs.dryRun }}
       slackChannel: C02E6L5C01H # squad-devex-private
