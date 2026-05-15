@@ -31,7 +31,7 @@
     <jdk.min.version>11</jdk.min.version>
 
     <!-- Tycho plug-ins -->
-    <tycho.version>4.0.12</tycho.version>
+    <tycho.version>5.0.2</tycho.version>
 
     <!-- Global properties -->
     <target.platform>latest</target.platform>
