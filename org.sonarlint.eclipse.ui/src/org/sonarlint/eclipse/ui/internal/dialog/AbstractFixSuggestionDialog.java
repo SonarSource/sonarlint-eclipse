@@ -21,12 +21,12 @@ package org.sonarlint.eclipse.ui.internal.dialog;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.IEncodedStreamContentAccessor;
 import org.eclipse.compare.ITypedElement;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
-import org.eclipse.compare.internal.Utilities;
 import org.eclipse.compare.structuremergeviewer.DiffNode;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
@@ -161,7 +161,7 @@ public abstract class AbstractFixSuggestionDialog extends Dialog {
 
     @Override
     public InputStream getContents() throws CoreException {
-      return new ByteArrayInputStream(Utilities.getBytes(content, "UTF-8"));
+      return new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override

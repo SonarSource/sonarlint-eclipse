@@ -36,4 +36,15 @@
             class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
       </enhancer>
    </extension>
+   
+   <!--
+      This custom Quick Fix provider is added to all markers set by Eclipse JDT (Java Problem) for
+      "@SuppressWarnings(...)" annotations for SonarQube issues that are not known to JDT itself,
+      therefore the marker.
+   -->
+   <extension point="org.eclipse.ui.ide.markerResolution">
+     <markerResolutionGenerator
+       markerType="org.eclipse.jdt.core.problem"
+       class="org.sonarlint.eclipse.jdt.internal.SuppressWarningsQuickFixGenerator" />
+   </extension>
 </plugin>

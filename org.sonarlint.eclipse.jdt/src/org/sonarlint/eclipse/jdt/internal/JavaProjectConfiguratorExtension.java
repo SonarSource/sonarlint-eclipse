@@ -63,7 +63,7 @@ public class JavaProjectConfiguratorExtension
     javaProjectConfigurator = jdtPresent ? new JdtUtils() : null;
   }
 
-  private static boolean isJdtPresent() {
+  static boolean isJdtPresent() {
     return isClassPresentAtRuntime("org.eclipse.jdt.core.JavaCore");
   }
 

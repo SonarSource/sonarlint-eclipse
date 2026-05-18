@@ -23,7 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.ExtendedSonarLintImages;
 import org.sonarsource.sonarlint.core.rpc.protocol.common.StandardModeDetails;
 
 /** Rule header for the old CCT */
@@ -51,11 +51,11 @@ public class LegacyRuleHeaderPanel extends AbstractRuleHeaderPanel {
   @Override
   public void updateRule() {
     var type = details.getType();
-    ruleTypeIcon.setImage(SonarLintImages.getTypeImage(type));
+    ruleTypeIcon.setImage(ExtendedSonarLintImages.getTypeImage(type));
     ruleTypeLabel.setText(clean(type.toString()));
 
     var severity = details.getSeverity();
-    ruleSeverityIcon.setImage(SonarLintImages.getSeverityImage(severity));
+    ruleSeverityIcon.setImage(ExtendedSonarLintImages.getSeverityImage(severity));
     ruleSeverityLabel.setText(clean(severity.toString()));
 
     ruleKeyLabel.setText(ruleKey);
