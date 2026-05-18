@@ -45,6 +45,19 @@ public class SuppressWarningsQuickFix implements IMarkerResolution2 {
 
   @Override
   public void run(IMarker marker) {
+    var resource = marker.getResource();
+    if (resource != null) {
+      var javaProject = JavaCore.create(resource.getProject());
+      if (javaProject != null && javaProject.exists()) {
+        var projectOptions = javaProject.getOptions(false);
+        if (!projectOptions.isEmpty()) {
+          projectOptions.put(JavaCore.COMPILER_PB_UNHANDLED_WARNING_TOKEN, JavaCore.IGNORE);
+          javaProject.setOptions(projectOptions);
+          return;
+        }
+      }
+    }
+
     var options = JavaCore.getOptions();
     options.put(JavaCore.COMPILER_PB_UNHANDLED_WARNING_TOKEN, JavaCore.IGNORE);
     JavaCore.setOptions(options);
