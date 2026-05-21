@@ -160,7 +160,7 @@
                     <artifactItem>
                       <groupId>com.sonarsource.cpp</groupId>
                       <artifactId>sonar-cfamily-plugin</artifactId>
-                      <version>6.81.0.99236</version>
+                      <version>6.81.1.99296</version>
                       <type>jar</type>
                     </artifactItem>
                   </artifactItems>
