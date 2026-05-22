@@ -399,7 +399,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     var defaultEditor = new DefaultEditor();
     waitForMarkers(defaultEditor,
-      tuple("Unexpected double-slash CSS comment", 1));
+      tuple("Invalid double-slash CSS comment", 1));
   }
 
   @Test
