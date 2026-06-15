@@ -5,15 +5,15 @@
     <location type="Target" uri="file:${project_loc:/org.sonarlint.eclipse.its}/../target-platforms/commons-its.target" />
     
     <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-      <unit id="org.eclipse.cdt.feature.group" version="12.4.0.202603041756" />
-      <unit id="org.eclipse.jdt.feature.group" version="3.20.500.v20260226-0420" />
-      <unit id="org.eclipse.m2e.feature.feature.group" version="2.10.100.20260205-1611" />
-      <unit id="org.eclipse.platform.ide" version="4.39.0.I20260226-0420" />
+      <unit id="org.eclipse.cdt.feature.group" version="12.5.0.202606022100" />
+      <unit id="org.eclipse.jdt.feature.group" version="3.20.600.v20260601-0713" />
+      <unit id="org.eclipse.m2e.feature.feature.group" version="2.10.200.20260602-0749" />
+      <unit id="org.eclipse.platform.ide" version="4.40.0.I20260601-0713" />
       <unit id="org.eclipse.wst.jsdt.feature.feature.group" version="2.4.500.v202307190318" />
-      <unit id="org.eclipse.pde.feature.group" version="3.16.600.v20260226-0420" />
+      <unit id="org.eclipse.pde.feature.group" version="3.16.700.v20260601-0713" />
       <unit id="org.eclipse.wildwebdeveloper.embedder.node.feature.feature.group" version="1.2.3.202510292239" />
       <!-- Needed to build the test environment -->
-      <unit id="org.eclipse.equinox.executable.feature.group" version="3.8.3200.v20260203-2149" />
+      <unit id="org.eclipse.equinox.executable.feature.group" version="3.8.3300.v20260414-2255" />
       <repository id="eclipse-releases-latest" location="https://repox.jfrog.io/artifactory/eclipse-releases-latest/" />
     </location>
 
