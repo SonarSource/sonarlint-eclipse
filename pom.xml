@@ -429,6 +429,17 @@
               <providerArg>${env.SMTOOLS_PATH}/pkcs11properties.cfg</providerArg>
               <tsa>http://timestamp.digicert.com</tsa>
               <verbose>true</verbose>
+              <!-- PREQ-6517: the network-backed DigiCert KeyLocker PKCS11 keystore
+                   intermittently fails to load ("keystore load: load failed"),
+                   suspected HTTP 429 rate-limiting. Retry with exponential backoff. -->
+              <maxTries>3</maxTries>
+              <maxRetryDelaySeconds>15</maxRetryDelaySeconds>
+              <!-- PREQ-6517: surface the underlying SunPKCS11/KeyLocker error
+                   (e.g. HTTP 429 rate-limit) behind the opaque
+                   "keystore load: load failed" message -->
+              <arguments>
+                <argument>-J-Djava.security.debug=sunpkcs11</argument>
+              </arguments>
             </configuration>
           </plugin>
         </plugins>
