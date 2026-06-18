@@ -35,7 +35,8 @@ public class SuppressWarningsQuickFix implements IMarkerResolution2 {
   public String getDescription() {
     return "SonarQube uses custom ids that can be set in \"@SuppressWarnings\" to be picked up by the language "
       + "analyzers to suppress potential rule violations. Eclipse JDT does not recognize these IDs and reports them "
-      + "as unsupported. This quick fix will disable this compiler warning.";
+      + "as unsupported. This quick fix will disable this compiler warning on the project level if project specific "
+      + "Eclipse JDT configurations are available, otherwise on the workspace level.";
   }
 
   @Override

@@ -194,6 +194,8 @@ public class SonarLintBackendService {
           var cFamilyPlugin = PluginPathHelper.findEmbeddedCFamilyPlugin();
           if (cFamilyPlugin != null) {
             embeddedPlugins.put("cpp", cFamilyPlugin);
+          } else {
+            SonarLintLogger.get().info("CFamily plug-in not found - C/C++ analysis will not be available");
           }
 
           var sqConnections = ConnectionSynchronizer.buildSqConnectionDtos();
