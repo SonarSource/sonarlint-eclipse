@@ -79,11 +79,6 @@ public class PluginPathHelper {
   }
 
   @Nullable
-  public static Path findEmbeddedCFamilyPlugin() {
-    return findEmbeddedPlugin("sonar-cfamily-plugin-*.jar", "Found CFamily plugin: ");
-  }
-
-  @Nullable
   private static Path findEmbeddedPlugin(String pluginNamePattern, String logPrefix) {
     var pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle()
       .findEntries("/plugins", pluginNamePattern, false);
