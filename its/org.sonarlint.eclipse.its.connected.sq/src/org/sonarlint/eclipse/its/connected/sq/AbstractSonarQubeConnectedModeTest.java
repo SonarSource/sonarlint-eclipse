@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.its.connected.sq;
 
+import com.google.gson.JsonParser;
 import com.sonar.orchestrator.build.MavenBuild;
 import com.sonar.orchestrator.container.Server;
 import com.sonar.orchestrator.junit4.OrchestratorRule;
@@ -49,6 +50,7 @@ import org.sonarlint.eclipse.its.shared.reddeer.wizards.ServerConnectionWizard;
 import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
+import org.sonarqube.ws.client.languages.ListRequest;
 import org.sonarqube.ws.client.projects.CreateRequest;
 import org.sonarqube.ws.client.settings.SetRequest;
 import org.sonarqube.ws.client.usertokens.GenerateRequest;
@@ -74,21 +76,24 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     adminWsClient.settings().set(new SetRequest().setKey("sonar.forceAuthentication").setValue("true"));
 
     try {
-      orchestrator.getServer().restoreProfile(
-        URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint.xml"), null))));
-      orchestrator.getServer().restoreProfile(
-        URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint-new-code.xml"), null))));
+      restoreQualityProfile(orchestrator, "res/java-sonarlint.xml");
+      restoreQualityProfile(orchestrator, "res/java-sonarlint-new-code.xml");
 
       if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 4)) {
-        orchestrator.getServer().restoreProfile(
-          URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/custom-secrets.xml"), null))));
+        restoreQualityProfile(orchestrator, "res/custom-secrets.xml");
       }
 
       if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 6)) {
-        orchestrator.getServer().restoreProfile(
-          URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint-dbd.xml"), null))));
-        orchestrator.getServer().restoreProfile(
-          URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/python-sonarlint-dbd.xml"), null))));
+        restoreQualityProfile(orchestrator, "res/java-sonarlint-dbd.xml");
+        restoreQualityProfile(orchestrator, "res/python-sonarlint-dbd.xml");
+      }
+
+      if (isLanguageSupported("azurepipelines")) {
+        restoreQualityProfile(orchestrator, "res/azurepipelines-sonarlint.xml");
+      }
+
+      if (isLanguageSupported("shell")) {
+        restoreQualityProfile(orchestrator, "res/shell-sonarlint.xml");
       }
     } catch (IOException e) {
       fail("Unable to load quality profile", e);
@@ -107,6 +112,22 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
       .url(server.getUrl())
       .credentials(Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD)
       .build());
+  }
+
+  protected static boolean isLanguageSupported(String languageKey) {
+    var response = JsonParser.parseString(adminWsClient.languages().list(new ListRequest().setQ(languageKey))).getAsJsonObject();
+    var languages = response.getAsJsonArray("languages");
+    if (languages == null) {
+      return false;
+    }
+
+    for (var language : languages) {
+      var key = language.getAsJsonObject().get("key");
+      if (key != null && languageKey.equals(key.getAsString())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /** Create a project on SonarQube via Web API with corresponding quality profile assigned */
@@ -205,6 +226,11 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     serverProjectSelectionPage.waitForProjectsToBeFetched();
     serverProjectSelectionPage.setProjectKey(projectKey);
     projectBindingWizard.finish();
+  }
+
+  private static void restoreQualityProfile(OrchestratorRule orchestrator, String resourcePath) throws IOException {
+    orchestrator.getServer().restoreProfile(
+      URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path(resourcePath), null))));
   }
 
   protected static void bindProjectFromContextMenu(Project project, String projectKey) {

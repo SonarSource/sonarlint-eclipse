@@ -90,6 +90,12 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   private static final String MAVEN2_PROJECT_KEY = "maven2";
   private static final String MAVEN_TAINT_PROJECT_KEY = "maven-taint";
   private static final String DBD_PROJECT_KEY = "dbd";
+  private static final String AZUREPIPELINES_PROJECT_KEY = "azurepipelines-simple";
+  private static final String AZUREPIPELINES_QUALITY_PROFILE = "SonarLint IT Azure Pipelines";
+  private static final String AZUREPIPELINES_LANGUAGE_KEY = "azurepipelines";
+  private static final String SHELL_PROJECT_KEY = "shell-simple";
+  private static final String SHELL_QUALITY_PROFILE = "SonarLint IT Shell";
+  private static final String SHELL_LANGUAGE_KEY = "shell";
   private static final String CUSTOM_SECRETS_PROJECT_KEY = "secrets-custom";
   private static final String INSUFFICIENT_PERMISSION_USER = "iHaveNoRights";
   private static final MarkerDescriptionMatcher ISSUE_MATCHER = new MarkerDescriptionMatcher(
@@ -613,6 +619,68 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   }
 
   @Test
+  public void test_AzurePipelines() {
+    Assume.assumeTrue(isLanguageSupported(AZUREPIPELINES_LANGUAGE_KEY));
+
+    adminWsClient.projects()
+      .create(new CreateRequest()
+        .setName(AZUREPIPELINES_PROJECT_KEY)
+        .setProject(AZUREPIPELINES_PROJECT_KEY));
+    orchestrator.getServer().associateProjectToQualityProfile(AZUREPIPELINES_PROJECT_KEY, AZUREPIPELINES_LANGUAGE_KEY, AZUREPIPELINES_QUALITY_PROFILE);
+
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("azurepipelines/azurepipelines-simple", AZUREPIPELINES_PROJECT_KEY);
+    closeUnsupportedLanguageNotifications();
+
+    var onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("azure-pipelines.yml"));
+    closeUnsupportedLanguageNotifications();
+    waitForNoSonarLintMarkers(onTheFlyView);
+    new DefaultEditor().close();
+
+    createConnectionAndBindProject(orchestrator, AZUREPIPELINES_PROJECT_KEY);
+    shellByName("SonarQube - Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
+    waitForAnalysisReady(AZUREPIPELINES_PROJECT_KEY);
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("azure-pipelines.yml"));
+    waitForSingleIssueOnResource(onTheFlyView, "azure-pipelines.yml");
+    new DefaultEditor().close();
+  }
+
+  @Test
+  public void test_Shell() {
+    Assume.assumeTrue(isLanguageSupported(SHELL_LANGUAGE_KEY));
+
+    adminWsClient.projects()
+      .create(new CreateRequest()
+        .setName(SHELL_PROJECT_KEY)
+        .setProject(SHELL_PROJECT_KEY));
+    orchestrator.getServer().associateProjectToQualityProfile(SHELL_PROJECT_KEY, SHELL_LANGUAGE_KEY, SHELL_QUALITY_PROFILE);
+
+    new JavaPerspective().open();
+    var rootProject = importExistingProjectIntoWorkspace("shell/shell-simple", SHELL_PROJECT_KEY);
+    closeUnsupportedLanguageNotifications();
+
+    var onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("install.sh"));
+    closeUnsupportedLanguageNotifications();
+    waitForNoSonarLintMarkers(onTheFlyView);
+    new DefaultEditor().close();
+
+    createConnectionAndBindProject(orchestrator, SHELL_PROJECT_KEY);
+    shellByName("SonarQube - Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
+    waitForAnalysisReady(SHELL_PROJECT_KEY);
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("install.sh"));
+    waitForSingleIssueOnResource(onTheFlyView, "install.sh");
+    new DefaultEditor().close();
+  }
+
+  @Test
   public void test_custom_secrets() {
     // INFO: Since 10.4 this is supported for SonarLint for Eclipse!
     Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
@@ -686,5 +754,21 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
       .setParam("project", projectKey)
       .setParam("type", "PREVIOUS_VERSION")
       .execute();
+  }
+
+  private static void closeUnsupportedLanguageNotifications() {
+    shellByName("SonarQube for Eclipse - Language could not be analyzed").ifPresent(DefaultShell::close);
+    shellByName("SonarQube for Eclipse - Languages could not be analyzed").ifPresent(DefaultShell::close);
+  }
+
+  private static void waitForSingleIssueOnResource(OnTheFlyView onTheFlyView, String resourceName) {
+    await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+      var issues = onTheFlyView.getIssues();
+      assertThat(issues).hasSize(1);
+      assertThat(issues)
+        .extracting(SonarLintIssueMarker::getResource)
+        .containsOnly(resourceName);
+      assertThat(issues.get(0).getDescription()).isNotBlank();
+    });
   }
 }
