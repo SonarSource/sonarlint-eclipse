@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<profile>
+  <name>SonarLint IT Shell</name>
+  <language>shell</language>
+  <rules>
+    <rule>
+      <!-- Package managers should not execute third-party install scripts by default -->
+      <repositoryKey>shell</repositoryKey>
+      <key>S6505</key>
+      <priority>MAJOR</priority>
+    </rule>
+  </rules>
+</profile>

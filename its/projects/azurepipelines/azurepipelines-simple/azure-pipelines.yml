@@ -1,0 +1,7 @@
+trigger:
+  - main
+
+steps:
+  - script: echo "Build started"
+    displayName: "Run initial script"
+  # TODO: Add deployment step
