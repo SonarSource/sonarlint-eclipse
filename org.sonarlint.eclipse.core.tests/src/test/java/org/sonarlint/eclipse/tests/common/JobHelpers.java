@@ -41,6 +41,8 @@ public class JobHelpers {
   public static void waitForJobsToComplete() {
     try {
       waitForJobsToComplete(new NullProgressMonitor());
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     } catch (Exception ex) {
       throw new IllegalStateException(ex);
     }
@@ -75,6 +77,7 @@ public class JobHelpers {
       workspace.run(new IWorkspaceRunnable() {
         @Override
         public void run(IProgressMonitor monitor) {
+          // do nothing, just wait for resource change events to be delivered
         }
       }, workspace.getRoot(), 0, monitor);
 
@@ -102,7 +105,8 @@ public class JobHelpers {
       try {
         Thread.sleep(POLLING_DELAY);
       } catch (InterruptedException e) {
-        // ignore and keep waiting
+        Thread.currentThread().interrupt();
+        return; // stop waiting once interrupted instead of busy-spinning
       }
     }
   }
@@ -114,13 +118,17 @@ public class JobHelpers {
       .orElse(null);
   }
 
+  private JobHelpers() {
+    // utility class
+  }
+
   static class LaunchJobMatcher implements Predicate<Job> {
 
     public static final Predicate<Job> INSTANCE = new LaunchJobMatcher();
 
     @Override
     public boolean test(Job job) {
-      return job.getClass().getName().matches("(.*\\.DebugUIPlugin.*)");
+      return job.getClass().getName().contains(".DebugUIPlugin");
     }
 
   }
@@ -131,7 +139,7 @@ public class JobHelpers {
 
     @Override
     public boolean test(Job job) {
-      return (job instanceof WorkspaceJob) || job.getClass().getName().matches("(.*\\.AutoBuild.*)")
+      return (job instanceof WorkspaceJob) || job.getClass().getName().contains(".AutoBuild")
         || job.getClass().getName().endsWith("JREUpdateJob");
     }
 
