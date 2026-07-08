@@ -281,6 +281,9 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
       }
     } else {
       var projectConfig = getProjectConfig();
+      if (projectConfig == null) {
+        return false;
+      }
       var previousFileExclusions = new ArrayList<>(projectConfig.getFileExclusions());
       projectConfig.getFileExclusions().clear();
       projectConfig.getFileExclusions().addAll(exclusions);
