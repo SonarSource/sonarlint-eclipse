@@ -247,7 +247,7 @@ public abstract class SonarLintEclipseHeadlessRpcClient implements SonarLintRpcC
     // show an immutable state.
     final var issuesAreOnTheFly = currentAnalysis == null || currentAnalysis.getTriggerType().isOnTheFly();
 
-    new IssuesMarkerUpdateJob(project, issuesByFileUri, issuesAreOnTheFly).schedule();
+    IssuesMarkerUpdateJob.INSTANCE.add(project, issuesByFileUri, issuesAreOnTheFly);
   }
 
   @Override

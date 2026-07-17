@@ -20,9 +20,13 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -36,46 +40,97 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.rpc.protocol.client.issue.RaisedIssueDto;
 
 public class IssuesMarkerUpdateJob extends AbstractSonarJob {
-  private final ISonarLintProject project;
-  private final Map<URI, List<RaisedIssueDto>> issuesByFileUri;
-  private final boolean issuesAreOnTheFly;
 
-  public IssuesMarkerUpdateJob(ISonarLintProject project, Map<URI, List<RaisedIssueDto>> issuesByFileUri, boolean issuesAreOnTheFly) {
-    super("Update issues markers for project " + project.getName());
-    this.project = project;
-    this.issuesByFileUri = issuesByFileUri;
-    this.issuesAreOnTheFly = issuesAreOnTheFly;
+  public static final IssuesMarkerUpdateJob INSTANCE = new IssuesMarkerUpdateJob();
+
+  private final Queue<Request> workQueue = new ConcurrentLinkedQueue<>();
+
+  private IssuesMarkerUpdateJob() {
+    super("Update issues markers for projects");
+  }
+
+  public void add(ISonarLintProject project, Map<URI, List<RaisedIssueDto>> issuesByFileUri, boolean issuesAreOnTheFly) {
+    workQueue.add(new Request(project, issuesByFileUri, issuesAreOnTheFly));
+    schedule();
   }
 
   @Override
   protected IStatus doRun(IProgressMonitor monitor) throws CoreException {
-    SonarLintLogger.get().info("Found " + countAllIssues() + " issue(s) on project '"
-      + project.getName() + "'");
+    var requests = new ArrayList<Request>();
+    Request request;
+    while ((request = workQueue.poll()) != null) {
+      requests.add(request);
+    }
 
-    // To access the preference service only once and not per issue
-    var issuesIncludingResolved = SonarLintGlobalConfiguration.issuesIncludingResolved();
-    var issuesOnlyNewCode = SonarLintGlobalConfiguration.issuesOnlyNewCode();
+    if (requests.isEmpty()) {
+      return Status.OK_STATUS;
+    }
 
-    // If the project connection offers changing the status on anticipated issues (SonarQube 10.2+) we can enable the
-    // context menu option on the markers.
-    var viableForStatusChange = SonarLintUtils.checkProjectSupportsAnticipatedStatusChange(project);
+    var status = new AtomicReference<>(Status.OK_STATUS);
+    var toNotify = new HashSet<ISonarLintProject>();
+    // Requests that could not be processed (cancellation) are re-queued so their markers are not lost.
+    var remaining = new ArrayList<Request>();
 
     ResourcesPlugin.getWorkspace().run(m -> {
-      for (var entry : issuesByFileUri.entrySet()) {
-        var slFile = SonarLintUtils.findFileFromUri(entry.getKey());
-        if (slFile != null) {
-          SonarLintMarkerUpdater.createOrUpdateMarkers(slFile, entry.getValue(), issuesAreOnTheFly,
-            issuesIncludingResolved, issuesOnlyNewCode, viableForStatusChange);
+      for (var i = 0; i < requests.size(); i++) {
+        var req = requests.get(i);
+        if (monitor.isCanceled()) {
+          status.set(Status.CANCEL_STATUS);
+          remaining.addAll(requests.subList(i, requests.size()));
+          return;
+        }
+        try {
+          updateProject(req);
+          toNotify.add(req.project);
+        } catch (RuntimeException e) {
+          // A failure for one project must not prevent the other projects' markers from being updated.
+          SonarLintLogger.get().error("Failed to update issue markers for project '" + req.project.getName() + "'", e);
         }
       }
-
-      SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners(() -> Set.of(project));
     }, monitor);
 
-    return Status.OK_STATUS;
+    if (!toNotify.isEmpty()) {
+      SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners(() -> toNotify);
+    }
+
+    if (!remaining.isEmpty()) {
+      workQueue.addAll(remaining);
+    }
+
+    // New requests may have been queued while this job was running, or requests were re-queued after cancellation.
+    if (!workQueue.isEmpty()) {
+      schedule();
+    }
+
+    return status.get();
   }
 
-  private int countAllIssues() {
-    return issuesByFileUri.values().stream().mapToInt(List::size).sum();
+  private static void updateProject(Request req) {
+    var countAllIssues = req.issuesByFileUri.values().stream().mapToInt(List::size).sum();
+    SonarLintLogger.get().info("Found " + countAllIssues + " issue(s) on project '" + req.project.getName() + "'");
+
+    var issuesIncludingResolved = SonarLintGlobalConfiguration.issuesIncludingResolved();
+    var issuesOnlyNewCode = SonarLintGlobalConfiguration.issuesOnlyNewCode();
+    var viableForStatusChange = SonarLintUtils.checkProjectSupportsAnticipatedStatusChange(req.project);
+
+    for (var entry : req.issuesByFileUri.entrySet()) {
+      var slFile = SonarLintUtils.findFileFromUri(entry.getKey());
+      if (slFile != null) {
+        SonarLintMarkerUpdater.createOrUpdateMarkers(slFile, entry.getValue(), req.issuesAreOnTheFly,
+          issuesIncludingResolved, issuesOnlyNewCode, viableForStatusChange);
+      }
+    }
+  }
+
+  private static final class Request {
+    private final ISonarLintProject project;
+    private final Map<URI, List<RaisedIssueDto>> issuesByFileUri;
+    private final boolean issuesAreOnTheFly;
+
+    private Request(ISonarLintProject project, Map<URI, List<RaisedIssueDto>> issuesByFileUri, boolean issuesAreOnTheFly) {
+      this.project = project;
+      this.issuesByFileUri = issuesByFileUri;
+      this.issuesAreOnTheFly = issuesAreOnTheFly;
+    }
   }
 }
