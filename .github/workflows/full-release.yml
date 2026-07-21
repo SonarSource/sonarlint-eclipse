@@ -37,7 +37,7 @@ jobs:
       project-name: "SonarLint for Eclipse"
       short-description: ${{ inputs.short-description }}
       branch: ${{ inputs.branch }}
-      slack-channel: "C02E6L5C01H"
+      slack-channel: "C06M11XJHCN" #squad-ide-eclipse-bots
       is-test-run: ${{ inputs.dry-run }}
       new-version: ${{ inputs.new-version }}
 
