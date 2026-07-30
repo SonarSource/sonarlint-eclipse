@@ -265,6 +265,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
+  @Ignore("Flaky on SonarQube Cloud staging")
   public void fixSuggestion_with_ConnectionSetup_fileNotFound() throws InterruptedException, IOException {
     // INFO: This one does not work yet on SonarQube Cloud US Region as no project is on it!
     Assume.assumeTrue(SONARQUBE_CLOUD_REGION_IS_EU);
