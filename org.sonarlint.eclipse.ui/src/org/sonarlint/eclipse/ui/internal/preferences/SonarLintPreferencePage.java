@@ -119,12 +119,6 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
 
     PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
 
-    addField(new BooleanFieldEditor(SonarLintGlobalConfiguration.PREF_SHOW_REGION_SELECTOR,
-      "Show region selection for SonarQube Cloud",
-      getFieldEditorParent()));
-
-    PlatformUtils.createHorizontalSpacer(getFieldEditorParent(), 1);
-
     var powerUserLabel = new Link(getFieldEditorParent(), SWT.NONE);
     powerUserLabel.setText("This section targets power users who want to tweak SonarQube for Eclipse even more. "
       + "Please refer to <a>the documentation</a>.");

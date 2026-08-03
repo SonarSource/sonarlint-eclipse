@@ -34,10 +34,8 @@ import org.assertj.core.groups.Tuple;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
-import org.eclipse.reddeer.core.exception.CoreLayerException;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
@@ -72,7 +70,6 @@ import org.sonarqube.ws.client.usertokens.RevokeRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertThrows;
 
 public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
@@ -130,11 +127,6 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
       .revoke(new RevokeRequest().setName(TOKEN_NAME));
   }
 
-  @After
-  public void disableSonarQubeCloudRegionEA() {
-    changeSonarQubeCloudRegionEA(false);
-  }
-
   @Before
   public void cleanBindings() {
     var bindingsView = new BindingsView();
@@ -148,20 +140,11 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     wizard.open();
     var serverTypePage = new ServerConnectionWizard.ServerTypePage(wizard);
 
-    // i) Try to select EU/US that is not yet available (we cannot query the UI text but just check for
     serverTypePage.selectSonarCloud();
-    assertThrows(CoreLayerException.class, serverTypePage::selectSonarQubeCloudEuRegion);
-    assertThrows(CoreLayerException.class, serverTypePage::selectSonarQubeCloudUsRegion);
-    wizard.cancel();
+    assertThat(serverTypePage.isSonarQubeCloudEuRegionSelected()).isTrue();
 
-    // ii) Enable SonarQube Cloud Region
-    changeSonarQubeCloudRegionEA(true);
-    wizard = new ServerConnectionWizard();
-    wizard.open();
-    serverTypePage = new ServerConnectionWizard.ServerTypePage(wizard);
-
-    // iii) Check that region selectors are available, disabled when selecting SonarQube Server and
-    // then select the region based on the environment property.
+    // Check that region selectors are disabled when selecting SonarQube Server, then select the region
+    // based on the environment property.
     serverTypePage.selectSonarQube();
     assertThat(serverTypePage.isSonarQubeCloudEuRegionEnabled()).isFalse();
     assertThat(serverTypePage.isSonarQubeCloudUsRegionEnabled()).isFalse();
@@ -633,11 +616,4 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     projectBindingWizard.finish();
   }
 
-  private static void changeSonarQubeCloudRegionEA(boolean enabled) {
-    var preferenceDialog = openPreferenceDialog();
-    var preferences = new SonarLintPreferences(preferenceDialog);
-    preferenceDialog.select(preferences);
-    preferences.enableSonarQubeCloudRegionEA(enabled);
-    preferenceDialog.ok();
-  }
 }
