@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.telemetry.LinkTelemetry;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
@@ -90,55 +89,53 @@ public class ConnectionTypeWizardPage extends WizardPage {
     var dataBindingContext = new DataBindingContext();
     dataBindingContext.bindValue(connectionTypeSelectObservable, PojoPropertiesCompat.value(ServerConnectionModel.PROPERTY_CONNECTION_TYPE).observe(model));
     
-    if (SonarLintGlobalConfiguration.shouldShowRegionSelection()) {
-      var sonarQubeCloudRegionRadioButtonGroup = new Composite(radioButtonGroupContainer, SWT.NONE);
-      var sonarQubeCloudRegionRadioButtonGroupLayout = new GridLayout();
-      sonarQubeCloudRegionRadioButtonGroupLayout.numColumns = 1;
-      sonarQubeCloudRegionRadioButtonGroup.setLayout(sonarQubeCloudRegionRadioButtonGroupLayout);
-      sonarQubeCloudRegionRadioButtonGroup.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, false, 2, 1));
-      var euRegionRadioSelector = new Button(sonarQubeCloudRegionRadioButtonGroup, SWT.RADIO);
-      euRegionRadioSelector.setText("EU - sonarcloud.io");
-      var usRegionRadioSelector = new Button(sonarQubeCloudRegionRadioButtonGroup, SWT.RADIO);
-      usRegionRadioSelector.setText("US - sonarqube.us");
-      
-      sonarCloudButton.addSelectionListener(new SelectionListener() {
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-          euRegionRadioSelector.setEnabled(true);
-          usRegionRadioSelector.setEnabled(true);
-        }
-        
-        @Override
-        public void widgetDefaultSelected(SelectionEvent e) {
-          // No-op
-        }
-      });
-      
-      // Disable region selector buttons for SonarQube Server
-      sonarQubeButton.addSelectionListener(new SelectionListener() {
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-          euRegionRadioSelector.setEnabled(false);
-          usRegionRadioSelector.setEnabled(false);
-        }
-        
-        @Override
-        public void widgetDefaultSelected(SelectionEvent e) {
-          // No-op
-        }
-      });
-      
-      var sonarCloudRegionSelectionEU = WidgetPropertiesCompat.buttonSelection().observe(euRegionRadioSelector);
-      var sonarCloudRegionSelectionUS = WidgetPropertiesCompat.buttonSelection().observe(usRegionRadioSelector);
-      
-      var sonarCloudRegionSelectObservable = new SelectObservableValue<>(ServerConnectionModel.SonarCloudRegion.class);
-      
-      sonarCloudRegionSelectObservable.addOption(ServerConnectionModel.SonarCloudRegion.EU, sonarCloudRegionSelectionEU);
-      sonarCloudRegionSelectObservable.addOption(ServerConnectionModel.SonarCloudRegion.US, sonarCloudRegionSelectionUS);
-      
-      dataBindingContext.bindValue(sonarCloudRegionSelectObservable, PojoPropertiesCompat.value(ServerConnectionModel.PROPERTY_SONARCLOUD_REGION).observe(model));
+    var sonarQubeCloudRegionRadioButtonGroup = new Composite(radioButtonGroupContainer, SWT.NONE);
+    var sonarQubeCloudRegionRadioButtonGroupLayout = new GridLayout();
+    sonarQubeCloudRegionRadioButtonGroupLayout.numColumns = 1;
+    sonarQubeCloudRegionRadioButtonGroup.setLayout(sonarQubeCloudRegionRadioButtonGroupLayout);
+    sonarQubeCloudRegionRadioButtonGroup.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, false, 2, 1));
+    var euRegionRadioSelector = new Button(sonarQubeCloudRegionRadioButtonGroup, SWT.RADIO);
+    euRegionRadioSelector.setText("EU - sonarcloud.io");
+    var usRegionRadioSelector = new Button(sonarQubeCloudRegionRadioButtonGroup, SWT.RADIO);
+    usRegionRadioSelector.setText("US - sonarqube.us (invite-only)");
 
-    }
+    sonarCloudButton.addSelectionListener(new SelectionListener() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        euRegionRadioSelector.setEnabled(true);
+        usRegionRadioSelector.setEnabled(true);
+      }
+
+      @Override
+      public void widgetDefaultSelected(SelectionEvent e) {
+        // No-op
+      }
+    });
+
+    // Disable region selector buttons for SonarQube Server
+    sonarQubeButton.addSelectionListener(new SelectionListener() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        euRegionRadioSelector.setEnabled(false);
+        usRegionRadioSelector.setEnabled(false);
+      }
+
+      @Override
+      public void widgetDefaultSelected(SelectionEvent e) {
+        // No-op
+      }
+    });
+
+    var sonarCloudRegionSelectionEU = WidgetPropertiesCompat.buttonSelection().observe(euRegionRadioSelector);
+    var sonarCloudRegionSelectionUS = WidgetPropertiesCompat.buttonSelection().observe(usRegionRadioSelector);
+
+    var sonarCloudRegionSelectObservable = new SelectObservableValue<>(ServerConnectionModel.SonarCloudRegion.class);
+
+    sonarCloudRegionSelectObservable.addOption(ServerConnectionModel.SonarCloudRegion.EU, sonarCloudRegionSelectionEU);
+    sonarCloudRegionSelectObservable.addOption(ServerConnectionModel.SonarCloudRegion.US, sonarCloudRegionSelectionUS);
+
+    dataBindingContext.bindValue(sonarCloudRegionSelectObservable,
+      PojoPropertiesCompat.value(ServerConnectionModel.PROPERTY_SONARCLOUD_REGION).observe(model));
     
     var comparisonLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
     comparisonLabel.setText("Explore SonarQube Cloud with our <a>Free tier</a>.");

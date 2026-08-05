@@ -67,6 +67,10 @@ public class ServerConnectionWizard extends NewMenuWizard {
       return getSonarQubeCloudEuRegionRB().isEnabled();
     }
 
+    public boolean isSonarQubeCloudEuRegionSelected() {
+      return getSonarQubeCloudEuRegionRB().isSelected();
+    }
+
     public boolean isSonarQubeCloudUsRegionEnabled() {
       return getSonarQubeCloudUsRegionRB().isEnabled();
     }
