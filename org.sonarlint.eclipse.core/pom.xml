@@ -75,7 +75,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.java</groupId>
                   <artifactId>sonar-java-plugin</artifactId>
-                  <version>8.37.0.45887</version>
+                  <version>8.38.0.46176</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
@@ -87,7 +87,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.javascript</groupId>
                   <artifactId>sonar-javascript-plugin</artifactId>
-                  <version>13.4.0.43982</version>
+                  <version>13.5.0.44127</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
@@ -99,7 +99,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.python</groupId>
                   <artifactId>sonar-python-plugin</artifactId>
-                  <version>5.27.0.35548</version>
+                  <version>5.28.0.35681</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
@@ -117,7 +117,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.text</groupId>
                   <artifactId>sonar-text-plugin</artifactId>
-                  <version>2.47.0.11983</version>
+                  <version>2.48.0.12108</version>
                   <type>jar</type>
                 </artifactItem>
               </artifactItems>
