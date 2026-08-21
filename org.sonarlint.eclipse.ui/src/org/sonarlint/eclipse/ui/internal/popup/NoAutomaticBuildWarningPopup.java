@@ -70,13 +70,15 @@ public class NoAutomaticBuildWarningPopup extends AbstractSonarLintPopup {
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
   public static void displayPopupIfNotIgnored() {
-    if (ResourcesPlugin.getWorkspace().getDescription().isAutoBuilding()
-      || PopupUtils.popupCurrentlyDisplayed(NoAutomaticBuildWarningPopup.class)
-      || SonarLintGlobalConfiguration.noAutomaticBuildWarning() ) {
+    if (!shouldShowPopup()) {
       return;
     }
 
     Display.getDefault().asyncExec(() -> {
+      if (!shouldShowPopup()) {
+        return;
+      }
+      
       PopupUtils.addCurrentlyDisplayedPopup(NoAutomaticBuildWarningPopup.class);
 
       var popup = new NoAutomaticBuildWarningPopup();
@@ -84,5 +86,11 @@ public class NoAutomaticBuildWarningPopup extends AbstractSonarLintPopup {
       popup.setDelayClose(0L);
       popup.open();
     });
+  }
+  
+  private static boolean shouldShowPopup() {
+    return !ResourcesPlugin.getWorkspace().getDescription().isAutoBuilding()
+        && !PopupUtils.popupCurrentlyDisplayed(NoAutomaticBuildWarningPopup.class)
+        && !SonarLintGlobalConfiguration.noAutomaticBuildWarning();
   }
 }
