@@ -68,7 +68,7 @@ public class PopupUtils {
    */
   public static void scheduleAsyncDisplay(Class<? extends AbstractNotificationPopup> popupClass, BooleanSupplier shouldShow,
     Runnable openPopup) {
-    scheduleAsyncDisplay(popupClass, shouldShow, openPopup, Display.getDefault()::asyncExec);
+    scheduleAsyncDisplay(popupClass, shouldShow, openPopup, runnable -> Display.getDefault().asyncExec(runnable));
   }
 
   /**

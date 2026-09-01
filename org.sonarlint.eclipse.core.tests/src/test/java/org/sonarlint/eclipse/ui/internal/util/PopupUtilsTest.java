@@ -25,8 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import org.junit.After;
 import org.junit.Test;
-import org.sonarlint.eclipse.ui.internal.popup.NoAutomaticBuildWarningPopup;
-import org.sonarlint.eclipse.ui.internal.popup.ReleaseNotesPopup;
+import org.sonarlint.eclipse.ui.internal.notifications.AbstractNotificationPopup;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,8 +33,8 @@ public class PopupUtilsTest {
 
   @After
   public void tearDown() {
-    PopupUtils.removeCurrentlyDisplayedPopup(NoAutomaticBuildWarningPopup.class);
-    PopupUtils.removeCurrentlyDisplayedPopup(ReleaseNotesPopup.class);
+    PopupUtils.removeCurrentlyDisplayedPopup(TestPopupA.class);
+    PopupUtils.removeCurrentlyDisplayedPopup(TestPopupB.class);
   }
 
   @Test
@@ -45,14 +44,14 @@ public class PopupUtilsTest {
     var shown = new AtomicInteger();
 
     for (var i = 0; i < 5; i++) {
-      PopupUtils.scheduleAsyncDisplay(NoAutomaticBuildWarningPopup.class, () -> true, shown::incrementAndGet, fakeAsyncExec);
+      PopupUtils.scheduleAsyncDisplay(TestPopupA.class, () -> true, shown::incrementAndGet, fakeAsyncExec);
     }
 
     assertThat(pending).hasSize(5);
     pending.forEach(Runnable::run);
 
     assertThat(shown.get()).isEqualTo(1);
-    assertThat(PopupUtils.popupCurrentlyDisplayed(NoAutomaticBuildWarningPopup.class)).isTrue();
+    assertThat(PopupUtils.popupCurrentlyDisplayed(TestPopupA.class)).isTrue();
   }
 
   @Test
@@ -60,8 +59,8 @@ public class PopupUtilsTest {
     var pending = new ArrayList<Runnable>();
     var shown = new AtomicInteger();
 
-    PopupUtils.addCurrentlyDisplayedPopup(NoAutomaticBuildWarningPopup.class);
-    PopupUtils.scheduleAsyncDisplay(NoAutomaticBuildWarningPopup.class, () -> true, shown::incrementAndGet, pending::add);
+    PopupUtils.addCurrentlyDisplayedPopup(TestPopupA.class);
+    PopupUtils.scheduleAsyncDisplay(TestPopupA.class, () -> true, shown::incrementAndGet, pending::add);
 
     assertThat(pending).isEmpty();
     assertThat(shown.get()).isZero();
@@ -72,7 +71,7 @@ public class PopupUtilsTest {
     var pending = new ArrayList<Runnable>();
     var shown = new AtomicInteger();
 
-    PopupUtils.scheduleAsyncDisplay(NoAutomaticBuildWarningPopup.class, () -> false, shown::incrementAndGet, pending::add);
+    PopupUtils.scheduleAsyncDisplay(TestPopupA.class, () -> false, shown::incrementAndGet, pending::add);
 
     assertThat(pending).isEmpty();
     assertThat(shown.get()).isZero();
@@ -84,13 +83,13 @@ public class PopupUtilsTest {
     var shown = new AtomicInteger();
     var shouldShow = new AtomicBoolean(true);
 
-    PopupUtils.scheduleAsyncDisplay(NoAutomaticBuildWarningPopup.class, shouldShow::get, shown::incrementAndGet, pending::add);
+    PopupUtils.scheduleAsyncDisplay(TestPopupA.class, shouldShow::get, shown::incrementAndGet, pending::add);
 
     shouldShow.set(false);
     pending.forEach(Runnable::run);
 
     assertThat(shown.get()).isZero();
-    assertThat(PopupUtils.popupCurrentlyDisplayed(NoAutomaticBuildWarningPopup.class)).isFalse();
+    assertThat(PopupUtils.popupCurrentlyDisplayed(TestPopupA.class)).isFalse();
   }
 
   @Test
@@ -98,24 +97,37 @@ public class PopupUtilsTest {
     var pending = new ArrayList<Runnable>();
     var shown = new AtomicInteger();
 
-    PopupUtils.scheduleAsyncDisplay(NoAutomaticBuildWarningPopup.class, () -> true, shown::incrementAndGet, pending::add);
+    PopupUtils.scheduleAsyncDisplay(TestPopupA.class, () -> true, shown::incrementAndGet, pending::add);
     pending.forEach(Runnable::run);
 
     assertThat(shown.get()).isEqualTo(1);
-    assertThat(PopupUtils.popupCurrentlyDisplayed(NoAutomaticBuildWarningPopup.class)).isTrue();
+    assertThat(PopupUtils.popupCurrentlyDisplayed(TestPopupA.class)).isTrue();
   }
 
   @Test
   public void can_show_different_popup_types_independently() {
     var pending = new ArrayList<Runnable>();
-    var shownAutobuild = new AtomicInteger();
-    var shownReleaseNotes = new AtomicInteger();
+    var shownA = new AtomicInteger();
+    var shownB = new AtomicInteger();
 
-    PopupUtils.scheduleAsyncDisplay(NoAutomaticBuildWarningPopup.class, () -> true, shownAutobuild::incrementAndGet, pending::add);
-    PopupUtils.scheduleAsyncDisplay(ReleaseNotesPopup.class, () -> true, shownReleaseNotes::incrementAndGet, pending::add);
+    PopupUtils.scheduleAsyncDisplay(TestPopupA.class, () -> true, shownA::incrementAndGet, pending::add);
+    PopupUtils.scheduleAsyncDisplay(TestPopupB.class, () -> true, shownB::incrementAndGet, pending::add);
     pending.forEach(Runnable::run);
 
-    assertThat(shownAutobuild.get()).isEqualTo(1);
-    assertThat(shownReleaseNotes.get()).isEqualTo(1);
+    assertThat(shownA.get()).isEqualTo(1);
+    assertThat(shownB.get()).isEqualTo(1);
+  }
+
+  /** Type tokens only — never instantiated, so they cannot collide with production popup state. */
+  private static final class TestPopupA extends AbstractNotificationPopup {
+    private TestPopupA() {
+      super(null);
+    }
+  }
+
+  private static final class TestPopupB extends AbstractNotificationPopup {
+    private TestPopupB() {
+      super(null);
+    }
   }
 }
