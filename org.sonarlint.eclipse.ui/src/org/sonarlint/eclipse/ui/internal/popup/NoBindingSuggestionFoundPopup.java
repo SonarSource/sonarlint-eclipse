@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
@@ -74,13 +73,7 @@ public class NoBindingSuggestionFoundPopup extends AbstractSonarLintPopup {
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
   public static void displayPopupIfNotIgnored(String configurationScopeId, boolean isSonarCloud) {
-    if (PopupUtils.popupCurrentlyDisplayed(NoBindingSuggestionFoundPopup.class)) {
-      return;
-    }
-
-    Display.getDefault().asyncExec(() -> {
-      PopupUtils.addCurrentlyDisplayedPopup(NoBindingSuggestionFoundPopup.class);
-
+    PopupUtils.scheduleAsyncDisplay(NoBindingSuggestionFoundPopup.class, () -> {
       var popup = new NoBindingSuggestionFoundPopup(configurationScopeId, isSonarCloud);
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);

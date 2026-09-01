@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.analysis.SonarLintLanguage;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -99,18 +98,13 @@ public class LanguageFromConnectedModePopup extends AbstractSonarLintPopup {
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
   public static void displayPopupIfNotIgnored(ISonarLintProject project, List<SonarLintLanguage> languages) {
-    if (languages.isEmpty() || PopupUtils.popupCurrentlyDisplayed(LanguageFromConnectedModePopup.class)
-      || SonarLintGlobalConfiguration.ignoreMissingFeatureNotifications()) {
-      return;
-    }
-
-    Display.getDefault().asyncExec(() -> {
-      PopupUtils.addCurrentlyDisplayedPopup(LanguageFromConnectedModePopup.class);
-
-      var popup = new LanguageFromConnectedModePopup(project, languages);
-      popup.setFadingEnabled(false);
-      popup.setDelayClose(0L);
-      popup.open();
-    });
+    PopupUtils.scheduleAsyncDisplay(LanguageFromConnectedModePopup.class,
+      () -> !languages.isEmpty() && !SonarLintGlobalConfiguration.ignoreMissingFeatureNotifications(),
+      () -> {
+        var popup = new LanguageFromConnectedModePopup(project, languages);
+        popup.setFadingEnabled(false);
+        popup.setDelayClose(0L);
+        popup.open();
+      });
   }
 }

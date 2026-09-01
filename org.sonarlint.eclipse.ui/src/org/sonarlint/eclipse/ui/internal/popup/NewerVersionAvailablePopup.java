@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
-import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.documentation.SonarLintDocumentation;
 import org.sonarlint.eclipse.ui.internal.job.TriggerUpdateAction;
 import org.sonarlint.eclipse.ui.internal.util.BrowserUtils;
@@ -50,13 +49,7 @@ public class NewerVersionAvailablePopup extends AbstractSonarLintVersionPopup {
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
   public static void displayPopupIfNotAlreadyShown(String version) {
-    if (PopupUtils.popupCurrentlyDisplayed(NewerVersionAvailablePopup.class)) {
-      return;
-    }
-
-    Display.getDefault().asyncExec(() -> {
-      PopupUtils.addCurrentlyDisplayedPopup(NewerVersionAvailablePopup.class);
-
+    PopupUtils.scheduleAsyncDisplay(NewerVersionAvailablePopup.class, () -> {
       var popup = new NewerVersionAvailablePopup(version);
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);

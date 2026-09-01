@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.ui.internal.popup;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -70,19 +69,16 @@ public class NoAutomaticBuildWarningPopup extends AbstractSonarLintPopup {
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
   public static void displayPopupIfNotIgnored() {
-    if (ResourcesPlugin.getWorkspace().getDescription().isAutoBuilding()
-      || PopupUtils.popupCurrentlyDisplayed(NoAutomaticBuildWarningPopup.class)
-      || SonarLintGlobalConfiguration.noAutomaticBuildWarning() ) {
-      return;
-    }
-
-    Display.getDefault().asyncExec(() -> {
-      PopupUtils.addCurrentlyDisplayedPopup(NoAutomaticBuildWarningPopup.class);
-
+    PopupUtils.scheduleAsyncDisplay(NoAutomaticBuildWarningPopup.class, NoAutomaticBuildWarningPopup::shouldShowPopup, () -> {
       var popup = new NoAutomaticBuildWarningPopup();
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);
       popup.open();
     });
+  }
+
+  private static boolean shouldShowPopup() {
+    return !ResourcesPlugin.getWorkspace().getDescription().isAutoBuilding()
+      && !SonarLintGlobalConfiguration.noAutomaticBuildWarning();
   }
 }
