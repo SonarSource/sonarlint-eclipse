@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
@@ -71,13 +70,7 @@ public class InvalidTokenPopup extends AbstractSonarLintPopup {
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
   public static void displayPopupIfNotIgnored(ConnectionFacade facade) {
-    if (PopupUtils.popupCurrentlyDisplayed(InvalidTokenPopup.class)) {
-      return;
-    }
-
-    Display.getDefault().asyncExec(() -> {
-      PopupUtils.addCurrentlyDisplayedPopup(InvalidTokenPopup.class);
-
+    PopupUtils.scheduleAsyncDisplay(InvalidTokenPopup.class, () -> {
       var popup = new InvalidTokenPopup(facade);
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);

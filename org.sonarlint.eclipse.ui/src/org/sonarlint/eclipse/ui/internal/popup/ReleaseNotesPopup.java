@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.ui.internal.properties.ReleaseNotesPage;
 import org.sonarlint.eclipse.ui.internal.util.PopupUtils;
@@ -47,13 +46,7 @@ public class ReleaseNotesPopup extends AbstractSonarLintVersionPopup {
 
   /** This way everyone calling the pop-up does not have to handle it being actually displayed or not */
   public static void displayPopupIfNotAlreadyShown() {
-    if (PopupUtils.popupCurrentlyDisplayed(ReleaseNotesPopup.class)) {
-      return;
-    }
-
-    Display.getDefault().asyncExec(() -> {
-      PopupUtils.addCurrentlyDisplayedPopup(ReleaseNotesPopup.class);
-
+    PopupUtils.scheduleAsyncDisplay(ReleaseNotesPopup.class, () -> {
       var popup = new ReleaseNotesPopup();
       popup.setFadingEnabled(false);
       popup.setDelayClose(0L);
