@@ -21,7 +21,7 @@ env:
 
 jobs:
   consistency_check:
-    runs-on: github-ubuntu-latest-s
+    runs-on: sonar-xs
     name: SLCORE Consistency
     steps:
       - uses: actions/checkout@v5
@@ -33,7 +33,7 @@ jobs:
   build:
     outputs:
       project-version: ${{ steps.version.outputs.project-version }}
-    runs-on: github-ubuntu-latest-m
+    runs-on: sonar-m
     name: Build Project
     steps:
       - uses: actions/checkout@v5
@@ -82,7 +82,7 @@ jobs:
 
   validate:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-m
+    runs-on: sonar-m
     name: Validate
     steps:
       - uses: actions/checkout@v5
@@ -175,7 +175,7 @@ jobs:
 
   qa_connectedModeSonarQube:
     needs: [build]
-    runs-on: github-ubuntu-latest-m
+    runs-on: sonar-m
     name: QA Connected Mode SonarQube
     strategy:
       fail-fast: false
@@ -359,7 +359,7 @@ jobs:
 
   qa_connectedModeSonarCloud:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-m
+    runs-on: sonar-m
     name: QA Connected Mode SonarCloud
     strategy:
       fail-fast: false
@@ -511,7 +511,7 @@ jobs:
 
   qa_standaloneMode:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-m
+    runs-on: sonar-m
     name: QA Standalone Mode
     strategy:
       fail-fast: false
@@ -658,7 +658,7 @@ jobs:
 
   qa_cdtIntegration:
     needs: [ build ]
-    runs-on: github-ubuntu-latest-m
+    runs-on: sonar-m
     name: QA CDT Integration
     strategy:
       fail-fast: false
@@ -806,7 +806,7 @@ jobs:
 
   sonarqube:
     needs: [validate, qa_connectedModeSonarCloud, qa_connectedModeSonarQube, qa_standaloneMode, qa_cdtIntegration]
-    runs-on: github-ubuntu-latest-m
+    runs-on: sonar-m
     name: SonarQube Analysis
     env:
       DEPLOY_PULL_REQUEST: false
@@ -890,7 +890,7 @@ jobs:
 
   inspect-orchestrator-cache:
     needs: [ qa_connectedModeSonarQube ]
-    runs-on: github-ubuntu-latest-s
+    runs-on: sonar-xs
     name: Inspect Orchestrator Cache
     steps:
       - name: Compute month key
@@ -925,7 +925,7 @@ jobs:
       - validate
       - sonarqube
     if: github.event_name == 'pull_request' || github.ref_name == 'master' || startsWith(github.ref_name, 'branch-')
-    runs-on: github-ubuntu-latest-s
+    runs-on: sonar-xs
     name: Promote
 
     steps:
@@ -940,7 +940,7 @@ jobs:
       - build
       - promote
     if: github.event_name != 'pull_request' || github.ref_name == 'master' || startsWith(github.ref_name, 'branch-')
-    runs-on: github-ubuntu-latest-s
+    runs-on: sonar-xs
     name: Publish Dogfood Site
 
     steps:
