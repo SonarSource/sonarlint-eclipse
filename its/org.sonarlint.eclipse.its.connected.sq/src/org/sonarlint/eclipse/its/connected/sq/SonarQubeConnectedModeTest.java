@@ -596,7 +596,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "dbd", "Main.java"));
 
-    // Due to changes in the DBD Java analyzer the rule "S6466" was changed to now find more locations. This analyzer
+    // Due to changes in the DBD Java analyzer the rule "S6466" was changed to now find more locations, and its
+    // message wording was also changed from "may trigger" to "will throw ... when executed". This analyzer
     // is only included in the latest version of SonarQube Server!
     Awaitility.await()
       .atMost(20, TimeUnit.SECONDS)
@@ -606,7 +607,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
           .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource, SonarLintIssueMarker::getCreationDate)
           .containsAnyOf(
             tuple("Fix this access on a collection that may trigger an 'ArrayIndexOutOfBoundsException'. [+2 locations]", "Main.java", "few seconds ago"),
-            tuple("Fix this access on a collection that may trigger an 'ArrayIndexOutOfBoundsException'. [+4 locations]", "Main.java", "few seconds ago"));
+            tuple("Fix this access on a collection that may trigger an 'ArrayIndexOutOfBoundsException'. [+4 locations]", "Main.java", "few seconds ago"),
+            tuple("Fix this access on a collection that will throw an 'ArrayIndexOutOfBoundsException' when executed. [+2 locations]", "Main.java", "few seconds ago"),
+            tuple("Fix this access on a collection that will throw an 'ArrayIndexOutOfBoundsException' when executed. [+4 locations]", "Main.java", "few seconds ago"));
       });
 
     new DefaultEditor().close();
