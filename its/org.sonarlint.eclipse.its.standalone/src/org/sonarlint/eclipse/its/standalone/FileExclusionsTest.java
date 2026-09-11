@@ -130,10 +130,12 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     new JavaEditor("Main.java").close();
 
     // ii) We check that the project directory was not excluded by running a Python analysis yielding one result.
-    var pythonFile = rootProject.getResource("Test.py");
+    // NB: The file must not look like a Python test file (e.g. start with "Test"/"test"), otherwise sonar-python's
+    // test-file heuristic reclassifies it and skips MAIN-scoped rules like S1135 since "sonar.tests" is not set here.
+    var pythonFile = rootProject.getResource("Sample.py");
     openFileAndWaitForAnalysisCompletion(pythonFile);
     waitForSonarLintMarkers(issuesView,
-      tuple("Complete the task associated to this \"TODO\" comment.", "Test.py", "few seconds ago"));
+      tuple("Complete the task associated to this \"TODO\" comment.", "Sample.py", "few seconds ago"));
   }
 
   /**
