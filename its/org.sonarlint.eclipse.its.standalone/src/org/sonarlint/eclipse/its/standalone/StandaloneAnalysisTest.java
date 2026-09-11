@@ -368,6 +368,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     var defaultEditor = new DefaultEditor();
     waitForMarkers(defaultEditor,
+      // Both java:S1604 and java:S9357 fire on this anonymous class with the exact same message since sonar-java 8.41
+      tuple("Make this anonymous inner class a lambda", 13),
       tuple("Make this anonymous inner class a lambda", 13),
       tuple("Refactor the code so this stream pipeline is used.", 13)); // Test that sonar.java.source is set
   }
