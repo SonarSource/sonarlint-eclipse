@@ -835,7 +835,7 @@
 
   <extension point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="menu:org.sonarlint.eclipse.ui.views.issues.IssuesView">
+            locationURI="menu:org.sonarlint.eclipse.ui.views.issues.IssuesView?after=additions">
          <menu
            id="org.eclipse.ui.ide.problems.filtersMenu"
            label="Show"
@@ -861,6 +861,10 @@
                mnemonic="%command.configureColumns.mnemonic"
                style="push">
          </command>
+         <separator
+               name="additions"
+               visible="true">
+         </separator>
       </menuContribution>
       <menuContribution
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
@@ -944,7 +948,7 @@
          </command>
       </menuContribution>
       <menuContribution
-            locationURI="menu:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
+            locationURI="menu:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView?after=additions">
          <menu
            id="org.eclipse.ui.ide.problems.filtersMenu"
            label="Show"
@@ -970,6 +974,10 @@
                mnemonic="%command.configureColumns.mnemonic"
                style="push">
          </command>
+         <separator
+               name="additions"
+               visible="true">
+         </separator>
       </menuContribution>
       <menuContribution
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
@@ -1132,7 +1140,7 @@
        </command>
 	</menuContribution>
 	<menuContribution
-            locationURI="menu:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView">
+            locationURI="menu:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView?after=additions">
          <menu
            id="org.eclipse.ui.ide.problems.filtersMenu"
            label="Show"
@@ -1158,6 +1166,10 @@
                mnemonic="%command.configureColumns.mnemonic"
                style="push">
          </command>
+         <separator
+               name="additions"
+               visible="true">
+         </separator>
       </menuContribution>
       <menuContribution
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView">
