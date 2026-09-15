@@ -46,7 +46,7 @@ jobs:
     needs: [release]
     # Dry-run safety: never open a Tycho version-bump PR against master during a sandbox test
     if: ${{ !inputs.dry-run && needs.release.result == 'success' }}
-    runs-on: github-ubuntu-latest-s
+    runs-on: sonar-xs
     permissions:
       contents: write
       pull-requests: write

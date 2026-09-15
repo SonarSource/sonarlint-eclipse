@@ -3,6 +3,11 @@ set -euo pipefail
 
 echo "Checking SLCORE version consistency..."
 
+if ! command -v mvn >/dev/null 2>&1; then
+  echo "❌ Maven is not available on PATH. Install it (e.g. via mise-action) before running this check."
+  exit 127
+fi
+
 # Extract SLCORE version from pom.xml (similar to get_current_version in set_maven_build_version.sh)
 SLCORE_VERSION="$(mvn -q -Dtycho.mode=maven help:evaluate -Dexpression=sloop.version -DforceStdout 2>/dev/null)"
 
