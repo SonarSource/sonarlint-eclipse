@@ -331,10 +331,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     });
   }
 
-  /**
-   *  As we test against different SQ versions, we have to check that the grouping and the rule descriptions
-   *  work correctly on old / new CCT connections
-   */
+  /** Check that issue grouping and rule descriptions work correctly in connected mode */
   @Test
   public void check_grouping() {
     new JavaPerspective().open();
@@ -370,20 +367,12 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
     var emptyMatcher = new MarkerDescriptionMatcher(CoreMatchers.containsString(""));
 
-    // INFO: On the "latest-java-21" target platform (Eclipse Platform 4.41), RedDeer's
-    // WorkbenchPartMenuItem/WorkbenchPartMenuLookup can no longer find the "Group By" entry in the view menu,
-    // even though the real, interactively opened menu shows it correctly (confirmed by watching the CI job's
-    // own screen recording). This looks like a RedDeer/test-tooling issue interacting with Eclipse 4.41's new
-    // "Show Text Filter" view-menu action, not an actual product regression. Skip only the grouping
-    // assertions on that target platform until the test tooling is fixed; see SLE-1619.
-    if (!"latest-java-21".equals(System.getProperty("target.platform"))) {
-      onTheFlyView.groupByImpact();
-      await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
-      onTheFlyView.groupBySeverityLegacy();
-      await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
-      onTheFlyView.resetGrouping();
-      await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
-    }
+    onTheFlyView.groupByImpact();
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
+    onTheFlyView.groupBySeverityLegacy();
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
+    onTheFlyView.resetGrouping();
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
 
     ruleDescriptionView.open();
     onTheFlyView.selectItem(0);
