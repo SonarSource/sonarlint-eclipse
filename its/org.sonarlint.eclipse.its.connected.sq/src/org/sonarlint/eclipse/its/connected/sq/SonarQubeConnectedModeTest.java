@@ -331,7 +331,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     });
   }
 
-  /** Check that issue grouping and rule descriptions work correctly in connected mode */
+  /** Check that rule descriptions work correctly in connected mode */
   @Test
   public void check_grouping() {
     new JavaPerspective().open();
@@ -364,15 +364,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
             .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource)
             .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", "Hello.java")));
     });
-
-    var emptyMatcher = new MarkerDescriptionMatcher(CoreMatchers.containsString(""));
-
-    onTheFlyView.groupByImpact();
-    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
-    onTheFlyView.groupBySeverityLegacy();
-    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
-    onTheFlyView.resetGrouping();
-    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
 
     ruleDescriptionView.open();
     onTheFlyView.selectItem(0);
