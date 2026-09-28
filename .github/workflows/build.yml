@@ -185,10 +185,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - SQ_VERSION: 'LATEST_RELEASE[9.9]'
-            QA_CATEGORY: 'LATEST_RELEASE_99'
-            JAVA_VERSION: '17'
-            TARGET_PLATFORM: 'latest-java-17_e431'
+          - SQ_VERSION: 'LATEST_RELEASE[2025.1]'
+            QA_CATEGORY: 'LATEST_RELEASE_2025_1'
+            JAVA_VERSION: '21'
+            TARGET_PLATFORM: 'latest-java-21'
           - SQ_VERSION: 'LATEST_RELEASE'
             QA_CATEGORY: 'LATEST_RELEASE'
             JAVA_VERSION: '21'
@@ -669,7 +669,6 @@ jobs:
       matrix:
         include:
           - TARGET_PLATFORM: 'oldest-java-11_e417'
-          - TARGET_PLATFORM: 'latest-java-17_e431'
           - TARGET_PLATFORM: 'latest-java-21'
     env:
       DISPLAY: :10

@@ -43,7 +43,6 @@ import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.eclipse.swt.widgets.Label;
 import org.junit.AfterClass;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -67,9 +66,7 @@ import org.sonarqube.ws.client.usertokens.GenerateRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- *  Integration tests on the "Open in IDE" feature only available since SonarQube 10.2+
- */
+/** Integration tests on the "Open in IDE" feature */
 public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   private static final String MAVEN_TAINT_PROJECT_KEY = "maven-taint";
   private static final String S101 = "java:S101";
@@ -96,31 +93,23 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   public static void prepare() {
     prepare(orchestrator);
 
-    if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
-      createProjectOnSonarQube(orchestrator, MAVEN_TAINT_PROJECT_KEY, "SonarLint IT New Code");
-      runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "java/maven-taint/pom.xml",
-        Map.of("sonar.branch.name", "main"));
-    }
+    createProjectOnSonarQube(orchestrator, MAVEN_TAINT_PROJECT_KEY, "SonarLint IT New Code");
+    runMavenBuild(orchestrator, MAVEN_TAINT_PROJECT_KEY, "java/maven-taint/pom.xml",
+      Map.of("sonar.branch.name", "main"));
   }
 
   @AfterClass
   public static void deleteSonarQubeProjects() {
-    if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
-      adminWsClient.projects().delete(new DeleteRequest().setProject(MAVEN_TAINT_PROJECT_KEY));
-    }
+    adminWsClient.projects().delete(new DeleteRequest().setProject(MAVEN_TAINT_PROJECT_KEY));
   }
 
   /**
-   *  Integration test for the following case: Connected to SQ 10.2 / 10.3 (therefore "Open in IDE" provides no token)
+   *  Integration test for the following case: Connected to SQ without token in "Open in IDE" URL
    *  with matching project -> user has to manually connect, binding will be done automatically
    */
   @Test
   @Ignore("TODO: Enable later, disabled just for SQ analysis!")
   public void test_open_in_ide_assist_manual_binding() throws IOException, InterruptedException {
-    // Only available since SonarQube 10.2+, enhanced with token by SonarQube 10.4
-    var version = orchestrator.getServer().version();
-    Assume.assumeTrue(version.isGreaterThanOrEquals(10, 2));
-
     // 1) import project
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/maven-taint", MAVEN_TAINT_PROJECT_KEY);
@@ -187,15 +176,12 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   }
 
   /**
-   *  Integration test for the following case: Connected to SQ 10.4+ (therefore "Open in IDE" provides a token) but
+   *  Integration test for the following case: Connected to SQ with token in "Open in IDE" URL but
    *  workspace is empty -> SLCORE cannot match any project, so the user has to manually bind the project
    */
   @Test
   @Ignore("TODO: Enable later, disabled just for SQ analysis!")
   public void test_open_in_ide_assist_automated_binding_empty_workspace() throws InterruptedException, IOException {
-    // Only available since SonarQube 10.4+
-    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
-
     // 1) Generate first token
     var tokenName = "tokenName1";
     var tokenValue = adminWsClient
@@ -230,9 +216,6 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   @Test
   @Ignore("TODO: Enable later, disabled just for SQ analysis!")
   public void test_open_in_ide_assist_automated_binding() throws IOException, InterruptedException {
-    // Only available since SonarQube 10.4+
-    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
-
     // 1) Generate first token
     var tokenName = "tokenName";
     var tokenValue = adminWsClient
@@ -313,9 +296,6 @@ public class OpenInIdeTest extends AbstractSonarQubeConnectedModeTest {
   @Test
   @Ignore("TODO: Enable later, disabled just for SQ analysis!")
   public void test_open_in_ide_when_project_already_bound() throws IOException, InterruptedException {
-    // Only available since SonarQube 10.2+ (LATEST_RELEASE / locally)
-    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 2));
-
     // 1) import project and bind to SonarQube
     new JavaPerspective().open();
     var rootProject = importExistingProjectIntoWorkspace("java/maven-taint", MAVEN_TAINT_PROJECT_KEY);

@@ -21,7 +21,7 @@ for Eclipse project directory.
 cd $SONARLINT_FOR_ECLIPSE_FOLDER
 mvn clean verify -DskipTests
 cd its/
-mvn clean verify -Dtarget.platform=latest-java-17_e431 -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://{path to repo}/org.sonarlint.eclipse.site/target/repository" -DskipTests
+mvn clean verify -Dtarget.platform=latest-java-21 -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://{path to repo}/org.sonarlint.eclipse.site/target/repository" -DskipTests
 ```
 
 When all the projects are opened inside Eclipse and the target platform correctly configured, this is done in the
@@ -45,7 +45,7 @@ for Eclipse project directory. For Standalone Mode all target platforms are usef
 `ibuilds` target platform must be used.
 
 ```
-mvn clean verify -Dtarget.platform=latest-java-17_e431 -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://{path to repo}/org.sonarlint.eclipse.site/target/repository" -P \!connectedModeSc,\!connectedModeSq,\!cdtIntegration
+mvn clean verify -Dtarget.platform=latest-java-21 -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://{path to repo}/org.sonarlint.eclipse.site/target/repository" -P \!connectedModeSc,\!connectedModeSq,\!cdtIntegration
 ```
 
 ### Connected Mode (SonarQube Server)
@@ -58,13 +58,12 @@ Mode and the Connected Mode with SonarQube Cloud and the integration into CDT. W
 specific SonarQube Server version can be configured, the default one is `LATEST_RELEASE`.
 
 The target platform provided should be run against the latest one linked to the Eclipse IDE that is shipped with Java
-17 (Eclipse IDE 2024-03 / 4.31). This is also what the CI/CD pipeline is doing in order to provide the correct runtime
-for the SonarQube Server instance provided via [Orchestrator](https://github.com/SonarSource/orchestrator) for the
-latest supported LTA version, the latest supported version and the currently in-development version (of SonarQube
-Server).
+21. This is also what the CI/CD pipeline is doing in order to provide the correct runtime for the SonarQube Server
+instance provided via [Orchestrator](https://github.com/SonarSource/orchestrator) for the minimum supported version,
+the latest supported version and the currently in-development version (of SonarQube Server).
 
 ```
-mvn clean verify -Dtarget.platform=latest-java-17_e431 -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://{path to repo}/org.sonarlint.eclipse.site/target/repository" -P \!standaloneMode,\!connectedModeSc,\!cdtIntegration
+mvn clean verify -Dtarget.platform=latest-java-21 -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://{path to repo}/org.sonarlint.eclipse.site/target/repository" -P \!standaloneMode,\!connectedModeSc,\!cdtIntegration
 ```
 
 ### Connected Mode (SonarQube Cloud)
@@ -96,5 +95,5 @@ for Eclipse project directory. For the integration into CDT, all target platform
 compatibility the `ibuilds` target platform must be used.
 
 ```
-mvn clean verify -Dtarget.platform=latest-java-17_e431 -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://{path to repo}/org.sonarlint.eclipse.site/target/repository" -P \!standaloneMode,\!connectedModeSc,\!connectedModeSq
+mvn clean verify -Dtarget.platform=latest-java-21 -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://{path to repo}/org.sonarlint.eclipse.site/target/repository" -P \!standaloneMode,\!connectedModeSc,\!connectedModeSq
 ```

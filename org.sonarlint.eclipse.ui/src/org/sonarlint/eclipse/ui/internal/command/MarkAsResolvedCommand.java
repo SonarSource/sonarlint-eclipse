@@ -46,7 +46,7 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.ResolutionStatu
 
 /**
  *  Command invoked on issues matched from SonarQube / SonarCloud or on anticipated issues in connection with
- *  SonarQube 10.2+ to resolve an issue based on server configuration and user authentication. Not available on issues
+ *  SonarQube Server to resolve an issue based on server configuration and user authentication. Not available on issues
  *  only found locally!
  */
 public class MarkAsResolvedCommand extends AbstractResolvedCommand {

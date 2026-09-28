@@ -331,10 +331,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     });
   }
 
-  /**
-   *  As we test against different SQ versions, we have to check that the grouping and the rule descriptions
-   *  work correctly on old / new CCT connections
-   */
+  /** Check that rule descriptions work correctly in connected mode */
   @Test
   public void check_grouping() {
     new JavaPerspective().open();
@@ -367,23 +364,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
             .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource)
             .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", "Hello.java")));
     });
-
-    var emptyMatcher = new MarkerDescriptionMatcher(CoreMatchers.containsString(""));
-
-    // INFO: On the "latest-java-21" target platform (Eclipse Platform 4.41), RedDeer's
-    // WorkbenchPartMenuItem/WorkbenchPartMenuLookup can no longer find the "Group By" entry in the view menu,
-    // even though the real, interactively opened menu shows it correctly (confirmed by watching the CI job's
-    // own screen recording). This looks like a RedDeer/test-tooling issue interacting with Eclipse 4.41's new
-    // "Show Text Filter" view-menu action, not an actual product regression. Skip only the grouping
-    // assertions on that target platform until the test tooling is fixed; see SLE-1619.
-    if (!"latest-java-21".equals(System.getProperty("target.platform"))) {
-      onTheFlyView.groupByImpact();
-      await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
-      onTheFlyView.groupBySeverityLegacy();
-      await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
-      onTheFlyView.resetGrouping();
-      await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(emptyMatcher)).hasSize(1));
-    }
 
     ruleDescriptionView.open();
     onTheFlyView.selectItem(0);
@@ -557,9 +537,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
   @Test
   public void test_Java_Python_DBD() {
-    // INFO: Since 10.6 this is supported for SonarLint for Eclipse!
-    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 6));
-
     // 1) create project on server / run first analysis
     adminWsClient.projects()
       .create(new CreateRequest()
@@ -625,9 +602,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
   @Test
   public void test_custom_secrets() {
-    // INFO: Since 10.4 this is supported for SonarLint for Eclipse!
-    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
-
     // 1) create project on server / configure quality profile
     adminWsClient.projects()
       .create(new CreateRequest()
