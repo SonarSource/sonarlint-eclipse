@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
-<target name="sonarlint-commons-its" sequenceNumber="4">
+<target name="sonarlint-commons-its" sequenceNumber="3">
   <locations>
     <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
       <dependencies>
@@ -124,7 +124,7 @@ DynamicImport-Package: *
         <dependency>
           <groupId>org.sonarsource.sonarqube</groupId>
           <artifactId>sonar-ws</artifactId>
-          <version>25.1.0.102122</version>
+          <version>9.9.0.65466</version>
           <type>jar</type>
         </dependency>
       </dependencies>
