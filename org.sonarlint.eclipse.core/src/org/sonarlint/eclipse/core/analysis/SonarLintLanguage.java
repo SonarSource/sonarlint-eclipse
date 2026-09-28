@@ -27,6 +27,7 @@ public enum SonarLintLanguage {
 
   ABAP,
   APEX,
+  AZUREPIPELINES,
   C,
   CPP,
   CSS,
@@ -45,6 +46,7 @@ public enum SonarLintLanguage {
   RUBY,
   SCALA,
   SECRETS,
+  SHELL,
   TSQL,
   TS,
   XML;
