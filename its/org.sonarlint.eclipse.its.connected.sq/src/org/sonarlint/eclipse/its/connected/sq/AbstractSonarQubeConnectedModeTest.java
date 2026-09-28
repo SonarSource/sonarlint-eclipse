@@ -79,17 +79,12 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
       orchestrator.getServer().restoreProfile(
         URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint-new-code.xml"), null))));
 
-      if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 4)) {
-        orchestrator.getServer().restoreProfile(
-          URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/custom-secrets.xml"), null))));
-      }
-
-      if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 6)) {
-        orchestrator.getServer().restoreProfile(
-          URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint-dbd.xml"), null))));
-        orchestrator.getServer().restoreProfile(
-          URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/python-sonarlint-dbd.xml"), null))));
-      }
+      orchestrator.getServer().restoreProfile(
+        URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/custom-secrets.xml"), null))));
+      orchestrator.getServer().restoreProfile(
+        URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/java-sonarlint-dbd.xml"), null))));
+      orchestrator.getServer().restoreProfile(
+        URLLocation.create(FileLocator.toFileURL(FileLocator.find(FrameworkUtil.getBundle(SonarQubeConnectedModeTest.class), new Path("res/python-sonarlint-dbd.xml"), null))));
     } catch (IOException e) {
       fail("Unable to load quality profile", e);
     }
@@ -124,12 +119,7 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
     var build = MavenBuild.create(new File(projectDirectory, path))
       .setCleanPackageSonarGoals()
       .setProperty("sonar.projectKey", projectKey);
-    if (orchestrator.getServer().version().isGreaterThanOrEquals(10, 2)) {
-      build = build.setProperty("sonar.token", orchestrator.getDefaultAdminToken());
-    } else {
-      build = build.setProperty("sonar.login", Server.ADMIN_LOGIN)
-        .setProperty("sonar.password", Server.ADMIN_PASSWORD);
-    }
+    build = build.setProperty("sonar.token", orchestrator.getDefaultAdminToken());
 
     for (var pair : analysisProperties.entrySet()) {
       build = build.setProperty(pair.getKey(), pair.getValue());

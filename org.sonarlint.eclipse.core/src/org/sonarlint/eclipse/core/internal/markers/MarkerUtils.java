@@ -70,7 +70,7 @@ public final class MarkerUtils {
   // menu options should not be visible for resolved issues, others should
   public static final String SONAR_MARKER_RESOLVED_ATTR = "resolved";
 
-  // Indicates a marker comes from a project in connected mode with SonarQube 10.2+ which has the option to mark
+  // Indicates a marker comes from a project in connected mode with SonarQube Server which has the option to mark
   // anticipated issues as resolved.
   public static final String SONAR_MARKER_ANTICIPATED_ISSUE_ATTR = "anticipatedIssue";
 

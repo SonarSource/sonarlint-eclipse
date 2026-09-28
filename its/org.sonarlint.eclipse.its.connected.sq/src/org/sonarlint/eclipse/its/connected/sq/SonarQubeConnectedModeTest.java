@@ -557,9 +557,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
   @Test
   public void test_Java_Python_DBD() {
-    // INFO: Since 10.6 this is supported for SonarLint for Eclipse!
-    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 6));
-
     // 1) create project on server / run first analysis
     adminWsClient.projects()
       .create(new CreateRequest()
@@ -625,9 +622,6 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
   @Test
   public void test_custom_secrets() {
-    // INFO: Since 10.4 this is supported for SonarLint for Eclipse!
-    Assume.assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals(10, 4));
-
     // 1) create project on server / configure quality profile
     adminWsClient.projects()
       .create(new CreateRequest()

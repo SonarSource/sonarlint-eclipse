@@ -182,9 +182,9 @@ public class SonarLintUtils {
   }
 
   /**
-   *  Check if a project has a connection to a SonarQube 10.2+ instance can therefore offer the user the option to
-   *  transition anticipated issues. If the project is not bound to any connection, just log it and provide an error
-   *  if checking the server failed for any reason.
+   *  Check if a project is bound to a SonarQube Server connection that supports anticipated issue status changes.
+   *  If the project is not bound to any connection, just log it and provide an error if checking the server failed
+   *  for any reason.
    *
    *  INFO: Because it is costly, maybe cache the information in the future and only check periodically!
    */
