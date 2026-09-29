@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.ui.internal.properties;
 import org.eclipse.jface.window.DefaultToolTip;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -77,7 +76,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
     sampleDataLink.setForeground(sampleDataLink.getDisplay().getSystemColor(SWT.COLOR_BLUE));
     sampleDataLink.setLayoutData(sampleDataGd);
     sampleDataLink.setText("See a sample of data");
-    var handCursor = new Cursor(sampleDataLink.getDisplay(), SWT.CURSOR_HAND);
+    var handCursor = sampleDataLink.getDisplay().getSystemCursor(SWT.CURSOR_HAND);
     sampleDataLink.addListener(SWT.MouseEnter, event -> sampleDataLink.setCursor(handCursor));
     sampleDataLink.addListener(SWT.MouseExit, event -> sampleDataLink.setCursor(null));
      
