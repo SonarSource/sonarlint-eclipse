@@ -69,9 +69,9 @@ public class SonarLintUtils {
   private static final Set<SonarLintLanguage> OPTIONAL_LANGUAGES = EnumSet.of(SonarLintLanguage.JAVA,
     SonarLintLanguage.JSP, SonarLintLanguage.C, SonarLintLanguage.CPP);
   private static final Set<SonarLintLanguage> DEFAULT_CONNECTED_LANGUAGES = EnumSet.of(SonarLintLanguage.ABAP,
-    SonarLintLanguage.APEX, SonarLintLanguage.COBOL, SonarLintLanguage.JCL, SonarLintLanguage.KOTLIN,
-    SonarLintLanguage.PLI, SonarLintLanguage.PLSQL, SonarLintLanguage.RPG, SonarLintLanguage.RUBY,
-    SonarLintLanguage.SCALA, SonarLintLanguage.TSQL);
+    SonarLintLanguage.APEX, SonarLintLanguage.AZUREPIPELINES, SonarLintLanguage.COBOL, SonarLintLanguage.JCL,
+    SonarLintLanguage.KOTLIN, SonarLintLanguage.PLI, SonarLintLanguage.PLSQL, SonarLintLanguage.RPG,
+    SonarLintLanguage.RUBY, SonarLintLanguage.SCALA, SonarLintLanguage.SHELL, SonarLintLanguage.TSQL);
 
   private SonarLintUtils() {
     // utility class, forbidden constructor
