@@ -14,7 +14,7 @@ dogfood_site_dir=$(mktemp -d -p "$PWD" -t tmp.XXXXXXXX)
 trap 'rm -rf "$dogfood_site_dir" "$dogfood_site_dir".zip' EXIT
 
 # Download site ZIP - from workspace artifact if available
-if [ -f "$GITHUB_WORKSPACE/site-artifact/org.sonarlint.eclipse.site-$PROJECT_VERSION.zip" ]; then
+if [[ -f "$GITHUB_WORKSPACE/site-artifact/org.sonarlint.eclipse.site-$PROJECT_VERSION.zip" ]]; then
   echo "Using site artifact from GitHub Actions workspace"
   cp "$GITHUB_WORKSPACE/site-artifact/org.sonarlint.eclipse.site-$PROJECT_VERSION.zip" "$dogfood_site_dir.zip"
 else
