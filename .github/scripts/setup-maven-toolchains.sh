@@ -11,9 +11,9 @@ echo "JAVA_HOME_11_X64=$JAVA_11_HOME" >> "$GITHUB_ENV"
 echo "JAVA_HOME_17_X64=$JAVA_17_HOME" >> "$GITHUB_ENV"
 echo "JAVA_HOME_21_X64=$JAVA_21_HOME" >> "$GITHUB_ENV"
 
-# Make Maven/Tycho runtime use Java 17
-echo "JAVA_HOME=$JAVA_17_HOME" >> "$GITHUB_ENV"
-echo "$JAVA_17_HOME/bin" >> "$GITHUB_PATH"
+# Make Maven/Tycho runtime use Java 21 (required by Tycho 5)
+echo "JAVA_HOME=$JAVA_21_HOME" >> "$GITHUB_ENV"
+echo "$JAVA_21_HOME/bin" >> "$GITHUB_PATH"
 
 # Configure Maven toolchains
 mkdir -p "$HOME/.m2"
