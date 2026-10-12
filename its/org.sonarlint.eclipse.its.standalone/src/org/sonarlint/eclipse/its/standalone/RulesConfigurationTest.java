@@ -133,7 +133,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     assertThat(cssNode.getText()).isEqualTo("CSS");
 
     cssNode.expand();
-    assertThat(cssNode.getItems().get(0).getText()).isEqualTo("\"!important\" should not be used on \"keyframes\"");
+    assertThat(cssNode.getItems().get(0).getText()).isEqualTo("\"!important\" should not be used");
 
     ruleConfigurationPreferences.cancel();
   }
