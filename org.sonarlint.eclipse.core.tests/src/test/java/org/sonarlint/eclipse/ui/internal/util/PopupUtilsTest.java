@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import org.eclipse.jface.notifications.AbstractNotificationPopup;
 import org.junit.After;
 import org.junit.Test;
-import org.sonarlint.eclipse.ui.internal.notifications.AbstractNotificationPopup;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -89,9 +89,6 @@ public final class SonarLintImages {
   public static final Image IMG_WARNING = createImage("warn.png"); //$NON-NLS-1$
   public static final Image IMG_ERROR = createImage("impact/blocker.png"); //$NON-NLS-1$
 
-  public static final Image NOTIFICATION_CLOSE = createImage("notifications/eview16/notification-close.png"); //$NON-NLS-1$
-  public static final Image NOTIFICATION_CLOSE_HOVER = createImage("notifications/eview16/notification-close-active.png"); //$NON-NLS-1$
-
   private SonarLintImages() {
   }
 
