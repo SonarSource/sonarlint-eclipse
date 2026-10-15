@@ -28,14 +28,13 @@ public class DigestUtils {
 
   private static final char[] DIGITS = "0123456789abcdef".toCharArray();
 
-  private static final MessageDigest MD5_DIGEST = DigestUtils.getMd5Digest();
-
   private DigestUtils() {
     // utility class, forbidden constructor
   }
 
   public static String digest(String content) {
-    return encodeHexString(MD5_DIGEST.digest(content.replaceAll("[\\s]", "").getBytes(UTF_8)));
+    MessageDigest md5Digest = getMd5Digest();
+    return encodeHexString(md5Digest.digest(content.replaceAll("[\\s]", "").getBytes(UTF_8)));
   }
 
   private static MessageDigest getMd5Digest() {
