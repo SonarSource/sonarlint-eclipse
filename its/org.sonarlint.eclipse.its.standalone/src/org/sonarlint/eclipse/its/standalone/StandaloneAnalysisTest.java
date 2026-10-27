@@ -369,9 +369,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var defaultEditor = new DefaultEditor();
     waitForMarkers(defaultEditor,
       // Both java:S1604 and java:S9357 fire on this anonymous class with the exact same message since sonar-java 8.41
+      // Test that sonar.java.source is set, lambdas are only suggested starting from Java 8
       tuple("Make this anonymous inner class a lambda", 13),
-      tuple("Make this anonymous inner class a lambda", 13),
-      tuple("Refactor the code so this stream pipeline is used.", 13)); // Test that sonar.java.source is set
+      tuple("Make this anonymous inner class a lambda", 13));
   }
 
   @Test
@@ -548,17 +548,17 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     var project = packageExplorer.getProject("devoxx");
 
     openFileAndWaitForAnalysisCompletion(
-      project.getResource("src/main/java", "devoxx", "QuizzUnreachableConditionalBranch.java"));
+      project.getResource("src/main/java", "devoxx", "NumberOfArguments.java"));
 
     // 1) Check that old markers exists
     // because the date will increase every year by one year, we cannot check the On-The-Fly view directly
-    var description = "Remove this expression which always evaluates to \"false\"";
+    var description = "Method has 8 parameters, which is greater than 7 authorized.";
     var matcher = new MarkerDescriptionMatcher(
       CoreMatchers.containsString(description));
 
     var textEditor = new TextEditor();
     waitForMarkers(textEditor,
-      tuple(description, 10));
+      tuple(description, 5));
     var onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
 
@@ -587,7 +587,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     // 4) Check that old markers are gone, create new one to validate
     openFileAndWaitForAnalysisCompletion(
-      project.getResource("src/main/java", "devoxx", "QuizzUnreachableConditionalBranch.java"));
+      project.getResource("src/main/java", "devoxx", "NumberOfArguments.java"));
 
     final var javaEditor = new TextEditor();
     waitForNoMarkers(javaEditor);
@@ -598,7 +598,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     waitForMarkers(javaEditor,
       tuple("Complete the task associated to this TODO comment.", 2));
     waitForSonarLintMarkers(onTheFlyView,
-      tuple("Complete the task associated to this TODO comment.", "QuizzUnreachableConditionalBranch.java", "few seconds ago"));
+      tuple("Complete the task associated to this TODO comment.", "NumberOfArguments.java", "few seconds ago"));
 
     // 5) Open project properties page and check New Code header
     project.select();

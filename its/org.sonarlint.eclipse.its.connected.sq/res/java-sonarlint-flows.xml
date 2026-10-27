@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<profile>
+  <name>SonarLint IT Java Flows</name>
+  <language>java</language>
+  <rules>
+    <rule>
+      <!-- Null pointers should not be dereferenced (Java symbolic execution, only available in connected mode) -->
+      <repositoryKey>java</repositoryKey>
+      <key>S2259</key>
+      <priority>MAJOR</priority>
+    </rule>
+  </rules>
+</profile>

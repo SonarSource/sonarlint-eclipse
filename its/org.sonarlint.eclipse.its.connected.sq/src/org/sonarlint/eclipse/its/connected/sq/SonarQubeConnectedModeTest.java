@@ -63,6 +63,7 @@ import org.sonarlint.eclipse.its.shared.reddeer.dialogs.MarkIssueAsDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.dialogs.ShareConnectedModeConfigurationDialog;
 import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.BindingsView.Binding;
+import org.sonarlint.eclipse.its.shared.reddeer.views.IssueLocationsView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.RuleDescriptionView;
 import org.sonarlint.eclipse.its.shared.reddeer.views.SonarLintConsole;
@@ -90,6 +91,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   private static final String MAVEN2_PROJECT_KEY = "maven2";
   private static final String MAVEN_TAINT_PROJECT_KEY = "maven-taint";
   private static final String DBD_PROJECT_KEY = "dbd";
+  private static final String JAVA_FLOWS_PROJECT_KEY = "java-multiple-flows";
   private static final String AZUREPIPELINES_PROJECT_KEY = "azurepipelines-simple";
   private static final String AZUREPIPELINES_QUALITY_PROFILE = "SonarLint IT Azure Pipelines";
   private static final String AZUREPIPELINES_LANGUAGE_KEY = "azurepipelines";
@@ -604,6 +606,76 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
       });
 
     new DefaultEditor().close();
+  }
+
+  /**
+   * Java symbolic execution is only available in connected mode, and it is the only analyzer raising issues with
+   * multiple flows.
+   */
+  @Test
+  public void shouldShowFlowsOfJavaSymbolicExecutionIssues() {
+    createProjectOnSonarQube(orchestrator, JAVA_FLOWS_PROJECT_KEY, "SonarLint IT Java Flows");
+
+    new JavaPerspective().open();
+    var locationsView = new IssueLocationsView();
+    locationsView.open();
+    var onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+    var rootProject = importExistingProjectIntoWorkspace("java/java-multiple-flows", JAVA_FLOWS_PROJECT_KEY);
+
+    createConnectionAndBindProject(orchestrator, JAVA_FLOWS_PROJECT_KEY);
+    shellByName("SonarQube - Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
+    waitForAnalysisReady(JAVA_FLOWS_PROJECT_KEY);
+
+    var issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
+
+    // 1) single flow
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "SingleFlow.java"));
+    var singleFlowEditor = new TextEditor();
+    waitForSonarLintMarkers(onTheFlyView,
+      tuple(issueTitle + " [+5 locations]", "SingleFlow.java", "few seconds ago"));
+    onTheFlyView.selectItem(0);
+
+    var flowItems = locationsView.getTree().getItems();
+    assertThat(flowItems).hasSize(1);
+    var singleFlowRoot = flowItems.get(0);
+    assertThat(singleFlowRoot.getText()).isEqualTo(issueTitle);
+    assertThat(singleFlowRoot.getItems()).hasSize(5);
+
+    singleFlowRoot.getItems().get(0).doubleClick();
+    assertThat(singleFlowEditor.getSelectedText()).isEqualTo("arg = null");
+    assertThat(singleFlowEditor.getCursorPosition().x).isEqualTo(21);
+    singleFlowEditor.close();
+
+    // 2) multiple flows
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "MultiFlows.java"));
+    var multiFlowsEditor = new TextEditor();
+    waitForSonarLintMarkers(onTheFlyView,
+      tuple(issueTitle + " [+2 flows]", "MultiFlows.java", "few seconds ago"));
+    onTheFlyView.selectItem(0);
+
+    var allItems = locationsView.getTree().getItems();
+    assertThat(allItems).hasSize(1);
+    var multiFlowsRoot = allItems.get(0);
+    assertThat(multiFlowsRoot.getText()).isEqualTo(issueTitle);
+    assertThat(multiFlowsRoot.getItems()).hasSize(2);
+
+    var flow1 = multiFlowsRoot.getItem("Flow 1");
+    assertThat(flow1.getItems()).hasSize(5);
+    var flow2 = multiFlowsRoot.getItem("Flow 2");
+    assertThat(flow2.getItems()).hasSize(5);
+
+    // Flows are not ordered, we can only check that the first nodes do not point to the same location
+    flow1.getItems().get(0).doubleClick();
+    assertThat(multiFlowsEditor.getSelectedText()).isEqualTo("arg = null");
+    var flow1Line = multiFlowsEditor.getCursorPosition().x;
+
+    flow2.getItems().get(0).doubleClick();
+    assertThat(multiFlowsEditor.getSelectedText()).isEqualTo("arg = null");
+    var flow2Line = multiFlowsEditor.getCursorPosition().x;
+
+    assertThat(flow1Line).isNotEqualTo(flow2Line);
+    multiFlowsEditor.close();
   }
 
   @Test
