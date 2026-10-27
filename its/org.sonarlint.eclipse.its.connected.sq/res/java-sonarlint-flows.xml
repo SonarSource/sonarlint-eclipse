@@ -4,9 +4,9 @@
   <language>java</language>
   <rules>
     <rule>
-      <!-- Null pointers should not be dereferenced (Java symbolic execution, only available in connected mode) -->
+      <!-- Boolean expressions should not be gratuitous (Java symbolic execution, only available in connected mode) -->
       <repositoryKey>java</repositoryKey>
-      <key>S2259</key>
+      <key>S2589</key>
       <priority>MAJOR</priority>
     </rule>
   </rules>

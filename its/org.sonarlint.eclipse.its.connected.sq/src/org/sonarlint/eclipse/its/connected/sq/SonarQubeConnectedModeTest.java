@@ -610,7 +610,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
 
   /**
    * Java symbolic execution is only available in connected mode, and it is the only analyzer raising issues with
-   * multiple flows.
+   * multiple flows (here java:S2589).
    */
   @Test
   public void shouldShowFlowsOfJavaSymbolicExecutionIssues() {
@@ -627,24 +627,24 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     shellByName("SonarQube - Binding Suggestion").ifPresent(shell -> new DefaultLink(shell, "Don't ask again").click());
     waitForAnalysisReady(JAVA_FLOWS_PROJECT_KEY);
 
-    var issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
+    var issueTitle = "Remove this expression which always evaluates to \"true\"";
 
     // 1) single flow
     openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "SingleFlow.java"));
     var singleFlowEditor = new TextEditor();
     waitForSonarLintMarkers(onTheFlyView,
-      tuple(issueTitle + " [+5 locations]", "SingleFlow.java", "few seconds ago"));
+      tuple(issueTitle + " [+3 locations]", "SingleFlow.java", "few seconds ago"));
     onTheFlyView.selectItem(0);
 
     var flowItems = locationsView.getTree().getItems();
     assertThat(flowItems).hasSize(1);
     var singleFlowRoot = flowItems.get(0);
     assertThat(singleFlowRoot.getText()).isEqualTo(issueTitle);
-    assertThat(singleFlowRoot.getItems()).hasSize(5);
+    assertThat(singleFlowRoot.getItems()).hasSize(3);
 
     singleFlowRoot.getItems().get(0).doubleClick();
-    assertThat(singleFlowEditor.getSelectedText()).isEqualTo("arg = null");
-    assertThat(singleFlowEditor.getCursorPosition().x).isEqualTo(21);
+    assertThat(singleFlowEditor.getSelectedText()).isEqualTo("boolean b = a;");
+    assertThat(singleFlowEditor.getCursorPosition().x).isEqualTo(4);
     singleFlowEditor.close();
 
     // 2) multiple flows
@@ -661,17 +661,17 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     assertThat(multiFlowsRoot.getItems()).hasSize(2);
 
     var flow1 = multiFlowsRoot.getItem("Flow 1");
-    assertThat(flow1.getItems()).hasSize(5);
+    assertThat(flow1.getItems()).hasSize(2);
     var flow2 = multiFlowsRoot.getItem("Flow 2");
-    assertThat(flow2.getItems()).hasSize(5);
+    assertThat(flow2.getItems()).hasSize(2);
 
     // Flows are not ordered, we can only check that the first nodes do not point to the same location
     flow1.getItems().get(0).doubleClick();
-    assertThat(multiFlowsEditor.getSelectedText()).isEqualTo("arg = null");
+    assertThat(multiFlowsEditor.getSelectedText()).isEqualTo("flag = true");
     var flow1Line = multiFlowsEditor.getCursorPosition().x;
 
     flow2.getItems().get(0).doubleClick();
-    assertThat(multiFlowsEditor.getSelectedText()).isEqualTo("arg = null");
+    assertThat(multiFlowsEditor.getSelectedText()).isEqualTo("flag = true");
     var flow2Line = multiFlowsEditor.getCursorPosition().x;
 
     assertThat(flow1Line).isNotEqualTo(flow2Line);
