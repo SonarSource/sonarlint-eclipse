@@ -52,6 +52,7 @@ import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.nodejs.NodeJsService;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.preferences.VerboseLoggingPreferences;
 import org.sonarlint.eclipse.core.internal.sentry.MonitoringService;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.DurationUtils;
@@ -80,6 +81,8 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.SonarCloud
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.SonarQubeCloudRegionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.SslConfigurationDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.TelemetryClientConstantAttributesDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.log.LogLevel;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.log.SetLogLevelParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.AddIssueCommentParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.ChangeIssueStatusParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.CheckAnticipatedStatusChangeSupportedParams;
@@ -126,6 +129,24 @@ public class SonarLintBackendService {
 
   public static SonarLintBackendService get() {
     return INSTANCE;
+  }
+
+  public void syncBackendLogLevel() {
+    if (backend == null) {
+      return;
+    }
+    try {
+      getBackend().getLogService().setLogLevel(new SetLogLevelParams(backendLogLevel())).get(10, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      SonarLintLogger.get().error("Interrupted while updating SonarLint backend log level", e);
+    } catch (ExecutionException | TimeoutException e) {
+      SonarLintLogger.get().error("Unable to update SonarLint backend log level", e);
+    }
+  }
+
+  static LogLevel backendLogLevel() {
+    return VerboseLoggingPreferences.isVerboseEnabled() ? LogLevel.DEBUG : LogLevel.INFO;
   }
 
   public synchronized void init(SonarLintRpcClientDelegate client) {
@@ -215,7 +236,7 @@ public class SonarLintBackendService {
             SonarLintGlobalConfiguration.issuesOnlyNewCode(),
             new LanguageSpecificRequirements(new JsTsRequirementsDto(NodeJsService.getNodeJsPath(), null), null),
             false,
-            null)).get(1, TimeUnit.MINUTES);
+            backendLogLevel())).get(1, TimeUnit.MINUTES);
         } catch (TimeoutException e) {
           SonarLintLogger.get().error("Timed out waiting for SonarLint backend initialization after 1 minute", e);
           throw new IllegalStateException("Timed out waiting for SonarLint backend initialization", e);
