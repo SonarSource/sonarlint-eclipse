@@ -135,14 +135,7 @@ public class SonarLintBackendService {
     if (backend == null) {
       return;
     }
-    try {
-      getBackend().getLogService().setLogLevel(new SetLogLevelParams(backendLogLevel())).get(10, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      SonarLintLogger.get().error("Interrupted while updating SonarLint backend log level", e);
-    } catch (ExecutionException | TimeoutException e) {
-      SonarLintLogger.get().error("Unable to update SonarLint backend log level", e);
-    }
+    getBackend().getLogService().setLogLevel(new SetLogLevelParams(backendLogLevel()));
   }
 
   static LogLevel backendLogLevel() {
@@ -236,6 +229,7 @@ public class SonarLintBackendService {
             SonarLintGlobalConfiguration.issuesOnlyNewCode(),
             new LanguageSpecificRequirements(new JsTsRequirementsDto(NodeJsService.getNodeJsPath(), null), null),
             false,
+            null,
             backendLogLevel())).get(1, TimeUnit.MINUTES);
         } catch (TimeoutException e) {
           SonarLintLogger.get().error("Timed out waiting for SonarLint backend initialization after 1 minute", e);
