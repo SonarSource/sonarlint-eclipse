@@ -52,7 +52,7 @@ import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.nodejs.NodeJsService;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarlint.eclipse.core.internal.preferences.VerboseLoggingPreferences;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.sentry.MonitoringService;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.DurationUtils;
@@ -139,7 +139,7 @@ public class SonarLintBackendService {
   }
 
   static LogLevel backendLogLevel() {
-    return VerboseLoggingPreferences.isVerboseEnabled() ? LogLevel.DEBUG : LogLevel.INFO;
+    return SonarLintGlobalConfiguration.isVerboseOutputEnabled() ? LogLevel.DEBUG : LogLevel.INFO;
   }
 
   public synchronized void init(SonarLintRpcClientDelegate client) {
