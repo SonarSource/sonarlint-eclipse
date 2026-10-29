@@ -80,6 +80,8 @@ import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.SonarCloud
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.SonarQubeCloudRegionDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.SslConfigurationDto;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.initialize.TelemetryClientConstantAttributesDto;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.log.LogLevel;
+import org.sonarsource.sonarlint.core.rpc.protocol.backend.log.SetLogLevelParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.AddIssueCommentParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.ChangeIssueStatusParams;
 import org.sonarsource.sonarlint.core.rpc.protocol.backend.issue.CheckAnticipatedStatusChangeSupportedParams;
@@ -120,12 +122,38 @@ public class SonarLintBackendService {
   private SonarLintRpcServer backend;
 
   private Job initJob;
+  private final Job syncBackendLogLevelJob = new Job("SonarLint - Sync backend log level") {
+    @Override
+    protected IStatus run(IProgressMonitor monitor) {
+      var rpcServer = backend;
+      if (rpcServer == null) {
+        return Status.OK_STATUS;
+      }
+      rpcServer.getLogService().setLogLevel(new SetLogLevelParams(backendLogLevel()));
+      return Status.OK_STATUS;
+    }
+  };
 
   private SloopLauncher sloopLauncher;
   private HttpConfigurationDto httpConfiguration;
 
+  private SonarLintBackendService() {
+    syncBackendLogLevelJob.setSystem(true);
+  }
+
   public static SonarLintBackendService get() {
     return INSTANCE;
+  }
+
+  public void syncBackendLogLevel() {
+    if (backend == null) {
+      return;
+    }
+    syncBackendLogLevelJob.schedule();
+  }
+
+  static LogLevel backendLogLevel() {
+    return SonarLintGlobalConfiguration.isVerboseOutputEnabled() ? LogLevel.DEBUG : LogLevel.INFO;
   }
 
   public synchronized void init(SonarLintRpcClientDelegate client) {
@@ -215,7 +243,8 @@ public class SonarLintBackendService {
             SonarLintGlobalConfiguration.issuesOnlyNewCode(),
             new LanguageSpecificRequirements(new JsTsRequirementsDto(NodeJsService.getNodeJsPath(), null), null),
             false,
-            null)).get(1, TimeUnit.MINUTES);
+            null,
+            backendLogLevel())).get(1, TimeUnit.MINUTES);
         } catch (TimeoutException e) {
           SonarLintLogger.get().error("Timed out waiting for SonarLint backend initialization after 1 minute", e);
           throw new IllegalStateException("Timed out waiting for SonarLint backend initialization", e);
