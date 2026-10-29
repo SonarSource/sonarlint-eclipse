@@ -134,7 +134,15 @@ public class SonarLintBackendService {
     if (backend == null) {
       return;
     }
-    getBackend().getLogService().setLogLevel(new SetLogLevelParams(backendLogLevel()));
+    var job = new Job("SonarLint - Sync backend log level") {
+      @Override
+      protected IStatus run(IProgressMonitor monitor) {
+        getBackend().getLogService().setLogLevel(new SetLogLevelParams(backendLogLevel()));
+        return Status.OK_STATUS;
+      }
+    };
+    job.setSystem(true);
+    job.schedule();
   }
 
   static LogLevel backendLogLevel() {
