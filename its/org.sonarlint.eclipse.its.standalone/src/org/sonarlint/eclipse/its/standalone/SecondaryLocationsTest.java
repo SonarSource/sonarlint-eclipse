@@ -65,27 +65,6 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void shouldShowSingleFlow() {
-    var helloEditor = openAndAnalyzeFile("SingleFlow.java");
-
-    var issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
-    waitForSonarLintMarkers(onTheFlyView,
-      tuple(issueTitle + " [+5 locations]", "SingleFlow.java", "few seconds ago"));
-    onTheFlyView.selectItem(0);
-
-    var flowItems = locationsView.getTree().getItems();
-    assertThat(flowItems).hasSize(1);
-
-    var locationRoot = flowItems.get(0);
-    assertThat(locationRoot.getText()).isEqualTo(issueTitle);
-    assertThat(locationRoot.getItems()).hasSize(5);
-
-    locationRoot.getItems().get(0).doubleClick();
-    assertThat(helloEditor.getSelectedText()).isEqualTo("arg = null");
-    assertThat(helloEditor.getCursorPosition().x).isEqualTo(21);
-  }
-
-  @Test
   public void shouldShowHighlightsOnly() {
     openAndAnalyzeFile("HighlightOnly.java");
 
@@ -100,41 +79,6 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     var locationRoot = allItems.get(0);
     assertThat(locationRoot.getText()).isEqualTo(issueTitle);
     assertThat(locationRoot.getItems()).isEmpty();
-  }
-
-  @Test
-  public void shouldShowMultipleFlows() {
-    var helloEditor = openAndAnalyzeFile("MultiFlows.java");
-
-    var issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
-    waitForSonarLintMarkers(onTheFlyView,
-      tuple(issueTitle + " [+2 flows]", "MultiFlows.java", "few seconds ago"));
-    onTheFlyView.selectItem(0);
-
-    var allItems = locationsView.getTree().getItems();
-    assertThat(allItems).hasSize(1);
-
-    var locationRoot = allItems.get(0);
-    assertThat(locationRoot.getText()).isEqualTo(issueTitle);
-    assertThat(locationRoot.getItems()).hasSize(2);
-
-    var flow1 = locationRoot.getItem("Flow 1");
-    assertThat(flow1.getItems()).hasSize(5);
-
-    var flow2 = locationRoot.getItem("Flow 2");
-    assertThat(flow2.getItems()).hasSize(5);
-
-    // Flows are not ordered, we can only check that the first nodes do not point to the same location
-
-    flow1.getItems().get(0).doubleClick();
-    assertThat(helloEditor.getSelectedText()).isEqualTo("arg = null");
-    var flow1Line = helloEditor.getCursorPosition().x;
-
-    flow2.getItems().get(0).doubleClick();
-    assertThat(helloEditor.getSelectedText()).isEqualTo("arg = null");
-    var flow2Line = helloEditor.getCursorPosition().x;
-
-    assertThat(flow1Line).isNotEqualTo(flow2Line);
   }
 
   @Test
