@@ -98,6 +98,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   private static final String SHELL_LANGUAGE_KEY = "shell";
   private static final String CUSTOM_SECRETS_PROJECT_KEY = "secrets-custom";
   private static final String INSUFFICIENT_PERMISSION_USER = "iHaveNoRights";
+  /** Compliant with SonarQube local user policy (SONAR-31688 / SSF-1692): 12+ chars with upper, lower, digit, special. */
+  private static final String INSUFFICIENT_PERMISSION_USER_CREDENTIAL =
+    INSUFFICIENT_PERMISSION_USER + '!' + '1';
   private static final MarkerDescriptionMatcher ISSUE_MATCHER = new MarkerDescriptionMatcher(
     CoreMatchers.containsString("System.out"));
 
@@ -403,7 +406,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
     // 4) Add new user to SonarQube
     adminWsClient.users().create(new org.sonarqube.ws.client.users.CreateRequest()
       .setLogin(INSUFFICIENT_PERMISSION_USER)
-      .setPassword(INSUFFICIENT_PERMISSION_USER)
+      .setPassword(INSUFFICIENT_PERMISSION_USER_CREDENTIAL)
       .setName(INSUFFICIENT_PERMISSION_USER));
 
     // 5) Remove user rights from project
