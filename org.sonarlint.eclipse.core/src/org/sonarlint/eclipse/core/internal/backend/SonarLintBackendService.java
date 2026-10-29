@@ -122,9 +122,24 @@ public class SonarLintBackendService {
   private SonarLintRpcServer backend;
 
   private Job initJob;
+  private final Job syncBackendLogLevelJob = new Job("SonarLint - Sync backend log level") {
+    @Override
+    protected IStatus run(IProgressMonitor monitor) {
+      var rpcServer = backend;
+      if (rpcServer == null) {
+        return Status.OK_STATUS;
+      }
+      rpcServer.getLogService().setLogLevel(new SetLogLevelParams(backendLogLevel()));
+      return Status.OK_STATUS;
+    }
+  };
 
   private SloopLauncher sloopLauncher;
   private HttpConfigurationDto httpConfiguration;
+
+  private SonarLintBackendService() {
+    syncBackendLogLevelJob.setSystem(true);
+  }
 
   public static SonarLintBackendService get() {
     return INSTANCE;
@@ -134,15 +149,7 @@ public class SonarLintBackendService {
     if (backend == null) {
       return;
     }
-    var job = new Job("SonarLint - Sync backend log level") {
-      @Override
-      protected IStatus run(IProgressMonitor monitor) {
-        getBackend().getLogService().setLogLevel(new SetLogLevelParams(backendLogLevel()));
-        return Status.OK_STATUS;
-      }
-    };
-    job.setSystem(true);
-    job.schedule();
+    syncBackendLogLevelJob.schedule();
   }
 
   static LogLevel backendLogLevel() {
