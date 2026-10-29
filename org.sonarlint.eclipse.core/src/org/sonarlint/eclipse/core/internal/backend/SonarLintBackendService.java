@@ -52,7 +52,6 @@ import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectionFacade;
 import org.sonarlint.eclipse.core.internal.nodejs.NodeJsService;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.sentry.MonitoringService;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.DurationUtils;
