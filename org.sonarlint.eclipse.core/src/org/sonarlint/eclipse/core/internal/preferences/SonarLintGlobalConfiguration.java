@@ -92,6 +92,8 @@ public class SonarLintGlobalConfiguration {
   private static final String PREF_SOON_UNSUPPORTED_CONNECTIONS = "soonUnsupportedSonarQubeConnections"; //$NON-NLS-1$
   private static final String PREF_NO_AUTOMATIC_BUILD_WARNING = "noAutomaticBuildWarning"; //$NON-NLS-1$
   private static final String PREF_NO_CONNECTION_SUGGESTIONS = "NoConnectionSuggestions"; //$NON-NLS-1$
+  /** Console verbose output; stored in the UI plug-in ({@code org.sonarlint.eclipse.ui}). */
+  public static final String PREF_VERBOSE_OUTPUT = "debugOutput"; //$NON-NLS-1$
 
   // When SonarLint is updated (or installed), we inform the user by opening the "Welcome" page and show a notification
   // about the new Release Notes. When a new version is available, we will inform the user as well (but only once a
@@ -169,6 +171,10 @@ public class SonarLintGlobalConfiguration {
 
   public static boolean issuesOnlyNewCode() {
     return getPreferenceBoolean(PREF_ISSUE_ONLY_NEW_CODE);
+  }
+
+  public static boolean isVerboseOutputEnabled() {
+    return getPreferenceBoolean(PREF_VERBOSE_OUTPUT);
   }
 
   public static int getMarkerSeverity() {

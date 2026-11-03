@@ -31,6 +31,7 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsolePageParticipant;
 import org.eclipse.ui.part.IPageBookViewPage;
+import org.sonarlint.eclipse.core.internal.backend.SonarLintBackendService;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -196,6 +197,9 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
       @Override
       public void run() {
         getPreferenceStore().setValue(propKey, isChecked());
+        if (SonarLintConsole.P_VERBOSE_OUTPUT.equals(propKey)) {
+          SonarLintBackendService.get().syncBackendLogLevel();
+        }
       }
     }
   }

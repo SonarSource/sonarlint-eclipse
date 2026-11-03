@@ -33,12 +33,13 @@ import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 public class SonarLintConsole extends MessageConsole implements IPropertyChangeListener {
 
-  public static final String P_VERBOSE_OUTPUT = "debugOutput"; //$NON-NLS-1$
+  public static final String P_VERBOSE_OUTPUT = SonarLintGlobalConfiguration.PREF_VERBOSE_OUTPUT;
   public static final String P_IDE_TRACING_OUTPUT = "ideSpecificTracing"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE_NEVER = "never"; //$NON-NLS-1$
@@ -205,7 +206,7 @@ public class SonarLintConsole extends MessageConsole implements IPropertyChangeL
   }
 
   public static boolean isVerboseEnabled() {
-    return SonarLintUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarLintConsole.P_VERBOSE_OUTPUT);
+    return SonarLintGlobalConfiguration.isVerboseOutputEnabled();
   }
 
   public static boolean showIdeSpecificTracing() {
