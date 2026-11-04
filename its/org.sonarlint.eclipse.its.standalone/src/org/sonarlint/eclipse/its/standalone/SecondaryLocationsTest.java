@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.its.standalone;
 
 import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,6 +63,17 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     assertThat(locationRoot.getText()).isEqualTo("No additional locations associated with this issue");
     locationRoot.select();
     // SLE-479 No exception should be thrown
+  }
+
+  @Test
+  public void shouldNotReportSymbolicExecutionIssuesInStandaloneMode() {
+    var editor = openAndAnalyzeFile("SingleFlow.java");
+
+    // java:S2589 comes from the Java Symbolic Execution analyzer, which is only available in Connected Mode
+    waitForMarkersContaining(editor, tuple("Replace this use of System.out by a logger.", 8));
+    assertThat(editor.getMarkers())
+      .extracting(Marker::getText)
+      .noneMatch(text -> text.contains("always evaluates to"));
   }
 
   @Test
