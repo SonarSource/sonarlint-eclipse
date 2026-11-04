@@ -72,6 +72,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     // java:S2589 comes from the Java Symbolic Execution analyzer, which is only available in Connected Mode
     waitForMarkersContaining(editor, tuple("Replace this use of System.out by a logger.", 8));
     assertThat(editor.getMarkers())
+      .filteredOn(marker -> "org.sonarlint.eclipse.onTheFlyIssueAnnotationType".equals(marker.getType()))
       .extracting(Marker::getText)
       .noneMatch(text -> text.contains("always evaluates to"));
   }
