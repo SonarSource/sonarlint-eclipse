@@ -79,12 +79,6 @@
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
-                  <groupId>org.sonarsource.java</groupId>
-                  <artifactId>sonar-java-symbolic-execution-plugin</artifactId>
-                  <version>8.16.4.1912</version>
-                  <type>jar</type>
-                </artifactItem>
-                <artifactItem>
                   <groupId>org.sonarsource.javascript</groupId>
                   <artifactId>sonar-javascript-plugin</artifactId>
                   <version>14.3.0.46350</version>

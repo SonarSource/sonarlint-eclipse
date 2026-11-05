@@ -80,6 +80,7 @@ public abstract class AbstractSonarQubeConnectedModeTest extends AbstractSonarLi
       restoreQualityProfile(orchestrator, "res/java-sonarlint-new-code.xml");
       restoreQualityProfile(orchestrator, "res/custom-secrets.xml");
       restoreQualityProfile(orchestrator, "res/java-sonarlint-dbd.xml");
+      restoreQualityProfile(orchestrator, "res/java-sonarlint-flows.xml");
       restoreQualityProfile(orchestrator, "res/python-sonarlint-dbd.xml");
 
       if (isLanguageSupported("azurepipelines")) {

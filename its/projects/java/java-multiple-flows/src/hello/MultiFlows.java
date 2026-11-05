@@ -1,35 +1,17 @@
 package hello;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
 public class MultiFlows {
-
-  private static final Logger LOG = Logger.getGlobal();
-
-  private MultiFlows() {
-    // Nothing
-  }
-
-  public static void main(String[] args) {
-    doSomethingWith(42);
-  }
-
-  private static void doSomethingWith(final int value) {
-    String arg = "polop";
-    if (value == 42) {
-      LOG.warning("Expect a NPE due to 42!");
-      arg = null;
-    } else if (value == 24) {
-      LOG.warning("Expect a NPE due to 24!");
-      arg = null;
+  public void multi(int x) {
+    boolean flag;
+    if (x > 0) {
+      flag = true;
+      System.out.println("positive");
+    } else {
+      flag = true;
+      System.out.println("not positive");
     }
-    doAnotherThingWith(arg);
-  }
-
-  private static void doAnotherThingWith(String param) {
-    if (LOG.isLoggable(Level.INFO)) {
-      LOG.info(String.format("Param has length %d", param.length()));
+    if (flag) {
+      System.out.println("flag is always true here");
     }
   }
 }
