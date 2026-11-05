@@ -24,8 +24,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import org.eclipse.jface.notifications.AbstractNotificationPopup;
 import org.eclipse.swt.widgets.Display;
-import org.sonarlint.eclipse.ui.internal.notifications.AbstractNotificationPopup;
 
 /** Utility used for reducing stacked up notifications */
 public class PopupUtils {
