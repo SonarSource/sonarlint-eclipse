@@ -30,6 +30,16 @@ jobs:
         with:
           version: 2025.9.12
 
+      - uses: SonarSource/ci-github-actions/config-maven@v1
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          artifactory-reader-role: private-reader
+
+      - name: Setup settings.xml
+        run: .github/scripts/setup-settings-xml.sh
+
       - name: Check SLCORE consistency
         shell: bash
         run: .github/scripts/check-slcore-consistency.sh
