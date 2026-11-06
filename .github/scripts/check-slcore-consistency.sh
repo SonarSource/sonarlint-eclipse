@@ -12,6 +12,8 @@ fi
 MVN_ERROR_LOG="$(mktemp /tmp/slcore-consistency.XXXXXX)"
 if ! SLCORE_VERSION="$(mvn -q -Dtycho.mode=maven help:evaluate -Dexpression=sloop.version -DforceStdout 2>"${MVN_ERROR_LOG}")"; then
   echo "❌ Maven could not evaluate 'sloop.version'. Maven output:"
+  # Maven writes its error lines to stdout, which is captured in SLCORE_VERSION, so print both streams
+  echo "${SLCORE_VERSION}"
   cat "${MVN_ERROR_LOG}"
   exit 1
 fi
