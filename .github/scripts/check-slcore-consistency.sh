@@ -9,7 +9,12 @@ if ! command -v mvn >/dev/null 2>&1; then
 fi
 
 # Extract SLCORE version from pom.xml (similar to get_current_version in set_maven_build_version.sh)
-SLCORE_VERSION="$(mvn -q -Dtycho.mode=maven help:evaluate -Dexpression=sloop.version -DforceStdout 2>/dev/null)"
+MVN_ERROR_LOG="$(mktemp /tmp/slcore-consistency.XXXXXX)"
+if ! SLCORE_VERSION="$(mvn -q -Dtycho.mode=maven help:evaluate -Dexpression=sloop.version -DforceStdout 2>"${MVN_ERROR_LOG}")"; then
+  echo "❌ Maven could not evaluate 'sloop.version'. Maven output:"
+  cat "${MVN_ERROR_LOG}"
+  exit 1
+fi
 
 if [[ -z "${SLCORE_VERSION}" ]]; then
   echo "❌ Property 'sloop.version' must be set to be re-used by the platform-specific bundles!"
