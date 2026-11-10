@@ -48,6 +48,7 @@ jobs:
     if: ${{ !inputs.dry-run && needs.release.result == 'success' }}
     runs-on: sonar-xs
     permissions:
+      id-token: write
       contents: write
       pull-requests: write
     steps:
@@ -62,6 +63,14 @@ jobs:
       - name: Setup Maven Toolchains
         shell: bash
         run: .github/scripts/setup-maven-toolchains.sh
+
+      # Resolve dependencies through Artifactory instead of hitting Maven Central directly (avoids HTTP 429)
+      - uses: SonarSource/ci-github-actions/config-maven@v1
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          artifactory-reader-role: private-reader
 
       - name: Bump Tycho version
         env:
