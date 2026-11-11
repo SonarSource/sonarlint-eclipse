@@ -376,6 +376,30 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
             .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", "Hello.java")));
     });
 
+    var descriptionColumn = onTheFlyView.getTree().getHeaderColumns().indexOf("Description");
+    assertThat(descriptionColumn).isNotNegative();
+    try {
+      onTheFlyView.groupByImpact();
+      await().untilAsserted(() -> assertThat(onTheFlyView.getTree().getItems()).hasSize(1).allSatisfy(item -> {
+        assertThat(item.getCell(descriptionColumn)).contains("Impact");
+        assertThat(item.getItems()).hasSize(1);
+      }));
+      onTheFlyView.groupBySeverityLegacy();
+      await().untilAsserted(() -> assertThat(onTheFlyView.getTree().getItems()).hasSize(1).allSatisfy(item -> {
+        assertThat(item.getCell(descriptionColumn)).containsAnyOf("Minor", "Other");
+        assertThat(item.getItems()).hasSize(1);
+      }));
+    } catch (RuntimeException | AssertionError groupingFailure) {
+      try {
+        onTheFlyView.resetGrouping();
+      } catch (RuntimeException | AssertionError resetFailure) {
+        groupingFailure.addSuppressed(resetFailure);
+      }
+      throw groupingFailure;
+    }
+    onTheFlyView.resetGrouping();
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(ISSUE_MATCHER)).hasSize(1));
+
     ruleDescriptionView.open();
     onTheFlyView.selectItem(0);
     new WaitUntil(new RuleDescriptionViewIsLoaded(ruleDescriptionView));
