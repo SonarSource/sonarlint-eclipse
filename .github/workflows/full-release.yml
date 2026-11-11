@@ -48,6 +48,7 @@ jobs:
     if: ${{ !inputs.dry-run && needs.release.result == 'success' }}
     runs-on: sonar-xs
     permissions:
+      id-token: write
       contents: write
       pull-requests: write
     steps:
@@ -63,6 +64,14 @@ jobs:
         shell: bash
         run: .github/scripts/setup-maven-toolchains.sh
 
+      # Resolve dependencies through Artifactory instead of hitting Maven Central directly (avoids HTTP 429)
+      - uses: SonarSource/ci-github-actions/config-maven@v1
+        env:
+          CURRENT_VERSION: skip
+          PROJECT_VERSION: skip
+        with:
+          artifactory-reader-role: private-reader
+
       - name: Bump Tycho version
         env:
           NEW_VERSION: ${{ needs.release.outputs.new-version }}
@@ -73,6 +82,9 @@ jobs:
           if [[ "$NV" =~ ^[0-9]+\.[0-9]+$ ]]; then NV="${NV}.0"; fi
           mvn -B org.eclipse.tycho:tycho-versions-plugin:set-version \
             -Dtycho.mode=maven -DnewVersion="${NV}-SNAPSHOT"
+          # config-maven leaves .actions/ symlinks (absolute runner paths) in the workspace;
+          # remove them so create-pull-request's `git add -A` does not commit them
+          rm -rf .actions
 
       - uses: SonarSource/release-github-actions/create-pull-request@706e44289960d7768dc6f953bc1c0df003e812cb # 1.5.9
         with:
