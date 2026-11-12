@@ -39,7 +39,9 @@ public class IssueViewMenusTest extends AbstractSonarLintTest {
       for (var label : new String[] {"Show", "Group By", "Sort By", "Filters...", "Configure Columns..."}) {
         assertThat(new RenderedViewMenuItem(label).getText().replace("&", "")).isEqualTo(label);
       }
-      assertThat(new RenderedViewMenuItem("Group By", "None").isEnabled()).isTrue();
+      for (var grouping : new String[] {"None", "Impact", "Severity (Legacy)"}) {
+        assertThat(new RenderedViewMenuItem("Group By", grouping).isEnabled()).isTrue();
+      }
     }
   }
 }
