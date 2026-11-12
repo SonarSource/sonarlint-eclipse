@@ -77,6 +77,7 @@ import org.sonarqube.ws.client.permissions.AddGroupRequest;
 import org.sonarqube.ws.client.permissions.RemoveGroupRequest;
 import org.sonarqube.ws.client.projects.CreateRequest;
 import org.sonarqube.ws.client.qualityprofiles.SearchRequest;
+import org.sonarqube.ws.client.settings.ValuesRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -345,6 +346,16 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
   /** Check that rule descriptions work correctly in connected mode */
   @Test
   public void check_grouping() {
+    // Use the rule's default severity regardless of which tests ran before this one.
+    var qualityProfile = getQualityProfile(JAVA_SIMPLE_PROJECT_KEY, "SonarLint IT Java");
+    deactivateRule(qualityProfile, S106);
+    activateRule(qualityProfile, S106);
+
+    var mqrMode = adminWsClient.settings().values(new ValuesRequest().setKeys(List.of("sonar.multi-quality-mode.enabled")))
+      .getSettingsList().stream().anyMatch(setting -> "true".equals(setting.getValue()));
+    var expectedImpactGroup = mqrMode ? "Medium Impact (1 item)" : "Impacts not available with old SonarQube connection (1 item)";
+    var expectedSeverityGroup = mqrMode ? "Other (1 item)" : "Major (1 item)";
+
     new JavaPerspective().open();
     var ruleDescriptionView = new RuleDescriptionView();
     ruleDescriptionView.open();
@@ -375,6 +386,30 @@ public class SonarQubeConnectedModeTest extends AbstractSonarQubeConnectedModeTe
             .extracting(SonarLintIssueMarker::getDescription, SonarLintIssueMarker::getResource)
             .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", "Hello.java")));
     });
+
+    var descriptionColumn = onTheFlyView.getTree().getHeaderColumns().indexOf("Description");
+    assertThat(descriptionColumn).isNotNegative();
+    try {
+      onTheFlyView.groupByImpact();
+      await().untilAsserted(() -> assertThat(onTheFlyView.getTree().getItems()).hasSize(1).allSatisfy(item -> {
+        assertThat(item.getCell(descriptionColumn)).isEqualTo(expectedImpactGroup);
+        assertThat(item.getItems()).hasSize(1);
+      }));
+      onTheFlyView.groupBySeverityLegacy();
+      await().untilAsserted(() -> assertThat(onTheFlyView.getTree().getItems()).hasSize(1).allSatisfy(item -> {
+        assertThat(item.getCell(descriptionColumn)).isEqualTo(expectedSeverityGroup);
+        assertThat(item.getItems()).hasSize(1);
+      }));
+    } catch (RuntimeException | AssertionError groupingFailure) {
+      try {
+        onTheFlyView.resetGrouping();
+      } catch (RuntimeException | AssertionError resetFailure) {
+        groupingFailure.addSuppressed(resetFailure);
+      }
+      throw groupingFailure;
+    }
+    onTheFlyView.resetGrouping();
+    await().untilAsserted(() -> assertThat(onTheFlyView.getIssues(ISSUE_MATCHER)).hasSize(1));
 
     ruleDescriptionView.open();
     onTheFlyView.selectItem(0);

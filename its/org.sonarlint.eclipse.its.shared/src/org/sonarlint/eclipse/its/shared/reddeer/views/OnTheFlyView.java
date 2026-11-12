@@ -31,7 +31,6 @@ import org.eclipse.reddeer.eclipse.ui.markers.matcher.AbstractMarkerMatcher;
 import org.eclipse.reddeer.eclipse.ui.views.markers.AbstractMarkersSupportView;
 import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
-import org.eclipse.reddeer.workbench.impl.menu.WorkbenchPartMenuItem;
 import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
 
 /**
@@ -39,6 +38,7 @@ import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
  *
  */
 public class OnTheFlyView extends AbstractMarkersSupportView {
+  private static final String GROUP_BY = "Group By";
 
   public OnTheFlyView() {
     super("SonarQube On-The-Fly");
@@ -74,17 +74,17 @@ public class OnTheFlyView extends AbstractMarkersSupportView {
 
   public void groupByImpact() {
     this.activate();
-    new WorkbenchPartMenuItem("Group By", "Impact").select();
+    new RenderedViewMenuItem(GROUP_BY, "Impact").select();
   }
 
   public void groupBySeverityLegacy() {
     this.activate();
-    new WorkbenchPartMenuItem("Group By", "Severity (Legacy)").select();
+    new RenderedViewMenuItem(GROUP_BY, "Severity (Legacy)").select();
   }
 
   public void resetGrouping() {
     this.activate();
-    new WorkbenchPartMenuItem("Group By", "None").select();
+    new RenderedViewMenuItem(GROUP_BY, "None").select();
   }
 
   /**
