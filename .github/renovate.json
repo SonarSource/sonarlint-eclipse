@@ -5,16 +5,5 @@
   ],
   "ignorePaths": [
     "its/projects/**"
-  ],
-  "packageRules": [
-    {
-      "matchUpdateTypes": [
-        "major",
-        "minor"
-      ],
-      "addLabels": [
-        "renovate-major-minor"
-      ]
-    }
   ]
 }
