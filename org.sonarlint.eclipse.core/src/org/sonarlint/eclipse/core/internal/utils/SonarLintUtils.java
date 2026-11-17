@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.utils;
 import java.net.URI;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -86,11 +87,24 @@ public class SonarLintUtils {
     return System.getProperty("sonarlint.internal.sonarcloud.us.url", "https://sonarqube.us");
   }
 
+  public static String getSonarQubeCloudAuRegionUrl() {
+    return System.getProperty("sonarlint.internal.sonarcloud.au.url", "https://sonarqube.au");
+  }
+
+  /**
+   *  The EU region is the default for connections saved without a region.
+   */
   public static String getSonarCloudUrl(@Nullable String sonarCloudRegion) {
-    if (sonarCloudRegion != null && sonarCloudRegion.equalsIgnoreCase("US")) {
-      return getSonarQubeCloudUsRegionUrl();
-    } else {
+    if (sonarCloudRegion == null) {
       return getSonarCloudUrl();
+    }
+    switch (sonarCloudRegion.toUpperCase(Locale.ROOT)) {
+      case "US":
+        return getSonarQubeCloudUsRegionUrl();
+      case "AU":
+        return getSonarQubeCloudAuRegionUrl();
+      default:
+        return getSonarCloudUrl();
     }
   }
 

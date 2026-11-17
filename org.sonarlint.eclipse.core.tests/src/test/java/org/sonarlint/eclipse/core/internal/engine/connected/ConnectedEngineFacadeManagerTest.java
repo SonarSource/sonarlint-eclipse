@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.AUTH_ATTRIBUTE;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.ORG_ATTRIBUTE;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.PREF_CONNECTIONS;
+import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.REGION_ATTRIBUTE;
 import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectionManager.URL_ATTRIBUTE;
 
 /**
@@ -54,6 +55,23 @@ public class ConnectedEngineFacadeManagerTest {
     ROOT_SECURE.node(PREF_CONNECTIONS).removeNode();
     manager.stop();
     manager.init();
+  }
+
+  @Test
+  public void auRegionIsSavedAndReadBack() throws Exception {
+    var id = "au-connection";
+    var connection = manager.create(id, "https://sonarqube.au", "org", "AU", "token", false);
+    manager.addConnection(connection, "token");
+    assertThat(ROOT.node(PREF_CONNECTIONS).node(id).get(REGION_ATTRIBUTE, null)).isEqualTo("AU");
+
+    manager.stop();
+    manager.init();
+
+    var reloaded = manager.findById(id);
+    assertThat(reloaded).isPresent();
+    assertThat(reloaded.get().getSonarCloudRegion()).isEqualTo("AU");
+    assertThat(reloaded.get().getHost()).isEqualTo("https://sonarqube.au");
+    assertThat(reloaded.get().isSonarCloud()).isTrue();
   }
 
   @Test

@@ -57,7 +57,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   public enum SonarCloudRegion {
-    EU, US
+    EU, US, AU
   }
 
   private final boolean edit;
