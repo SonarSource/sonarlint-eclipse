@@ -52,11 +52,11 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ inputs.branch }}
 
-      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2.4.4
+      - uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
         with:
           version: 2025.9.12
 
@@ -65,7 +65,7 @@ jobs:
         run: .github/scripts/setup-maven-toolchains.sh
 
       # Resolve dependencies through Artifactory instead of hitting Maven Central directly (avoids HTTP 429)
-      - uses: SonarSource/ci-github-actions/config-maven@v1
+      - uses: SonarSource/ci-github-actions/config-maven@43609e4795f6400aa0b66dc1f5277f1fc3fb4768 # v2
         env:
           CURRENT_VERSION: skip
           PROJECT_VERSION: skip
