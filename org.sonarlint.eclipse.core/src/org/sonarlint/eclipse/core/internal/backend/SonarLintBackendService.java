@@ -334,7 +334,6 @@ public class SonarLintBackendService {
    *  properties there is a environment variable "SONARLINT_JVM_OPTS" that could also be provided as a system property
    *  for easier configuration of the IDE.
    */
-  @Nullable
   private static String passSloopJvmOpts() {
     var properties = "";
 
@@ -357,8 +356,7 @@ public class SonarLintBackendService {
       properties += " " + jvmOpts;
     }
 
-    properties = properties.trim();
-    return properties.isEmpty() ? null : properties;
+    return (properties + " -XX:-UseBASE64Intrinsics").trim();
   }
 
   @Nullable
