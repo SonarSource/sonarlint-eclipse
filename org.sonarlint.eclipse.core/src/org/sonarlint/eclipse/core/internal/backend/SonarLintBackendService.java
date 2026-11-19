@@ -367,6 +367,9 @@ public class SonarLintBackendService {
     var sonarQubeCloudUsUrl = System.getProperty("sonarlint.internal.sonarcloud.us.url");
     var sonarQubeCloudUsApiUrl = System.getProperty("sonarlint.internal.sonarcloud.us.api.url");
     var sonarQubeCloudUsWebSocketUrl = System.getProperty("sonarlint.internal.sonarcloud.us.websocket.url");
+    var sonarQubeCloudAuUrl = System.getProperty("sonarlint.internal.sonarcloud.au.url");
+    var sonarQubeCloudAuApiUrl = System.getProperty("sonarlint.internal.sonarcloud.au.api.url");
+    var sonarQubeCloudAuWebSocketUrl = System.getProperty("sonarlint.internal.sonarcloud.au.websocket.url");
 
     return new SonarCloudAlternativeEnvironmentDto(
       Map.of(
@@ -379,7 +382,12 @@ public class SonarLintBackendService {
         new SonarQubeCloudRegionDto(
           sonarQubeCloudUsUrl == null ? null : URI.create(sonarQubeCloudUsUrl),
           sonarQubeCloudUsApiUrl == null ? null : URI.create(sonarQubeCloudUsApiUrl),
-          sonarQubeCloudUsWebSocketUrl == null ? null : URI.create(sonarQubeCloudUsWebSocketUrl))));
+          sonarQubeCloudUsWebSocketUrl == null ? null : URI.create(sonarQubeCloudUsWebSocketUrl)),
+        SonarCloudRegion.AU,
+        new SonarQubeCloudRegionDto(
+          sonarQubeCloudAuUrl == null ? null : URI.create(sonarQubeCloudAuUrl),
+          sonarQubeCloudAuApiUrl == null ? null : URI.create(sonarQubeCloudAuApiUrl),
+          sonarQubeCloudAuWebSocketUrl == null ? null : URI.create(sonarQubeCloudAuWebSocketUrl))));
   }
 
   @Nullable

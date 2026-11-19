@@ -29,4 +29,33 @@ public class SonarLintUtilsTest {
   public void shouldReturnPid() {
     assertThat(SonarLintUtils.getPlatformPid()).isNotZero();
   }
+
+  @Test
+  public void shouldReturnEuUrlWhenRegionIsMissingOrEu() {
+    assertThat(SonarLintUtils.getSonarCloudUrl(null)).isEqualTo("https://sonarcloud.io");
+    assertThat(SonarLintUtils.getSonarCloudUrl("EU")).isEqualTo("https://sonarcloud.io");
+  }
+
+  @Test
+  public void shouldReturnUsUrlForUsRegion() {
+    assertThat(SonarLintUtils.getSonarCloudUrl("US")).isEqualTo("https://sonarqube.us");
+    assertThat(SonarLintUtils.getSonarCloudUrl("us")).isEqualTo("https://sonarqube.us");
+  }
+
+  @Test
+  public void shouldReturnAuUrlForAuRegion() {
+    assertThat(SonarLintUtils.getSonarCloudUrl("AU")).isEqualTo("https://sonarqube.au");
+    assertThat(SonarLintUtils.getSonarCloudUrl("au")).isEqualTo("https://sonarqube.au");
+  }
+
+  @Test
+  public void shouldAllowOverridingAuUrl() {
+    var property = "sonarlint.internal.sonarcloud.au.url";
+    System.setProperty(property, "https://au-staging.example");
+    try {
+      assertThat(SonarLintUtils.getSonarCloudUrl("AU")).isEqualTo("https://au-staging.example");
+    } finally {
+      System.clearProperty(property);
+    }
+  }
 }
