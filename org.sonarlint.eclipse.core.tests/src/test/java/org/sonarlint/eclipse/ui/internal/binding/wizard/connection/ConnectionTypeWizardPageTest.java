@@ -39,6 +39,7 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.SonarCloudRegion;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 public class ConnectionTypeWizardPageTest {
   private Shell parentShell;
@@ -46,7 +47,10 @@ public class ConnectionTypeWizardPageTest {
 
   @Before
   public void setUp() {
-    parentShell = new Shell(Display.getDefault());
+    var display = Display.getDefault();
+    // Widgets can only be used from the thread that owns the display, which is not the test thread on every platform
+    assumeTrue(display.getThread() == Thread.currentThread());
+    parentShell = new Shell(display);
   }
 
   @After
@@ -54,7 +58,9 @@ public class ConnectionTypeWizardPageTest {
     if (dialog != null) {
       dialog.close();
     }
-    parentShell.dispose();
+    if (parentShell != null) {
+      parentShell.dispose();
+    }
   }
 
   @Test
