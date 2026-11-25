@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.jface.databinding.swt.DisplayRealm;
 import org.eclipse.jface.wizard.Wizard;
@@ -142,7 +143,7 @@ public class ConnectionTypeWizardPageTest {
   }
 
   private List<Button> connectionTypeRadios() {
-    return radios().stream().filter(b -> b.getText().isEmpty()).toList();
+    return radios().stream().filter(b -> b.getText().isEmpty()).collect(Collectors.toList());
   }
 
   private List<Button> radios() {
