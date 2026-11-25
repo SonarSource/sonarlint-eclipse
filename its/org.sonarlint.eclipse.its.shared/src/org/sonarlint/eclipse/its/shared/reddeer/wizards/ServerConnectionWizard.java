@@ -75,6 +75,10 @@ public class ServerConnectionWizard extends NewMenuWizard {
       return getSonarQubeCloudUsRegionRB().isEnabled();
     }
 
+    public boolean isSonarQubeCloudAuRegionEnabled() {
+      return getSonarQubeCloudAuRegionRB().isEnabled();
+    }
+
     private RadioButton getSonarQubeRB() {
       return new RadioButton(this, 1);
     }
@@ -85,6 +89,10 @@ public class ServerConnectionWizard extends NewMenuWizard {
 
     private RadioButton getSonarQubeCloudUsRegionRB() {
       return new RadioButton(this, 3);
+    }
+
+    private RadioButton getSonarQubeCloudAuRegionRB() {
+      return new RadioButton(this, 4);
     }
   }
 
