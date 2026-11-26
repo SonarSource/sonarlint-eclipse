@@ -97,13 +97,16 @@ public class ConnectionTypeWizardPage extends WizardPage {
     var euRegionRadioSelector = new Button(sonarQubeCloudRegionRadioButtonGroup, SWT.RADIO);
     euRegionRadioSelector.setText("EU - sonarcloud.io");
     var usRegionRadioSelector = new Button(sonarQubeCloudRegionRadioButtonGroup, SWT.RADIO);
-    usRegionRadioSelector.setText("US - sonarqube.us (invite-only)");
+    usRegionRadioSelector.setText("US - sonarqube.us");
+    var auRegionRadioSelector = new Button(sonarQubeCloudRegionRadioButtonGroup, SWT.RADIO);
+    auRegionRadioSelector.setText("AU - sonarqube.au");
 
     sonarCloudButton.addSelectionListener(new SelectionListener() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         euRegionRadioSelector.setEnabled(true);
         usRegionRadioSelector.setEnabled(true);
+        auRegionRadioSelector.setEnabled(true);
       }
 
       @Override
@@ -118,6 +121,7 @@ public class ConnectionTypeWizardPage extends WizardPage {
       public void widgetSelected(SelectionEvent e) {
         euRegionRadioSelector.setEnabled(false);
         usRegionRadioSelector.setEnabled(false);
+        auRegionRadioSelector.setEnabled(false);
       }
 
       @Override
@@ -128,11 +132,13 @@ public class ConnectionTypeWizardPage extends WizardPage {
 
     var sonarCloudRegionSelectionEU = WidgetPropertiesCompat.buttonSelection().observe(euRegionRadioSelector);
     var sonarCloudRegionSelectionUS = WidgetPropertiesCompat.buttonSelection().observe(usRegionRadioSelector);
+    var sonarCloudRegionSelectionAU = WidgetPropertiesCompat.buttonSelection().observe(auRegionRadioSelector);
 
     var sonarCloudRegionSelectObservable = new SelectObservableValue<>(ServerConnectionModel.SonarCloudRegion.class);
 
     sonarCloudRegionSelectObservable.addOption(ServerConnectionModel.SonarCloudRegion.EU, sonarCloudRegionSelectionEU);
     sonarCloudRegionSelectObservable.addOption(ServerConnectionModel.SonarCloudRegion.US, sonarCloudRegionSelectionUS);
+    sonarCloudRegionSelectObservable.addOption(ServerConnectionModel.SonarCloudRegion.AU, sonarCloudRegionSelectionAU);
 
     dataBindingContext.bindValue(sonarCloudRegionSelectObservable,
       PojoPropertiesCompat.value(ServerConnectionModel.PROPERTY_SONARCLOUD_REGION).observe(model));
