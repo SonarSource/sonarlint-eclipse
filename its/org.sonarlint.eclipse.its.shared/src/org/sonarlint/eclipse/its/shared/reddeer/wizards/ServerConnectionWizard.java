@@ -59,6 +59,10 @@ public class ServerConnectionWizard extends NewMenuWizard {
       getSonarQubeCloudUsRegionRB().click();
     }
 
+    public void selectSonarQubeCloudAuRegion() {
+      getSonarQubeCloudAuRegionRB().click();
+    }
+
     public boolean isSonarQubeSelected() {
       return getSonarQubeRB().isSelected();
     }
@@ -73,6 +77,10 @@ public class ServerConnectionWizard extends NewMenuWizard {
 
     public boolean isSonarQubeCloudUsRegionEnabled() {
       return getSonarQubeCloudUsRegionRB().isEnabled();
+    }
+
+    public boolean isSonarQubeCloudAuRegionSelected() {
+      return getSonarQubeCloudAuRegionRB().isSelected();
     }
 
     public boolean isSonarQubeCloudAuRegionEnabled() {

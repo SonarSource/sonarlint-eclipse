@@ -150,6 +150,9 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     assertThat(serverTypePage.isSonarQubeCloudUsRegionEnabled()).isFalse();
     assertThat(serverTypePage.isSonarQubeCloudAuRegionEnabled()).isFalse();
     serverTypePage.selectSonarCloud();
+    serverTypePage.selectSonarQubeCloudAuRegion();
+    assertThat(serverTypePage.isSonarQubeCloudAuRegionSelected()).isTrue();
+    assertThat(serverTypePage.isSonarQubeCloudEuRegionSelected()).isFalse();
     if (SONARQUBE_CLOUD_REGION_IS_EU) {
       serverTypePage.selectSonarQubeCloudUsRegion();
       serverTypePage.selectSonarQubeCloudEuRegion();
