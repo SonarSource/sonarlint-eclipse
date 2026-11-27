@@ -15,7 +15,7 @@
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>SonarLint for Eclipse ITs</name>
+  <name>SonarQube for Eclipse IDE E2E Tests</name>
 
   <modules>
     <module>org.sonarlint.eclipse.its.shared</module>
@@ -314,7 +314,7 @@
       </build>
     </profile>
 
-    <!-- Used on macOS in order to be able to run ITs when Maven invoked from terminal -->
+    <!-- Used on macOS in order to run IDE E2E tests when Maven invoked from terminal -->
     <profile>
       <id>macOS-its</id>
       <activation>

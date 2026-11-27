@@ -13,7 +13,7 @@
   <artifactId>org.sonarlint.eclipse.its.connected.sc</artifactId>
   <packaging>eclipse-test-plugin</packaging>
 
-  <name>SonarLint for Eclipse ITs (SC)</name>
+  <name>SonarQube for Eclipse IDE E2E Tests (SC)</name>
 
   <build>
     <plugins>

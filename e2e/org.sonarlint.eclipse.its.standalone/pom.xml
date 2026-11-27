@@ -13,7 +13,7 @@
   <artifactId>org.sonarlint.eclipse.its.standalone</artifactId>
   <packaging>eclipse-test-plugin</packaging>
 
-  <name>SonarLint for Eclipse ITs (standalone)</name>
+  <name>SonarQube for Eclipse IDE E2E Tests (standalone)</name>
 
   <build>
     <plugins>

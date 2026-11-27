@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
 <!--
-  This is not usable in the integration tests but only for the Maven/Tycho build and therefore only contains a small
+  This is not usable in the IDE E2E tests but only for the Maven/Tycho build and therefore only contains a small
   part of the actual IT dependencies in order to speed up the build. When additional dependencies are introduced (e.g.
   for a new sub-plugin, then they should be added here directly, if possible for Eclipse IDE 2022-06 / 4.24, as well as
-  for the other target platforms that are in fact used by the integration tests.
+  for the other target platforms that are in fact used by the IDE E2E tests.
 -->
 <target name="sonarlint-latest-java-11_e424" sequenceNumber="6">
   <locations>

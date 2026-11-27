@@ -1,9 +1,8 @@
-# SonarQube for Eclipse: Integration tests
+# SonarQube for Eclipse IDE E2E tests
 
-This project including its modules contains the integration tests (including compatibility against
-[iBuilds](https://download.eclipse.org/eclipse/downloads/), the in-development version of the Eclipse IDE) for
-SonarQube that are relying on [Eclipse RedDeer](https://github.com/SonarSource/reddeer) (in our case, our fork) as the
-test framework connected to [Eclipse Tycho](https://github.com/eclipse-tycho/tycho).
+[Eclipse Tycho](https://github.com/eclipse-tycho/tycho) installs the built plug-in from a p2 update site and starts an
+Eclipse instance. [Our RedDeer fork](https://github.com/SonarSource/reddeer) drives the IDE, including compatibility
+checks against [Eclipse iBuilds](https://download.eclipse.org/eclipse/downloads/).
 
 The tests are split into separate modules for testing in Standalone Mode only, with the integration into CDT (which is
 also in Standalone Mode), in Connected Mode with SonarQube Server and SonarQube Cloud. Additionally, one module is used
@@ -11,8 +10,7 @@ for shared logic. This Maven/Tycho project is completely decoupled from the main
 
 ## Building
 
-In order to build the integration tests, the main SonarQube for Eclipse project must be build first to create the
-Eclipse Update Site. On the CI/CD pipeline this is not done in one step, but locally it has to be done.
+Build the main SonarQube for Eclipse project first to create the p2 update site. CI builds the site in a separate job.
 
 The target platform provided must be one of the supported in the `target-platforms` folder inside the main SonarQube
 for Eclipse project directory.
@@ -20,7 +18,7 @@ for Eclipse project directory.
 ```
 cd $SONARLINT_FOR_ECLIPSE_FOLDER
 mvn clean verify -DskipTests
-cd its/
+cd e2e/
 mvn clean verify -Dtarget.platform=latest-java-21 -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url="file://{path to repo}/org.sonarlint.eclipse.site/target/repository" -DskipTests
 ```
 
@@ -73,9 +71,7 @@ Connected Mode with SonarQube Cloud, the following command has to be run that ex
 Mode and the Connected Mode with SonarQube Server and the integration into CDT.
 
 The target platform provided must be one of the supported in the `target-platforms` folder inside the main SonarQube
-for Eclipse project directory. Compared to the integration tests for the Connected Mode with SonarQube Cloud there is
-no dependency on the Java version and the CI/CD pipeline will run against the latest one linked to the Eclipse IDE that
-is shipped with Java 21 (the current Java runtime used for upcoming releases as well).
+for Eclipse project directory. CI runs this suite on the latest Java 21 Eclipse target.
 
 Due to us requiring the token for the SonarQube Cloud staging environment, we have to pass it directly to the command
 as the Eclipse IDE runtime won't pick it up otherwise via `System.getenv("SONARCLOUD_IT_TOKEN")`!
