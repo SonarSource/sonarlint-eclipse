@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
-<product name="Runtime of the ITs (Connected Mode with SonarQube)"
-         uid="org.sonarlint.eclipse.its.connected.sq.product"
+<product name="IDE E2E runtime (Connected Mode with SonarCloud)"
+         uid="org.sonarlint.eclipse.its.connected.sc.product"
          id="org.eclipse.sdk.ide"
          application="org.eclipse.ui.ide.workbench"
          version="1"
@@ -35,8 +35,7 @@
       <feature id="org.eclipse.platform"/>
       <feature id="org.eclipse.jdt"/>
       <feature id="org.eclipse.m2e.feature"/>
-      <feature id="org.eclipse.buildship"/>
-      <feature id="org.eclipse.mylyn.commons.feature"/>
+      <feature id="org.eclipse.wildwebdeveloper.embedder.node.feature"/>
       <feature id="org.sonarlint.eclipse.feature"/>
    </features>
 

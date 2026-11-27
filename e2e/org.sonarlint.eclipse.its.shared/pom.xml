@@ -13,5 +13,5 @@
   <artifactId>org.sonarlint.eclipse.its.shared</artifactId>
   <packaging>eclipse-plugin</packaging>
 
-  <name>SonarLint for Eclipse ITs (shared)</name>
+  <name>SonarQube for Eclipse IDE E2E Tests (shared)</name>
 </project>

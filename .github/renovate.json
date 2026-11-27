@@ -4,6 +4,6 @@
     "github>SonarSource/renovate-config:ide-xp-team"
   ],
   "ignorePaths": [
-    "its/projects/**"
+    "e2e/projects/**"
   ]
 }

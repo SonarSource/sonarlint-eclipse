@@ -26,8 +26,8 @@ org.sonarlint.eclipse.ui/lib/
 # macOS files
 **/.DS_Store
 
-# Integration tests
-!/its/projects/connected/.project
+# IDE E2E tests
+!/e2e/projects/connected/.project
 
 # Visual Studio
 .vs

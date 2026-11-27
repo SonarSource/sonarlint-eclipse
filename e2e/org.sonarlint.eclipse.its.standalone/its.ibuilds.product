@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
-<product name="Runtime of the ITs (Connected Mode with SonarCloud)"
-         uid="org.sonarlint.eclipse.its.connected.sc.product"
+<product name="IDE E2E runtime against latest in-development version of Eclipse (plug-ins)"
+         uid="org.sonarlint.eclipse.its.ibuilds.product"
          id="org.eclipse.sdk.ide"
          application="org.eclipse.ui.ide.workbench"
          version="1"
@@ -14,7 +14,7 @@
    <launcherArgs>
       <programArgs>--launcher.defaultAction openFile --launcher.appendVmargs
       </programArgs>
-      <vmArgs>-Dosgi.requiredJavaVersion=17 -Dosgi.dataAreaRequiresExplicitInit=true -Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true --add-modules=ALL-SYSTEM -Djava.security.manager=allow
+      <vmArgs>-Dosgi.requiredJavaVersion=17 -Dosgi.dataAreaRequiresExplicitInit=true -Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true --add-modules=ALL-SYSTEM -Dorg.slf4j.simpleLogger.defaultLogLevel=off -Djava.security.manager=allow
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
@@ -25,17 +25,24 @@
          <bmp/>
       </win>
    </launcher>
-   
+
+   <plugins>
+   </plugins>
+
    <!--
-     We don't test for different Eclipse versions and compatibility (iBuilds) here, only inclyde some features to keep
-     it "light". Others are included on the "standalone" or "ibuilds" products that test SonarLint in Standalone Mode
-     and the compatibility against the latest in-development builds of Eclipse (plug-ins) respectively.
+     Testing for compatibility against the latest in-development version of Eclipse (plug-ins). This does not include
+     in-development versions of third-party plug-ins as their development process is asynchronous and independent of the
+     development iterations of the Eclipse IDE.
    -->
    <features>
       <feature id="org.eclipse.platform"/>
       <feature id="org.eclipse.jdt"/>
       <feature id="org.eclipse.m2e.feature"/>
-      <feature id="org.eclipse.wildwebdeveloper.embedder.node.feature"/>
+      <feature id="org.eclipse.cdt"/>
+      <feature id="org.eclipse.wst.jsdt.feature"/>
+      <feature id="org.eclipse.rse"/>
+      <feature id="org.eclipse.mylyn.commons"/>
+      <feature id="org.eclipse.buildship"/>
       <feature id="org.sonarlint.eclipse.feature"/>
    </features>
 
@@ -47,6 +54,7 @@
       <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+      <plugin id="slf4j.simple" autoStart="true" startLevel="2" />
       <property name="osgi.bundles.defaultStartLevel" value="4" />
       <property name="eclipse.buildId" value="${unqualifiedVersion}.${buildQualifier}" />
       <property name="org.eclipse.update.reconcile" value="false" />

@@ -48,14 +48,14 @@ Development setup in Eclipse
 
 There are a few requirements for developing next to basic knowledge of Maven, Tycho and Eclipse plug-in development:
 - Eclipse IDE for RCP and RAP Developers (includes m2e, PDE)
-- Eclipse RedDeer (or any forked 4.7.x version) to run ITs
+- Eclipse RedDeer (or any forked 4.7.x version) to run IDE E2E tests
 
 Normally, m2e will automatically suggest to install missing connectors (Tycho configurators, ...) or wants to configure
 missing lifecycle mappings. This can all be done later.
 
 1. Run `mvn clean verify -DskipTests` on the command line to fetch artifacts referenced in the parent pom
 2. In Eclipse, import the project root as a Maven project
-3. In Eclipse, import the project root of the ITs as a Maven project and add them to the main project
+3. In Eclipse, import the `e2e` directory as a Maven project and add it to the main project
 4. Open `target-platforms/dev.target` with the target platform editor
     - Click **Set as Target Platform** (or **Reload Target Platform**) in the top-right corner
 
@@ -67,8 +67,8 @@ Running
 
 Open `plugin.xml` of `org.sonarline.eclipse.core` (for example), and see the **Run** and **Debug** buttons in the top-right corner.
 
-Running plugin unit tests
--------------------------
+Running unit and plug-in integration tests
+------------------------------------------
 
 In Eclipse:
 
@@ -83,10 +83,10 @@ With Maven:
 
     mvn clean verify
 
-Running ITs
------------
+Running IDE E2E tests
+---------------------
 
-Please see the **README.md** inside the *its* folder!
+See the [IDE E2E test guide](e2e/README.md).
 
 Adding a dependency
 -------------------

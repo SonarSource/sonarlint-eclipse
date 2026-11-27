@@ -10,10 +10,10 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>org.sonarlint.eclipse.its.cdt</artifactId>
+  <artifactId>org.sonarlint.eclipse.its.connected.sq</artifactId>
   <packaging>eclipse-test-plugin</packaging>
 
-  <name>SonarLint for Eclipse ITs (CDT integration)</name>
+  <name>SonarQube for Eclipse IDE E2E Tests (SQ)</name>
 
   <build>
     <plugins>
@@ -31,14 +31,14 @@
         </executions>
       </plugin>
 
-      <!-- The runtime that is used for the ITs based on "its.cdt.product" description -->
+      <!-- The runtime that is used for the ITs based on "its.connected.sq.product" description -->
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-surefire-plugin</artifactId>
         <configuration>
           <install>
             <iu>
-              <id>org.sonarlint.eclipse.its.cdt.product</id>
+              <id>org.sonarlint.eclipse.its.connected.sq.product</id>
             </iu>
           </install>
         </configuration>

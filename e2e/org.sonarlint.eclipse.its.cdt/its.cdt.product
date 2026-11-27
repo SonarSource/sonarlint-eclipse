@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
-<product name="Runtime of the ITs (Standalone Mode)"
-         uid="org.sonarlint.eclipse.its.standalone.product"
+<product name="IDE E2E runtime (CDT integration)"
+         uid="org.sonarlint.eclipse.its.cdt.product"
          id="org.eclipse.sdk.ide"
          application="org.eclipse.ui.ide.workbench"
          version="1"
@@ -28,13 +28,7 @@
    
    <features>
       <feature id="org.eclipse.platform"/>
-      <feature id="org.eclipse.jdt"/>
-      <feature id="org.eclipse.m2e.feature"/>
       <feature id="org.eclipse.cdt"/>
-      <feature id="org.eclipse.wst.jsdt.feature"/>
-      <feature id="org.eclipse.rse"/>
-      <feature id="org.eclipse.mylyn.commons"/>
-      <feature id="org.eclipse.buildship"/>
       <feature id="org.sonarlint.eclipse.feature"/>
    </features>
 
